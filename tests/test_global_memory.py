@@ -408,6 +408,17 @@ def test_model_candidate_import_records_reproducibility_and_requires_approval(
         "domains": [],
         "confidence": "low",
         "source_ids": [captured.source_id],
+        "evidence": [
+            {
+                "source_id": captured.source_id,
+                "location": "第 1 段",
+                "excerpt": "Model input must remain locally owned.",
+                "stance": "supports",
+                "reason": "来源直接陈述本地所有权要求。",
+            }
+        ],
+        "applicability": ["仅适用于用户明确提供的本地资料。"],
+        "uncertainty": "模型输出未经独立事实核验。",
         "relations": [
             {"type": "derived_from", "target_id": captured.source_id, "reason": "模型基于输入来源提出"}
         ],
@@ -477,6 +488,22 @@ def test_model_propose_cli_arguments() -> None:
     assert args.candidate_file == "candidate.md"
     assert args.provider == "local"
     assert args.prompt_file == "prompt.md"
+
+
+def test_claim_evidence_schema_is_emitted_and_validated(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Evidence must preserve its direction.")
+    proposal = ProposalService(repo).compile(captured.source_id)
+    candidate_path = repo.root / proposal.candidate_path
+    candidate, _ = read_document(candidate_path)
+    evidence = candidate["evidence"]
+    assert evidence[0]["source_id"] == captured.source_id
+    assert evidence[0]["stance"] == "context"
+    assert candidate["applicability"] == []
+    assert "尚未经过模型解释" in candidate["uncertainty"]
+
+    candidate["evidence"][0]["stance"] = "made_up"
+    with pytest.raises(ValidationError, match="evidence stance"):
+        repo._validate_metadata(candidate, candidate_path)
 
 
 def test_unapproved_proposal_does_not_touch_canonical(repo: Repository) -> None:

@@ -23,7 +23,7 @@
 ## M3 — 高质量编译与认知治理
 
 - Provider-neutral model processor（仍只产 proposal）。（已完成：外部 candidate 导入边界）
-- Claim 定位、矛盾证据、适用条件和不确定性 schema。
+- Claim 定位、矛盾证据、适用条件和不确定性 schema。（已完成）
 - Contradiction audit、周期 synthesis、serendipity proposal。
 - 人工修订 candidate 后创建新 proposal/hash 的明确工作流。（已完成）
 

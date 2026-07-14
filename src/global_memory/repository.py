@@ -26,6 +26,8 @@ RELATION_TYPES = {
     "supports", "contradicts", "refines", "analogous_to", "derived_from",
     "applied_in", "raises", "supersedes", "related_to",
 }
+CONFIDENCE_LEVELS = {"unknown", "low", "medium", "high"}
+EVIDENCE_STANCES = {"supports", "contradicts", "context"}
 CANONICAL_ROOTS = ("knowledge", "frontier", "action")
 TZ = ZoneInfo("Asia/Shanghai")
 
@@ -185,12 +187,42 @@ class Repository:
             raise ValidationError(f"{self.rel(path)} 缺少字段: {', '.join(missing)}")
         if metadata["type"] not in OBJECT_TYPES:
             raise ValidationError(f"{self.rel(path)} 使用非法对象类型: {metadata['type']}")
+        if metadata.get("confidence") not in CONFIDENCE_LEVELS:
+            raise ValidationError(f"{self.rel(path)} 使用非法 confidence: {metadata.get('confidence')}")
+        source_ids = metadata.get("source_ids", [])
+        if not isinstance(source_ids, list) or not all(isinstance(source_id, str) and source_id for source_id in source_ids):
+            raise ValidationError(f"{self.rel(path)} 的 source_ids 必须是非空字符串列表")
         for relation in metadata.get("relations", []):
             relation_type = relation.get("type") if isinstance(relation, dict) else None
             if relation_type not in RELATION_TYPES:
                 raise ValidationError(f"{self.rel(path)} 使用非法关系类型: {relation_type}")
             if not relation.get("target_id") or not relation.get("reason"):
                 raise ValidationError(f"{self.rel(path)} 的关系缺少 target_id 或 reason")
+        if metadata["type"] == "claim":
+            if "applicability" in metadata:
+                applicability = metadata["applicability"]
+                if not isinstance(applicability, list) or not all(
+                    isinstance(condition, str) and condition.strip() for condition in applicability
+                ):
+                    raise ValidationError(f"{self.rel(path)} 的 applicability 必须是非空文本列表")
+            if "uncertainty" in metadata and (
+                not isinstance(metadata["uncertainty"], str) or not metadata["uncertainty"].strip()
+            ):
+                raise ValidationError(f"{self.rel(path)} 的 uncertainty 必须是非空文本")
+            if "evidence" in metadata:
+                evidence = metadata["evidence"]
+                if not isinstance(evidence, list):
+                    raise ValidationError(f"{self.rel(path)} 的 evidence 必须是列表")
+                for item in evidence:
+                    if not isinstance(item, dict):
+                        raise ValidationError(f"{self.rel(path)} 的 evidence 条目必须是对象")
+                    if item.get("source_id") not in source_ids:
+                        raise ValidationError(f"{self.rel(path)} 的 evidence 必须引用 source_ids 中的来源")
+                    if item.get("stance") not in EVIDENCE_STANCES:
+                        raise ValidationError(f"{self.rel(path)} 的 evidence stance 非法")
+                    for key in ("location", "excerpt", "reason"):
+                        if not isinstance(item.get(key), str) or not item[key].strip():
+                            raise ValidationError(f"{self.rel(path)} 的 evidence 缺少 {key}")
 
     def rebuild_index(self) -> int:
         self.index_path.parent.mkdir(parents=True, exist_ok=True)

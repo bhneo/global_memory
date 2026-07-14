@@ -223,6 +223,15 @@ class ProposalService:
         if source_id not in candidate.get("source_ids", []):
             raise ValidationError("model candidate 必须在 source_ids 中保留输入 source")
         self.repository._validate_metadata(candidate, input_path)
+        if candidate_type == "claim":
+            missing_claim_fields = [
+                field for field in ("evidence", "applicability", "uncertainty")
+                if field not in candidate
+            ]
+            if missing_claim_fields:
+                raise ValidationError(
+                    "model claim candidate 缺少字段: " + ", ".join(missing_claim_fields)
+                )
 
         target_id = str(candidate.get("id", ""))
         if not target_id:
@@ -468,6 +477,17 @@ class ProposalService:
             "domains": [],
             "confidence": "unknown",
             "source_ids": [source_id],
+            "evidence": [
+                {
+                    "source_id": source_id,
+                    "location": "正文开头（第一版规则编译器截取）",
+                    "excerpt": excerpt,
+                    "stance": "context",
+                    "reason": "确定性处理器只保留来源片段，不自动判断支持或反对。",
+                }
+            ],
+            "applicability": [],
+            "uncertainty": "该内容由确定性规则生成，尚未经过模型解释或人工事实核验。",
             "relations": [
                 {"type": "derived_from", "target_id": source_id, "reason": "由该原始来源的规则编译结果提出"}
             ],

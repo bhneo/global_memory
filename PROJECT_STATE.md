@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M3.1：provider-neutral 外部模型 candidate 导入边界已实现。
+M3.2：claim evidence、适用范围与不确定性 schema 已实现。
 
 ## What is working
 
@@ -35,6 +35,8 @@ M3.1：provider-neutral 外部模型 candidate 导入边界已实现。
 - Backup/restore 从不覆盖同路径不同 hash 文件；实际恢复只补齐缺失 raw 文件，完成后重建索引。
 - `gm model-propose` 只导入用户明确提供的 candidate，不在仓库内调用 provider；proposal 记录 provider/model/prompt version/hash、输入 source hash 与不确定性。
 - Model candidate 与规则 compile 共用不可变 candidate、diff、approval、并发和 recovery gate；lint 校验其 model_run 审计字段。
+- Claim 支持结构化 `evidence[]`（来源、位置、摘录、supports/contradicts/context、理由）、`applicability[]`、`confidence` 与 `uncertainty`。
+- 规则 compile 只生成 context evidence；model claim 必须提供完整 evidence/applicability/uncertainty，旧 Markdown 仍保持兼容读取。
 
 ## What is being implemented
 
@@ -68,10 +70,11 @@ M3.1：provider-neutral 外部模型 candidate 导入边界已实现。
 - ADR 0005 确定 deferred 可继续审阅，revision 使用不可变新文件，并对 update 重新建立 current base。
 - ADR 0006 确定 raw backup 覆盖 source record 与 payload，增量复制不覆盖冲突，恢复默认 dry-run。
 - ADR 0007 确定模型输出通过外部 candidate 导入，不由仓库默认调用 provider，并保留最小可复现审计字段。
+- ADR 0008 确定 claim 的证据方向、适用范围、置信度与不确定性分别表达，不以单一状态抹平冲突。
 
 ## Next concrete task
 
-扩充 claim schema：增加证据位置、适用条件、置信度/不确定性和支持/反对证据字段；先保持兼容现有 Markdown。
+实现 contradiction audit：报告同一 claim 的 supports/contradicts evidence 并存、以及 claim relation 中的显式 `contradicts` 边；只报告，不自动裁决或改写 canonical。
 
 ## Do not do yet
 

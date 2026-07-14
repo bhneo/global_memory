@@ -115,6 +115,8 @@ Canonical approve 在写入任何 target 前，会原子创建 `system/recovery/
 
 模型处理器的第一版是“外部 candidate 导入器”，而不是 SDK 或云端调用器。请在你选择的模型环境中生成 UTF-8 candidate Markdown，再通过 `gm model-propose` 显式导入。Candidate 必须使用 `status: proposal`，并在 `source_ids` 中保留输入 source；系统将不可变保存 candidate、生成 diff，并记录 `provider`、`model`、`prompt_version`、可选 `prompt_sha256`、输入 source/content hash 与不确定性。
 
+若 candidate 类型为 `claim`，还必须填写 `evidence[]`、`applicability[]` 与 `uncertainty`。每条 evidence 需要来源、位置、摘录、`supports` / `contradicts` / `context` 方向和理由；详见 [SCHEMA.md](SCHEMA.md)。
+
 这条命令默认不会发送 raw、prompt 或任何文件到 provider；它也不会自动批准模型结论。模型输出仍要经过 `show → approve/reject/defer/revise`，并适用现有并发保护和 approval recovery。
 
 恢复采用 roll forward：当前文件必须仍是 journal 记录的写前或写后状态。若用户在中断后又修改了 target/proposal，恢复会返回 blocked 并保留 journal，不会覆盖第三种状态。Recovery journal 含可能敏感的候选正文，仅保存在本地并由 `.gitignore` 排除。

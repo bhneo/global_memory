@@ -2,6 +2,14 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.9.0] - 2026-07-14
+
+### Added
+
+- 新增 claim `evidence[]`、`applicability[]` 和 `uncertainty` schema，区分 supports、contradicts 与 context evidence。
+- 新规则 compile 生成可回到 raw 的 context evidence；新 model claim 必须提供完整结构化证据字段。
+- 增加 confidence/evidence/applicability/uncertainty 的 metadata 校验，同时保持旧 Markdown 兼容读取。
+
 ## [0.8.0] - 2026-07-14
 
 ### Added
