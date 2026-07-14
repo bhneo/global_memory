@@ -29,6 +29,8 @@ gm inbox
 gm compile <source-id>
 gm proposal show <proposal-id>
 gm proposal approve <proposal-id>
+gm proposal defer <proposal-id> --reason "等待补充证据"
+gm proposal revise <proposal-id> --from-file revised-candidate.md --reason "人工修订候选主张"
 gm recover
 gm propose-update <canonical-id> --from-file candidate.md --reason "新证据改变了适用范围"
 gm search "原始文字"
@@ -52,7 +54,8 @@ gm doctor
 - `gm inbox`：列出尚未 compile 的 source。
 - `gm compile <source-id>`：生成低置信度 proposal，不修改 canonical knowledge。
 - `gm proposals [--status pending]`：列出 proposal。
-- `gm proposal show|approve|reject <proposal-id>`：查看 diff 或明确审批。
+- `gm proposal show|approve|defer|reject <proposal-id>`：查看 diff、明确审批或暂缓处理。
+- `gm proposal revise <id> --from-file <candidate.md> --reason "..."`：用新的不可变 candidate 替代待审 proposal。
 - `gm propose-update <id> --from-file <candidate.md> --reason "..."`：创建受并发保护的 canonical update proposal。
 - `gm search "<query>"`：搜索 source 与 canonical knowledge，结果携带 `source_ids`。
 - `gm show <id>` / `gm related <id>`：读取对象与 typed relations。
@@ -82,6 +85,8 @@ Candidate 必须是 UTF-8 Markdown，保持 target 的 `id`、`type`、`created_
 ## Approval recovery
 
 Canonical approve 在写入任何 target 前，会原子创建 `system/recovery/approve-<proposal-id>.json`。Journal 包含预期 target/proposal 完整文本、前后哈希和 audit operation ID。正常完成后 journal 自动删除；中断后 `gm doctor` 会报告，`gm recover` 按 target → proposal → audit → index 顺序幂等续做。
+
+`defer` 不会修改 candidate 或 canonical，且 deferred proposal 以后仍可 approve、reject 或 revise。`revise` 不覆盖旧 candidate：它创建新的 candidate/proposal，把旧 proposal 标记为 `superseded`，并通过 `revision_of`、`superseded_by` 和 typed `supersedes` relation 保留完整审阅链。Update revision 总是以执行修订时的 current canonical 为新 base。
 
 恢复采用 roll forward：当前文件必须仍是 journal 记录的写前或写后状态。若用户在中断后又修改了 target/proposal，恢复会返回 blocked 并保留 journal，不会覆盖第三种状态。Recovery journal 含可能敏感的候选正文，仅保存在本地并由 `.gitignore` 排除。
 

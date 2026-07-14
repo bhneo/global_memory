@@ -53,7 +53,9 @@ def build_parser() -> argparse.ArgumentParser:
     update_parser.add_argument("--from-file", dest="candidate_file", required=True)
     update_parser.add_argument("--reason", required=True)
     proposals = commands.add_parser("proposals", help="列出 proposals")
-    proposals.add_argument("--status", choices=["pending", "approved", "rejected"])
+    proposals.add_argument(
+        "--status", choices=["pending", "deferred", "superseded", "approved", "rejected"]
+    )
 
     proposal = commands.add_parser("proposal", help="审阅 proposal")
     proposal_commands = proposal.add_subparsers(dest="proposal_command", required=True)
@@ -64,6 +66,13 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_reject = proposal_commands.add_parser("reject")
     proposal_reject.add_argument("proposal_id")
     proposal_reject.add_argument("--reason", default="")
+    proposal_defer = proposal_commands.add_parser("defer")
+    proposal_defer.add_argument("proposal_id")
+    proposal_defer.add_argument("--reason", default="")
+    proposal_revise = proposal_commands.add_parser("revise")
+    proposal_revise.add_argument("proposal_id")
+    proposal_revise.add_argument("--from-file", dest="candidate_file", required=True)
+    proposal_revise.add_argument("--reason", required=True)
 
     search = commands.add_parser("search", help="全文检索来源和 canonical knowledge")
     search.add_argument("query")
@@ -169,8 +178,12 @@ def run(args: argparse.Namespace) -> int:
             _print(proposals.show(args.proposal_id))
         elif args.proposal_command == "approve":
             _print({"approved": args.proposal_id, "target_path": proposals.approve(args.proposal_id)})
-        else:
+        elif args.proposal_command == "reject":
             _print({"rejected": args.proposal_id, "proposal_path": proposals.reject(args.proposal_id, args.reason)})
+        elif args.proposal_command == "defer":
+            _print({"deferred": args.proposal_id, "proposal_path": proposals.defer(args.proposal_id, args.reason)})
+        else:
+            _print(proposals.revise(args.proposal_id, args.candidate_file, args.reason).__dict__)
     elif args.command == "search":
         _print([result.__dict__ for result in repository.search(args.query, args.limit)])
     elif args.command == "show":
@@ -182,7 +195,8 @@ def run(args: argparse.Namespace) -> int:
         _print({
             "root": str(repository.root), "objects_by_type": repository.count_by_type(),
             "inbox": len(proposals.inbox()), "proposals_by_status": {
-                state: len(proposals.list(state)) for state in ("pending", "approved", "rejected")
+                state: len(proposals.list(state))
+                for state in ("pending", "deferred", "superseded", "approved", "rejected")
             },
             "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()),
         })

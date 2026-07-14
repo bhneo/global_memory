@@ -13,6 +13,7 @@ from .repository import Repository, now_iso, sha256_bytes, slugify
 
 
 CANONICAL_STATUSES = {"confirmed", "contested", "superseded", "archived"}
+REVIEWABLE_PROPOSAL_STATUSES = {"pending", "deferred"}
 
 
 @dataclass(frozen=True)
@@ -447,10 +448,170 @@ class ProposalService:
             raise ValidationError(f"不是 proposal: {proposal_id}")
         return path, metadata, body
 
-    def approve(self, proposal_id: str) -> str:
+    def defer(self, proposal_id: str, reason: str = "") -> str:
         proposal_path, proposal, proposal_body = self._load_proposal(proposal_id)
         if proposal.get("status") != "pending":
             raise ValidationError(f"proposal 状态不是 pending: {proposal.get('status')}")
+        reviewed_at = now_iso()
+        proposal["status"] = "deferred"
+        proposal["updated_at"] = reviewed_at
+        proposal["reviewed_at"] = reviewed_at
+        proposal["review_reason"] = reason.strip() or "人工暂缓"
+        atomic_write_text(proposal_path, render_document(proposal, proposal_body))
+        self.repository.append_event(
+            "proposal-events",
+            {"event": "deferred", "proposal_id": proposal_id, "reason": reason.strip()},
+        )
+        return self.repository.rel(proposal_path)
+
+    def revise(
+        self,
+        proposal_id: str,
+        candidate_file: Path | str,
+        reason: str,
+    ) -> ProposalResult:
+        reason = reason.strip()
+        if not reason:
+            raise ValidationError("proposal revision 必须说明 reason")
+        old_path, old, old_body = self._load_proposal(proposal_id)
+        if old.get("status") not in REVIEWABLE_PROPOSAL_STATUSES:
+            raise ValidationError(f"proposal 状态不可修订: {old.get('status')}")
+        if old.get("proposal_kind") == "source_refresh" or not old.get("candidate_path"):
+            raise ValidationError("source refresh proposal 没有可修订 candidate")
+
+        input_path = Path(candidate_file).expanduser().resolve()
+        if not input_path.is_file():
+            raise ValidationError(f"candidate 文件不存在: {input_path}")
+        try:
+            candidate_text = input_path.read_text(encoding="utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValidationError("candidate 必须是 UTF-8 Markdown") from exc
+        candidate, _ = read_document(input_path)
+        old_candidate_path = self.repository.resolve_inside(old["candidate_path"])
+        old_candidate, _ = read_document(old_candidate_path)
+        if (
+            candidate.get("id") != old.get("target_id")
+            or candidate.get("type") != old_candidate.get("type")
+        ):
+            raise ValidationError("revision candidate 的 id/type 必须与原 proposal 一致")
+        if candidate.get("status") != "proposal":
+            raise ValidationError("revision candidate status 必须为 proposal")
+        if candidate.get("type") == "claim" and not candidate.get("source_ids"):
+            raise ValidationError("claim revision 必须保留至少一个 source_id")
+        self.repository._validate_metadata(candidate, input_path)
+
+        target_path = self.repository.resolve_inside(old["target_path"])
+        action = old["action"]
+        base_bytes = b""
+        base_hash: str | None = None
+        if action == "update":
+            if not target_path.exists():
+                raise ValidationError("revision 的 canonical target 已不存在")
+            base_bytes = target_path.read_bytes()
+            base_hash = sha256_bytes(base_bytes)
+            current, _ = read_document(target_path)
+            if candidate.get("created_at") != current.get("created_at"):
+                raise ValidationError("revision candidate 必须保留 canonical created_at")
+            proposed_status = candidate.get("proposed_status", current.get("status", "confirmed"))
+        elif action == "create":
+            if target_path.exists():
+                raise ValidationError("revision 的 create target 已存在；请创建 update proposal")
+            if candidate.get("created_at") != old_candidate.get("created_at"):
+                raise ValidationError("revision candidate 必须保留原 candidate created_at")
+            proposed_status = candidate.get("proposed_status", "confirmed")
+        else:
+            raise ValidationError(f"proposal action 不支持 candidate revision: {action}")
+        if proposed_status not in CANONICAL_STATUSES:
+            raise ValidationError(f"revision candidate proposed_status 非法: {proposed_status}")
+
+        candidate_hash = sha256_bytes(candidate_text.encode("utf-8"))
+        if candidate_hash == old.get("candidate_sha256"):
+            raise ValidationError("revision candidate 与原 candidate 完全相同")
+        digest = hashlib.sha256(
+            f"proposal-revision\n{proposal_id}\n{base_hash or ''}\n{candidate_hash}".encode("utf-8")
+        ).hexdigest()
+        new_id = f"proposal_{digest[:24]}"
+        proposal_path = self.repository.root / "vault" / "proposals" / f"proposal-{new_id}.md"
+        candidate_path = self.repository.root / "vault" / "proposals" / f"candidate-{new_id}.md"
+        base_path = self.repository.root / "vault" / "proposals" / f"base-{new_id}.md"
+        if action == "update":
+            self.repository.immutable_write(base_path, base_bytes)
+        self.repository.immutable_write(candidate_path, candidate_text.encode("utf-8"))
+        before = base_bytes.decode("utf-8").splitlines(keepends=True) if base_bytes else []
+        diff = "".join(
+            difflib.unified_diff(
+                before,
+                candidate_text.splitlines(keepends=True),
+                fromfile=f"base:{old['target_path']}" if before else "/dev/null",
+                tofile=f"candidate:{old['target_path']}",
+            )
+        )
+        timestamp = now_iso()
+        metadata = {
+            "id": new_id,
+            "type": "proposal",
+            "status": "pending",
+            "title": f"修订：{old['title']}",
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "aliases": [],
+            "tags": old.get("tags", []),
+            "domains": old.get("domains", []),
+            "confidence": old.get("confidence", "unknown"),
+            "source_ids": candidate.get("source_ids", old.get("source_ids", [])),
+            "relations": [
+                {"type": "supersedes", "target_id": proposal_id, "reason": reason}
+            ],
+            "proposal_kind": "knowledge_revision",
+            "processor": "human-candidate-revision-v1",
+            "action": action,
+            "target_id": old["target_id"],
+            "target_path": old["target_path"],
+            "base_path": self.repository.rel(base_path) if action == "update" else None,
+            "base_sha256": base_hash,
+            "candidate_path": self.repository.rel(candidate_path),
+            "candidate_sha256": candidate_hash,
+            "change_reason": reason,
+            "revision_of": proposal_id,
+            "reviewed_at": None,
+            "review_reason": None,
+        }
+        body = (
+            f"# {metadata['title']}\n\n"
+            "## 修订说明\n\n"
+            f"- 被替代 proposal：`{proposal_id}`\n"
+            f"- 修订理由：{reason}\n"
+            f"- 建议操作：`{action}` `{old['target_path']}`\n"
+            "- 原 candidate 保持不可变；本 proposal 使用新的 candidate。\n\n"
+            "## Base → Revised Candidate Diff\n\n"
+            f"```diff\n{diff.rstrip()}\n```\n"
+        )
+        self.repository.immutable_write(
+            proposal_path, render_document(metadata, body).encode("utf-8")
+        )
+
+        old["status"] = "superseded"
+        old["updated_at"] = timestamp
+        old["reviewed_at"] = timestamp
+        old["review_reason"] = reason
+        old["superseded_by"] = new_id
+        atomic_write_text(old_path, render_document(old, old_body))
+        self.repository.append_event(
+            "proposal-events",
+            {
+                "event": "revised", "proposal_id": new_id,
+                "revision_of": proposal_id, "reason": reason,
+            },
+        )
+        return ProposalResult(
+            new_id, self.repository.rel(proposal_path), self.repository.rel(candidate_path),
+            old["target_path"], action,
+        )
+
+    def approve(self, proposal_id: str) -> str:
+        proposal_path, proposal, proposal_body = self._load_proposal(proposal_id)
+        if proposal.get("status") not in REVIEWABLE_PROPOSAL_STATUSES:
+            raise ValidationError(f"proposal 状态不可批准: {proposal.get('status')}")
         if proposal.get("proposal_kind") == "source_refresh":
             target_path = self.repository.resolve_inside(proposal["target_path"])
             target, _ = read_document(target_path)
@@ -557,8 +718,8 @@ class ProposalService:
 
     def reject(self, proposal_id: str, reason: str = "") -> str:
         proposal_path, proposal, proposal_body = self._load_proposal(proposal_id)
-        if proposal.get("status") != "pending":
-            raise ValidationError(f"proposal 状态不是 pending: {proposal.get('status')}")
+        if proposal.get("status") not in REVIEWABLE_PROPOSAL_STATUSES:
+            raise ValidationError(f"proposal 状态不可拒绝: {proposal.get('status')}")
         reviewed_at = now_iso()
         proposal["status"] = "rejected"
         proposal["updated_at"] = reviewed_at

@@ -52,7 +52,9 @@ Source 除基础字段外必须包含：
 
 ## Proposal record
 
-Proposal 额外包含 `proposal_kind`、`processor`、`action`、`target_id`、`target_path`、`reviewed_at`、`review_reason`。状态为 `pending`、`approved` 或 `rejected`。
+Proposal 额外包含 `proposal_kind`、`processor`、`action`、`target_id`、`target_path`、`reviewed_at`、`review_reason`。状态为 `pending`、`deferred`、`superseded`、`approved` 或 `rejected`。
+
+Candidate revision 创建新的 proposal/candidate，不覆盖原 candidate。新 proposal 使用 `revision_of` 和 `supersedes` relation 指向旧 proposal；旧 proposal 使用 `superseded_by` 指向新 proposal。Update revision 在创建时重新捕获 current canonical 作为 base snapshot。
 
 - `knowledge_compile` 具有 `candidate_path` 与 `candidate_sha256`。Candidate 自身状态必须为 `proposal`；批准后 canonical 状态改为 `confirmed` 并写入 `approved_via`。
 - `knowledge_update` 具有 `base_path`、`base_sha256`、`candidate_path`、`candidate_sha256` 和 `change_reason`。审批时 current target hash 必须等于 base hash。

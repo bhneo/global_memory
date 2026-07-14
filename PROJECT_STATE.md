@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M2.3：canonical approval 的 recovery journal 与故障恢复闭环已实现。
+M2.4：proposal defer 与不可变 candidate revision 审阅闭环已实现。
 
 ## What is working
 
@@ -26,6 +26,9 @@ M2.3：canonical approval 的 recovery journal 与故障恢复闭环已实现。
 - Canonical approval 在 target 写入前创建 recovery journal，并阶段化完成 target/proposal/audit/index。
 - `gm recover` 可幂等续做 create/update approval；audit operation ID 去重。
 - `doctor`/`status` 暴露 pending journal；第三状态和 payload 篡改保持 blocked。
+- `proposal defer` 暂缓审阅但保持后续 approve/reject/revise 能力。
+- `proposal revise` 创建新 candidate/proposal，旧 proposal 标记 superseded，并保留双向 lineage 与 typed relation。
+- Update revision 以 current canonical 重新建立 base，避免继承过期并发令牌。
 
 ## What is being implemented
 
@@ -35,7 +38,6 @@ M2.3：canonical approval 的 recovery journal 与故障恢复闭环已实现。
 
 - URL 抓取只处理静态响应，不执行 JavaScript；网页正文仍可能包含 HTML 噪声。
 - 第一版 compile 是确定性开头摘录，只验证治理闭环，不等同于高质量知识抽取。
-- 第一版 proposal review 支持 show/approve/reject；受治理的 candidate 编辑与 defer 尚未实现。
 - 二进制内容只保存和哈希，尚未提取 PDF、Office 或图片正文。
 - 搜索目前会同时返回同一 family 的多个版本，尚无 latest/accepted 过滤视图。
 - Blocked recovery journal 尚无自动解决命令，必须人工核验第三状态后决定重新提案或受控清理。
@@ -56,10 +58,12 @@ M2.3：canonical approval 的 recovery journal 与故障恢复闭环已实现。
 - ADR 0002 确定显式 refresh、append-only source version 和独立 refresh proposal。
 - ADR 0003 确定 canonical update 使用乐观并发；冲突拒绝覆盖且不自动合并。
 - ADR 0004 确定 canonical approval 使用本地 journal 和幂等 roll-forward。
+- Candidate revision 不覆盖旧文件，通过新 proposal 和 supersedes lineage 表达人工修订。
+- ADR 0005 确定 deferred 可继续审阅，revision 使用不可变新文件，并对 update 重新建立 current base。
 
 ## Next concrete task
 
-实现受治理的 proposal defer 与 candidate revision 工作流；revision 创建新 candidate/proposal，不覆盖原 candidate，并保留 supersedes 关系。
+实现 `gm lint`：校验对象 schema、断链、孤立页面、无来源 claim、raw hash 以及 proposal/candidate/base 一致性。
 
 ## Do not do yet
 

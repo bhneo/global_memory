@@ -16,6 +16,7 @@
 - Source refresh diff proposal 与人工确认，且不触碰 canonical。（已完成）
 - Canonical update proposal、乐观并发 hash、三方 diff。（已完成）
 - 跨文件 approve recovery journal 与故障注入测试。（已完成）
+- Proposal defer、不可变 candidate revision 与 supersedes 审阅链。（已完成）
 - `gm lint`：schema、失效链接、无来源 claim、孤立页面、raw hash。
 - Raw manifest、增量备份与恢复演练。
 
@@ -24,7 +25,7 @@
 - Provider-neutral model processor（仍只产 proposal）。
 - Claim 定位、矛盾证据、适用条件和不确定性 schema。
 - Contradiction audit、周期 synthesis、serendipity proposal。
-- 人工编辑 candidate 后重新计算 hash 的明确工作流。
+- 人工修订 candidate 后创建新 proposal/hash 的明确工作流。（已完成）
 
 ## M4 — 渐进式检索
 

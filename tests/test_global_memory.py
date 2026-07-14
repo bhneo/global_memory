@@ -307,6 +307,63 @@ def test_rejected_proposal_never_creates_target(repo: Repository) -> None:
     assert metadata["review_reason"] == "证据不足"
 
 
+def test_deferred_proposal_remains_reviewable_and_can_be_approved(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("A deferred candidate can be reviewed later.")
+    service = ProposalService(repo)
+    proposal = service.compile(captured.source_id)
+
+    service.defer(proposal.proposal_id, "等待补充材料")
+    _, deferred, _ = repo.find_document(proposal.proposal_id)
+    assert deferred["status"] == "deferred"
+    assert deferred["review_reason"] == "等待补充材料"
+    assert not (repo.root / proposal.target_path).exists()
+
+    service.approve(proposal.proposal_id)
+    _, approved, _ = repo.find_document(proposal.proposal_id)
+    assert approved["status"] == "approved"
+    assert (repo.root / proposal.target_path).exists()
+
+
+def test_revision_creates_new_candidate_and_supersedes_original(
+    repo: Repository, workspace: Path
+) -> None:
+    captured = CaptureService(repo).capture_text("Original evidence excerpt.")
+    service = ProposalService(repo)
+    original = service.compile(captured.source_id)
+    original_candidate_path = repo.root / original.candidate_path
+    original_bytes = original_candidate_path.read_bytes()
+    candidate, body = read_document(original_candidate_path)
+    candidate["updated_at"] = "2026-07-14T19:00:00+08:00"
+    revised_file = workspace / "revised-candidate.md"
+    revised_file.write_text(
+        render_document(candidate, body.replace("Original evidence excerpt.", "Human reviewed claim.")),
+        encoding="utf-8",
+    )
+
+    revised = service.revise(original.proposal_id, revised_file, "人工澄清主张")
+    assert revised.proposal_id != original.proposal_id
+    assert original_candidate_path.read_bytes() == original_bytes
+    assert (repo.root / revised.candidate_path).read_text(encoding="utf-8") == revised_file.read_text(encoding="utf-8")
+
+    _, old_metadata, _ = repo.find_document(original.proposal_id)
+    _, new_metadata, new_body = repo.find_document(revised.proposal_id)
+    assert old_metadata["status"] == "superseded"
+    assert old_metadata["superseded_by"] == revised.proposal_id
+    assert new_metadata["status"] == "pending"
+    assert new_metadata["revision_of"] == original.proposal_id
+    assert new_metadata["relations"] == [
+        {"type": "supersedes", "target_id": original.proposal_id, "reason": "人工澄清主张"}
+    ]
+    assert "Base → Revised Candidate Diff" in new_body
+    with pytest.raises(ValidationError, match="不可批准"):
+        service.approve(original.proposal_id)
+
+    service.approve(revised.proposal_id)
+    target, target_body = read_document(repo.root / revised.target_path)
+    assert target["approved_via"] == revised.proposal_id
+    assert "Human reviewed claim." in target_body
+
+
 def test_explicit_update_proposal_uses_base_snapshot_and_approval(repo: Repository, workspace: Path) -> None:
     _, target_path = create_approved_claim(repo)
     original_bytes = target_path.read_bytes()
@@ -401,6 +458,42 @@ def test_conflicted_update_can_be_reproposed_against_current_base(
     assert "Final reviewed statement." in updated_body
 
 
+def test_update_revision_rebases_on_current_canonical(
+    repo: Repository, workspace: Path
+) -> None:
+    _, target_path = create_approved_claim(repo, "Revision base.")
+    target, body = read_document(target_path)
+    first_candidate = dict(target)
+    first_candidate["status"] = "proposal"
+    first_path = workspace / "first-update.md"
+    first_path.write_text(
+        render_document(first_candidate, body.replace("Revision base.", "First proposal.")),
+        encoding="utf-8",
+    )
+    service = ProposalService(repo)
+    first = service.propose_update(target["id"], first_path, "初稿")
+
+    current_text = render_document(target, body.replace("Revision base.", "Concurrent human edit."))
+    target_path.write_text(current_text, encoding="utf-8")
+    revised_candidate = dict(target)
+    revised_candidate["status"] = "proposal"
+    revised_candidate["updated_at"] = "2026-07-14T19:05:00+08:00"
+    revised_path = workspace / "rebased-revision.md"
+    revised_path.write_text(
+        render_document(revised_candidate, body.replace("Revision base.", "Reviewed final update.")),
+        encoding="utf-8",
+    )
+
+    revised = service.revise(first.proposal_id, revised_path, "基于 current 重新修订")
+    _, metadata, _ = repo.find_document(revised.proposal_id)
+    assert (repo.root / metadata["base_path"]).read_text(encoding="utf-8") == current_text
+    assert metadata["base_sha256"] == sha256_bytes(target_path.read_bytes())
+    service.approve(revised.proposal_id)
+    updated, updated_body = read_document(target_path)
+    assert updated["approved_via"] == revised.proposal_id
+    assert "Reviewed final update." in updated_body
+
+
 def test_update_candidate_validation_rejects_wrong_identity_and_missing_reason(
     repo: Repository, workspace: Path
 ) -> None:
@@ -467,6 +560,23 @@ def test_propose_update_cli_arguments() -> None:
     assert args.target_id == "claim_example"
     assert args.candidate_file == "candidate.md"
     assert args.reason == "new evidence"
+
+
+def test_proposal_review_cli_arguments() -> None:
+    deferred = build_parser().parse_args(
+        ["proposal", "defer", "proposal_example", "--reason", "wait"]
+    )
+    assert deferred.proposal_command == "defer"
+    assert deferred.reason == "wait"
+    revised = build_parser().parse_args(
+        [
+            "proposal", "revise", "proposal_example", "--from-file", "candidate.md",
+            "--reason", "reviewed",
+        ]
+    )
+    assert revised.proposal_command == "revise"
+    assert revised.candidate_file == "candidate.md"
+    assert revised.reason == "reviewed"
 
 
 def test_illegal_relation_type_blocks_rebuild(repo: Repository) -> None:

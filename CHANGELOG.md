@@ -2,6 +2,16 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.5.0] - 2026-07-14
+
+### Added
+
+- 新增 `gm proposal defer`；暂缓状态不会修改 candidate/canonical，之后仍可继续审阅。
+- 新增 `gm proposal revise`；修订创建新的不可变 candidate/proposal，并用 supersedes lineage 保留旧审阅材料。
+- Update revision 以 current canonical 重新建立 base snapshot，继续执行乐观并发保护。
+- `status` 与 proposal 列表支持 `deferred`、`superseded` 状态。
+- 修正文档中 recovery journal 仍属未来工作的过期描述。
+
 ## [0.4.0] - 2026-07-14
 
 ### Added
