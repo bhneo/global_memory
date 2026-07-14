@@ -31,7 +31,7 @@
 
 ## M4 — 渐进式检索
 
-- Context Pack 接口与 token budget。
+- Context Pack 接口与 token budget。（已完成：只读、可回溯、保守 token 估算）
 - 更好的中文全文检索和 relation traversal ranking。
 - 可选 embedding/向量索引评估；必须本地可重建且不成为真相源。
 - Obsidian 视图指南，但不把插件变成后端。

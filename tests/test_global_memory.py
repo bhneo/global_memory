@@ -12,6 +12,7 @@ import pytest
 from global_memory.capture import CaptureService, canonicalize_url
 from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
 from global_memory.cli import build_parser, contradiction_audit, doctor, lint
+from global_memory.context import ContextPackService
 from global_memory.errors import ImmutableContentError, ValidationError
 from global_memory.markdown import read_document, render_document
 from global_memory.proposals import ProposalService
@@ -272,6 +273,36 @@ def test_search_returns_result_with_provenance(repo: Repository) -> None:
     assert results
     assert results[0].id == captured.source_id
     assert results[0].source_ids == [captured.source_id]
+
+
+def test_context_pack_is_read_only_budgeted_and_traceable(repo: Repository) -> None:
+    captured, target_path = create_approved_claim(
+        repo, "Context pack keeps the source chain visible for later review."
+    )
+    before = {
+        repo.rel(path): path.read_bytes()
+        for path in list(repo.all_indexed_documents()) + list(repo.proposal_documents())
+    }
+
+    pack = ContextPackService(repo).build("Context pack", token_budget=400).as_dict()
+
+    assert pack["estimated_tokens"] <= pack["token_budget"]
+    assert pack["items"]
+    assert any(item["id"] == read_document(target_path)[0]["id"] for item in pack["items"])
+    assert all(item["document_sha256"] and item["source_ids"] for item in pack["items"])
+    assert all("全文检索命中" in item["selection_reason"] for item in pack["items"])
+    after = {
+        repo.rel(path): path.read_bytes()
+        for path in list(repo.all_indexed_documents()) + list(repo.proposal_documents())
+    }
+    assert after == before
+    assert captured.source_id in {source_id for item in pack["items"] for source_id in item["source_ids"]}
+
+
+def test_context_pack_rejects_invalid_token_budget(repo: Repository) -> None:
+    CaptureService(repo).capture_text("Context budget validation.")
+    with pytest.raises(ValidationError, match="token budget"):
+        ContextPackService(repo).build("Context", token_budget=127)
 
 
 def test_lint_accepts_valid_truth_and_proposal_chain(repo: Repository) -> None:
@@ -986,6 +1017,13 @@ def test_propose_update_cli_arguments() -> None:
     assert args.target_id == "claim_example"
     assert args.candidate_file == "candidate.md"
     assert args.reason == "new evidence"
+
+
+def test_context_cli_arguments() -> None:
+    args = build_parser().parse_args(["context", "long-term memory", "--token-budget", "640"])
+    assert args.command == "context"
+    assert args.query == "long-term memory"
+    assert args.token_budget == 640
 
 
 def test_proposal_review_cli_arguments() -> None:

@@ -9,6 +9,7 @@ from pathlib import Path
 
 from .backups import RawBackupService
 from .capture import CaptureService
+from .context import ContextPackService
 from .errors import GlobalMemoryError
 from .markdown import read_document
 from .proposals import ProposalService
@@ -98,6 +99,9 @@ def build_parser() -> argparse.ArgumentParser:
     search = commands.add_parser("search", help="全文检索来源和 canonical knowledge")
     search.add_argument("query")
     search.add_argument("--limit", type=int, default=20)
+    context = commands.add_parser("context", help="按 query 和 token budget 生成只读 Context Pack")
+    context.add_argument("query")
+    context.add_argument("--token-budget", type=int, default=1200)
     show = commands.add_parser("show", help="按稳定 ID 显示对象")
     show.add_argument("object_id")
     related = commands.add_parser("related", help="显示 typed relations")
@@ -524,6 +528,8 @@ def run(args: argparse.Namespace) -> int:
             _print(proposals.revise(args.proposal_id, args.candidate_file, args.reason).__dict__)
     elif args.command == "search":
         _print([result.__dict__ for result in repository.search(args.query, args.limit)])
+    elif args.command == "context":
+        _print(ContextPackService(repository).build(args.query, args.token_budget).as_dict())
     elif args.command == "show":
         path, metadata, body = repository.find_document(args.object_id)
         _print({"path": repository.rel(path), "metadata": metadata, "body": body})

@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M3：高质量编译与认知治理的第一版闭环已完成。
+M4：渐进式检索的第一版 Context Pack 已完成。
 
 ## What is working
 
@@ -42,6 +42,7 @@ M3：高质量编译与认知治理的第一版闭环已完成。
 - Synthesis approval 前重验所有输入 claim hash；输入变化时拒绝批准，不生成自动/夜间任务。
 - `gm discover` 以共享 source、tags、relation target 和关键词生成关联候选，保留可解释信号与输入 hash。
 - Relation discovery approve 只记录已审阅，绝不自动修改 canonical relation；采纳关系仍须独立 update proposal。
+- `gm context <query> --token-budget <n>` 只读生成临时 Context Pack：确定性选择少量 source/claim/synthesis，逐项保留文档 hash、来源链和选择理由；不写入 Markdown、索引或日志，也不提升事实状态。
 
 ## What is being implemented
 
@@ -82,7 +83,7 @@ M3：高质量编译与认知治理的第一版闭环已完成。
 
 ## Next concrete task
 
-设计 Context Pack：按明确 query 与 token budget 选择少量 source/claim/synthesis，保留来源和选择理由，不替代检索或真相层。
+基于真实语料进行 Context Pack 验收：验证不同 query、中文短语、source version 与 token budget 下的召回、裁剪和来源呈现质量。
 
 ## Do not do yet
 

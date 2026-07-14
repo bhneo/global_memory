@@ -39,6 +39,10 @@ Relation discovery 是 proposal 元数据，不是知识图自动写入。它把
 
 典型状态：`proposal → confirmed → contested → superseded|archived`。状态不是置信度；`confirmed` 只说明经过审批进入 canonical，不代表客观真理。变化必须更新 `updated_at`、`change_reason`，必要时设置 `superseded_by` 和 `valid_during`。
 
+## Context Pack
+
+Context Pack 不是新的 knowledge object，也不进入 proposal/canonical 状态机。它是由明确 query、token budget 与当前本地索引临时生成的读取视图；每个入选项保留对象路径、文档 SHA-256、`source_ids`、内容片段和选择理由。它可以为 Agent 提供工作上下文，但不能替代检索、来源链或人工审批，也不得把命中内容解释为新增事实。
+
 ## 文件位置
 
 位置表达职责，不表达永久身份。ID 在移动文件后保持不变。文件名包含 ID 以利于无索引检索；标题变化不应改变 ID。
