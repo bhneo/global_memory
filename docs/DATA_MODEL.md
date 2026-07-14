@@ -10,6 +10,8 @@
 | Proposal | source + candidate hash | 同编译结果复用 | 状态可审计变化 |
 | SQLite row | 从 Markdown ID 派生 | 不适用 | 可删除重建 |
 
+Source identity 从单层扩展为两层：family 代表 canonical locator，version 代表该 family 在某个捕获时点的不可变证据。v1 保持原有 ID 兼容；v2 起的 ID 包含连续序号与 content hash 前缀。`previous_version_id` 构成可审计时间链，不使用覆盖表达网页变化。
+
 ## 领域对象
 
 - `knowledge/`：entity、concept、claim、pattern、comparison、synthesis。它们表达已确认的解释结构。

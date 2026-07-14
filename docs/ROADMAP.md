@@ -12,7 +12,8 @@
 
 ## M2 — 版本与更新安全
 
-- URL refresh 和 source version/changing-content 语义。
+- URL refresh 和 source version/changing-content 语义。（已完成）
+- Source refresh diff proposal 与人工确认，且不触碰 canonical。（已完成）
 - Canonical update proposal、乐观并发 hash、三方 diff。
 - 跨文件 approve recovery journal 与故障注入测试。
 - `gm lint`：schema、失效链接、无来源 claim、孤立页面、raw hash。

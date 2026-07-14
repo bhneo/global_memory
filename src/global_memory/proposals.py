@@ -20,6 +20,14 @@ class ProposalResult:
     action: str
 
 
+@dataclass(frozen=True)
+class RefreshProposalResult:
+    proposal_id: str
+    proposal_path: str
+    previous_source_id: str
+    new_source_id: str
+
+
 class ProposalService:
     def __init__(self, repository: Repository):
         self.repository = repository
@@ -36,6 +44,95 @@ class ProposalService:
             return raw_path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             return ""
+
+    def create_source_refresh(
+        self,
+        previous_source_id: str,
+        new_source_id: str,
+    ) -> RefreshProposalResult:
+        previous_path, previous, _ = self._source(previous_source_id)
+        new_path, new, _ = self._source(new_source_id)
+        if previous.get("canonical_locator") != new.get("canonical_locator"):
+            raise ValidationError("source refresh 的 canonical_locator 不一致")
+        if new.get("previous_version_id") != previous_source_id:
+            raise ValidationError("source refresh 的 previous_version_id 链无效")
+
+        proposal_digest = hashlib.sha256(
+            f"source-refresh\n{previous_source_id}\n{new_source_id}".encode("utf-8")
+        ).hexdigest()
+        proposal_id = f"proposal_{proposal_digest[:24]}"
+        proposal_path = self.repository.root / "vault" / "proposals" / f"proposal-{proposal_id}.md"
+        if proposal_path.exists():
+            return RefreshProposalResult(
+                proposal_id, self.repository.rel(proposal_path), previous_source_id, new_source_id
+            )
+
+        previous_text = self._source_text(previous)
+        new_text = self._source_text(new)
+        diff_truncated = len(previous_text) > 200_000 or len(new_text) > 200_000
+        if previous_text or new_text:
+            diff = "".join(
+                difflib.unified_diff(
+                    previous_text[:200_000].splitlines(keepends=True),
+                    new_text[:200_000].splitlines(keepends=True),
+                    fromfile=f"{previous_source_id}:{previous['content_sha256']}",
+                    tofile=f"{new_source_id}:{new['content_sha256']}",
+                )
+            )
+        else:
+            diff = "（二进制或不可解码内容；仅比较 SHA-256。）"
+        timestamp = now_iso()
+        metadata = {
+            "id": proposal_id,
+            "type": "proposal",
+            "status": "pending",
+            "title": f"确认来源更新：{new['title']}",
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "aliases": [],
+            "tags": [],
+            "domains": [],
+            "confidence": "unknown",
+            "source_ids": [new_source_id],
+            "relations": [],
+            "proposal_kind": "source_refresh",
+            "processor": "capture-refresh-v1",
+            "action": "acknowledge_source_version",
+            "target_id": new_source_id,
+            "target_path": self.repository.rel(new_path),
+            "previous_source_id": previous_source_id,
+            "new_source_id": new_source_id,
+            "source_family_id": new.get("source_family_id"),
+            "previous_content_sha256": previous["content_sha256"],
+            "new_content_sha256": new["content_sha256"],
+            "diff_truncated": diff_truncated,
+            "reviewed_at": None,
+            "review_reason": None,
+        }
+        body = (
+            f"# {metadata['title']}\n\n"
+            "## 版本变化\n\n"
+            f"- 上一版本：[[{self.repository.rel(previous_path)[:-3]}|{previous_source_id}]]\n"
+            f"- 新版本：[[{self.repository.rel(new_path)[:-3]}|{new_source_id}]]\n"
+            f"- Version：`{previous.get('version_number', 1)}` → `{new.get('version_number')}`\n"
+            f"- 内容哈希：`{previous['content_sha256']}` → `{new['content_sha256']}`\n"
+            "- 审批含义：确认这是一条需要进入后续知识处理的新来源版本；不直接修改 canonical knowledge。\n\n"
+            "## 原始内容 Diff\n\n"
+            f"```diff\n{diff.rstrip()}\n```\n"
+        )
+        self.repository.immutable_write(
+            proposal_path, render_document(metadata, body).encode("utf-8")
+        )
+        self.repository.append_event(
+            "proposal-events",
+            {
+                "event": "source-refresh-proposed", "proposal_id": proposal_id,
+                "previous_source_id": previous_source_id, "new_source_id": new_source_id,
+            },
+        )
+        return RefreshProposalResult(
+            proposal_id, self.repository.rel(proposal_path), previous_source_id, new_source_id
+        )
 
     def compile(self, source_id: str) -> ProposalResult:
         source_path, source, _ = self._source(source_id)
@@ -118,6 +215,7 @@ class ProposalService:
             "source_ids": [source_id],
             "relations": [],
             "processor": "deterministic-excerpt-v1",
+            "proposal_kind": "knowledge_compile",
             "action": action,
             "target_id": target_id,
             "target_path": self.repository.rel(target_path),
@@ -158,6 +256,7 @@ class ProposalService:
         compiled_sources = {
             source_id
             for proposal in self.list()
+            if proposal.get("proposal_kind", "knowledge_compile") == "knowledge_compile"
             for source_id in proposal.get("source_ids", [])
         }
         result = []
@@ -183,6 +282,39 @@ class ProposalService:
         proposal_path, proposal, proposal_body = self._load_proposal(proposal_id)
         if proposal.get("status") != "pending":
             raise ValidationError(f"proposal 状态不是 pending: {proposal.get('status')}")
+        if proposal.get("proposal_kind") == "source_refresh":
+            target_path = self.repository.resolve_inside(proposal["target_path"])
+            target, _ = read_document(target_path)
+            _, previous, _ = self._source(proposal["previous_source_id"])
+            target_raw_hash = sha256_bytes(
+                self.repository.resolve_inside(target["raw_content_path"]).read_bytes()
+            )
+            previous_raw_hash = sha256_bytes(
+                self.repository.resolve_inside(previous["raw_content_path"]).read_bytes()
+            )
+            if (
+                target.get("id") != proposal.get("new_source_id")
+                or target.get("previous_version_id") != previous.get("id")
+                or target.get("content_sha256") != proposal.get("new_content_sha256")
+                or previous.get("content_sha256") != proposal.get("previous_content_sha256")
+                or target_raw_hash != target.get("content_sha256")
+                or previous_raw_hash != previous.get("content_sha256")
+            ):
+                raise ValidationError("source refresh proposal 的目标版本无效")
+            approved_at = now_iso()
+            proposal["status"] = "approved"
+            proposal["updated_at"] = approved_at
+            proposal["reviewed_at"] = approved_at
+            proposal["review_reason"] = "人工确认新的不可变来源版本"
+            atomic_write_text(proposal_path, render_document(proposal, proposal_body))
+            self.repository.append_event(
+                "proposal-events",
+                {
+                    "event": "source-refresh-approved", "proposal_id": proposal_id,
+                    "new_source_id": proposal["new_source_id"],
+                },
+            )
+            return self.repository.rel(target_path)
         candidate_path = self.repository.resolve_inside(proposal["candidate_path"])
         candidate_text = candidate_path.read_text(encoding="utf-8")
         if sha256_bytes(candidate_text.encode("utf-8")) != proposal["candidate_sha256"]:

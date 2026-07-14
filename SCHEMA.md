@@ -1,4 +1,4 @@
-# Global Memory Schema v0.1
+# Global Memory Schema v0.2
 
 所有对象是 UTF-8 Markdown，使用 YAML Frontmatter。实现当前输出 JSON-compatible YAML 值，以便零依赖解析；标准 YAML 工具和 Obsidian 仍可读取。
 
@@ -44,19 +44,27 @@ Source 除基础字段外必须包含：
 - `captured_at`、可空 `published_at`。
 - `content_sha256`、`content_id`、`raw_content_path`。
 - `save_reason`、`import_method`、`processing_status`、`content_type`。
+- `source_family_id`：由 source kind 与 canonical locator 派生的版本族 ID。
+- `version_number`：族内从 1 开始的连续序号。
+- `previous_version_id`：上一版本 ID；v1 为 `null`。
 
 `source record` 与 `raw content` 均通过独占创建写入。文本内容按 hash 存在 `content/`；二进制在 `blobs/`，默认不提交 Git。
 
 ## Proposal record
 
-Proposal 额外包含 `processor`、`action`、`target_id`、`target_path`、`candidate_path`、`candidate_sha256`、`reviewed_at`、`review_reason`。状态为 `pending`、`approved` 或 `rejected`。Candidate 自身状态必须为 `proposal`；批准后 canonical 状态改为 `confirmed` 并写入 `approved_via`。
+Proposal 额外包含 `proposal_kind`、`processor`、`action`、`target_id`、`target_path`、`reviewed_at`、`review_reason`。状态为 `pending`、`approved` 或 `rejected`。
+
+- `knowledge_compile` 具有 `candidate_path` 与 `candidate_sha256`。Candidate 自身状态必须为 `proposal`；批准后 canonical 状态改为 `confirmed` 并写入 `approved_via`。
+- `source_refresh` 具有 `previous_source_id`、`new_source_id`、旧/新内容哈希和原文 diff。批准只确认来源版本，不写 canonical knowledge。
 
 ## 去重语义
 
-- source identity：`source_kind + canonical_locator` 的 SHA-256 派生稳定 ID。
+- source family identity：`source_kind + canonical_locator` 的 SHA-256 派生稳定 ID。
+- source version identity：族 ID、连续版本号与该次 content hash 共同构成；内容回退仍形成新版本。
 - content identity：原始 bytes 的 SHA-256；不同来源可共享 content object。
 - URL canonicalization：scheme/host 小写、默认端口移除、fragment 移除、query 排序、常见 tracking 参数移除。
 - 重复 source 不创建第二份记录；不同 source 的相同内容保留两份 source record。
+- 普通 capture 不刷新；显式 refresh 内容未变时复用最新版本，变化时只追加新版本。
 
 ## 真相层与派生层
 

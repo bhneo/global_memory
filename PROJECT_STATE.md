@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M1：最小纵向闭环已实现并通过首次端到端验收。
+M2.1：append-only URL/source version 与 refresh review 闭环已实现。
 
 ## What is working
 
@@ -15,6 +15,10 @@ M1：最小纵向闭环已实现并通过首次端到端验收。
 - approve/reject gate；未批准 proposal 不触碰 canonical knowledge。
 - typed relation 校验、show、related、status、doctor、索引全量重建。
 - Windows 路径、中文文件名和索引文件原子替换测试。
+- 显式 `gm capture <url> --refresh`；未变化时去重，变化时追加版本。
+- Source family、连续 version、previous-version 链与内容回退历史。
+- `source_refresh` proposal、原文 diff 和不触碰 canonical 的独立审批。
+- `doctor` 对 source version chain 的一致性检查。
 
 ## What is being implemented
 
@@ -27,10 +31,10 @@ M1：最小纵向闭环已实现并通过首次端到端验收。
 - 第一版 proposal review 支持 show/approve/reject；受治理的 candidate 编辑与 defer 尚未实现。
 - 跨文件 approve 无法获得真正的文件系统事务；`doctor` 可发现索引/文件问题，但尚无专用恢复日志。
 - 二进制内容只保存和哈希，尚未提取 PDF、Office 或图片正文。
+- 搜索目前会同时返回同一 family 的多个版本，尚无 latest/accepted 过滤视图。
 
 ## Unresolved architectural questions
 
-- 如何表达同一 canonical URL 随时间变化的 source version，且不把“重复捕获”和“新版本”混淆。
 - canonical knowledge 的更新 proposal 如何提供三方合并与并发编辑保护。
 - 大型 raw payload 的本地备份、加密、完整性清单与 Git/LFS 边界。
 - 未来模型处理器的隐私策略、可复现性记录和 provider-neutral 接口。
@@ -43,10 +47,11 @@ M1：最小纵向闭环已实现并通过首次端到端验收。
 - 相同内容不同来源共享 content object，但保留独立 source record。
 - compile 默认只生成低置信度 proposal；canonical 写入必须明确 approve。
 - 真实示例已完成 capture → compile → diff → approve → search；`gm doctor` 返回 `ok: true`。
+- ADR 0002 确定显式 refresh、append-only source version 和独立 refresh proposal。
 
 ## Next concrete task
 
-设计 URL/source version 模型与 `gm capture --refresh` proposal，不改变当前稳定 capture 行为。
+实现 canonical knowledge update proposal 的基线哈希、乐观并发保护和三方 diff，继续禁止绕过人工审批。
 
 ## Do not do yet
 

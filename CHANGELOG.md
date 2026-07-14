@@ -2,6 +2,16 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.2.0] - 2026-07-14
+
+### Added
+
+- 增加显式 `gm capture <url> --refresh`，普通 capture 行为保持不变。
+- 增加 source family、连续 version、previous-version 链和内容回退历史。
+- 增加 `source_refresh` proposal、旧/新原文 diff 和独立审批语义。
+- `doctor` 检查版本号重复、previous 缺失、链不连续和 locator 不一致。
+- 增加 refresh 未变化、变化、重复、回退、审批隔离和 CLI 抓取测试。
+
 ## [0.1.0] - 2026-07-14
 
 ### Added

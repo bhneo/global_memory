@@ -11,7 +11,7 @@ from pathlib import Path
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from .errors import ValidationError
-from .markdown import render_document
+from .markdown import read_document, render_document
 from .repository import Repository, now_iso, sha256_bytes
 
 
@@ -72,20 +72,58 @@ class CaptureResult:
     raw_content_path: str
     duplicate_source: bool
     duplicate_content: bool
+    version_number: int = 1
+    previous_source_id: str | None = None
+    refresh_proposal_id: str | None = None
 
 
 class CaptureService:
     def __init__(self, repository: Repository):
         self.repository = repository
 
-    def _existing_locator(self, canonical_locator: str) -> tuple[str, str, str] | None:
+    def _versions_for_locator(self, canonical_locator: str) -> list[tuple[Path, dict[str, object]]]:
+        versions: list[tuple[Path, dict[str, object]]] = []
         for path in self.repository.source_documents():
-            from .markdown import read_document
-
             metadata, _ = read_document(path)
             if metadata.get("canonical_locator") == canonical_locator:
-                return metadata["id"], self.repository.rel(path), metadata["raw_content_path"]
-        return None
+                versions.append((path, metadata))
+        return sorted(
+            versions,
+            key=lambda item: (int(item[1].get("version_number", 1)), str(item[1].get("captured_at", ""))),
+        )
+
+    def _result_for_existing(
+        self,
+        path: Path,
+        metadata: dict[str, object],
+        *,
+        refresh_proposal_id: str | None = None,
+    ) -> CaptureResult:
+        raw_path = str(metadata["raw_content_path"])
+        return CaptureResult(
+            source_id=str(metadata["id"]),
+            content_id=str(metadata.get("content_id") or Path(raw_path).stem),
+            source_path=self.repository.rel(path),
+            raw_content_path=raw_path,
+            duplicate_source=True,
+            duplicate_content=True,
+            version_number=int(metadata.get("version_number", 1)),
+            previous_source_id=metadata.get("previous_version_id") or None,
+            refresh_proposal_id=refresh_proposal_id,
+        )
+
+    def _ensure_refresh_proposal(
+        self,
+        previous_source_id: str | None,
+        new_source_id: str,
+    ) -> str | None:
+        if not previous_source_id:
+            return None
+        from .proposals import ProposalService
+
+        return ProposalService(self.repository).create_source_refresh(
+            previous_source_id, new_source_id
+        ).proposal_id
 
     def _write_source(
         self,
@@ -100,23 +138,43 @@ class CaptureService:
         comment: str = "",
         import_method: str,
         content_type: str = "text/plain; charset=utf-8",
+        refresh: bool = False,
     ) -> CaptureResult:
         self.repository.ensure_initialized()
-        existing = self._existing_locator(canonical_locator)
-        if existing:
-            source_id, source_path, raw_path = existing
+        versions = self._versions_for_locator(canonical_locator)
+        latest_path, latest = versions[-1] if versions else (None, None)
+        if latest is not None and not refresh:
             self.repository.append_event(
                 "capture-events",
-                {"event": "duplicate-source", "source_id": source_id, "locator": original_locator},
+                {"event": "duplicate-source", "source_id": latest["id"], "locator": original_locator},
             )
-            return CaptureResult(
-                source_id, Path(raw_path).stem, source_path, raw_path, True, True
-            )
+            return self._result_for_existing(latest_path, latest)
 
         digest = sha256_bytes(content)
+        if latest is not None and digest == latest.get("content_sha256"):
+            proposal_id = self._ensure_refresh_proposal(
+                latest.get("previous_version_id") or None, str(latest["id"])
+            )
+            self.repository.append_event(
+                "capture-events",
+                {
+                    "event": "refresh-unchanged", "source_id": latest["id"],
+                    "locator": original_locator, "content_sha256": digest,
+                },
+            )
+            return self._result_for_existing(
+                latest_path, latest, refresh_proposal_id=proposal_id
+            )
+
         content_id = f"content_{digest}"
         source_digest = hashlib.sha256(f"{kind}\n{canonical_locator}".encode("utf-8")).hexdigest()
-        source_id = f"source_{source_digest[:24]}"
+        source_family_id = f"source_family_{source_digest[:24]}"
+        version_number = int(latest.get("version_number", 1)) + 1 if latest else 1
+        source_id = (
+            f"source_{source_digest[:24]}"
+            if version_number == 1
+            else f"source_{source_digest[:12]}_v{version_number:04d}_{digest[:12]}"
+        )
         decoded = _decode_text(content, content_type)
         is_text = decoded is not None and (
             content_type.lower().startswith("text/") or kind == "personal-notes"
@@ -158,10 +216,17 @@ class CaptureService:
             "import_method": import_method,
             "processing_status": "inbox",
             "content_type": content_type,
+            "source_family_id": source_family_id,
+            "version_number": version_number,
+            "previous_version_id": latest.get("id") if latest else None,
         }
         body = (
             f"# {metadata['title']}\n\n"
             f"> 原始内容：[{self.repository.rel(raw_path)}](./{raw_path.relative_to(source_path.parent).as_posix()})\n\n"
+            "## 来源版本\n\n"
+            f"- Family：`{source_family_id}`\n"
+            f"- Version：`{version_number}`\n"
+            f"- Previous：`{metadata['previous_version_id'] or 'none'}`\n\n"
             "## 保存理由\n\n"
             f"{comment or '（未填写）'}\n\n"
             "## 内容预览\n\n"
@@ -173,10 +238,14 @@ class CaptureService:
             {
                 "event": "captured", "source_id": source_id, "content_id": content_id,
                 "source_path": self.repository.rel(source_path), "raw_content_path": self.repository.rel(raw_path),
-                "duplicate_content": not created_content,
+                "duplicate_content": not created_content, "version_number": version_number,
+                "previous_source_id": metadata["previous_version_id"],
             },
         )
         self.repository.rebuild_index()
+        refresh_proposal_id = self._ensure_refresh_proposal(
+            metadata["previous_version_id"], source_id
+        )
         return CaptureResult(
             source_id=source_id,
             content_id=content_id,
@@ -184,6 +253,9 @@ class CaptureService:
             raw_content_path=self.repository.rel(raw_path),
             duplicate_source=False,
             duplicate_content=not created_content,
+            version_number=version_number,
+            previous_source_id=metadata["previous_version_id"],
+            refresh_proposal_id=refresh_proposal_id,
         )
 
     def capture_text(self, text: str, comment: str = "", title: str = "人工输入") -> CaptureResult:
@@ -213,16 +285,16 @@ class CaptureService:
             import_method="cli-file", content_type=content_type,
         )
 
-    def capture_url(self, url: str, comment: str = "") -> CaptureResult:
+    def capture_url(self, url: str, comment: str = "", refresh: bool = False) -> CaptureResult:
         canonical = canonicalize_url(url)
-        existing = self._existing_locator(canonical)
-        if existing:
-            source_id, source_path, raw_path = existing
+        versions = self._versions_for_locator(canonical)
+        if versions and not refresh:
+            latest_path, latest = versions[-1]
             self.repository.append_event(
-                "capture-events", {"event": "duplicate-source", "source_id": source_id, "locator": url}
+                "capture-events", {"event": "duplicate-source", "source_id": latest["id"], "locator": url}
             )
-            return CaptureResult(source_id, Path(raw_path).stem, source_path, raw_path, True, True)
-        request = urllib.request.Request(url, headers={"User-Agent": "GlobalMemory/0.1 (+local-first)"})
+            return self._result_for_existing(latest_path, latest)
+        request = urllib.request.Request(url, headers={"User-Agent": "GlobalMemory/0.2 (+local-first)"})
         try:
             with urllib.request.urlopen(request, timeout=20) as response:
                 content = response.read(20_000_001)
@@ -237,10 +309,12 @@ class CaptureService:
         return self._write_source(
             kind="web", original_locator=url, canonical_locator=canonicalize_url(final_url),
             content=content, title=title, comment=comment, import_method="cli-url",
-            content_type=content_type,
+            content_type=content_type, refresh=refresh,
         )
 
-    def capture(self, target: str, comment: str = "") -> CaptureResult:
+    def capture(self, target: str, comment: str = "", refresh: bool = False) -> CaptureResult:
         if urlsplit(target).scheme.lower() in {"http", "https"}:
-            return self.capture_url(target, comment)
+            return self.capture_url(target, comment, refresh=refresh)
+        if refresh:
+            raise ValidationError("--refresh 当前只支持 HTTP(S) URL")
         return self.capture_file(target, comment)

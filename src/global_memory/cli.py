@@ -34,6 +34,10 @@ def build_parser() -> argparse.ArgumentParser:
     capture = commands.add_parser("capture", help="捕获 URL 或本地文件")
     capture.add_argument("target")
     capture.add_argument("--comment", default="")
+    capture.add_argument(
+        "--refresh", action="store_true",
+        help="显式重新抓取 URL；变化时追加 source version 并生成 review proposal",
+    )
     capture_text = commands.add_parser("capture-text", help="捕获粘贴文本；默认从 stdin 读取")
     capture_text.add_argument("--text")
     capture_text.add_argument("--title", default="人工输入")
@@ -69,6 +73,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def doctor(repository: Repository) -> dict[str, object]:
     issues: list[str] = []
+    sources: dict[str, dict[str, object]] = {}
     document_count = 0
     source_count = 0
     for path in repository.all_indexed_documents():
@@ -78,6 +83,7 @@ def doctor(repository: Repository) -> dict[str, object]:
             repository._validate_metadata(metadata, path)
             if metadata.get("type") == "source":
                 source_count += 1
+                sources[metadata["id"]] = metadata
                 raw = repository.resolve_inside(metadata["raw_content_path"])
                 if not raw.exists():
                     issues.append(f"缺少 raw 内容: {metadata['id']} -> {metadata['raw_content_path']}")
@@ -85,6 +91,25 @@ def doctor(repository: Repository) -> dict[str, object]:
                     issues.append(f"raw 内容哈希不匹配: {metadata['id']}")
         except Exception as exc:  # doctor must continue and report all local defects
             issues.append(f"{repository.rel(path)}: {exc}")
+    families: dict[str, list[dict[str, object]]] = {}
+    for source in sources.values():
+        families.setdefault(str(source.get("canonical_locator", source["id"])), []).append(source)
+    for canonical_locator, versions in families.items():
+        seen_versions: set[int] = set()
+        for source in versions:
+            version_number = int(source.get("version_number", 1))
+            if version_number in seen_versions:
+                issues.append(f"来源版本号重复: {canonical_locator} v{version_number}")
+            seen_versions.add(version_number)
+            previous_id = source.get("previous_version_id")
+            if version_number > 1:
+                previous = sources.get(str(previous_id))
+                if previous is None:
+                    issues.append(f"来源版本缺少 previous: {source['id']} -> {previous_id}")
+                elif int(previous.get("version_number", 1)) + 1 != version_number:
+                    issues.append(f"来源版本链不连续: {previous_id} -> {source['id']}")
+                elif previous.get("canonical_locator") != source.get("canonical_locator"):
+                    issues.append(f"来源版本 locator 不一致: {previous_id} -> {source['id']}")
     try:
         indexed_count = sum(repository.count_by_type().values())
         if indexed_count != document_count:
@@ -111,7 +136,7 @@ def run(args: argparse.Namespace) -> int:
     captures = CaptureService(repository)
     proposals = ProposalService(repository)
     if args.command == "capture":
-        _print(captures.capture(args.target, args.comment).__dict__)
+        _print(captures.capture(args.target, args.comment, refresh=args.refresh).__dict__)
     elif args.command == "capture-text":
         text = args.text if args.text is not None else sys.stdin.read()
         _print(captures.capture_text(text, args.comment, args.title).__dict__)

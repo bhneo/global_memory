@@ -24,6 +24,7 @@ cd C:\Users\bhneo\Desktop\project\超级大脑\global_memory
 python -m pip install -e .
 gm init
 gm capture-text --text "人的原始文字会原样保留" --comment "验证最小闭环"
+gm capture https://example.com/article --refresh --comment "显式检查网页是否更新"
 gm inbox
 gm compile <source-id>
 gm proposal show <proposal-id>
@@ -44,6 +45,7 @@ gm doctor
 
 - `gm init`：创建必要目录并建立空索引。
 - `gm capture <url-or-path> --comment "..."`：捕获 URL 或本地文件。
+- `gm capture <url> --refresh`：显式重新抓取；内容变化时追加 source version 和 review proposal。
 - `gm capture-text [--text "..."]`：捕获文本；未提供 `--text` 时读取 stdin。
 - `gm inbox`：列出尚未 compile 的 source。
 - `gm compile <source-id>`：生成低置信度 proposal，不修改 canonical knowledge。
@@ -62,6 +64,10 @@ gm doctor
 - SQLite 位于 `data/indexes/`，不进入 Git，可随时重建。
 - 二进制 raw payload 默认不进 Git；必须通过独立备份策略保护。
 - URL 捕获当前限制 20 MB，不执行 JavaScript，也不绕过登录或付费墙。
+
+## URL refresh 语义
+
+普通 `gm capture URL` 不会重新访问已经存在的 canonical URL。只有显式 `--refresh` 才发起新请求：内容哈希未变时不创建新版本；内容变化时追加新的 source Markdown 和 raw content，并生成 `source_refresh` proposal，展示旧/新原文 diff。批准 refresh proposal 只确认新来源版本可进入后续知识处理，不会直接修改 canonical knowledge。随后可对新 `source_id` 单独执行 `gm compile`。
 
 ## 进一步阅读
 
