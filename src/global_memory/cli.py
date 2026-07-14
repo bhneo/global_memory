@@ -45,6 +45,12 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("inbox", help="列出尚未 compile 的来源")
     compile_parser = commands.add_parser("compile", help="为来源生成 proposal")
     compile_parser.add_argument("source_id")
+    update_parser = commands.add_parser(
+        "propose-update", help="从 UTF-8 Markdown candidate 创建 canonical update proposal"
+    )
+    update_parser.add_argument("target_id")
+    update_parser.add_argument("--from-file", dest="candidate_file", required=True)
+    update_parser.add_argument("--reason", required=True)
     proposals = commands.add_parser("proposals", help="列出 proposals")
     proposals.add_argument("--status", choices=["pending", "approved", "rejected"])
 
@@ -144,6 +150,12 @@ def run(args: argparse.Namespace) -> int:
         _print(proposals.inbox())
     elif args.command == "compile":
         _print(proposals.compile(args.source_id).__dict__)
+    elif args.command == "propose-update":
+        _print(
+            proposals.propose_update(
+                args.target_id, args.candidate_file, args.reason
+            ).__dict__
+        )
     elif args.command == "proposals":
         _print(proposals.list(args.status))
     elif args.command == "proposal":

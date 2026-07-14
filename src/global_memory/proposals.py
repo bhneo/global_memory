@@ -11,6 +11,9 @@ from .markdown import atomic_write_text, read_document, render_document
 from .repository import Repository, now_iso, sha256_bytes, slugify
 
 
+CANONICAL_STATUSES = {"confirmed", "contested", "superseded", "archived"}
+
+
 @dataclass(frozen=True)
 class ProposalResult:
     proposal_id: str
@@ -44,6 +47,125 @@ class ProposalService:
             return raw_path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             return ""
+
+    def _canonical_target(self, target_id: str) -> tuple[Path, dict[str, Any], str]:
+        path, metadata, body = self.repository.find_document(target_id)
+        relative = self.repository.rel(path)
+        if not relative.startswith(("vault/knowledge/", "vault/frontier/", "vault/action/")):
+            raise ValidationError(f"update 目标不是 canonical knowledge: {target_id}")
+        return path, metadata, body
+
+    def propose_update(
+        self,
+        target_id: str,
+        candidate_file: Path | str,
+        reason: str,
+    ) -> ProposalResult:
+        reason = reason.strip()
+        if not reason:
+            raise ValidationError("knowledge update 必须说明 reason")
+        target_path, target, _ = self._canonical_target(target_id)
+        input_path = Path(candidate_file).expanduser().resolve()
+        if not input_path.is_file():
+            raise ValidationError(f"candidate 文件不存在: {input_path}")
+        try:
+            candidate_text = input_path.read_text(encoding="utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValidationError("candidate 必须是 UTF-8 Markdown") from exc
+        candidate, _ = read_document(input_path)
+        if candidate.get("id") != target_id or candidate.get("type") != target.get("type"):
+            raise ValidationError("candidate 的 id/type 必须与 canonical target 一致")
+        if candidate.get("status") != "proposal":
+            raise ValidationError("candidate status 必须为 proposal")
+        proposed_status = candidate.get("proposed_status", target.get("status", "confirmed"))
+        if proposed_status not in CANONICAL_STATUSES:
+            raise ValidationError(f"candidate proposed_status 非法: {proposed_status}")
+        if candidate.get("created_at") != target.get("created_at"):
+            raise ValidationError("candidate 必须保留 canonical created_at")
+        if candidate.get("type") == "claim" and not candidate.get("source_ids"):
+            raise ValidationError("claim update 必须保留至少一个 source_id")
+        self.repository._validate_metadata(candidate, input_path)
+
+        base_bytes = target_path.read_bytes()
+        base_hash = sha256_bytes(base_bytes)
+        candidate_hash = sha256_bytes(candidate_text.encode("utf-8"))
+        proposal_digest = hashlib.sha256(
+            f"knowledge-update\n{target_id}\n{base_hash}\n{candidate_hash}".encode("utf-8")
+        ).hexdigest()
+        proposal_id = f"proposal_{proposal_digest[:24]}"
+        proposal_path = self.repository.root / "vault" / "proposals" / f"proposal-{proposal_id}.md"
+        candidate_path = self.repository.root / "vault" / "proposals" / f"candidate-{proposal_id}.md"
+        base_path = self.repository.root / "vault" / "proposals" / f"base-{proposal_id}.md"
+        if proposal_path.exists():
+            existing, _ = read_document(proposal_path)
+            return ProposalResult(
+                proposal_id, self.repository.rel(proposal_path), existing["candidate_path"],
+                existing["target_path"], existing["action"],
+            )
+
+        self.repository.immutable_write(base_path, base_bytes)
+        self.repository.immutable_write(candidate_path, candidate_text.encode("utf-8"))
+        diff = "".join(
+            difflib.unified_diff(
+                base_bytes.decode("utf-8").splitlines(keepends=True),
+                candidate_text.splitlines(keepends=True),
+                fromfile=f"base:{self.repository.rel(target_path)}",
+                tofile=f"candidate:{self.repository.rel(target_path)}",
+            )
+        )
+        timestamp = now_iso()
+        proposal_metadata = {
+            "id": proposal_id,
+            "type": "proposal",
+            "status": "pending",
+            "title": f"更新 {target['title']}",
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "aliases": [],
+            "tags": [],
+            "domains": [],
+            "confidence": "unknown",
+            "source_ids": candidate.get("source_ids", []),
+            "relations": [],
+            "proposal_kind": "knowledge_update",
+            "processor": "explicit-candidate-v1",
+            "action": "update",
+            "target_id": target_id,
+            "target_path": self.repository.rel(target_path),
+            "base_path": self.repository.rel(base_path),
+            "base_sha256": base_hash,
+            "candidate_path": self.repository.rel(candidate_path),
+            "candidate_sha256": candidate_hash,
+            "change_reason": reason,
+            "reviewed_at": None,
+            "review_reason": None,
+        }
+        proposal_body = (
+            f"# {proposal_metadata['title']}\n\n"
+            "## 更新说明\n\n"
+            f"- Target：`{target_id}`\n"
+            f"- Base SHA-256：`{base_hash}`\n"
+            f"- Candidate SHA-256：`{candidate_hash}`\n"
+            f"- 变更理由：{reason}\n"
+            "- 并发策略：审批时 target 必须仍等于 base；不自动合并。\n\n"
+            "## Base → Candidate Diff\n\n"
+            f"```diff\n{diff.rstrip()}\n```\n"
+        )
+        self.repository.immutable_write(
+            proposal_path, render_document(proposal_metadata, proposal_body).encode("utf-8")
+        )
+        self.repository.append_event(
+            "proposal-events",
+            {
+                "event": "knowledge-update-proposed", "proposal_id": proposal_id,
+                "target_id": target_id, "base_sha256": base_hash,
+                "candidate_sha256": candidate_hash, "reason": reason,
+            },
+        )
+        return ProposalResult(
+            proposal_id, self.repository.rel(proposal_path), self.repository.rel(candidate_path),
+            self.repository.rel(target_path), "update",
+        )
 
     def create_source_refresh(
         self,
@@ -144,13 +266,17 @@ class ProposalService:
         target_digest = hashlib.sha256(f"claim\n{source_id}".encode("utf-8")).hexdigest()
         target_id = f"claim_{target_digest[:24]}"
         target_path = self.repository.root / "vault" / "knowledge" / "claims" / f"{target_id}-{slugify(source['title'])}.md"
+        action = "update" if target_path.exists() else "create"
+        base_bytes = target_path.read_bytes() if target_path.exists() else b""
+        base_hash = sha256_bytes(base_bytes) if base_bytes else None
+        target_metadata = read_document(target_path)[0] if target_path.exists() else {}
         timestamp = now_iso()
         candidate_metadata = {
             "id": target_id,
             "type": "claim",
             "status": "proposal",
             "title": title,
-            "created_at": timestamp,
+            "created_at": target_metadata.get("created_at", timestamp),
             "updated_at": timestamp,
             "aliases": [],
             "tags": [],
@@ -164,6 +290,8 @@ class ProposalService:
             "valid_during": None,
             "change_reason": "由规则编译器提出，等待人工核验",
         }
+        if action == "update":
+            candidate_metadata["proposed_status"] = target_metadata.get("status", "confirmed")
         candidate_body = (
             f"# {title}\n\n"
             "## 候选主张\n\n"
@@ -178,11 +306,13 @@ class ProposalService:
         )
         candidate_text = render_document(candidate_metadata, candidate_body)
         candidate_hash = sha256_bytes(candidate_text.encode("utf-8"))
-        proposal_digest = hashlib.sha256(f"{source_id}\n{candidate_hash}".encode("utf-8")).hexdigest()
+        proposal_digest = hashlib.sha256(
+            f"{source_id}\n{base_hash or ''}\n{candidate_hash}".encode("utf-8")
+        ).hexdigest()
         proposal_id = f"proposal_{proposal_digest[:24]}"
         candidate_path = self.repository.root / "vault" / "proposals" / f"candidate-{proposal_id}.md"
         proposal_path = self.repository.root / "vault" / "proposals" / f"proposal-{proposal_id}.md"
-        action = "update" if target_path.exists() else "create"
+        base_path = self.repository.root / "vault" / "proposals" / f"base-{proposal_id}.md"
 
         if proposal_path.exists():
             existing, _ = read_document(proposal_path)
@@ -191,8 +321,10 @@ class ProposalService:
                 existing["target_path"], existing["action"],
             )
 
+        if action == "update":
+            self.repository.immutable_write(base_path, base_bytes)
         self.repository.immutable_write(candidate_path, candidate_text.encode("utf-8"))
-        before = target_path.read_text(encoding="utf-8").splitlines(keepends=True) if target_path.exists() else []
+        before = base_bytes.decode("utf-8").splitlines(keepends=True) if base_bytes else []
         after = candidate_text.splitlines(keepends=True)
         diff = "".join(
             difflib.unified_diff(
@@ -219,6 +351,8 @@ class ProposalService:
             "action": action,
             "target_id": target_id,
             "target_path": self.repository.rel(target_path),
+            "base_path": self.repository.rel(base_path) if action == "update" else None,
+            "base_sha256": base_hash,
             "candidate_path": self.repository.rel(candidate_path),
             "candidate_sha256": candidate_hash,
             "reviewed_at": None,
@@ -270,6 +404,35 @@ class ProposalService:
         path, metadata, body = self.repository.find_document(proposal_id)
         if metadata.get("type") != "proposal":
             raise ValidationError(f"不是 proposal: {proposal_id}")
+        if metadata.get("action") == "update" and metadata.get("base_sha256"):
+            base_path = self.repository.resolve_inside(metadata["base_path"])
+            candidate_path = self.repository.resolve_inside(metadata["candidate_path"])
+            target_path = self.repository.resolve_inside(metadata["target_path"])
+            base_bytes = base_path.read_bytes()
+            candidate_bytes = candidate_path.read_bytes()
+            if sha256_bytes(base_bytes) != metadata["base_sha256"]:
+                raise ValidationError("proposal base snapshot 哈希不匹配")
+            if sha256_bytes(candidate_bytes) != metadata["candidate_sha256"]:
+                raise ValidationError("proposal candidate 哈希不匹配")
+            current_bytes = target_path.read_bytes() if target_path.exists() else b""
+            current_hash = sha256_bytes(current_bytes) if current_bytes else None
+            if current_hash != metadata["base_sha256"]:
+                base_to_current = "".join(
+                    difflib.unified_diff(
+                        base_bytes.decode("utf-8").splitlines(keepends=True),
+                        current_bytes.decode("utf-8").splitlines(keepends=True),
+                        fromfile=f"base:{metadata['target_path']}",
+                        tofile=f"current:{metadata['target_path']}",
+                    )
+                )
+                body = (
+                    body.rstrip()
+                    + "\n\n## 并发冲突：Base → Current Diff\n\n"
+                    + f"- Base SHA-256：`{metadata['base_sha256']}`\n"
+                    + f"- Current SHA-256：`{current_hash or 'missing'}`\n"
+                    + "- 状态：target 已在 proposal 创建后变化；当前 proposal 不可批准。\n\n"
+                    + f"```diff\n{base_to_current.rstrip()}\n```\n"
+                )
         return render_document(metadata, body)
 
     def _load_proposal(self, proposal_id: str) -> tuple[Path, dict[str, Any], str]:
@@ -325,13 +488,38 @@ class ProposalService:
         target_path = self.repository.resolve_inside(proposal["target_path"])
         if proposal["action"] == "create" and target_path.exists():
             raise ValidationError("目标已存在；请重新 compile 生成 update proposal")
+        default_status = "confirmed"
+        if proposal["action"] == "update":
+            if not proposal.get("base_path") or not proposal.get("base_sha256"):
+                raise ValidationError("update proposal 缺少不可变 base snapshot")
+            base_path = self.repository.resolve_inside(proposal["base_path"])
+            base_bytes = base_path.read_bytes()
+            if sha256_bytes(base_bytes) != proposal["base_sha256"]:
+                raise ValidationError("proposal base snapshot 哈希不匹配")
+            if not target_path.exists():
+                raise ValidationError("update target 已不存在；拒绝批准")
+            current_hash = sha256_bytes(target_path.read_bytes())
+            if current_hash != proposal["base_sha256"]:
+                raise ValidationError(
+                    "canonical target 在 proposal 创建后已变化；拒绝覆盖。"
+                    "请运行 proposal show 查看三方 diff，并基于当前版本重新提案"
+                )
+            base_metadata, _ = read_document(base_path)
+            if candidate.get("created_at") != base_metadata.get("created_at"):
+                raise ValidationError("update candidate 未保留 canonical created_at")
+            default_status = base_metadata.get("status", "confirmed")
         self.repository._validate_metadata(candidate, candidate_path)
         approved_at = now_iso()
         canonical = dict(candidate)
-        canonical["status"] = "confirmed"
+        proposed_status = canonical.pop("proposed_status", default_status)
+        if proposed_status not in CANONICAL_STATUSES:
+            raise ValidationError(f"candidate proposed_status 非法: {proposed_status}")
+        canonical["status"] = proposed_status
         canonical["updated_at"] = approved_at
         canonical["approved_via"] = proposal_id
-        canonical["change_reason"] = f"人工批准 proposal {proposal_id}"
+        canonical["change_reason"] = proposal.get(
+            "change_reason", f"人工批准 proposal {proposal_id}"
+        )
         canonical_text = render_document(canonical, body)
 
         # Canonical is written only after all proposal and candidate validation succeeds.

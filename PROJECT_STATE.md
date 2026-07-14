@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M2.1：append-only URL/source version 与 refresh review 闭环已实现。
+M2.2：canonical update 的乐观并发与三方审阅闭环已实现。
 
 ## What is working
 
@@ -19,6 +19,10 @@ M2.1：append-only URL/source version 与 refresh review 闭环已实现。
 - Source family、连续 version、previous-version 链与内容回退历史。
 - `source_refresh` proposal、原文 diff 和不触碰 canonical 的独立审批。
 - `doctor` 对 source version chain 的一致性检查。
+- 显式 `gm propose-update`、不可变 base/candidate snapshot 与内容 diff。
+- Approval 前重验 base/candidate/current hash，阻止覆盖并发人工修改。
+- 冲突时动态显示 Base→Candidate 和 Base→Current，并支持重新提案。
+- Update candidate 的稳定 ID、类型、created_at、状态和 claim provenance 校验。
 
 ## What is being implemented
 
@@ -35,7 +39,6 @@ M2.1：append-only URL/source version 与 refresh review 闭环已实现。
 
 ## Unresolved architectural questions
 
-- canonical knowledge 的更新 proposal 如何提供三方合并与并发编辑保护。
 - 大型 raw payload 的本地备份、加密、完整性清单与 Git/LFS 边界。
 - 未来模型处理器的隐私策略、可复现性记录和 provider-neutral 接口。
 - 中文全文检索长期采用 tokenizer、n-gram 派生索引还是混合策略。
@@ -48,10 +51,11 @@ M2.1：append-only URL/source version 与 refresh review 闭环已实现。
 - compile 默认只生成低置信度 proposal；canonical 写入必须明确 approve。
 - 真实示例已完成 capture → compile → diff → approve → search；`gm doctor` 返回 `ok: true`。
 - ADR 0002 确定显式 refresh、append-only source version 和独立 refresh proposal。
+- ADR 0003 确定 canonical update 使用乐观并发；冲突拒绝覆盖且不自动合并。
 
 ## Next concrete task
 
-实现 canonical knowledge update proposal 的基线哈希、乐观并发保护和三方 diff，继续禁止绕过人工审批。
+实现 approve recovery journal 与故障注入测试，处理 canonical 已写入但 proposal/audit/index 尚未完成的跨文件部分失败。
 
 ## Do not do yet
 

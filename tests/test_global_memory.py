@@ -11,9 +11,9 @@ import pytest
 from global_memory.capture import CaptureService, canonicalize_url
 from global_memory.cli import build_parser, doctor
 from global_memory.errors import ImmutableContentError, ValidationError
-from global_memory.markdown import read_document
+from global_memory.markdown import read_document, render_document
 from global_memory.proposals import ProposalService
-from global_memory.repository import Repository
+from global_memory.repository import Repository, sha256_bytes
 
 
 @pytest.fixture()
@@ -54,6 +54,14 @@ def capture_web_bytes(
         content_type="text/plain; charset=utf-8",
         refresh=refresh,
     )
+
+
+def create_approved_claim(repo: Repository, text: str = "Original canonical claim."):
+    captured = CaptureService(repo).capture_text(text, title="Canonical claim source")
+    service = ProposalService(repo)
+    proposal = service.compile(captured.source_id)
+    target = service.approve(proposal.proposal_id)
+    return captured, repo.root / target
 
 
 def test_same_url_is_duplicate(repo: Repository) -> None:
@@ -295,6 +303,168 @@ def test_rejected_proposal_never_creates_target(repo: Repository) -> None:
     metadata, _ = read_document(repo.root / proposal.proposal_path)
     assert metadata["status"] == "rejected"
     assert metadata["review_reason"] == "证据不足"
+
+
+def test_explicit_update_proposal_uses_base_snapshot_and_approval(repo: Repository, workspace: Path) -> None:
+    _, target_path = create_approved_claim(repo)
+    original_bytes = target_path.read_bytes()
+    original, body = read_document(target_path)
+    candidate = dict(original)
+    candidate["status"] = "proposal"
+    candidate["proposed_status"] = "contested"
+    candidate["updated_at"] = "2026-07-14T18:00:00+08:00"
+    candidate_path = workspace / "candidate-update.md"
+    candidate_path.write_text(
+        render_document(candidate, body.replace("Original canonical claim.", "Revised canonical claim.")),
+        encoding="utf-8",
+    )
+
+    service = ProposalService(repo)
+    proposal = service.propose_update(
+        original["id"], candidate_path, "新证据限制了原主张的适用范围"
+    )
+    proposal_path, metadata, proposal_body = repo.find_document(proposal.proposal_id)
+
+    assert target_path.read_bytes() == original_bytes
+    assert metadata["proposal_kind"] == "knowledge_update"
+    assert metadata["base_sha256"] == sha256_bytes(original_bytes)
+    assert (repo.root / metadata["base_path"]).read_bytes() == original_bytes
+    assert "Base → Candidate Diff" in proposal_body
+    assert proposal_path.exists()
+
+    service.approve(proposal.proposal_id)
+    updated, updated_body = read_document(target_path)
+    assert updated["status"] == "contested"
+    assert updated["created_at"] == original["created_at"]
+    assert updated["approved_via"] == proposal.proposal_id
+    assert updated["change_reason"] == "新证据限制了原主张的适用范围"
+    assert "Revised canonical claim." in updated_body
+
+
+def test_update_approval_blocks_concurrent_canonical_edit_and_shows_three_way_diff(
+    repo: Repository, workspace: Path
+) -> None:
+    _, target_path = create_approved_claim(repo, "Base statement.")
+    target, body = read_document(target_path)
+    candidate = dict(target)
+    candidate["status"] = "proposal"
+    candidate["updated_at"] = "2026-07-14T18:05:00+08:00"
+    candidate_path = workspace / "candidate-concurrent.md"
+    candidate_path.write_text(
+        render_document(candidate, body.replace("Base statement.", "Agent candidate statement.")),
+        encoding="utf-8",
+    )
+    service = ProposalService(repo)
+    proposal = service.propose_update(target["id"], candidate_path, "候选修订")
+
+    human_text = render_document(target, body.replace("Base statement.", "Human concurrent edit."))
+    target_path.write_text(human_text, encoding="utf-8")
+    shown = service.show(proposal.proposal_id)
+    assert "Base → Candidate Diff" in shown
+    assert "并发冲突：Base → Current Diff" in shown
+    assert "Human concurrent edit." in shown
+
+    with pytest.raises(ValidationError, match="拒绝覆盖"):
+        service.approve(proposal.proposal_id)
+    assert target_path.read_text(encoding="utf-8") == human_text
+    _, pending, _ = repo.find_document(proposal.proposal_id)
+    assert pending["status"] == "pending"
+
+
+def test_conflicted_update_can_be_reproposed_against_current_base(
+    repo: Repository, workspace: Path
+) -> None:
+    _, target_path = create_approved_claim(repo, "Initial statement.")
+    target, body = read_document(target_path)
+    candidate = dict(target)
+    candidate["status"] = "proposal"
+    candidate["updated_at"] = "2026-07-14T18:10:00+08:00"
+    candidate_path = workspace / "candidate-rebase.md"
+    candidate_text = render_document(
+        candidate, body.replace("Initial statement.", "Final reviewed statement.")
+    )
+    candidate_path.write_text(candidate_text, encoding="utf-8")
+    service = ProposalService(repo)
+    stale = service.propose_update(target["id"], candidate_path, "初次更新")
+
+    target_path.write_text(
+        render_document(target, body.replace("Initial statement.", "Intervening edit.")),
+        encoding="utf-8",
+    )
+    fresh = service.propose_update(target["id"], candidate_path, "基于当前版本重新审核")
+    assert fresh.proposal_id != stale.proposal_id
+    service.approve(fresh.proposal_id)
+    updated, updated_body = read_document(target_path)
+    assert updated["approved_via"] == fresh.proposal_id
+    assert "Final reviewed statement." in updated_body
+
+
+def test_update_candidate_validation_rejects_wrong_identity_and_missing_reason(
+    repo: Repository, workspace: Path
+) -> None:
+    _, target_path = create_approved_claim(repo)
+    target, body = read_document(target_path)
+    candidate = dict(target)
+    candidate["id"] = "claim_wrong"
+    candidate["status"] = "proposal"
+    candidate_path = workspace / "invalid-candidate.md"
+    candidate_path.write_text(render_document(candidate, body), encoding="utf-8")
+    service = ProposalService(repo)
+
+    with pytest.raises(ValidationError, match="id/type"):
+        service.propose_update(target["id"], candidate_path, "有理由")
+    candidate["id"] = target["id"]
+    candidate_path.write_text(render_document(candidate, body), encoding="utf-8")
+    with pytest.raises(ValidationError, match="必须说明 reason"):
+        service.propose_update(target["id"], candidate_path, "  ")
+
+
+def test_update_approval_rejects_tampered_base_snapshot(
+    repo: Repository, workspace: Path
+) -> None:
+    _, target_path = create_approved_claim(repo, "Protected base.")
+    target, body = read_document(target_path)
+    candidate = dict(target)
+    candidate["status"] = "proposal"
+    candidate_path = workspace / "candidate-base-integrity.md"
+    candidate_path.write_text(
+        render_document(candidate, body.replace("Protected base.", "Proposed update.")),
+        encoding="utf-8",
+    )
+    service = ProposalService(repo)
+    proposal = service.propose_update(target["id"], candidate_path, "验证 base 完整性")
+    _, metadata, _ = repo.find_document(proposal.proposal_id)
+    base_path = repo.root / metadata["base_path"]
+    base_path.write_text(base_path.read_text(encoding="utf-8") + "tampered\n", encoding="utf-8")
+
+    with pytest.raises(ValidationError, match="base snapshot 哈希不匹配"):
+        service.approve(proposal.proposal_id)
+    assert "Protected base." in target_path.read_text(encoding="utf-8")
+
+
+def test_compile_update_also_captures_optimistic_base(repo: Repository) -> None:
+    captured, target_path = create_approved_claim(repo, "Compile update baseline.")
+    proposal = ProposalService(repo).compile(captured.source_id)
+    _, metadata, _ = repo.find_document(proposal.proposal_id)
+
+    assert proposal.action == "update"
+    assert metadata["base_sha256"] == sha256_bytes(target_path.read_bytes())
+    assert (repo.root / metadata["base_path"]).read_bytes() == target_path.read_bytes()
+    ProposalService(repo).approve(proposal.proposal_id)
+    updated, _ = read_document(target_path)
+    assert updated["approved_via"] == proposal.proposal_id
+
+
+def test_propose_update_cli_arguments() -> None:
+    args = build_parser().parse_args(
+        [
+            "propose-update", "claim_example", "--from-file", "candidate.md",
+            "--reason", "new evidence",
+        ]
+    )
+    assert args.target_id == "claim_example"
+    assert args.candidate_file == "candidate.md"
+    assert args.reason == "new evidence"
 
 
 def test_illegal_relation_type_blocks_rebuild(repo: Repository) -> None:

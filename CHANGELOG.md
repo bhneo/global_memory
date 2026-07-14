@@ -2,6 +2,17 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.3.0] - 2026-07-14
+
+### Added
+
+- 增加 `gm propose-update`，从显式 Markdown candidate 创建 canonical update proposal。
+- Update proposal 保存不可变 base/candidate snapshot 和 SHA-256。
+- Approval 使用乐观并发检查，target 在审阅期间变化时拒绝覆盖。
+- `proposal show` 在冲突时动态展示 Base→Candidate 与 Base→Current。
+- 支持重新基于 current 提案，并验证 ID、类型、created_at、状态和 claim provenance。
+- 原有 knowledge compile 的 update 分支也纳入同一基线保护。
+
 ## [0.2.0] - 2026-07-14
 
 ### Added

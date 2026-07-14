@@ -1,4 +1,4 @@
-# Global Memory Schema v0.2
+# Global Memory Schema v0.3
 
 所有对象是 UTF-8 Markdown，使用 YAML Frontmatter。实现当前输出 JSON-compatible YAML 值，以便零依赖解析；标准 YAML 工具和 Obsidian 仍可读取。
 
@@ -55,7 +55,10 @@ Source 除基础字段外必须包含：
 Proposal 额外包含 `proposal_kind`、`processor`、`action`、`target_id`、`target_path`、`reviewed_at`、`review_reason`。状态为 `pending`、`approved` 或 `rejected`。
 
 - `knowledge_compile` 具有 `candidate_path` 与 `candidate_sha256`。Candidate 自身状态必须为 `proposal`；批准后 canonical 状态改为 `confirmed` 并写入 `approved_via`。
+- `knowledge_update` 具有 `base_path`、`base_sha256`、`candidate_path`、`candidate_sha256` 和 `change_reason`。审批时 current target hash 必须等于 base hash。
 - `source_refresh` 具有 `previous_source_id`、`new_source_id`、旧/新内容哈希和原文 diff。批准只确认来源版本，不写 canonical knowledge。
+
+Update candidate 必须保持 target 的 `id`、`type`、`created_at`，并使用 `status: proposal`。可选 `proposed_status` 仅允许 `confirmed`、`contested`、`superseded`、`archived`；省略时保留 base canonical status。
 
 ## 去重语义
 
