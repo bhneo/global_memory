@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from global_memory.capture import CaptureService, canonicalize_url
+from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
 from global_memory.cli import build_parser, doctor, lint
 from global_memory.errors import ImmutableContentError, ValidationError
 from global_memory.markdown import read_document, render_document
@@ -327,6 +328,68 @@ def test_lint_reports_broken_references_hashes_and_orphans(repo: Repository) -> 
     assert any("失效 relation" in issue for issue in result["errors"])
     assert any("失效 wikilink ID" in issue for issue in result["errors"])
     assert any("孤立 canonical 页面" in warning for warning in result["warnings"])
+
+
+def test_raw_backup_is_incremental_verifiable_and_restorable(
+    repo: Repository, workspace: Path
+) -> None:
+    captured = CaptureService(repo).capture_text("Raw backup recovery drill.")
+    backup_directory = workspace / "external-raw-backup"
+    service = RawBackupService(repo)
+
+    first = service.backup(backup_directory)
+    assert first.conflicts == []
+    assert len(first.copied) == 2
+    assert (backup_directory / BACKUP_MANIFEST_NAME).is_file()
+    assert service.verify(backup_directory)["ok"] is True
+
+    second = service.backup(backup_directory)
+    assert second.copied == []
+    assert sorted(second.skipped) == sorted(first.copied)
+
+    source_path = repo.root / captured.source_path
+    raw_path = repo.root / captured.raw_content_path
+    source_path.unlink()
+    raw_path.unlink()
+    planned = service.restore(backup_directory)
+    assert planned["ok"] is True
+    assert planned["dry_run"] is True
+    assert sorted(planned["restored"]) == sorted(first.copied)
+    assert not source_path.exists()
+
+    restored = service.restore(backup_directory, apply=True)
+    assert restored["ok"] is True
+    assert restored["dry_run"] is False
+    assert sorted(restored["restored"]) == sorted(first.copied)
+    assert source_path.exists()
+    assert raw_path.exists()
+    assert doctor(repo)["ok"] is True
+
+
+def test_raw_backup_restore_refuses_to_overwrite_conflicting_local_file(
+    repo: Repository, workspace: Path
+) -> None:
+    captured = CaptureService(repo).capture_text("Original backup payload.")
+    backup_directory = workspace / "external-raw-backup-conflict"
+    service = RawBackupService(repo)
+    service.backup(backup_directory)
+    raw_path = repo.root / captured.raw_content_path
+    raw_path.write_text("Local conflicting payload.", encoding="utf-8")
+
+    result = service.restore(backup_directory, apply=True)
+    assert result["ok"] is False
+    assert result["conflicts"] == [captured.raw_content_path]
+    assert raw_path.read_text(encoding="utf-8") == "Local conflicting payload."
+
+
+def test_raw_backup_cli_arguments() -> None:
+    manifest = build_parser().parse_args(["backup", "manifest", "--output", "manifest.json"])
+    assert manifest.backup_command == "manifest"
+    assert manifest.output == "manifest.json"
+    restored = build_parser().parse_args(["backup", "restore", "D:/backup", "--apply"])
+    assert restored.backup_command == "restore"
+    assert restored.directory == "D:/backup"
+    assert restored.apply is True
 
 
 def test_unapproved_proposal_does_not_touch_canonical(repo: Repository) -> None:

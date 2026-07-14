@@ -7,6 +7,7 @@ import re
 import sys
 from pathlib import Path
 
+from .backups import RawBackupService
 from .capture import CaptureService
 from .errors import GlobalMemoryError
 from .markdown import read_document
@@ -90,6 +91,17 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("rebuild-index", help="从 Markdown 与 raw source 重建 SQLite 索引")
     commands.add_parser("doctor", help="检查 schema、原始内容哈希和索引")
     commands.add_parser("lint", help="只读检查链接、来源、raw 与 proposal 完整性")
+    backup = commands.add_parser("backup", help="生成、校验或增量复制 vault/raw 备份")
+    backup_commands = backup.add_subparsers(dest="backup_command", required=True)
+    backup_manifest = backup_commands.add_parser("manifest")
+    backup_manifest.add_argument("--output")
+    backup_create = backup_commands.add_parser("create")
+    backup_create.add_argument("directory")
+    backup_verify = backup_commands.add_parser("verify")
+    backup_verify.add_argument("directory")
+    backup_restore = backup_commands.add_parser("restore")
+    backup_restore.add_argument("directory")
+    backup_restore.add_argument("--apply", action="store_true")
     commands.add_parser("recover", help="幂等续做未完成的 canonical approval journal")
     return parser
 
@@ -340,6 +352,7 @@ def run(args: argparse.Namespace) -> int:
     repository.ensure_initialized()
     captures = CaptureService(repository)
     proposals = ProposalService(repository)
+    backups = RawBackupService(repository)
     if args.command == "capture":
         _print(captures.capture(args.target, args.comment, refresh=args.refresh).__dict__)
     elif args.command == "capture-text":
@@ -394,6 +407,21 @@ def run(args: argparse.Namespace) -> int:
         result = lint(repository)
         _print(result)
         return 0 if result["ok"] else 1
+    elif args.command == "backup":
+        if args.backup_command == "manifest":
+            _print({"manifest_path": backups.write_manifest(args.output)})
+        elif args.backup_command == "create":
+            result = backups.backup(args.directory)
+            _print(result.__dict__)
+            return 0 if not result.conflicts else 1
+        elif args.backup_command == "verify":
+            result = backups.verify(args.directory)
+            _print(result)
+            return 0 if result["ok"] else 1
+        else:
+            result = backups.restore(args.directory, apply=args.apply)
+            _print(result)
+            return 0 if result["ok"] else 1
     elif args.command == "recover":
         result = ApprovalRecoveryManager(repository).recover_all()
         _print(result)

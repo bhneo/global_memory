@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M2.5：只读 `gm lint` 完整性检查已实现。
+M2：版本、更新安全、完整性检查与 raw backup 闭环已完成。
 
 ## What is working
 
@@ -31,6 +31,8 @@ M2.5：只读 `gm lint` 完整性检查已实现。
 - Update revision 以 current canonical 重新建立 base，避免继承过期并发令牌。
 - `gm lint` 检查 metadata、失效 relation/wikilink、claim provenance、raw hash、proposal candidate/base/target/hash 和 revision lineage。
 - Lint 将损坏或失效引用报为 error；孤立 canonical 页面与未引用审阅快照报为 warning，且不修改仓库。
+- `gm backup manifest/create/verify/restore` 覆盖整个 `vault/raw/`，使用 SHA-256 manifest、外部增量目录与默认 dry-run 的恢复流程。
+- Backup/restore 从不覆盖同路径不同 hash 文件；实际恢复只补齐缺失 raw 文件，完成后重建索引。
 
 ## What is being implemented
 
@@ -46,7 +48,7 @@ M2.5：只读 `gm lint` 完整性检查已实现。
 
 ## Unresolved architectural questions
 
-- 大型 raw payload 的本地备份、加密、完整性清单与 Git/LFS 边界。
+- 大型 raw payload 的加密策略与 Git/LFS 边界。
 - 未来模型处理器的隐私策略、可复现性记录和 provider-neutral 接口。
 - 中文全文检索长期采用 tokenizer、n-gram 派生索引还是混合策略。
 
@@ -62,10 +64,11 @@ M2.5：只读 `gm lint` 完整性检查已实现。
 - ADR 0004 确定 canonical approval 使用本地 journal 和幂等 roll-forward。
 - Candidate revision 不覆盖旧文件，通过新 proposal 和 supersedes lineage 表达人工修订。
 - ADR 0005 确定 deferred 可继续审阅，revision 使用不可变新文件，并对 update 重新建立 current base。
+- ADR 0006 确定 raw backup 覆盖 source record 与 payload，增量复制不覆盖冲突，恢复默认 dry-run。
 
 ## Next concrete task
 
-实现 raw manifest、增量备份与恢复演练，明确 Git、ignore 二进制和本地备份的边界。
+设计 provider-neutral model processor：只产生同一 proposal schema，记录 provider/model/prompt version/输入哈希与不确定性，默认不外传私有 raw。
 
 ## Do not do yet
 

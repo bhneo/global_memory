@@ -18,7 +18,7 @@
 - 跨文件 approve recovery journal 与故障注入测试。（已完成）
 - Proposal defer、不可变 candidate revision 与 supersedes 审阅链。（已完成）
 - `gm lint`：schema、失效链接、无来源 claim、孤立页面、raw hash。（已完成）
-- Raw manifest、增量备份与恢复演练。
+- Raw manifest、增量备份与恢复演练。（已完成）
 
 ## M3 — 高质量编译与认知治理
 

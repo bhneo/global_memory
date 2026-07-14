@@ -2,6 +2,14 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.7.0] - 2026-07-14
+
+### Added
+
+- 新增 `gm backup manifest|create|verify|restore`，为整个 `vault/raw/` 生成 SHA-256 manifest 并提供增量本地备份。
+- Restore 默认 dry-run；`--apply` 只补齐缺失文件，同路径不同 hash 时拒绝覆盖并停止恢复。
+- Backup 覆盖 source Markdown 与 content/blob，恢复后自动重建 SQLite；Git 继续负责 canonical Markdown 与代码历史。
+
 ## [0.6.0] - 2026-07-14
 
 ### Added

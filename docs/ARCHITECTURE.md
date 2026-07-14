@@ -40,6 +40,10 @@ Canonical update 使用三份材料：不可变 base snapshot、不可变 candid
 
 `gm doctor` 侧重 source version、raw hash、索引和 recovery journal；`gm lint` 扩展检查对象引用、claim provenance、wikilink、proposal candidate/base/target/hash 和 revision lineage。Lint 不重建索引、不改变对象；断链和哈希不一致是 error，孤立 canonical 页面与未引用的审阅快照是 warning。
 
+### Raw backup
+
+Raw manifest 从 `vault/raw/` 的全部文件生成 SHA-256 清单，包含 source record 和 content/blob。`gm backup create <外部目录>` 将缺失文件独占复制到备份目录，相同 hash 跳过，同路径不同 hash 停止为 conflict；只有无 conflict 时才发布新的备份 manifest。`gm backup restore` 默认 dry-run，`--apply` 先验证备份，再只恢复本地缺失文件；任一冲突阻止全部写入。恢复后 SQLite 由真相层重建，Git 仍负责 canonical Markdown 与代码历史。
+
 ## 一致性边界
 
 - Capture 顺序：raw content → source Markdown → append audit event → rebuild index。索引失败时文件仍可重建，调用者会看到错误。
