@@ -31,6 +31,8 @@ Claim 至少通过 `source_ids` 指向来源。新 claim 使用结构化 `eviden
 
 `gm audit contradictions` 只读取 canonical claim：同一 claim 同时拥有 `supports` 和 `contradicts` evidence 时输出内部冲突；claim relation 的 `contradicts` 边输出跨 claim 冲突。审计结果不是真相层对象，也不改变任何状态。
 
+Synthesis 是可批准的 canonical knowledge 对象，不是 audit 缓存。它从至少两个 claim 的显式材料生成，保存输入 claim ID/path/hash/status、聚合后的 `source_ids`，并以 `related_to` relation 保留输入边。输入 hash 在 approval 前重新验证，因此综合不会基于已改变的 claim 静默落库。
+
 ## 状态演化
 
 典型状态：`proposal → confirmed → contested → superseded|archived`。状态不是置信度；`confirmed` 只说明经过审批进入 canonical，不代表客观真理。变化必须更新 `updated_at`、`change_reason`，必要时设置 `superseded_by` 和 `valid_during`。

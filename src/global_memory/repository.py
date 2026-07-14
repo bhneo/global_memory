@@ -20,7 +20,7 @@ from .markdown import atomic_write_text, read_document, render_document
 OBJECT_TYPES = {
     "source", "intuition", "entity", "concept", "claim", "question",
     "tension", "analogy", "hypothesis", "project", "decision",
-    "experiment", "failure", "opportunity", "proposal",
+    "experiment", "failure", "opportunity", "synthesis", "proposal",
 }
 RELATION_TYPES = {
     "supports", "contradicts", "refines", "analogous_to", "derived_from",

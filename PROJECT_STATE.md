@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M3.3：只读 contradiction audit 已实现。
+M3.4：可审阅 synthesis proposal 已实现。
 
 ## What is working
 
@@ -38,6 +38,8 @@ M3.3：只读 contradiction audit 已实现。
 - Claim 支持结构化 `evidence[]`（来源、位置、摘录、supports/contradicts/context、理由）、`applicability[]`、`confidence` 与 `uncertainty`。
 - 规则 compile 只生成 context evidence；model claim 必须提供完整 evidence/applicability/uncertainty，旧 Markdown 仍保持兼容读取。
 - `gm audit contradictions` 报告 canonical claim 内部正反 evidence 并存，以及跨 claim 的显式 `contradicts` relation；审计不裁决、不写入。
+- `gm synthesize` 从至少两个 canonical claim 生成仅汇总显式材料的 synthesis candidate，保留输入来源和 relation。
+- Synthesis approval 前重验所有输入 claim hash；输入变化时拒绝批准，不生成自动/夜间任务。
 
 ## What is being implemented
 
@@ -73,10 +75,11 @@ M3.3：只读 contradiction audit 已实现。
 - ADR 0007 确定模型输出通过外部 candidate 导入，不由仓库默认调用 provider，并保留最小可复现审计字段。
 - ADR 0008 确定 claim 的证据方向、适用范围、置信度与不确定性分别表达，不以单一状态抹平冲突。
 - ADR 0009 确定 contradiction audit 只呈现显式冲突，保持人工决定和 proposal gate。
+- ADR 0010 确定 synthesis 只整理显式材料并锁定输入 hash，仍由人工批准。
 
 ## Next concrete task
 
-设计周期 synthesis proposal：从显式证据和冲突生成候选综合，但保持可追溯来源、明确不确定性并经人工批准。
+设计 serendipity proposal：基于明确、可解释的共享来源、relation 或关键词重叠发现候选关联；只产 proposal，不自动建边。
 
 ## Do not do yet
 

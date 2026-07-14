@@ -83,6 +83,10 @@ evidence:
 
 `gm audit contradictions` 以 `evidence[].stance` 中同一 claim 的 `supports` 与 `contradicts` 并存、以及 claim `relations` 中类型为 `contradicts` 的边为输入。它是只读报告，不新增冲突字段，也不自动变更 claim status。
 
+## Synthesis proposal
+
+`synthesis` 是 canonical knowledge 对象类型。`deterministic_synthesis` proposal 必须具有至少两个 `input_claims` 条目；每项保存输入 claim 的 `id`、仓库相对 `path`、完整 Markdown `sha256` 与生成时 `status`。Candidate 的 `source_ids` 是全部输入 claim 来源的去重并集，并以 `related_to` relation 指向每个输入 claim。审批前会重验每个输入路径、ID、类型和 hash；变化时必须重新生成 proposal。
+
 ## 去重语义
 
 - source family identity：`source_kind + canonical_locator` 的 SHA-256 派生稳定 ID。

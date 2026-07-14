@@ -18,6 +18,7 @@ CANONICAL_DIRECTORIES = {
     "entity": "vault/knowledge/entities",
     "concept": "vault/knowledge/concepts",
     "claim": "vault/knowledge/claims",
+    "synthesis": "vault/knowledge/syntheses",
     "intuition": "vault/frontier/intuitions",
     "question": "vault/frontier/questions",
     "tension": "vault/frontier/tensions",
@@ -360,6 +361,186 @@ class ProposalService:
             proposal_id, self.repository.rel(proposal_path), self.repository.rel(candidate_path),
             self.repository.rel(target_path), action,
         )
+
+    def synthesize(self, claim_ids: list[str]) -> ProposalResult:
+        ordered_ids = list(dict.fromkeys(claim_ids))
+        if len(ordered_ids) < 2:
+            raise ValidationError("synthesis 至少需要两个不同的 canonical claim")
+        inputs: list[tuple[Path, dict[str, Any], str, str]] = []
+        source_ids: list[str] = []
+        for claim_id in ordered_ids:
+            path, metadata, body = self._canonical_target(claim_id)
+            if metadata.get("type") != "claim":
+                raise ValidationError(f"synthesis 只接受 claim: {claim_id}")
+            text = path.read_text(encoding="utf-8")
+            inputs.append((path, metadata, body, sha256_bytes(text.encode("utf-8"))))
+            for source_id in metadata.get("source_ids", []):
+                if source_id not in source_ids:
+                    source_ids.append(source_id)
+        input_claims = [
+            {
+                "id": metadata["id"],
+                "path": self.repository.rel(path),
+                "sha256": digest,
+                "status": metadata.get("status"),
+            }
+            for path, metadata, _, digest in inputs
+        ]
+        digest = hashlib.sha256(
+            "\n".join(f"{item['id']}\n{item['sha256']}" for item in input_claims).encode("utf-8")
+        ).hexdigest()
+        target_id = f"synthesis_{digest[:24]}"
+        title = f"待审综合：{len(inputs)} 个主张"
+        target_path = (
+            self.repository.root / CANONICAL_DIRECTORIES["synthesis"]
+            / f"{target_id}-{slugify(title)}.md"
+        )
+        proposal_id = f"proposal_{digest[:24]}"
+        proposal_path = self.repository.root / "vault" / "proposals" / f"proposal-{proposal_id}.md"
+        candidate_path = self.repository.root / "vault" / "proposals" / f"candidate-{proposal_id}.md"
+        if proposal_path.exists():
+            existing, _ = read_document(proposal_path)
+            return ProposalResult(
+                proposal_id, self.repository.rel(proposal_path), existing["candidate_path"],
+                existing["target_path"], existing["action"],
+            )
+
+        sections: list[str] = []
+        for path, metadata, body, _ in inputs:
+            sections.append(
+                f"### [[{self.repository.rel(path)[:-3]}|{metadata['id']}]]\n\n"
+                f"- 状态：`{metadata.get('status')}`\n"
+                f"- 来源：{', '.join(f'`{source_id}`' for source_id in metadata.get('source_ids', [])) or 'none'}\n"
+                f"- 适用条件：{'；'.join(metadata.get('applicability', [])) or '未结构化'}\n"
+                f"- 不确定性：{metadata.get('uncertainty', '未结构化')}\n"
+            )
+            evidence = metadata.get("evidence", [])
+            if evidence:
+                sections.append("- 显式证据：\n")
+                for item in evidence:
+                    sections.append(
+                        f"  - [{item['stance']}] `{item['source_id']}`，{item['location']}："
+                        f"{item['excerpt']}（{item['reason']}）\n"
+                    )
+            contradictions = [
+                relation for relation in metadata.get("relations", [])
+                if relation.get("type") == "contradicts" and relation.get("target_id") in ordered_ids
+            ]
+            if contradictions:
+                sections.append("- 显式冲突关系：\n")
+                for relation in contradictions:
+                    sections.append(
+                        f"  - 与 `{relation['target_id']}`：{relation['reason']}\n"
+                    )
+            sections.append("\n")
+        timestamp = now_iso()
+        candidate_metadata = {
+            "id": target_id,
+            "type": "synthesis",
+            "status": "proposal",
+            "title": title,
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "aliases": [],
+            "tags": [],
+            "domains": [],
+            "confidence": "unknown",
+            "source_ids": source_ids,
+            "relations": [
+                {"type": "related_to", "target_id": item["id"], "reason": "本综合以该主张为输入"}
+                for item in input_claims
+            ],
+            "input_claims": input_claims,
+            "synthesis_method": "deterministic-explicit-evidence-v1",
+            "uncertainty": "本综合只整理显式材料，不判断证据权重、不解决矛盾，也不产生新的事实结论。",
+        }
+        candidate_body = (
+            f"# {title}\n\n"
+            "## 综合边界\n\n"
+            "本候选只汇总输入 claim 已显式记录的来源、证据方向、适用条件与冲突。"
+            "它不自动裁决矛盾、不合并观点，也不把摘录升级为新事实。\n\n"
+            "## 输入主张\n\n"
+            + "".join(sections)
+            + "## 待人工判断\n\n"
+            "- 哪些证据在当前问题和适用范围内更相关？\n"
+            "- 是否需要创建 contested、superseded 或新的 claim/update proposal？\n"
+            "- 是否存在尚未捕获的反例、边界条件或原始材料？\n"
+        )
+        candidate_text = render_document(candidate_metadata, candidate_body)
+        candidate_hash = sha256_bytes(candidate_text.encode("utf-8"))
+        self.repository.immutable_write(candidate_path, candidate_text.encode("utf-8"))
+        diff = "".join(
+            difflib.unified_diff(
+                [], candidate_text.splitlines(keepends=True),
+                fromfile="/dev/null", tofile=self.repository.rel(target_path),
+            )
+        )
+        proposal_metadata = {
+            "id": proposal_id,
+            "type": "proposal",
+            "status": "pending",
+            "title": title,
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "aliases": [],
+            "tags": [],
+            "domains": [],
+            "confidence": "unknown",
+            "source_ids": source_ids,
+            "relations": [],
+            "proposal_kind": "deterministic_synthesis",
+            "processor": "deterministic-explicit-evidence-v1",
+            "action": "create",
+            "target_id": target_id,
+            "target_path": self.repository.rel(target_path),
+            "base_path": None,
+            "base_sha256": None,
+            "candidate_path": self.repository.rel(candidate_path),
+            "candidate_sha256": candidate_hash,
+            "input_claims": input_claims,
+            "reviewed_at": None,
+            "review_reason": None,
+        }
+        proposal_body = (
+            f"# {title}\n\n"
+            "## 综合输入\n\n"
+            + "".join(
+                f"- `{item['id']}`：`{item['sha256']}`（状态：`{item['status']}`）\n"
+                for item in input_claims
+            )
+            + "- 审批前会重新校验所有输入 claim 的哈希；任何变化都会阻止批准。\n\n"
+            "## Content Diff\n\n"
+            f"```diff\n{diff.rstrip()}\n```\n"
+        )
+        self.repository.immutable_write(
+            proposal_path, render_document(proposal_metadata, proposal_body).encode("utf-8")
+        )
+        self.repository.append_event(
+            "proposal-events",
+            {"event": "synthesis-proposed", "proposal_id": proposal_id, "input_claim_ids": ordered_ids},
+        )
+        return ProposalResult(
+            proposal_id, self.repository.rel(proposal_path), self.repository.rel(candidate_path),
+            self.repository.rel(target_path), "create",
+        )
+
+    def _validate_synthesis_inputs(self, proposal: dict[str, Any]) -> None:
+        inputs = proposal.get("input_claims")
+        if not isinstance(inputs, list) or len(inputs) < 2:
+            raise ValidationError("synthesis proposal 缺少至少两个 input_claims")
+        for item in inputs:
+            if not isinstance(item, dict) or not item.get("id") or not item.get("path") or not item.get("sha256"):
+                raise ValidationError("synthesis proposal input_claims 条目无效")
+            path = self.repository.resolve_inside(str(item["path"]))
+            if not path.is_file():
+                raise ValidationError(f"synthesis 输入 claim 不存在: {item['id']}")
+            metadata, _ = read_document(path)
+            if metadata.get("id") != item["id"] or metadata.get("type") != "claim":
+                raise ValidationError(f"synthesis 输入 claim 身份无效: {item['id']}")
+            if sha256_bytes(path.read_bytes()) != item["sha256"]:
+                raise ValidationError(
+                    "synthesis 输入 claim 在 proposal 创建后已变化；请重新生成综合"
+                )
 
     def create_source_refresh(
         self,
@@ -850,6 +1031,8 @@ class ProposalService:
         candidate, body = read_document(candidate_path)
         if candidate.get("status") != "proposal" or candidate.get("id") != proposal["target_id"]:
             raise ValidationError("candidate 身份或状态无效")
+        if proposal.get("proposal_kind") == "deterministic_synthesis":
+            self._validate_synthesis_inputs(proposal)
         target_path = self.repository.resolve_inside(proposal["target_path"])
         target_before_sha256: str | None = None
         if proposal["action"] == "create" and target_path.exists():

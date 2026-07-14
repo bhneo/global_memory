@@ -37,6 +37,7 @@ gm propose-update <canonical-id> --from-file candidate.md --reason "新证据改
 gm search "原始文字"
 gm lint
 gm audit contradictions
+gm synthesize <claim-id-1> <claim-id-2>
 gm backup manifest
 gm backup create D:\GlobalMemoryRawBackup
 gm backup verify D:\GlobalMemoryRawBackup
@@ -71,6 +72,7 @@ gm doctor
 - `gm rebuild-index`：从文件重建 SQLite FTS5。
 - `gm lint`：只读检查 wikilink/relation、claim 来源、raw 哈希、proposal/candidate/base 完整性；孤立 canonical 页面以 warning 报告。
 - `gm audit contradictions`：只读报告同一 claim 内正反 evidence 并存，以及 claim 之间显式 `contradicts` relation；不自动裁决或修改状态。
+- `gm synthesize <claim-id> ...`：从至少两个 canonical claim 生成可审阅 synthesis proposal；审批前重验所有输入 claim 哈希。
 - `gm backup manifest [--output <path>]`：生成整个 `vault/raw/` 的 SHA-256 manifest；默认写入本地 `data/backups/`。
 - `gm backup create <外部目录>`：增量复制 raw source record 与 content/blob；已存在同 hash 文件跳过，不覆盖冲突文件。
 - `gm backup verify <外部目录>`：校验备份 manifest、文件大小和 SHA-256。
@@ -124,6 +126,12 @@ Canonical approve 在写入任何 target 前，会原子创建 `system/recovery/
 ## Contradiction audit
 
 `gm audit contradictions` 只扫描 canonical claim。输出保留产生冲突的 evidence（来源、位置、摘录、理由）和显式 relation 的双方路径及理由。正反 evidence 并存是需要审阅的认知信号，不是 schema 错误；audit 始终不写入 Markdown、不改变 confidence/status，也不选择任何一方为真。
+
+## Synthesis proposal
+
+`gm synthesize` 接受至少两个 canonical claim，生成 `synthesis` candidate 与 content diff。候选只汇总已显式记录的来源、evidence、适用条件、不确定性和 `contradicts` relation，并列出待人工判断的问题；它不产生新的事实结论或自动解决冲突。
+
+Proposal 记录每个输入 claim 的路径、状态和 SHA-256。审批前若任一输入发生变化，批准会拒绝并要求重新执行 synthesize；成功批准后 synthesis 仍带 `source_ids` 和与输入 claim 的 `related_to` relation。当前由用户显式运行，不包含自动/夜间调度。
 
 恢复采用 roll forward：当前文件必须仍是 journal 记录的写前或写后状态。若用户在中断后又修改了 target/proposal，恢复会返回 blocked 并保留 journal，不会覆盖第三种状态。Recovery journal 含可能敏感的候选正文，仅保存在本地并由 `.gitignore` 排除。
 

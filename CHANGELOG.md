@@ -2,6 +2,14 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.11.0] - 2026-07-14
+
+### Added
+
+- 新增 `gm synthesize <claim-id> ...`，从至少两个 canonical claim 创建可审阅的 synthesis proposal。
+- Synthesis 只汇总显式 evidence、范围、不确定性和冲突，不自动推断新事实或解决矛盾。
+- Proposal 固化输入 claim hash；审批前任一输入变化都会拒绝批准并要求重新生成综合。
+
 ## [0.10.0] - 2026-07-14
 
 ### Added

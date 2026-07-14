@@ -582,6 +582,53 @@ def test_contradiction_audit_cli_arguments() -> None:
     assert args.audit_command == "contradictions"
 
 
+def test_synthesis_proposal_preserves_inputs_and_requires_approval(repo: Repository) -> None:
+    first_capture, first_path = create_approved_claim(repo, "First synthesis input.")
+    second_capture, second_path = create_approved_claim(repo, "Second synthesis input.")
+    first, _ = read_document(first_path)
+    second, _ = read_document(second_path)
+    service = ProposalService(repo)
+
+    proposal = service.synthesize([first["id"], second["id"]])
+    assert proposal.action == "create"
+    assert not (repo.root / proposal.target_path).exists()
+    _, metadata, body = repo.find_document(proposal.proposal_id)
+    assert metadata["proposal_kind"] == "deterministic_synthesis"
+    assert [item["id"] for item in metadata["input_claims"]] == [first["id"], second["id"]]
+    assert first_capture.source_id in metadata["source_ids"]
+    assert second_capture.source_id in metadata["source_ids"]
+    assert "不自动裁决矛盾" in body
+    assert lint(repo)["ok"] is True
+
+    service.approve(proposal.proposal_id)
+    synthesis, synthesis_body = read_document(repo.root / proposal.target_path)
+    assert synthesis["type"] == "synthesis"
+    assert synthesis["approved_via"] == proposal.proposal_id
+    assert first["id"] in synthesis_body
+    assert second["id"] in synthesis_body
+
+
+def test_synthesis_approval_rejects_changed_input_claim(repo: Repository) -> None:
+    _, first_path = create_approved_claim(repo, "Mutable synthesis input.")
+    _, second_path = create_approved_claim(repo, "Stable synthesis input.")
+    first, first_body = read_document(first_path)
+    second, _ = read_document(second_path)
+    proposal = ProposalService(repo).synthesize([first["id"], second["id"]])
+
+    first_path.write_text(
+        render_document(first, first_body.replace("Mutable synthesis input.", "Human changed input.")),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValidationError, match="输入 claim 在 proposal 创建后已变化"):
+        ProposalService(repo).approve(proposal.proposal_id)
+    assert not (repo.root / proposal.target_path).exists()
+
+
+def test_synthesize_cli_arguments() -> None:
+    args = build_parser().parse_args(["synthesize", "claim_one", "claim_two"])
+    assert args.claim_ids == ["claim_one", "claim_two"]
+
+
 def test_unapproved_proposal_does_not_touch_canonical(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Evidence should remain traceable.")
     proposal = ProposalService(repo).compile(captured.source_id)

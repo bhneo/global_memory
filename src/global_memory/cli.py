@@ -52,6 +52,8 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("inbox", help="列出尚未 compile 的来源")
     compile_parser = commands.add_parser("compile", help="为来源生成 proposal")
     compile_parser.add_argument("source_id")
+    synthesize = commands.add_parser("synthesize", help="从多个 canonical claim 生成待审综合 proposal")
+    synthesize.add_argument("claim_ids", nargs="+")
     update_parser = commands.add_parser(
         "propose-update", help="从 UTF-8 Markdown candidate 创建 canonical update proposal"
     )
@@ -297,6 +299,27 @@ def lint(repository: Repository) -> dict[str, object]:
                         errors.append(f"model proposal 输入哈希不匹配: {repository.rel(path)}")
                     if input_source_id not in proposal.get("source_ids", []):
                         errors.append(f"model proposal 未保留输入 source_id: {repository.rel(path)}")
+        if proposal_kind == "deterministic_synthesis":
+            input_claims = proposal.get("input_claims")
+            if not isinstance(input_claims, list) or len(input_claims) < 2:
+                errors.append(f"synthesis proposal 缺少至少两个 input_claims: {repository.rel(path)}")
+            else:
+                for item in input_claims:
+                    if not isinstance(item, dict) or not item.get("id") or not item.get("path") or not item.get("sha256"):
+                        errors.append(f"synthesis proposal input_claims 条目无效: {repository.rel(path)}")
+                        continue
+                    try:
+                        input_path = repository.resolve_inside(str(item["path"]))
+                        if not input_path.is_file():
+                            errors.append(f"synthesis 输入 claim 不存在: {repository.rel(path)} -> {item['id']}")
+                            continue
+                        input_metadata, _ = read_document(input_path)
+                        if input_metadata.get("id") != item["id"] or input_metadata.get("type") != "claim":
+                            errors.append(f"synthesis 输入 claim 身份无效: {repository.rel(path)} -> {item['id']}")
+                        elif sha256_bytes(input_path.read_bytes()) != item["sha256"]:
+                            errors.append(f"synthesis 输入 claim 哈希不匹配: {repository.rel(path)} -> {item['id']}")
+                    except Exception as exc:
+                        errors.append(f"synthesis 输入 claim 路径无效: {repository.rel(path)}: {exc}")
         for key in ("candidate_path", "candidate_sha256", "target_id", "target_path", "action"):
             if not proposal.get(key):
                 errors.append(f"proposal 缺少 {key}: {repository.rel(path)}")
@@ -442,6 +465,8 @@ def run(args: argparse.Namespace) -> int:
         _print(proposals.inbox())
     elif args.command == "compile":
         _print(proposals.compile(args.source_id).__dict__)
+    elif args.command == "synthesize":
+        _print(proposals.synthesize(args.claim_ids).__dict__)
     elif args.command == "propose-update":
         _print(
             proposals.propose_update(
