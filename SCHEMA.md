@@ -87,6 +87,10 @@ evidence:
 
 `synthesis` 是 canonical knowledge 对象类型。`deterministic_synthesis` proposal 必须具有至少两个 `input_claims` 条目；每项保存输入 claim 的 `id`、仓库相对 `path`、完整 Markdown `sha256` 与生成时 `status`。Candidate 的 `source_ids` 是全部输入 claim 来源的去重并集，并以 `related_to` relation 指向每个输入 claim。审批前会重验每个输入路径、ID、类型和 hash；变化时必须重新生成 proposal。
 
+## Relation discovery proposal
+
+`relation_discovery` 是无 candidate 的审阅 proposal，不写入 canonical。它保存 `discovery_inputs`（seed 与全部候选 claim 的 `id`、`path`、`sha256`）和 `discovery_candidates`。每个候选包含可解释 `signals`：`shared_source_ids`、`shared_tags`、`shared_relation_targets`、`shared_keywords`，以及由这些信号确定性计算的 `score`。批准前重验输入 hash；批准仅记录审阅结果，不自动添加 relation。
+
 ## 去重语义
 
 - source family identity：`source_kind + canonical_locator` 的 SHA-256 派生稳定 ID。

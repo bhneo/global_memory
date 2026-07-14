@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import difflib
 import hashlib
+import json
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -47,6 +49,14 @@ class RefreshProposalResult:
     proposal_path: str
     previous_source_id: str
     new_source_id: str
+
+
+@dataclass(frozen=True)
+class DiscoveryResult:
+    seed_id: str
+    proposal_id: str | None
+    proposal_path: str | None
+    candidate_count: int
 
 
 class ProposalService:
@@ -542,6 +552,155 @@ class ProposalService:
                     "synthesis 输入 claim 在 proposal 创建后已变化；请重新生成综合"
                 )
 
+    @staticmethod
+    def _discovery_keywords(metadata: dict[str, Any]) -> set[str]:
+        text = " ".join([str(metadata.get("title", "")), *map(str, metadata.get("tags", []))])
+        tokens = {token.lower() for token in re.findall(r"[A-Za-z][A-Za-z0-9_-]{2,}", text)}
+        generic = {"主张", "来源", "证据", "内容", "人工", "知识", "确认", "系统", "当前", "输入", "输出"}
+        for phrase in re.findall(r"[\u4e00-\u9fff]{2,}", text):
+            tokens.update(
+                phrase[index:index + 2]
+                for index in range(len(phrase) - 1)
+                if phrase[index:index + 2] not in generic
+            )
+        return tokens
+
+    def discover(self, seed_id: str) -> DiscoveryResult:
+        seed_path, seed, _ = self._canonical_target(seed_id)
+        if seed.get("type") != "claim":
+            raise ValidationError(f"discover 只接受 canonical claim: {seed_id}")
+        seed_hash = sha256_bytes(seed_path.read_bytes())
+        seed_sources = set(seed.get("source_ids", []))
+        seed_tags = set(seed.get("tags", []))
+        seed_targets = {
+            relation["target_id"] for relation in seed.get("relations", [])
+            if isinstance(relation, dict) and relation.get("target_id")
+        }
+        seed_keywords = self._discovery_keywords(seed)
+        candidates: list[dict[str, Any]] = []
+        for path in self.repository.canonical_documents():
+            metadata, _ = read_document(path)
+            if metadata.get("type") != "claim" or metadata.get("id") == seed_id:
+                continue
+            shared_sources = sorted(seed_sources & set(metadata.get("source_ids", [])))
+            shared_tags = sorted(seed_tags & set(metadata.get("tags", [])))
+            targets = {
+                relation["target_id"] for relation in metadata.get("relations", [])
+                if isinstance(relation, dict) and relation.get("target_id")
+            }
+            shared_targets = sorted(seed_targets & targets)
+            shared_keywords = sorted(seed_keywords & self._discovery_keywords(metadata))
+            if not (shared_sources or shared_tags or shared_targets or shared_keywords):
+                continue
+            signals = {
+                "shared_source_ids": shared_sources,
+                "shared_tags": shared_tags,
+                "shared_relation_targets": shared_targets,
+                "shared_keywords": shared_keywords,
+            }
+            score = (
+                5 * len(shared_sources) + 3 * len(shared_targets)
+                + 2 * len(shared_tags) + len(shared_keywords)
+            )
+            candidates.append({
+                "id": metadata["id"], "path": self.repository.rel(path),
+                "sha256": sha256_bytes(path.read_bytes()), "status": metadata.get("status"),
+                "title": metadata.get("title"), "score": score, "signals": signals,
+            })
+        candidates.sort(key=lambda item: (-int(item["score"]), str(item["id"])))
+        if not candidates:
+            return DiscoveryResult(seed_id, None, None, 0)
+        discovery_inputs = [
+            {"id": seed_id, "path": self.repository.rel(seed_path), "sha256": seed_hash}
+        ] + [
+            {"id": item["id"], "path": item["path"], "sha256": item["sha256"]}
+            for item in candidates
+        ]
+        digest = hashlib.sha256(json.dumps(
+            {"seed": seed_id, "seed_sha256": seed_hash, "candidates": candidates},
+            ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        ).encode("utf-8")).hexdigest()
+        proposal_id = f"proposal_{digest[:24]}"
+        proposal_path = self.repository.root / "vault" / "proposals" / f"proposal-{proposal_id}.md"
+        if proposal_path.exists():
+            return DiscoveryResult(seed_id, proposal_id, self.repository.rel(proposal_path), len(candidates))
+        timestamp = now_iso()
+        metadata = {
+            "id": proposal_id,
+            "type": "proposal",
+            "status": "pending",
+            "title": f"关联候选：{seed['title']}",
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "aliases": [], "tags": [], "domains": [], "confidence": "unknown",
+            "source_ids": seed.get("source_ids", []),
+            "relations": [
+                {"type": "related_to", "target_id": item["id"], "reason": "确定性关联发现候选，等待人工审阅"}
+                for item in candidates
+            ],
+            "proposal_kind": "relation_discovery",
+            "processor": "deterministic-explainable-discovery-v1",
+            "action": "review_relation_candidates",
+            "target_id": seed_id,
+            "target_path": self.repository.rel(seed_path),
+            "discovery_inputs": discovery_inputs,
+            "discovery_candidates": candidates,
+            "reviewed_at": None,
+            "review_reason": None,
+        }
+        body_lines = [
+            f"# {metadata['title']}", "", "## 审阅边界", "",
+            "此 proposal 只报告可解释的关联候选；批准不会自动写入 relation。",
+            "如认为关联成立，应另行创建受治理的 canonical update proposal。", "",
+            "## Seed", "", f"- [[{self.repository.rel(seed_path)[:-3]}|{seed_id}]]", "",
+            "## 候选关联", "",
+        ]
+        for item in candidates:
+            signals = item["signals"]
+            body_lines.extend([
+                f"### [[{str(item['path'])[:-3]}|{item['id']}]]", "",
+                f"- 标题：{item['title']}", f"- 状态：`{item['status']}`", f"- 可解释分数：`{item['score']}`",
+            ])
+            for key, label in (
+                ("shared_source_ids", "共享来源"), ("shared_relation_targets", "共享关系目标"),
+                ("shared_tags", "共享标签"), ("shared_keywords", "共享关键词"),
+            ):
+                values = signals[key]
+                if values:
+                    body_lines.append(f"- {label}：{', '.join(f'`{value}`' for value in values)}")
+            body_lines.append("")
+        body_lines.extend([
+            "## 输入完整性", "",
+            "审批前会重新校验 seed 与全部候选 claim 的 hash；任何变化都会阻止确认。",
+        ])
+        self.repository.immutable_write(
+            proposal_path, render_document(metadata, "\n".join(body_lines)).encode("utf-8")
+        )
+        self.repository.append_event(
+            "proposal-events",
+            {"event": "relation-discovery-proposed", "proposal_id": proposal_id, "seed_id": seed_id,
+             "candidate_ids": [item["id"] for item in candidates]},
+        )
+        return DiscoveryResult(seed_id, proposal_id, self.repository.rel(proposal_path), len(candidates))
+
+    def _validate_discovery_inputs(self, proposal: dict[str, Any]) -> None:
+        inputs = proposal.get("discovery_inputs")
+        if not isinstance(inputs, list) or len(inputs) < 2:
+            raise ValidationError("relation discovery proposal 缺少 discovery_inputs")
+        for item in inputs:
+            if not isinstance(item, dict) or not item.get("id") or not item.get("path") or not item.get("sha256"):
+                raise ValidationError("relation discovery input 条目无效")
+            path = self.repository.resolve_inside(str(item["path"]))
+            if not path.is_file():
+                raise ValidationError(f"relation discovery 输入 claim 不存在: {item['id']}")
+            metadata, _ = read_document(path)
+            if metadata.get("id") != item["id"] or metadata.get("type") != "claim":
+                raise ValidationError(f"relation discovery 输入 claim 身份无效: {item['id']}")
+            if sha256_bytes(path.read_bytes()) != item["sha256"]:
+                raise ValidationError(
+                    "relation discovery 输入 claim 在 proposal 创建后已变化；请重新发现关联"
+                )
+
     def create_source_refresh(
         self,
         previous_source_id: str,
@@ -1024,6 +1183,20 @@ class ProposalService:
                 },
             )
             return self.repository.rel(target_path)
+        if proposal.get("proposal_kind") == "relation_discovery":
+            self._validate_discovery_inputs(proposal)
+            approved_at = now_iso()
+            proposal["status"] = "approved"
+            proposal["updated_at"] = approved_at
+            proposal["reviewed_at"] = approved_at
+            proposal["review_reason"] = "人工确认已审阅关联候选；未自动写入 canonical relation"
+            atomic_write_text(proposal_path, render_document(proposal, proposal_body))
+            self.repository.append_event(
+                "proposal-events",
+                {"event": "relation-discovery-reviewed", "proposal_id": proposal_id,
+                 "seed_id": proposal["target_id"]},
+            )
+            return self.repository.rel(proposal_path)
         candidate_path = self.repository.resolve_inside(proposal["candidate_path"])
         candidate_text = candidate_path.read_text(encoding="utf-8")
         if sha256_bytes(candidate_text.encode("utf-8")) != proposal["candidate_sha256"]:

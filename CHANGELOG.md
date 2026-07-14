@@ -2,6 +2,14 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.12.0] - 2026-07-14
+
+### Added
+
+- 新增 `gm discover <claim-id>`，基于共享来源、标签、关系目标和确定性关键词生成可解释关联候选。
+- Discovery proposal 固化 seed/候选 claim hash，审阅期间输入变化会拒绝批准。
+- 批准 discovery 仅记录已审阅，不自动写入或修改 canonical relation。
+
 ## [0.11.0] - 2026-07-14
 
 ### Added

@@ -54,6 +54,8 @@ def build_parser() -> argparse.ArgumentParser:
     compile_parser.add_argument("source_id")
     synthesize = commands.add_parser("synthesize", help="从多个 canonical claim 生成待审综合 proposal")
     synthesize.add_argument("claim_ids", nargs="+")
+    discover = commands.add_parser("discover", help="为 canonical claim 生成可解释的关联候选 proposal")
+    discover.add_argument("seed_id")
     update_parser = commands.add_parser(
         "propose-update", help="从 UTF-8 Markdown candidate 创建 canonical update proposal"
     )
@@ -320,6 +322,31 @@ def lint(repository: Repository) -> dict[str, object]:
                             errors.append(f"synthesis 输入 claim 哈希不匹配: {repository.rel(path)} -> {item['id']}")
                     except Exception as exc:
                         errors.append(f"synthesis 输入 claim 路径无效: {repository.rel(path)}: {exc}")
+        if proposal_kind == "relation_discovery":
+            discovery_inputs = proposal.get("discovery_inputs")
+            discovery_candidates = proposal.get("discovery_candidates")
+            if not isinstance(discovery_inputs, list) or len(discovery_inputs) < 2:
+                errors.append(f"relation discovery 缺少 discovery_inputs: {repository.rel(path)}")
+            if not isinstance(discovery_candidates, list) or not discovery_candidates:
+                errors.append(f"relation discovery 缺少 discovery_candidates: {repository.rel(path)}")
+            if isinstance(discovery_inputs, list):
+                for item in discovery_inputs:
+                    if not isinstance(item, dict) or not item.get("id") or not item.get("path") or not item.get("sha256"):
+                        errors.append(f"relation discovery 输入条目无效: {repository.rel(path)}")
+                        continue
+                    try:
+                        input_path = repository.resolve_inside(str(item["path"]))
+                        if not input_path.is_file():
+                            errors.append(f"relation discovery 输入 claim 不存在: {repository.rel(path)} -> {item['id']}")
+                            continue
+                        input_metadata, _ = read_document(input_path)
+                        if input_metadata.get("id") != item["id"] or input_metadata.get("type") != "claim":
+                            errors.append(f"relation discovery 输入 claim 身份无效: {repository.rel(path)} -> {item['id']}")
+                        elif sha256_bytes(input_path.read_bytes()) != item["sha256"]:
+                            errors.append(f"relation discovery 输入 claim 哈希不匹配: {repository.rel(path)} -> {item['id']}")
+                    except Exception as exc:
+                        errors.append(f"relation discovery 输入 claim 路径无效: {repository.rel(path)}: {exc}")
+            continue
         for key in ("candidate_path", "candidate_sha256", "target_id", "target_path", "action"):
             if not proposal.get(key):
                 errors.append(f"proposal 缺少 {key}: {repository.rel(path)}")
@@ -467,6 +494,8 @@ def run(args: argparse.Namespace) -> int:
         _print(proposals.compile(args.source_id).__dict__)
     elif args.command == "synthesize":
         _print(proposals.synthesize(args.claim_ids).__dict__)
+    elif args.command == "discover":
+        _print(proposals.discover(args.seed_id).__dict__)
     elif args.command == "propose-update":
         _print(
             proposals.propose_update(

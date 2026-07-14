@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M3.4：可审阅 synthesis proposal 已实现。
+M3：高质量编译与认知治理的第一版闭环已完成。
 
 ## What is working
 
@@ -40,6 +40,8 @@ M3.4：可审阅 synthesis proposal 已实现。
 - `gm audit contradictions` 报告 canonical claim 内部正反 evidence 并存，以及跨 claim 的显式 `contradicts` relation；审计不裁决、不写入。
 - `gm synthesize` 从至少两个 canonical claim 生成仅汇总显式材料的 synthesis candidate，保留输入来源和 relation。
 - Synthesis approval 前重验所有输入 claim hash；输入变化时拒绝批准，不生成自动/夜间任务。
+- `gm discover` 以共享 source、tags、relation target 和关键词生成关联候选，保留可解释信号与输入 hash。
+- Relation discovery approve 只记录已审阅，绝不自动修改 canonical relation；采纳关系仍须独立 update proposal。
 
 ## What is being implemented
 
@@ -76,10 +78,11 @@ M3.4：可审阅 synthesis proposal 已实现。
 - ADR 0008 确定 claim 的证据方向、适用范围、置信度与不确定性分别表达，不以单一状态抹平冲突。
 - ADR 0009 确定 contradiction audit 只呈现显式冲突，保持人工决定和 proposal gate。
 - ADR 0010 确定 synthesis 只整理显式材料并锁定输入 hash，仍由人工批准。
+- ADR 0011 确定 serendipity discovery 必须可解释、输入 hash 锁定，并与 canonical relation 写入分离。
 
 ## Next concrete task
 
-设计 serendipity proposal：基于明确、可解释的共享来源、relation 或关键词重叠发现候选关联；只产 proposal，不自动建边。
+设计 Context Pack：按明确 query 与 token budget 选择少量 source/claim/synthesis，保留来源和选择理由，不替代检索或真相层。
 
 ## Do not do yet
 

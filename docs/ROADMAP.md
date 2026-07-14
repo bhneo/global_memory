@@ -26,7 +26,7 @@
 - Claim 定位、矛盾证据、适用条件和不确定性 schema。（已完成）
 - Contradiction audit。（已完成）
 - 可审阅 synthesis proposal。（已完成；自动周期调度暂缓）
-- serendipity proposal。
+- serendipity proposal。（已完成：可解释 relation discovery，自动建边暂缓）
 - 人工修订 candidate 后创建新 proposal/hash 的明确工作流。（已完成）
 
 ## M4 — 渐进式检索

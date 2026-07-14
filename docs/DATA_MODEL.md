@@ -33,6 +33,8 @@ Claim 至少通过 `source_ids` 指向来源。新 claim 使用结构化 `eviden
 
 Synthesis 是可批准的 canonical knowledge 对象，不是 audit 缓存。它从至少两个 claim 的显式材料生成，保存输入 claim ID/path/hash/status、聚合后的 `source_ids`，并以 `related_to` relation 保留输入边。输入 hash 在 approval 前重新验证，因此综合不会基于已改变的 claim 静默落库。
 
+Relation discovery 是 proposal 元数据，不是知识图自动写入。它把 seed 与候选 claim 的可解释重叠信号和 hash 记录下来，供人决定是否另行创建关系更新 proposal。批准 relation discovery 不增加或删除任何 typed relation。
+
 ## 状态演化
 
 典型状态：`proposal → confirmed → contested → superseded|archived`。状态不是置信度；`confirmed` 只说明经过审批进入 canonical，不代表客观真理。变化必须更新 `updated_at`、`change_reason`，必要时设置 `superseded_by` 和 `valid_during`。

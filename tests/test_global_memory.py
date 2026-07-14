@@ -629,6 +629,76 @@ def test_synthesize_cli_arguments() -> None:
     assert args.claim_ids == ["claim_one", "claim_two"]
 
 
+def test_discovery_proposal_reports_explainable_shared_source_without_writing_relation(
+    repo: Repository
+) -> None:
+    captured, first_path = create_approved_claim(repo, "Shared source for discovery.")
+    first, _ = read_document(first_path)
+    second_metadata = {
+        "id": "claim_discovery_second",
+        "type": "claim",
+        "status": "confirmed",
+        "title": "来自同一来源的另一主张",
+        "created_at": "2026-07-14T23:00:00+08:00",
+        "updated_at": "2026-07-14T23:00:00+08:00",
+        "aliases": [], "tags": [], "domains": [], "confidence": "unknown",
+        "source_ids": [captured.source_id], "relations": [],
+    }
+    second_path = repo.root / "vault" / "knowledge" / "claims" / "claim_discovery_second.md"
+    second_path.write_text(render_document(second_metadata, "Second discovery claim."), encoding="utf-8")
+    repo.rebuild_index()
+    first_before = first_path.read_bytes()
+    second_before = second_path.read_bytes()
+    first_relations_before = read_document(first_path)[0]["relations"]
+    second_relations_before = read_document(second_path)[0]["relations"]
+
+    result = ProposalService(repo).discover(first["id"])
+    assert result.candidate_count == 1
+    assert result.proposal_id
+    _, metadata, body = repo.find_document(result.proposal_id)
+    assert metadata["proposal_kind"] == "relation_discovery"
+    assert metadata["discovery_candidates"][0]["id"] == "claim_discovery_second"
+    assert metadata["discovery_candidates"][0]["signals"]["shared_source_ids"] == [captured.source_id]
+    assert "共享来源" in body
+    assert lint(repo)["ok"] is True
+
+    approved_path = ProposalService(repo).approve(result.proposal_id)
+    assert approved_path == result.proposal_path
+    _, approved, _ = repo.find_document(result.proposal_id)
+    assert approved["status"] == "approved"
+    assert first_path.read_bytes() == first_before
+    assert second_path.read_bytes() == second_before
+    assert read_document(first_path)[0]["relations"] == first_relations_before
+    assert read_document(second_path)[0]["relations"] == second_relations_before
+
+
+def test_discovery_approval_rejects_changed_candidate_input(repo: Repository) -> None:
+    captured, first_path = create_approved_claim(repo, "Discovery stale seed.")
+    first, first_body = read_document(first_path)
+    second_metadata = {
+        "id": "claim_discovery_stale_second",
+        "type": "claim", "status": "confirmed", "title": "Discovery stale candidate",
+        "created_at": "2026-07-14T23:05:00+08:00", "updated_at": "2026-07-14T23:05:00+08:00",
+        "aliases": [], "tags": [], "domains": [], "confidence": "unknown",
+        "source_ids": [captured.source_id], "relations": [],
+    }
+    second_path = repo.root / "vault" / "knowledge" / "claims" / "claim_discovery_stale_second.md"
+    second_path.write_text(render_document(second_metadata, "Stale candidate."), encoding="utf-8")
+    repo.rebuild_index()
+    proposal = ProposalService(repo).discover(first["id"])
+    first_path.write_text(
+        render_document(first, first_body.replace("Discovery stale seed.", "Changed after discovery.")),
+        encoding="utf-8",
+    )
+    with pytest.raises(ValidationError, match="输入 claim 在 proposal 创建后已变化"):
+        ProposalService(repo).approve(proposal.proposal_id)
+
+
+def test_discover_cli_arguments() -> None:
+    args = build_parser().parse_args(["discover", "claim_seed"])
+    assert args.seed_id == "claim_seed"
+
+
 def test_unapproved_proposal_does_not_touch_canonical(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Evidence should remain traceable.")
     proposal = ProposalService(repo).compile(captured.source_id)
