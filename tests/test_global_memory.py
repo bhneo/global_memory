@@ -305,6 +305,21 @@ def test_context_pack_rejects_invalid_token_budget(repo: Repository) -> None:
         ContextPackService(repo).build("Context", token_budget=127)
 
 
+def test_context_pack_uses_only_the_latest_source_in_a_family(repo: Repository) -> None:
+    first = capture_web_bytes(
+        repo, "https://example.com/context-history", b"shared context version one"
+    )
+    second = capture_web_bytes(
+        repo, "https://example.com/context-history", b"shared context version two", refresh=True
+    )
+
+    pack = ContextPackService(repo).build("shared context", token_budget=400).as_dict()
+
+    selected_source_ids = {item["id"] for item in pack["items"] if item["type"] == "source"}
+    assert selected_source_ids == {second.source_id}
+    assert any(item["id"] == first.source_id and "旧版本" in item["reason"] for item in pack["omitted"])
+
+
 def test_lint_accepts_valid_truth_and_proposal_chain(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Lint checks provenance and proposal integrity.")
     proposal = ProposalService(repo).compile(captured.source_id)

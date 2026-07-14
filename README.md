@@ -76,7 +76,7 @@ gm doctor
 - `gm audit contradictions`：只读报告同一 claim 内正反 evidence 并存，以及 claim 之间显式 `contradicts` relation；不自动裁决或修改状态。
 - `gm synthesize <claim-id> ...`：从至少两个 canonical claim 生成可审阅 synthesis proposal；审批前重验所有输入 claim 哈希。
 - `gm discover <claim-id>`：依据共享来源、标签、关系目标和确定性关键词生成可解释的关联候选 proposal；不会自动添加 relation。
-- `gm context "<query>" [--token-budget 1200]`：从检索结果中确定性挑选少量 source、claim 与 synthesis，输出临时 Context Pack；每项带路径、文档 hash、来源链、入选理由和保守 token 估算。命令只读，不写入 Markdown、索引或日志，也不把命中升级为事实。
+- `gm context "<query>" [--token-budget 1200]`：从检索结果中确定性挑选少量 source、claim 与 synthesis，输出临时 Context Pack；每项带路径、文档 hash、来源链、入选理由和保守 token 估算。对直接入选的 source，默认只取每个 family 的最新版本；历史版本仍可通过 `search`/`show` 回溯。命令只读，不写入 Markdown、索引或日志，也不把命中升级为事实。
 - `gm backup manifest [--output <path>]`：生成整个 `vault/raw/` 的 SHA-256 manifest；默认写入本地 `data/backups/`。
 - `gm backup create <外部目录>`：增量复制 raw source record 与 content/blob；已存在同 hash 文件跳过，不覆盖冲突文件。
 - `gm backup verify <外部目录>`：校验备份 manifest、文件大小和 SHA-256。

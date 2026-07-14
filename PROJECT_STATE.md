@@ -53,7 +53,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 - URL 抓取只处理静态响应，不执行 JavaScript；网页正文仍可能包含 HTML 噪声。
 - 第一版 compile 是确定性开头摘录，只验证治理闭环，不等同于高质量知识抽取。
 - 二进制内容只保存和哈希，尚未提取 PDF、Office 或图片正文。
-- 搜索目前会同时返回同一 family 的多个版本，尚无 latest/accepted 过滤视图。
+- `search` 目前会同时返回同一 family 的多个版本；Context Pack 已默认过滤直接入选 source 的旧版本，但尚无通用 latest/accepted 搜索视图。
 - Blocked recovery journal 尚无自动解决命令，必须人工核验第三状态后决定重新提案或受控清理。
 
 ## Unresolved architectural questions

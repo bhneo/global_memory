@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .errors import ValidationError
+from .markdown import read_document
 from .repository import Repository, sha256_bytes
 
 
@@ -97,6 +98,22 @@ class ContextPackService:
         # Prefer reviewed interpretations over duplicated raw text, without hiding sources.
         return {"synthesis": 30, "claim": 20, "source": 10}.get(object_type, 0)
 
+    def _latest_source_ids(self) -> set[str]:
+        """Return the current source record for every append-only source family."""
+        latest: dict[str, tuple[tuple[int, str, str], str]] = {}
+        for path in self.repository.source_documents():
+            metadata, _ = read_document(path)
+            family = str(metadata.get("canonical_locator", metadata["id"]))
+            version_key = (
+                int(metadata.get("version_number", 1)),
+                str(metadata.get("captured_at", "")),
+                str(metadata["id"]),
+            )
+            existing = latest.get(family)
+            if existing is None or version_key > existing[0]:
+                latest[family] = (version_key, str(metadata["id"]))
+        return {item[1] for item in latest.values()}
+
     def build(self, query: str, token_budget: int = 1_200) -> ContextPack:
         query = query.strip()
         if not query:
@@ -106,11 +123,19 @@ class ContextPackService:
                 f"Context Pack token budget 必须介于 {MIN_TOKEN_BUDGET} 和 {MAX_TOKEN_BUDGET}"
             )
 
+        latest_source_ids = self._latest_source_ids()
         ranked: list[tuple[int, int, dict[str, Any]]] = []
+        omitted: list[dict[str, Any]] = []
         for search_rank, result in enumerate(self.repository.search(query, SEARCH_LIMIT), start=1):
             path, metadata, body = self.repository.find_document(result.id)
             object_type = str(metadata.get("type"))
             if object_type not in {"source", "claim", "synthesis"}:
+                continue
+            if object_type == "source" and str(metadata["id"]) not in latest_source_ids:
+                omitted.append({
+                    "id": str(metadata["id"]),
+                    "reason": "同一 source family 的旧版本；Context Pack 默认只选最新版本",
+                })
                 continue
             content = self._content(metadata, body)
             if not content:
@@ -129,6 +154,7 @@ class ContextPackService:
                     "document_sha256": sha256_bytes(path.read_bytes()),
                     "source_ids": source_ids,
                     "raw_content_sha256": metadata.get("content_sha256") if object_type == "source" else None,
+                    "source_version": int(metadata.get("version_number", 1)) if object_type == "source" else None,
                     "content": content,
                     "selection_reason": (
                         f"全文检索命中第 {search_rank} 位；"
@@ -140,7 +166,6 @@ class ContextPackService:
 
         available = token_budget - 48  # reserve room for outer query and policy metadata
         selected: list[dict[str, Any]] = []
-        omitted: list[dict[str, Any]] = []
         used = 0
         for _, _, item in ranked:
             metadata_text = " ".join(
