@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M2.4：proposal defer 与不可变 candidate revision 审阅闭环已实现。
+M2.5：只读 `gm lint` 完整性检查已实现。
 
 ## What is working
 
@@ -29,6 +29,8 @@ M2.4：proposal defer 与不可变 candidate revision 审阅闭环已实现。
 - `proposal defer` 暂缓审阅但保持后续 approve/reject/revise 能力。
 - `proposal revise` 创建新 candidate/proposal，旧 proposal 标记 superseded，并保留双向 lineage 与 typed relation。
 - Update revision 以 current canonical 重新建立 base，避免继承过期并发令牌。
+- `gm lint` 检查 metadata、失效 relation/wikilink、claim provenance、raw hash、proposal candidate/base/target/hash 和 revision lineage。
+- Lint 将损坏或失效引用报为 error；孤立 canonical 页面与未引用审阅快照报为 warning，且不修改仓库。
 
 ## What is being implemented
 
@@ -63,7 +65,7 @@ M2.4：proposal defer 与不可变 candidate revision 审阅闭环已实现。
 
 ## Next concrete task
 
-实现 `gm lint`：校验对象 schema、断链、孤立页面、无来源 claim、raw hash 以及 proposal/candidate/base 一致性。
+实现 raw manifest、增量备份与恢复演练，明确 Git、ignore 二进制和本地备份的边界。
 
 ## Do not do yet
 

@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from pathlib import Path
 
@@ -12,6 +13,10 @@ from .markdown import read_document
 from .proposals import ProposalService
 from .recovery import ApprovalRecoveryManager
 from .repository import Repository, sha256_bytes
+
+
+PROPOSAL_STATUSES = {"pending", "deferred", "superseded", "approved", "rejected"}
+WIKILINK_PATTERN = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
 
 
 def _repository(args: argparse.Namespace) -> Repository:
@@ -84,6 +89,7 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("status", help="显示仓库统计")
     commands.add_parser("rebuild-index", help="从 Markdown 与 raw source 重建 SQLite 索引")
     commands.add_parser("doctor", help="检查 schema、原始内容哈希和索引")
+    commands.add_parser("lint", help="只读检查链接、来源、raw 与 proposal 完整性")
     commands.add_parser("recover", help="幂等续做未完成的 canonical approval journal")
     return parser
 
@@ -147,6 +153,184 @@ def doctor(repository: Repository) -> dict[str, object]:
     }
 
 
+def lint(repository: Repository) -> dict[str, object]:
+    """Check truth-layer references without rebuilding or modifying the repository."""
+    errors: list[str] = []
+    warnings: list[str] = []
+    records: list[tuple[Path, dict[str, object], str, str]] = []
+    candidate_paths = sorted((repository.root / "vault" / "proposals").glob("candidate-*.md"))
+    document_paths = list(repository.all_indexed_documents()) + list(repository.proposal_documents())
+    for path in document_paths:
+        try:
+            metadata, body = read_document(path)
+            repository._validate_metadata(metadata, path)
+            records.append((path, metadata, body, "document"))
+        except Exception as exc:
+            errors.append(f"无法读取或校验对象 {repository.rel(path)}: {exc}")
+    for path in candidate_paths:
+        try:
+            metadata, body = read_document(path)
+            repository._validate_metadata(metadata, path)
+            records.append((path, metadata, body, "candidate"))
+        except Exception as exc:
+            errors.append(f"无法读取或校验 candidate {repository.rel(path)}: {exc}")
+
+    indexed = [(path, metadata, body) for path, metadata, body, role in records if role == "document"]
+    sources = {str(metadata["id"]) for _, metadata, _ in indexed if metadata.get("type") == "source"}
+    proposal_ids = {str(metadata["id"]) for _, metadata, _ in indexed if metadata.get("type") == "proposal"}
+    object_ids = {str(metadata["id"]) for _, metadata, _ in indexed if metadata.get("type") != "proposal"}
+    known_ids = sources | proposal_ids | object_ids
+    relation_targets: dict[str, int] = {object_id: 0 for object_id in known_ids}
+    referenced_candidates: set[Path] = set()
+    referenced_bases: set[Path] = set()
+
+    def check_source_ids(path: Path, metadata: dict[str, object]) -> None:
+        source_ids = metadata.get("source_ids", [])
+        if not isinstance(source_ids, list):
+            errors.append(f"source_ids 不是列表: {repository.rel(path)}")
+            return
+        if metadata.get("type") == "claim" and not source_ids:
+            errors.append(f"claim 缺少 source_ids: {repository.rel(path)}")
+        for source_id in source_ids:
+            if source_id not in sources:
+                errors.append(f"无效 source_id: {repository.rel(path)} -> {source_id}")
+
+    def check_wikilinks(path: Path, body: str) -> None:
+        for match in WIKILINK_PATTERN.finditer(body):
+            reference, object_id = match.groups()
+            if object_id:
+                if object_id not in known_ids:
+                    errors.append(f"失效 wikilink ID: {repository.rel(path)} -> {object_id}")
+                continue
+            relative = reference.strip()
+            candidate = repository.resolve_inside(relative)
+            if not candidate.suffix:
+                candidate = candidate.with_suffix(".md")
+            if not candidate.exists():
+                errors.append(f"失效 wikilink 路径: {repository.rel(path)} -> {reference}")
+
+    for path, metadata, body, _ in records:
+        check_source_ids(path, metadata)
+        relations = metadata.get("relations", [])
+        if isinstance(relations, list):
+            for relation in relations:
+                if not isinstance(relation, dict):
+                    continue
+                target_id = relation.get("target_id")
+                if target_id not in known_ids:
+                    errors.append(f"失效 relation: {repository.rel(path)} -> {target_id}")
+                else:
+                    relation_targets[str(target_id)] = relation_targets.get(str(target_id), 0) + 1
+        check_wikilinks(path, body)
+
+    for path, metadata, _ in indexed:
+        if metadata.get("type") == "source":
+            raw_path = metadata.get("raw_content_path")
+            if not raw_path:
+                errors.append(f"source 缺少 raw_content_path: {repository.rel(path)}")
+                continue
+            try:
+                raw = repository.resolve_inside(str(raw_path))
+                if not raw.exists():
+                    errors.append(f"缺少 raw 内容: {repository.rel(path)} -> {raw_path}")
+                elif sha256_bytes(raw.read_bytes()) != metadata.get("content_sha256"):
+                    errors.append(f"raw 内容哈希不匹配: {repository.rel(path)}")
+            except Exception as exc:
+                errors.append(f"raw 路径无效: {repository.rel(path)}: {exc}")
+        elif metadata.get("type") != "proposal":
+            has_relations = bool(metadata.get("relations")) or relation_targets.get(str(metadata["id"]), 0) > 0
+            if not metadata.get("source_ids") and not has_relations:
+                warnings.append(f"孤立 canonical 页面: {repository.rel(path)}")
+
+    for path, proposal, _, _ in records:
+        if proposal.get("type") != "proposal":
+            continue
+        status = proposal.get("status")
+        if status not in PROPOSAL_STATUSES:
+            errors.append(f"proposal 状态非法: {repository.rel(path)} -> {status}")
+        proposal_kind = proposal.get("proposal_kind")
+        if proposal_kind == "source_refresh":
+            for key in ("previous_source_id", "new_source_id"):
+                if proposal.get(key) not in sources:
+                    errors.append(f"source refresh 引用不存在: {repository.rel(path)} -> {key}")
+            continue
+        for key in ("candidate_path", "candidate_sha256", "target_id", "target_path", "action"):
+            if not proposal.get(key):
+                errors.append(f"proposal 缺少 {key}: {repository.rel(path)}")
+        candidate_path_value = proposal.get("candidate_path")
+        if candidate_path_value:
+            try:
+                candidate_path = repository.resolve_inside(str(candidate_path_value))
+                referenced_candidates.add(candidate_path)
+                if not candidate_path.exists():
+                    errors.append(f"proposal candidate 不存在: {repository.rel(path)} -> {candidate_path_value}")
+                else:
+                    candidate_bytes = candidate_path.read_bytes()
+                    if sha256_bytes(candidate_bytes) != proposal.get("candidate_sha256"):
+                        errors.append(f"proposal candidate 哈希不匹配: {repository.rel(path)}")
+                    candidate, _ = read_document(candidate_path)
+                    if candidate.get("id") != proposal.get("target_id"):
+                        errors.append(f"proposal candidate ID 不匹配: {repository.rel(path)}")
+                    if candidate.get("status") != "proposal":
+                        errors.append(f"proposal candidate 状态非法: {repository.rel(path)}")
+            except Exception as exc:
+                errors.append(f"proposal candidate 无效: {repository.rel(path)}: {exc}")
+        action = proposal.get("action")
+        target_path_value = proposal.get("target_path")
+        target_path: Path | None = None
+        if target_path_value:
+            try:
+                target_path = repository.resolve_inside(str(target_path_value))
+                if target_path.exists():
+                    target, _ = read_document(target_path)
+                    if target.get("id") != proposal.get("target_id"):
+                        errors.append(f"proposal target ID 不匹配: {repository.rel(path)}")
+                elif action == "update" or status == "approved":
+                    errors.append(f"proposal target 不存在: {repository.rel(path)} -> {target_path_value}")
+            except Exception as exc:
+                errors.append(f"proposal target 路径无效: {repository.rel(path)}: {exc}")
+        if action == "update":
+            for key in ("base_path", "base_sha256"):
+                if not proposal.get(key):
+                    errors.append(f"update proposal 缺少 {key}: {repository.rel(path)}")
+            if proposal.get("base_path"):
+                try:
+                    base_path = repository.resolve_inside(str(proposal["base_path"]))
+                    referenced_bases.add(base_path)
+                    if not base_path.exists():
+                        errors.append(f"proposal base 不存在: {repository.rel(path)}")
+                    elif sha256_bytes(base_path.read_bytes()) != proposal.get("base_sha256"):
+                        errors.append(f"proposal base 哈希不匹配: {repository.rel(path)}")
+                except Exception as exc:
+                    errors.append(f"proposal base 路径无效: {repository.rel(path)}: {exc}")
+        revision_of = proposal.get("revision_of")
+        if revision_of:
+            if revision_of not in proposal_ids:
+                errors.append(f"revision_of 不存在: {repository.rel(path)} -> {revision_of}")
+            elif not any(
+                relation.get("type") == "supersedes" and relation.get("target_id") == revision_of
+                for relation in proposal.get("relations", []) if isinstance(relation, dict)
+            ):
+                errors.append(f"revision 缺少 supersedes relation: {repository.rel(path)}")
+        superseded_by = proposal.get("superseded_by")
+        if superseded_by and superseded_by not in proposal_ids:
+            errors.append(f"superseded_by 不存在: {repository.rel(path)} -> {superseded_by}")
+
+    proposal_directory = repository.root / "vault" / "proposals"
+    for path in candidate_paths:
+        if path not in referenced_candidates:
+            warnings.append(f"未被 proposal 引用的 candidate: {repository.rel(path)}")
+    for path in proposal_directory.glob("base-*.md"):
+        if path not in referenced_bases:
+            warnings.append(f"未被 proposal 引用的 base snapshot: {repository.rel(path)}")
+    return {
+        "ok": not errors,
+        "checked_documents": len(records),
+        "errors": sorted(set(errors)),
+        "warnings": sorted(set(warnings)),
+    }
+
+
 def run(args: argparse.Namespace) -> int:
     repository = _repository(args)
     if args.command == "init":
@@ -204,6 +388,10 @@ def run(args: argparse.Namespace) -> int:
         _print({"indexed_documents": repository.rebuild_index(), "index": repository.rel(repository.index_path)})
     elif args.command == "doctor":
         result = doctor(repository)
+        _print(result)
+        return 0 if result["ok"] else 1
+    elif args.command == "lint":
+        result = lint(repository)
         _print(result)
         return 0 if result["ok"] else 1
     elif args.command == "recover":

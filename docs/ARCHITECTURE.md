@@ -36,6 +36,10 @@ Canonical update 使用三份材料：不可变 base snapshot、不可变 candid
 
 索引重建先在同目录创建临时 SQLite，关闭连接后用原子替换发布，避免半写数据库。索引包含对象元数据、typed relations 和 FTS5；中文短语额外使用局部 `LIKE` fallback。任何索引丢失都不损害真相层。
 
+### 只读完整性检查
+
+`gm doctor` 侧重 source version、raw hash、索引和 recovery journal；`gm lint` 扩展检查对象引用、claim provenance、wikilink、proposal candidate/base/target/hash 和 revision lineage。Lint 不重建索引、不改变对象；断链和哈希不一致是 error，孤立 canonical 页面与未引用的审阅快照是 warning。
+
 ## 一致性边界
 
 - Capture 顺序：raw content → source Markdown → append audit event → rebuild index。索引失败时文件仍可重建，调用者会看到错误。

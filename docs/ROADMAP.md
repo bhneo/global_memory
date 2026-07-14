@@ -1,6 +1,6 @@
 # Roadmap
 
-## M1 — 最小可信闭环（当前）
+## M1 — 最小可信闭环（已完成）
 
 - Capture URL、文本、本地文件。
 - Raw 不可变、哈希、source/content 去重。
@@ -17,7 +17,7 @@
 - Canonical update proposal、乐观并发 hash、三方 diff。（已完成）
 - 跨文件 approve recovery journal 与故障注入测试。（已完成）
 - Proposal defer、不可变 candidate revision 与 supersedes 审阅链。（已完成）
-- `gm lint`：schema、失效链接、无来源 claim、孤立页面、raw hash。
+- `gm lint`：schema、失效链接、无来源 claim、孤立页面、raw hash。（已完成）
 - Raw manifest、增量备份与恢复演练。
 
 ## M3 — 高质量编译与认知治理

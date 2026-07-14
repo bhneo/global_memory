@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from global_memory.capture import CaptureService, canonicalize_url
-from global_memory.cli import build_parser, doctor
+from global_memory.cli import build_parser, doctor, lint
 from global_memory.errors import ImmutableContentError, ValidationError
 from global_memory.markdown import read_document, render_document
 from global_memory.proposals import ProposalService
@@ -271,6 +271,62 @@ def test_search_returns_result_with_provenance(repo: Repository) -> None:
     assert results
     assert results[0].id == captured.source_id
     assert results[0].source_ids == [captured.source_id]
+
+
+def test_lint_accepts_valid_truth_and_proposal_chain(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Lint checks provenance and proposal integrity.")
+    proposal = ProposalService(repo).compile(captured.source_id)
+    result = lint(repo)
+
+    assert result["ok"] is True
+    assert result["errors"] == []
+    assert result["warnings"] == []
+    assert result["checked_documents"] == 3
+    assert proposal.proposal_id
+
+
+def test_lint_reports_broken_references_hashes_and_orphans(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Lint failure fixture.")
+    proposal = ProposalService(repo).compile(captured.source_id)
+    candidate_path = repo.root / proposal.candidate_path
+    candidate_path.write_text(candidate_path.read_text(encoding="utf-8") + "tampered\n", encoding="utf-8")
+
+    broken_metadata = {
+        "id": "claim_lint_broken",
+        "type": "claim",
+        "status": "confirmed",
+        "title": "Broken lint claim",
+        "created_at": "2026-07-14T20:00:00+08:00",
+        "updated_at": "2026-07-14T20:00:00+08:00",
+        "aliases": [],
+        "tags": [],
+        "domains": [],
+        "confidence": "unknown",
+        "source_ids": [],
+        "relations": [{"type": "related_to", "target_id": "missing_object", "reason": "test"}],
+    }
+    broken_path = repo.root / "vault" / "knowledge" / "claims" / "claim_lint_broken.md"
+    broken_path.write_text(
+        render_document(broken_metadata, "[[vault/knowledge/claims/missing|missing_object]]"),
+        encoding="utf-8",
+    )
+    orphan_metadata = dict(broken_metadata)
+    orphan_metadata.update({
+        "id": "concept_lint_orphan",
+        "type": "concept",
+        "title": "Orphan concept",
+        "relations": [],
+    })
+    orphan_path = repo.root / "vault" / "knowledge" / "concepts" / "concept_lint_orphan.md"
+    orphan_path.write_text(render_document(orphan_metadata, "Standalone."), encoding="utf-8")
+
+    result = lint(repo)
+    assert result["ok"] is False
+    assert any("candidate 哈希不匹配" in issue for issue in result["errors"])
+    assert any("claim 缺少 source_ids" in issue for issue in result["errors"])
+    assert any("失效 relation" in issue for issue in result["errors"])
+    assert any("失效 wikilink ID" in issue for issue in result["errors"])
+    assert any("孤立 canonical 页面" in warning for warning in result["warnings"])
 
 
 def test_unapproved_proposal_does_not_touch_canonical(repo: Repository) -> None:

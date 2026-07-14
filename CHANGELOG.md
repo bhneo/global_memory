@@ -2,6 +2,14 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.6.0] - 2026-07-14
+
+### Added
+
+- 新增只读 `gm lint`，检查对象格式、关系/wikilink、claim 来源、raw hash 和 proposal 审阅材料。
+- 将断链、哈希或 proposal 不一致作为 error；孤立 canonical 页面和未引用快照作为 warning。
+- Lint 覆盖 candidate/base/target、revision lineage 和 source refresh 的来源引用，且不修改真相层或索引。
+
 ## [0.5.0] - 2026-07-14
 
 ### Added
