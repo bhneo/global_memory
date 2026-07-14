@@ -1,0 +1,37 @@
+# Roadmap
+
+## M1 — 最小可信闭环（当前）
+
+- Capture URL、文本、本地文件。
+- Raw 不可变、哈希、source/content 去重。
+- Markdown source record、FTS5、来源回溯与索引重建。
+- 规则 compile、proposal diff、approve/reject gate。
+- Windows/中文路径、失败恢复和核心治理测试。
+
+退出条件：`gm doctor` 通过、全量测试通过、真实仓库完成一条 capture → approve → search 演示。
+
+## M2 — 版本与更新安全
+
+- URL refresh 和 source version/changing-content 语义。
+- Canonical update proposal、乐观并发 hash、三方 diff。
+- 跨文件 approve recovery journal 与故障注入测试。
+- `gm lint`：schema、失效链接、无来源 claim、孤立页面、raw hash。
+- Raw manifest、增量备份与恢复演练。
+
+## M3 — 高质量编译与认知治理
+
+- Provider-neutral model processor（仍只产 proposal）。
+- Claim 定位、矛盾证据、适用条件和不确定性 schema。
+- Contradiction audit、周期 synthesis、serendipity proposal。
+- 人工编辑 candidate 后重新计算 hash 的明确工作流。
+
+## M4 — 渐进式检索
+
+- Context Pack 接口与 token budget。
+- 更好的中文全文检索和 relation traversal ranking。
+- 可选 embedding/向量索引评估；必须本地可重建且不成为真相源。
+- Obsidian 视图指南，但不把插件变成后端。
+
+## 明确暂缓
+
+图数据库、复杂前端、浏览器插件、微信全量抓取、多 Agent 框架、自动夜间任务、全库自动重写和复杂本体。

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://global-memory.local/schemas/object.schema.json",
+  "title": "Global Memory object",
+  "type": "object",
+  "required": ["id", "type", "status", "title", "created_at", "updated_at"],
+  "properties": {
+    "id": {"type": "string", "minLength": 3},
+    "type": {
+      "enum": ["source", "intuition", "entity", "concept", "claim", "question", "tension", "analogy", "hypothesis", "project", "decision", "experiment", "failure", "opportunity", "proposal"]
+    },
+    "status": {"type": "string"},
+    "title": {"type": "string", "minLength": 1},
+    "created_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "aliases": {"type": "array", "items": {"type": "string"}},
+    "tags": {"type": "array", "items": {"type": "string"}},
+    "domains": {"type": "array", "items": {"type": "string"}},
+    "source_ids": {"type": "array", "items": {"type": "string"}},
+    "relations": {"type": "array", "items": {"$ref": "relation.schema.json"}}
+  },
+  "additionalProperties": true
+}

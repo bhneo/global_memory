@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://global-memory.local/schemas/relation.schema.json",
+  "title": "Global Memory typed relation",
+  "type": "object",
+  "required": ["type", "target_id", "reason"],
+  "properties": {
+    "type": {"enum": ["supports", "contradicts", "refines", "analogous_to", "derived_from", "applied_in", "raises", "supersedes", "related_to"]},
+    "target_id": {"type": "string", "minLength": 3},
+    "reason": {"type": "string", "minLength": 3}
+  },
+  "additionalProperties": false
+}

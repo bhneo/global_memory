@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+dist/
+build/
+*.egg-info/
+
+# Rebuildable indexes and transient imports
+data/indexes/*
+!data/indexes/.gitkeep
+data/imports/*
+!data/imports/.gitkeep
+data/derived/*
+!data/derived/.gitkeep
+data/backups/*
+!data/backups/.gitkeep
+
+# Local operational logs
+system/logs/*.jsonl
+system/reports/generated-*
+system/test-tmp*/
+
+# Large/binary raw payloads stay local and require an explicit backup policy.
+vault/raw/**/blobs/*
+!vault/raw/**/blobs/.gitkeep
