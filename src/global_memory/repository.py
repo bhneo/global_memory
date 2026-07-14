@@ -81,6 +81,7 @@ class Repository:
             "vault/action/failures", "vault/action/opportunities", "vault/proposals",
             "vault/archive", "data/imports", "data/derived", "data/indexes", "data/backups",
             "system/logs", "system/reports", "system/error-book",
+            "system/recovery",
         ]
         for directory in directories:
             (self.root / directory).mkdir(parents=True, exist_ok=True)

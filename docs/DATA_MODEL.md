@@ -14,6 +14,8 @@ Source identity 从单层扩展为两层：family 代表 canonical locator，ver
 
 Canonical update proposal 将 target 在提案时的完整 Markdown 复制为 base snapshot。Base 不是新的 canonical 版本，而是乐观并发令牌和审计证据；candidate 是建议结果，current 是审批时实际文件。只有 `hash(current) == hash(base)` 才允许 candidate 进入 canonical。
 
+Approval recovery journal 不进入知识图，也不进入 Git。它是短生命周期的本地事务记录，保存已授权审批的确定输出和阶段。Knowledge/proposal Markdown 与 audit event 完成后，journal 可安全删除；存在 journal 表示审批尚未达到完整终态。
+
 ## 领域对象
 
 - `knowledge/`：entity、concept、claim、pattern、comparison、synthesis。它们表达已确认的解释结构。

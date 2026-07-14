@@ -29,6 +29,7 @@ gm inbox
 gm compile <source-id>
 gm proposal show <proposal-id>
 gm proposal approve <proposal-id>
+gm recover
 gm propose-update <canonical-id> --from-file candidate.md --reason "新证据改变了适用范围"
 gm search "原始文字"
 gm doctor
@@ -57,6 +58,7 @@ gm doctor
 - `gm show <id>` / `gm related <id>`：读取对象与 typed relations。
 - `gm rebuild-index`：从文件重建 SQLite FTS5。
 - `gm status` / `gm doctor`：查看状态与一致性检查。
+- `gm recover`：幂等续做中断的 canonical approval；遇到第三方修改时报告 blocked。
 
 ## 安全边界
 
@@ -76,6 +78,12 @@ gm doctor
 Candidate 必须是 UTF-8 Markdown，保持 target 的 `id`、`type`、`created_at`，使用 `status: proposal`；可用 `proposed_status` 建议 `confirmed`、`contested`、`superseded` 或 `archived`。Claim 必须保留至少一个 `source_id`。
 
 `propose-update` 会不可变保存当时的 base snapshot 和 candidate，并记录两者 SHA-256。审批时 target 必须仍与 base 完全相同；如期间发生人工编辑，审批会失败且不写文件。再次运行 `proposal show` 可看到 Base→Candidate 和 Base→Current，随后应基于当前 canonical 重新创建 proposal。系统当前不自动合并冲突。
+
+## Approval recovery
+
+Canonical approve 在写入任何 target 前，会原子创建 `system/recovery/approve-<proposal-id>.json`。Journal 包含预期 target/proposal 完整文本、前后哈希和 audit operation ID。正常完成后 journal 自动删除；中断后 `gm doctor` 会报告，`gm recover` 按 target → proposal → audit → index 顺序幂等续做。
+
+恢复采用 roll forward：当前文件必须仍是 journal 记录的写前或写后状态。若用户在中断后又修改了 target/proposal，恢复会返回 blocked 并保留 journal，不会覆盖第三种状态。Recovery journal 含可能敏感的候选正文，仅保存在本地并由 `.gitignore` 排除。
 
 ## 进一步阅读
 

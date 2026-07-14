@@ -10,6 +10,7 @@ from .capture import CaptureService
 from .errors import GlobalMemoryError
 from .markdown import read_document
 from .proposals import ProposalService
+from .recovery import ApprovalRecoveryManager
 from .repository import Repository, sha256_bytes
 
 
@@ -74,6 +75,7 @@ def build_parser() -> argparse.ArgumentParser:
     commands.add_parser("status", help="显示仓库统计")
     commands.add_parser("rebuild-index", help="从 Markdown 与 raw source 重建 SQLite 索引")
     commands.add_parser("doctor", help="检查 schema、原始内容哈希和索引")
+    commands.add_parser("recover", help="幂等续做未完成的 canonical approval journal")
     return parser
 
 
@@ -123,11 +125,15 @@ def doctor(repository: Repository) -> dict[str, object]:
     except Exception as exc:
         indexed_count = None
         issues.append(f"索引不可用: {exc}")
+    recovery_journals = ApprovalRecoveryManager(repository).pending()
+    for journal in recovery_journals:
+        issues.append(f"存在未完成 approval recovery journal: {repository.rel(journal)}")
     return {
         "ok": not issues,
         "documents": document_count,
         "sources": source_count,
         "indexed_documents": indexed_count,
+        "pending_recovery_journals": len(recovery_journals),
         "issues": issues,
     }
 
@@ -178,6 +184,7 @@ def run(args: argparse.Namespace) -> int:
             "inbox": len(proposals.inbox()), "proposals_by_status": {
                 state: len(proposals.list(state)) for state in ("pending", "approved", "rejected")
             },
+            "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()),
         })
     elif args.command == "rebuild-index":
         _print({"indexed_documents": repository.rebuild_index(), "index": repository.rel(repository.index_path)})
@@ -185,6 +192,10 @@ def run(args: argparse.Namespace) -> int:
         result = doctor(repository)
         _print(result)
         return 0 if result["ok"] else 1
+    elif args.command == "recover":
+        result = ApprovalRecoveryManager(repository).recover_all()
+        _print(result)
+        return 1 if result["blocked"] else 0
     return 0
 
 

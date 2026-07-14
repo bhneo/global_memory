@@ -3,6 +3,7 @@ from __future__ import annotations
 import sqlite3
 import shutil
 import uuid
+import json
 from contextlib import closing
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from global_memory.cli import build_parser, doctor
 from global_memory.errors import ImmutableContentError, ValidationError
 from global_memory.markdown import read_document, render_document
 from global_memory.proposals import ProposalService
+from global_memory.recovery import ApprovalRecoveryManager
 from global_memory.repository import Repository, sha256_bytes
 
 
@@ -515,3 +517,150 @@ def test_files_remain_recoverable_if_index_refresh_fails(repo: Repository, monke
     monkeypatch.setattr(repo, "rebuild_index", real_rebuild)
     assert repo.rebuild_index() == 1
     assert doctor(repo)["ok"] is True
+
+
+@pytest.mark.parametrize("failure_phase", ["prepared", "target_written", "proposal_written"])
+def test_approval_journal_recovers_from_injected_phase_failures(
+    repo: Repository, failure_phase: str
+) -> None:
+    captured = CaptureService(repo).capture_text(f"Recovery at {failure_phase}.")
+    proposal = ProposalService(repo).compile(captured.source_id)
+
+    def fail_at(phase: str) -> None:
+        if phase == failure_phase:
+            raise RuntimeError(f"injected failure at {phase}")
+
+    with pytest.raises(RuntimeError, match="injected failure"):
+        ProposalService(repo, failure_hook=fail_at).approve(proposal.proposal_id)
+
+    recovery = ApprovalRecoveryManager(repo)
+    assert len(recovery.pending()) == 1
+    assert doctor(repo)["ok"] is False
+    result = recovery.recover_all()
+    assert len(result["recovered"]) == 1
+    assert result["blocked"] == []
+    assert recovery.pending() == []
+    target, metadata, _ = repo.find_document(
+        read_document(repo.root / proposal.candidate_path)[0]["id"]
+    )
+    assert target == repo.root / proposal.target_path
+    assert metadata["approved_via"] == proposal.proposal_id
+    proposal_path, approved, _ = repo.find_document(proposal.proposal_id)
+    assert proposal_path.exists()
+    assert approved["status"] == "approved"
+    assert doctor(repo)["ok"] is True
+
+
+def test_approval_recovery_is_audit_idempotent_after_index_failure(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured = CaptureService(repo).capture_text("Index recovery journal.")
+    proposal = ProposalService(repo).compile(captured.source_id)
+    real_rebuild = repo.rebuild_index
+
+    def fail_rebuild() -> int:
+        raise sqlite3.OperationalError("simulated approval index failure")
+
+    monkeypatch.setattr(repo, "rebuild_index", fail_rebuild)
+    with pytest.raises(sqlite3.OperationalError, match="approval index failure"):
+        ProposalService(repo).approve(proposal.proposal_id)
+    recovery = ApprovalRecoveryManager(repo)
+    journal = recovery.pending()[0]
+    record = json.loads(journal.read_text(encoding="utf-8"))
+    assert record["phase"] == "audit_written"
+    operation_id = record["operation_id"]
+
+    monkeypatch.setattr(repo, "rebuild_index", real_rebuild)
+    first = recovery.recover_all()
+    second = recovery.recover_all()
+    assert len(first["recovered"]) == 1
+    assert second == {"recovered": [], "blocked": []}
+    events = [
+        json.loads(line)
+        for line in (repo.root / "system" / "logs" / "proposal-events.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert sum(event.get("operation_id") == operation_id for event in events) == 1
+    assert doctor(repo)["ok"] is True
+
+
+def test_update_approval_recovery_rolls_forward_from_original_hash(
+    repo: Repository, workspace: Path
+) -> None:
+    _, target_path = create_approved_claim(repo, "Update before crash.")
+    target, body = read_document(target_path)
+    candidate = dict(target)
+    candidate["status"] = "proposal"
+    candidate_path = workspace / "candidate-recovery-update.md"
+    candidate_path.write_text(
+        render_document(candidate, body.replace("Update before crash.", "Update after recovery.")),
+        encoding="utf-8",
+    )
+    proposal = ProposalService(repo).propose_update(
+        target["id"], candidate_path, "恢复 update approval"
+    )
+
+    def fail_after_target(phase: str) -> None:
+        if phase == "target_written":
+            raise RuntimeError("update interrupted")
+
+    with pytest.raises(RuntimeError, match="update interrupted"):
+        ProposalService(repo, failure_hook=fail_after_target).approve(proposal.proposal_id)
+    assert "Update after recovery." in target_path.read_text(encoding="utf-8")
+    _, pending, _ = repo.find_document(proposal.proposal_id)
+    assert pending["status"] == "pending"
+
+    result = ApprovalRecoveryManager(repo).recover_all()
+    assert len(result["recovered"]) == 1
+    updated, updated_body = read_document(target_path)
+    assert updated["approved_via"] == proposal.proposal_id
+    assert "Update after recovery." in updated_body
+
+
+def test_recovery_blocks_third_state_instead_of_overwriting_human_edit(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Human edit after partial approval.")
+    proposal = ProposalService(repo).compile(captured.source_id)
+
+    def fail_after_target(phase: str) -> None:
+        if phase == "target_written":
+            raise RuntimeError("stop after target")
+
+    with pytest.raises(RuntimeError):
+        ProposalService(repo, failure_hook=fail_after_target).approve(proposal.proposal_id)
+    target_path = repo.root / proposal.target_path
+    human_text = target_path.read_text(encoding="utf-8") + "\nHuman post-crash edit.\n"
+    target_path.write_text(human_text, encoding="utf-8")
+
+    result = ApprovalRecoveryManager(repo).recover_all()
+    assert result["recovered"] == []
+    assert len(result["blocked"]) == 1
+    assert "既不是写前也不是写后" in result["blocked"][0]["error"]
+    assert target_path.read_text(encoding="utf-8") == human_text
+    assert len(ApprovalRecoveryManager(repo).pending()) == 1
+
+
+def test_recovery_rejects_tampered_journal_payload(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Tampered recovery payload.")
+    proposal = ProposalService(repo).compile(captured.source_id)
+
+    def fail_prepared(phase: str) -> None:
+        if phase == "prepared":
+            raise RuntimeError("stop prepared")
+
+    with pytest.raises(RuntimeError):
+        ProposalService(repo, failure_hook=fail_prepared).approve(proposal.proposal_id)
+    journal = ApprovalRecoveryManager(repo).pending()[0]
+    record = json.loads(journal.read_text(encoding="utf-8"))
+    record["target_after_text"] += "tampered"
+    journal.write_text(json.dumps(record, ensure_ascii=False), encoding="utf-8")
+
+    result = ApprovalRecoveryManager(repo).recover_all()
+    assert result["recovered"] == []
+    assert "payload 哈希不匹配" in result["blocked"][0]["error"]
+    assert not (repo.root / proposal.target_path).exists()
+
+
+def test_recover_cli_arguments() -> None:
+    args = build_parser().parse_args(["recover"])
+    assert args.command == "recover"

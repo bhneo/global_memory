@@ -41,6 +41,11 @@ Canonical update 使用三份材料：不可变 base snapshot、不可变 candid
 - Source record 目前不可就地更新，因此 processing state 由 proposal 集合推导，`inbox` 不修改 raw metadata。
 - Refresh 顺序：重新抓取 → 比较最新 hash → 追加 content/source → 重建索引 → 幂等创建 refresh proposal。若 proposal 创建中断，再次 refresh 同一内容会补建同一个 proposal。
 - Update 顺序：验证 candidate → 保存 base/candidate → 显示 diff → 审批时重验两份 hash 与 current → 原子写 target → 更新 proposal → audit → 重建索引。并发冲突保持 pending，必须重新提案。
+- Canonical approve 在 target 写入前先创建单文件 recovery journal，随后阶段化写 target、proposal、audit、index。每一步都可重复；audit 用 operation ID 去重。全部成功后才删除 journal。
+
+### Approval recovery
+
+Recovery journal 保存写前 hash 和确定的写后 payload。`gm recover` 只接受当前文件等于写前或写后 hash，并继续完成剩余阶段；第三种状态视为外部并发修改，保持 blocked。该机制不提供跨文件原子性，而是提供可检测、可续做、不会静默覆盖的最终一致性。
 
 ## 可插拔边界
 

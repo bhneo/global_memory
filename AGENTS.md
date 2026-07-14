@@ -16,6 +16,7 @@
 ## Working method
 
 - 先检查环境、仓库状态和未提交修改，再更新实施计划。
+- 开始写操作前运行或检查 `gm doctor`；存在 approval recovery journal 时先用 `gm recover` 续做或报告 blocked，不得绕过 journal 继续修改同一 target。
 - 每次完成一个清晰的纵向功能；保持小步、可测试、可回滚。
 - 修改行为时同步修改测试；运行相关测试和全量测试后才能声称完成。
 - 不默认扫描整个 vault；先读 `INDEX.md`、`SCHEMA.md`，再检索少量候选。

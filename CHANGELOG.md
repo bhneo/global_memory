@@ -2,6 +2,17 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.4.0] - 2026-07-14
+
+### Added
+
+- 增加 canonical approval recovery journal 与阶段化 roll-forward。
+- 增加 `gm recover`，幂等补齐 target、proposal、audit 和派生索引。
+- Audit event 使用 operation ID 去重，重复 recovery 不重复写事件。
+- `gm doctor` 和 `gm status` 显示 pending recovery journal。
+- 增加 prepared、target、proposal、audit/index 失败及 create/update 故障注入测试。
+- 第三状态和 journal payload 篡改会被阻断，不覆盖人工修改。
+
 ## [0.3.0] - 2026-07-14
 
 ### Added

@@ -20,6 +20,8 @@ data/backups/*
 system/logs/*.jsonl
 system/reports/generated-*
 system/test-tmp*/
+system/recovery/*
+!system/recovery/.gitkeep
 
 # Large/binary raw payloads stay local and require an explicit backup policy.
 vault/raw/**/blobs/*

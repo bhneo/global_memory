@@ -8,6 +8,7 @@ from typing import Any
 
 from .errors import NotFoundError, ValidationError
 from .markdown import atomic_write_text, read_document, render_document
+from .recovery import ApprovalRecoveryManager, FailureHook
 from .repository import Repository, now_iso, sha256_bytes, slugify
 
 
@@ -32,8 +33,13 @@ class RefreshProposalResult:
 
 
 class ProposalService:
-    def __init__(self, repository: Repository):
+    def __init__(
+        self,
+        repository: Repository,
+        failure_hook: FailureHook | None = None,
+    ):
         self.repository = repository
+        self.failure_hook = failure_hook
 
     def _source(self, source_id: str) -> tuple[Path, dict[str, Any], str]:
         path, metadata, body = self.repository.find_document(source_id)
@@ -486,6 +492,7 @@ class ProposalService:
         if candidate.get("status") != "proposal" or candidate.get("id") != proposal["target_id"]:
             raise ValidationError("candidate 身份或状态无效")
         target_path = self.repository.resolve_inside(proposal["target_path"])
+        target_before_sha256: str | None = None
         if proposal["action"] == "create" and target_path.exists():
             raise ValidationError("目标已存在；请重新 compile 生成 update proposal")
         default_status = "confirmed"
@@ -504,6 +511,7 @@ class ProposalService:
                     "canonical target 在 proposal 创建后已变化；拒绝覆盖。"
                     "请运行 proposal show 查看三方 diff，并基于当前版本重新提案"
                 )
+            target_before_sha256 = current_hash
             base_metadata, _ = read_document(base_path)
             if candidate.get("created_at") != base_metadata.get("created_at"):
                 raise ValidationError("update candidate 未保留 canonical created_at")
@@ -521,19 +529,30 @@ class ProposalService:
             "change_reason", f"人工批准 proposal {proposal_id}"
         )
         canonical_text = render_document(canonical, body)
-
-        # Canonical is written only after all proposal and candidate validation succeeds.
-        atomic_write_text(target_path, canonical_text)
         proposal["status"] = "approved"
         proposal["updated_at"] = approved_at
         proposal["reviewed_at"] = approved_at
         proposal["review_reason"] = "人工通过 CLI 明确批准"
-        atomic_write_text(proposal_path, render_document(proposal, proposal_body))
-        self.repository.append_event(
-            "proposal-events",
-            {"event": "approved", "proposal_id": proposal_id, "target_path": proposal["target_path"]},
+        proposal_after_text = render_document(proposal, proposal_body)
+
+        recovery = ApprovalRecoveryManager(self.repository)
+        journal_path = recovery.prepare(
+            proposal_id=proposal_id,
+            target_id=proposal["target_id"],
+            target_path=target_path,
+            target_before_sha256=target_before_sha256,
+            target_after_text=canonical_text,
+            proposal_path=proposal_path,
+            proposal_before_sha256=sha256_bytes(proposal_path.read_bytes()),
+            proposal_after_text=proposal_after_text,
+            audit_payload={
+                "event": "approved", "proposal_id": proposal_id,
+                "target_path": proposal["target_path"],
+            },
         )
-        self.repository.rebuild_index()
+        if self.failure_hook is not None:
+            self.failure_hook("prepared")
+        recovery.recover_one(journal_path, self.failure_hook)
         return self.repository.rel(target_path)
 
     def reject(self, proposal_id: str, reason: str = "") -> str:
