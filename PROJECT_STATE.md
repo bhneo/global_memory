@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M2：版本、更新安全、完整性检查与 raw backup 闭环已完成。
+M3.1：provider-neutral 外部模型 candidate 导入边界已实现。
 
 ## What is working
 
@@ -33,6 +33,8 @@ M2：版本、更新安全、完整性检查与 raw backup 闭环已完成。
 - Lint 将损坏或失效引用报为 error；孤立 canonical 页面与未引用审阅快照报为 warning，且不修改仓库。
 - `gm backup manifest/create/verify/restore` 覆盖整个 `vault/raw/`，使用 SHA-256 manifest、外部增量目录与默认 dry-run 的恢复流程。
 - Backup/restore 从不覆盖同路径不同 hash 文件；实际恢复只补齐缺失 raw 文件，完成后重建索引。
+- `gm model-propose` 只导入用户明确提供的 candidate，不在仓库内调用 provider；proposal 记录 provider/model/prompt version/hash、输入 source hash 与不确定性。
+- Model candidate 与规则 compile 共用不可变 candidate、diff、approval、并发和 recovery gate；lint 校验其 model_run 审计字段。
 
 ## What is being implemented
 
@@ -49,7 +51,7 @@ M2：版本、更新安全、完整性检查与 raw backup 闭环已完成。
 ## Unresolved architectural questions
 
 - 大型 raw payload 的加密策略与 Git/LFS 边界。
-- 未来模型处理器的隐私策略、可复现性记录和 provider-neutral 接口。
+- 实际模型适配器的授权、费用、网络隔离与 provider-specific 错误策略。
 - 中文全文检索长期采用 tokenizer、n-gram 派生索引还是混合策略。
 
 ## Recent decisions
@@ -65,10 +67,11 @@ M2：版本、更新安全、完整性检查与 raw backup 闭环已完成。
 - Candidate revision 不覆盖旧文件，通过新 proposal 和 supersedes lineage 表达人工修订。
 - ADR 0005 确定 deferred 可继续审阅，revision 使用不可变新文件，并对 update 重新建立 current base。
 - ADR 0006 确定 raw backup 覆盖 source record 与 payload，增量复制不覆盖冲突，恢复默认 dry-run。
+- ADR 0007 确定模型输出通过外部 candidate 导入，不由仓库默认调用 provider，并保留最小可复现审计字段。
 
 ## Next concrete task
 
-设计 provider-neutral model processor：只产生同一 proposal schema，记录 provider/model/prompt version/输入哈希与不确定性，默认不外传私有 raw。
+扩充 claim schema：增加证据位置、适用条件、置信度/不确定性和支持/反对证据字段；先保持兼容现有 Markdown。
 
 ## Do not do yet
 

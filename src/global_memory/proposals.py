@@ -14,6 +14,21 @@ from .repository import Repository, now_iso, sha256_bytes, slugify
 
 CANONICAL_STATUSES = {"confirmed", "contested", "superseded", "archived"}
 REVIEWABLE_PROPOSAL_STATUSES = {"pending", "deferred"}
+CANONICAL_DIRECTORIES = {
+    "entity": "vault/knowledge/entities",
+    "concept": "vault/knowledge/concepts",
+    "claim": "vault/knowledge/claims",
+    "intuition": "vault/frontier/intuitions",
+    "question": "vault/frontier/questions",
+    "tension": "vault/frontier/tensions",
+    "analogy": "vault/frontier/analogies",
+    "hypothesis": "vault/frontier/hypotheses",
+    "project": "vault/action/projects",
+    "decision": "vault/action/decisions",
+    "experiment": "vault/action/experiments",
+    "failure": "vault/action/failures",
+    "opportunity": "vault/action/opportunities",
+}
 
 
 @dataclass(frozen=True)
@@ -172,6 +187,169 @@ class ProposalService:
         return ProposalResult(
             proposal_id, self.repository.rel(proposal_path), self.repository.rel(candidate_path),
             self.repository.rel(target_path), "update",
+        )
+
+    def propose_model_candidate(
+        self,
+        source_id: str,
+        candidate_file: Path | str,
+        provider: str,
+        model: str,
+        prompt_version: str,
+        uncertainty: str,
+        reason: str,
+        prompt_file: Path | str | None = None,
+    ) -> ProposalResult:
+        provider, model = provider.strip(), model.strip()
+        prompt_version, uncertainty, reason = prompt_version.strip(), uncertainty.strip(), reason.strip()
+        if not all((provider, model, prompt_version, uncertainty, reason)):
+            raise ValidationError(
+                "model proposal 必须提供 provider、model、prompt_version、uncertainty 和 reason"
+            )
+        _, source, _ = self._source(source_id)
+        input_path = Path(candidate_file).expanduser().resolve()
+        if not input_path.is_file():
+            raise ValidationError(f"candidate 文件不存在: {input_path}")
+        try:
+            candidate_text = input_path.read_text(encoding="utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValidationError("candidate 必须是 UTF-8 Markdown") from exc
+        candidate, _ = read_document(input_path)
+        candidate_type = candidate.get("type")
+        if candidate_type not in CANONICAL_DIRECTORIES:
+            raise ValidationError(f"model candidate 不能写入该 canonical 类型: {candidate_type}")
+        if candidate.get("status") != "proposal":
+            raise ValidationError("model candidate status 必须为 proposal")
+        if source_id not in candidate.get("source_ids", []):
+            raise ValidationError("model candidate 必须在 source_ids 中保留输入 source")
+        self.repository._validate_metadata(candidate, input_path)
+
+        target_id = str(candidate.get("id", ""))
+        if not target_id:
+            raise ValidationError("model candidate 缺少稳定 id")
+        try:
+            target_path, target, _ = self._canonical_target(target_id)
+            action = "update"
+            if candidate.get("type") != target.get("type"):
+                raise ValidationError("model update candidate 的 type 必须与 canonical target 一致")
+            if candidate.get("created_at") != target.get("created_at"):
+                raise ValidationError("model update candidate 必须保留 canonical created_at")
+            base_bytes = target_path.read_bytes()
+            base_hash: str | None = sha256_bytes(base_bytes)
+            proposed_status = candidate.get("proposed_status", target.get("status", "confirmed"))
+        except NotFoundError:
+            action = "create"
+            target_path = (
+                self.repository.root / CANONICAL_DIRECTORIES[str(candidate_type)]
+                / f"{target_id}-{slugify(str(candidate.get('title', 'untitled')))}.md"
+            )
+            base_bytes = b""
+            base_hash = None
+            proposed_status = candidate.get("proposed_status", "confirmed")
+        if proposed_status not in CANONICAL_STATUSES:
+            raise ValidationError(f"model candidate proposed_status 非法: {proposed_status}")
+
+        prompt_sha256: str | None = None
+        if prompt_file is not None:
+            prompt_path = Path(prompt_file).expanduser().resolve()
+            if not prompt_path.is_file():
+                raise ValidationError(f"prompt 文件不存在: {prompt_path}")
+            prompt_sha256 = sha256_bytes(prompt_path.read_bytes())
+        candidate_hash = sha256_bytes(candidate_text.encode("utf-8"))
+        digest = hashlib.sha256(
+            (
+                f"model-candidate\n{source_id}\n{provider}\n{model}\n{prompt_version}\n"
+                f"{prompt_sha256 or ''}\n{base_hash or ''}\n{candidate_hash}"
+            ).encode("utf-8")
+        ).hexdigest()
+        proposal_id = f"proposal_{digest[:24]}"
+        proposal_path = self.repository.root / "vault" / "proposals" / f"proposal-{proposal_id}.md"
+        candidate_path = self.repository.root / "vault" / "proposals" / f"candidate-{proposal_id}.md"
+        base_path = self.repository.root / "vault" / "proposals" / f"base-{proposal_id}.md"
+        if proposal_path.exists():
+            existing, _ = read_document(proposal_path)
+            return ProposalResult(
+                proposal_id, self.repository.rel(proposal_path), existing["candidate_path"],
+                existing["target_path"], existing["action"],
+            )
+
+        if action == "update":
+            self.repository.immutable_write(base_path, base_bytes)
+        self.repository.immutable_write(candidate_path, candidate_text.encode("utf-8"))
+        before = base_bytes.decode("utf-8").splitlines(keepends=True) if base_bytes else []
+        diff = "".join(
+            difflib.unified_diff(
+                before,
+                candidate_text.splitlines(keepends=True),
+                fromfile=f"base:{self.repository.rel(target_path)}" if before else "/dev/null",
+                tofile=f"candidate:{self.repository.rel(target_path)}",
+            )
+        )
+        timestamp = now_iso()
+        metadata = {
+            "id": proposal_id,
+            "type": "proposal",
+            "status": "pending",
+            "title": f"模型提议：{candidate.get('title')}",
+            "created_at": timestamp,
+            "updated_at": timestamp,
+            "aliases": [],
+            "tags": [],
+            "domains": [],
+            "confidence": candidate.get("confidence", "unknown"),
+            "source_ids": candidate.get("source_ids", []),
+            "relations": [],
+            "proposal_kind": "model_candidate",
+            "processor": "external-model-candidate-v1",
+            "action": action,
+            "target_id": target_id,
+            "target_path": self.repository.rel(target_path),
+            "base_path": self.repository.rel(base_path) if action == "update" else None,
+            "base_sha256": base_hash,
+            "candidate_path": self.repository.rel(candidate_path),
+            "candidate_sha256": candidate_hash,
+            "change_reason": reason,
+            "model_run": {
+                "provider": provider,
+                "model": model,
+                "prompt_version": prompt_version,
+                "prompt_sha256": prompt_sha256,
+                "input_source_id": source_id,
+                "input_sha256": source.get("content_sha256"),
+                "uncertainty": uncertainty,
+            },
+            "reviewed_at": None,
+            "review_reason": None,
+        }
+        body = (
+            f"# {metadata['title']}\n\n"
+            "## 模型运行记录\n\n"
+            f"- Provider：`{provider}`\n"
+            f"- Model：`{model}`\n"
+            f"- Prompt version：`{prompt_version}`\n"
+            f"- Prompt SHA-256：`{prompt_sha256 or 'not-recorded'}`\n"
+            f"- Input source：`{source_id}`\n"
+            f"- Input SHA-256：`{source.get('content_sha256')}`\n"
+            f"- 不确定性：{uncertainty}\n"
+            f"- 提议理由：{reason}\n"
+            "- 隐私边界：此命令不调用 provider；candidate 由用户在仓库外生成后显式提供。\n\n"
+            "## Base → Candidate Diff\n\n"
+            f"```diff\n{diff.rstrip()}\n```\n"
+        )
+        self.repository.immutable_write(
+            proposal_path, render_document(metadata, body).encode("utf-8")
+        )
+        self.repository.append_event(
+            "proposal-events",
+            {
+                "event": "model-candidate-proposed", "proposal_id": proposal_id,
+                "source_id": source_id, "provider": provider, "model": model,
+                "prompt_version": prompt_version, "input_sha256": source.get("content_sha256"),
+            },
+        )
+        return ProposalResult(
+            proposal_id, self.repository.rel(proposal_path), self.repository.rel(candidate_path),
+            self.repository.rel(target_path), action,
         )
 
     def create_source_refresh(

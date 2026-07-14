@@ -59,7 +59,7 @@ Recovery journal 保存写前 hash 和确定的写后 payload。`gm recover` 只
 
 ## 可插拔边界
 
-第一版 processor 是 `deterministic-excerpt-v1`，只为验证治理闭环。未来模型处理器必须接收 source/context pack，输出同一 proposal schema，并记录 provider、model、prompt/version、时间和不确定性；不得绕过审批。
+第一版 processor 是 `deterministic-excerpt-v1`，只为验证治理闭环。`external-model-candidate-v1` 是 provider-neutral 导入边界：它接收用户明确提供的 candidate Markdown，而不在仓库内调用 SDK 或网络服务；输出仍是同一 proposal schema，并记录 provider、model、prompt version/hash、输入 source/content hash 和不确定性。未来实际模型适配器必须沿用该审计字段与 proposal gate，不得绕过审批或默认外传私有 raw。
 
 ## 威胁与隐私模型
 

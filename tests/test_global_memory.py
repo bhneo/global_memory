@@ -392,6 +392,93 @@ def test_raw_backup_cli_arguments() -> None:
     assert restored.apply is True
 
 
+def test_model_candidate_import_records_reproducibility_and_requires_approval(
+    repo: Repository, workspace: Path
+) -> None:
+    captured = CaptureService(repo).capture_text("Model input must remain locally owned.")
+    candidate_metadata = {
+        "id": "claim_model_candidate",
+        "type": "claim",
+        "status": "proposal",
+        "title": "模型生成的待确认主张",
+        "created_at": "2026-07-14T21:00:00+08:00",
+        "updated_at": "2026-07-14T21:00:00+08:00",
+        "aliases": [],
+        "tags": [],
+        "domains": [],
+        "confidence": "low",
+        "source_ids": [captured.source_id],
+        "relations": [
+            {"type": "derived_from", "target_id": captured.source_id, "reason": "模型基于输入来源提出"}
+        ],
+    }
+    candidate_file = workspace / "model-candidate.md"
+    candidate_file.write_text(
+        render_document(candidate_metadata, "模型候选内容，等待人工批准。"), encoding="utf-8"
+    )
+    prompt_file = workspace / "prompt.md"
+    prompt_file.write_text("从来源提取低置信度主张。", encoding="utf-8")
+    service = ProposalService(repo)
+
+    proposal = service.propose_model_candidate(
+        captured.source_id, candidate_file, "local-test", "test-model-1", "v1",
+        "模型输出未经事实核验。", "导入外部模型结果供审阅", prompt_file,
+    )
+    assert proposal.action == "create"
+    assert not (repo.root / proposal.target_path).exists()
+    _, metadata, body = repo.find_document(proposal.proposal_id)
+    model_run = metadata["model_run"]
+    assert metadata["proposal_kind"] == "model_candidate"
+    assert model_run["provider"] == "local-test"
+    assert model_run["model"] == "test-model-1"
+    assert model_run["prompt_version"] == "v1"
+    assert model_run["prompt_sha256"] == sha256_bytes(prompt_file.read_bytes())
+    assert model_run["input_source_id"] == captured.source_id
+    assert model_run["input_sha256"] == captured.content_id.removeprefix("content_")
+    assert model_run["uncertainty"] == "模型输出未经事实核验。"
+    assert "不调用 provider" in body
+    assert lint(repo)["ok"] is True
+
+    service.approve(proposal.proposal_id)
+    approved, approved_body = read_document(repo.root / proposal.target_path)
+    assert approved["approved_via"] == proposal.proposal_id
+    assert "模型候选内容" in approved_body
+
+
+def test_model_candidate_requires_input_source_provenance(repo: Repository, workspace: Path) -> None:
+    captured = CaptureService(repo).capture_text("Model provenance validation.")
+    candidate_metadata = {
+        "id": "claim_model_invalid",
+        "type": "claim",
+        "status": "proposal",
+        "title": "Missing source",
+        "created_at": "2026-07-14T21:05:00+08:00",
+        "updated_at": "2026-07-14T21:05:00+08:00",
+        "aliases": [], "tags": [], "domains": [], "confidence": "unknown",
+        "source_ids": [], "relations": [],
+    }
+    candidate_file = workspace / "model-invalid.md"
+    candidate_file.write_text(render_document(candidate_metadata, "invalid"), encoding="utf-8")
+    with pytest.raises(ValidationError, match="source_ids"):
+        ProposalService(repo).propose_model_candidate(
+            captured.source_id, candidate_file, "provider", "model", "v1", "unknown", "reason"
+        )
+
+
+def test_model_propose_cli_arguments() -> None:
+    args = build_parser().parse_args(
+        [
+            "model-propose", "source_example", "--candidate", "candidate.md",
+            "--provider", "local", "--model", "model-x", "--prompt-version", "v1",
+            "--prompt-file", "prompt.md", "--uncertainty", "unknown", "--reason", "review",
+        ]
+    )
+    assert args.source_id == "source_example"
+    assert args.candidate_file == "candidate.md"
+    assert args.provider == "local"
+    assert args.prompt_file == "prompt.md"
+
+
 def test_unapproved_proposal_does_not_touch_canonical(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Evidence should remain traceable.")
     proposal = ProposalService(repo).compile(captured.source_id)

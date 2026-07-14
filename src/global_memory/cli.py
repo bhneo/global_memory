@@ -58,6 +58,17 @@ def build_parser() -> argparse.ArgumentParser:
     update_parser.add_argument("target_id")
     update_parser.add_argument("--from-file", dest="candidate_file", required=True)
     update_parser.add_argument("--reason", required=True)
+    model_propose = commands.add_parser(
+        "model-propose", help="导入外部模型 candidate；命令本身不调用任何 provider"
+    )
+    model_propose.add_argument("source_id")
+    model_propose.add_argument("--candidate", dest="candidate_file", required=True)
+    model_propose.add_argument("--provider", required=True)
+    model_propose.add_argument("--model", required=True)
+    model_propose.add_argument("--prompt-version", required=True)
+    model_propose.add_argument("--prompt-file")
+    model_propose.add_argument("--uncertainty", required=True)
+    model_propose.add_argument("--reason", required=True)
     proposals = commands.add_parser("proposals", help="列出 proposals")
     proposals.add_argument(
         "--status", choices=["pending", "deferred", "superseded", "approved", "rejected"]
@@ -266,6 +277,23 @@ def lint(repository: Repository) -> dict[str, object]:
                 if proposal.get(key) not in sources:
                     errors.append(f"source refresh 引用不存在: {repository.rel(path)} -> {key}")
             continue
+        if proposal_kind == "model_candidate":
+            model_run = proposal.get("model_run")
+            if not isinstance(model_run, dict):
+                errors.append(f"model proposal 缺少 model_run: {repository.rel(path)}")
+            else:
+                for key in ("provider", "model", "prompt_version", "input_source_id", "input_sha256", "uncertainty"):
+                    if not model_run.get(key):
+                        errors.append(f"model proposal 缺少 model_run.{key}: {repository.rel(path)}")
+                input_source_id = model_run.get("input_source_id")
+                if input_source_id not in sources:
+                    errors.append(f"model proposal 输入来源不存在: {repository.rel(path)}")
+                else:
+                    source_path, source_metadata, _ = repository.find_document(str(input_source_id))
+                    if model_run.get("input_sha256") != source_metadata.get("content_sha256"):
+                        errors.append(f"model proposal 输入哈希不匹配: {repository.rel(path)}")
+                    if input_source_id not in proposal.get("source_ids", []):
+                        errors.append(f"model proposal 未保留输入 source_id: {repository.rel(path)}")
         for key in ("candidate_path", "candidate_sha256", "target_id", "target_path", "action"):
             if not proposal.get(key):
                 errors.append(f"proposal 缺少 {key}: {repository.rel(path)}")
@@ -366,6 +394,13 @@ def run(args: argparse.Namespace) -> int:
         _print(
             proposals.propose_update(
                 args.target_id, args.candidate_file, args.reason
+            ).__dict__
+        )
+    elif args.command == "model-propose":
+        _print(
+            proposals.propose_model_candidate(
+                args.source_id, args.candidate_file, args.provider, args.model,
+                args.prompt_version, args.uncertainty, args.reason, args.prompt_file,
             ).__dict__
         )
     elif args.command == "proposals":

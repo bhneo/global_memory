@@ -2,6 +2,14 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.8.0] - 2026-07-14
+
+### Added
+
+- 新增 `gm model-propose`，导入用户明确提供的外部模型 candidate，而不在仓库内调用任何 provider。
+- Model proposal 记录 provider、model、prompt version/hash、输入 source/content hash 与不确定性。
+- Model candidate 与现有不可变 candidate、diff、approval recovery 和 lint 审计共用同一治理路径。
+
 ## [0.7.0] - 2026-07-14
 
 ### Added
