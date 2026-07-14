@@ -113,6 +113,9 @@ def build_parser() -> argparse.ArgumentParser:
     backup_restore = backup_commands.add_parser("restore")
     backup_restore.add_argument("directory")
     backup_restore.add_argument("--apply", action="store_true")
+    audit = commands.add_parser("audit", help="只读生成知识治理审计报告")
+    audit_commands = audit.add_subparsers(dest="audit_command", required=True)
+    audit_commands.add_parser("contradictions", help="报告 evidence 与 relation 中的显式冲突")
     commands.add_parser("recover", help="幂等续做未完成的 canonical approval journal")
     return parser
 
@@ -371,6 +374,55 @@ def lint(repository: Repository) -> dict[str, object]:
     }
 
 
+def contradiction_audit(repository: Repository) -> dict[str, object]:
+    """Report explicit contradictions without inferring, ranking, or changing any claim."""
+    claims: dict[str, tuple[Path, dict[str, object]]] = {}
+    errors: list[str] = []
+    for path in repository.canonical_documents():
+        try:
+            metadata, _ = read_document(path)
+            repository._validate_metadata(metadata, path)
+            if metadata.get("type") == "claim":
+                claims[str(metadata["id"])] = (path, metadata)
+        except Exception as exc:
+            errors.append(f"无法读取 claim {repository.rel(path)}: {exc}")
+
+    evidence_conflicts: list[dict[str, object]] = []
+    relation_contradictions: list[dict[str, object]] = []
+    for claim_id, (path, metadata) in sorted(claims.items()):
+        evidence = metadata.get("evidence", [])
+        supports = [item for item in evidence if item.get("stance") == "supports"]
+        contradicts = [item for item in evidence if item.get("stance") == "contradicts"]
+        if supports and contradicts:
+            evidence_conflicts.append({
+                "claim_id": claim_id,
+                "path": repository.rel(path),
+                "status": metadata.get("status"),
+                "supports": supports,
+                "contradicts": contradicts,
+            })
+        for relation in metadata.get("relations", []):
+            if relation.get("type") == "contradicts" and relation.get("target_id") in claims:
+                target_path, target = claims[str(relation["target_id"])]
+                relation_contradictions.append({
+                    "source_claim_id": claim_id,
+                    "source_path": repository.rel(path),
+                    "target_claim_id": relation["target_id"],
+                    "target_path": repository.rel(target_path),
+                    "source_status": metadata.get("status"),
+                    "target_status": target.get("status"),
+                    "reason": relation.get("reason"),
+                })
+    return {
+        "ok": not errors,
+        "claim_count": len(claims),
+        "evidence_conflicts": evidence_conflicts,
+        "relation_contradictions": relation_contradictions,
+        "errors": errors,
+        "note": "报告仅呈现显式冲突；不会裁决、降级置信度或修改 canonical claim。",
+    }
+
+
 def run(args: argparse.Namespace) -> int:
     repository = _repository(args)
     if args.command == "init":
@@ -455,6 +507,11 @@ def run(args: argparse.Namespace) -> int:
             return 0 if result["ok"] else 1
         else:
             result = backups.restore(args.directory, apply=args.apply)
+            _print(result)
+            return 0 if result["ok"] else 1
+    elif args.command == "audit":
+        if args.audit_command == "contradictions":
+            result = contradiction_audit(repository)
             _print(result)
             return 0 if result["ok"] else 1
     elif args.command == "recover":

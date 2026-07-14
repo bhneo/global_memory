@@ -11,7 +11,7 @@ import pytest
 
 from global_memory.capture import CaptureService, canonicalize_url
 from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
-from global_memory.cli import build_parser, doctor, lint
+from global_memory.cli import build_parser, contradiction_audit, doctor, lint
 from global_memory.errors import ImmutableContentError, ValidationError
 from global_memory.markdown import read_document, render_document
 from global_memory.proposals import ProposalService
@@ -504,6 +504,82 @@ def test_claim_evidence_schema_is_emitted_and_validated(repo: Repository) -> Non
     candidate["evidence"][0]["stance"] = "made_up"
     with pytest.raises(ValidationError, match="evidence stance"):
         repo._validate_metadata(candidate, candidate_path)
+
+
+def test_contradiction_audit_reports_evidence_and_relation_without_mutation(repo: Repository) -> None:
+    supporting = CaptureService(repo).capture_text("Evidence supporting the claim.")
+    opposing = CaptureService(repo).capture_text("Evidence contradicting the claim.")
+    shared = {
+        "status": "confirmed",
+        "created_at": "2026-07-14T22:00:00+08:00",
+        "updated_at": "2026-07-14T22:00:00+08:00",
+        "aliases": [], "tags": [], "domains": [], "confidence": "low",
+        "applicability": [], "uncertainty": "需要人工判断证据权重。",
+    }
+    first_metadata = {
+        **shared,
+        "id": "claim_audit_first",
+        "type": "claim",
+        "title": "存在内部正反证据的主张",
+        "source_ids": [supporting.source_id, opposing.source_id],
+        "evidence": [
+            {
+                "source_id": supporting.source_id, "location": "第 1 段",
+                "excerpt": "Evidence supporting the claim.", "stance": "supports", "reason": "明确支持。",
+            },
+            {
+                "source_id": opposing.source_id, "location": "第 1 段",
+                "excerpt": "Evidence contradicting the claim.", "stance": "contradicts", "reason": "明确反对。",
+            },
+        ],
+        "relations": [],
+    }
+    second_metadata = {
+        **shared,
+        "id": "claim_audit_second",
+        "type": "claim",
+        "title": "显式反对另一主张的主张",
+        "source_ids": [opposing.source_id],
+        "evidence": [
+            {
+                "source_id": opposing.source_id, "location": "第 1 段",
+                "excerpt": "Evidence contradicting the claim.", "stance": "context", "reason": "作为关系的背景。",
+            }
+        ],
+        "relations": [
+            {"type": "contradicts", "target_id": "claim_audit_first", "reason": "结论不能同时成立。"}
+        ],
+    }
+    first_path = repo.root / "vault" / "knowledge" / "claims" / "claim_audit_first.md"
+    second_path = repo.root / "vault" / "knowledge" / "claims" / "claim_audit_second.md"
+    first_path.write_text(render_document(first_metadata, "First claim."), encoding="utf-8")
+    second_path.write_text(render_document(second_metadata, "Second claim."), encoding="utf-8")
+    repo.rebuild_index()
+    first_before = first_path.read_bytes()
+    second_before = second_path.read_bytes()
+
+    result = contradiction_audit(repo)
+    assert result["ok"] is True
+    assert result["claim_count"] == 2
+    assert result["evidence_conflicts"][0]["claim_id"] == "claim_audit_first"
+    assert result["relation_contradictions"] == [
+        {
+            "source_claim_id": "claim_audit_second",
+            "source_path": "vault/knowledge/claims/claim_audit_second.md",
+            "target_claim_id": "claim_audit_first",
+            "target_path": "vault/knowledge/claims/claim_audit_first.md",
+            "source_status": "confirmed",
+            "target_status": "confirmed",
+            "reason": "结论不能同时成立。",
+        }
+    ]
+    assert first_path.read_bytes() == first_before
+    assert second_path.read_bytes() == second_before
+
+
+def test_contradiction_audit_cli_arguments() -> None:
+    args = build_parser().parse_args(["audit", "contradictions"])
+    assert args.audit_command == "contradictions"
 
 
 def test_unapproved_proposal_does_not_touch_canonical(repo: Repository) -> None:

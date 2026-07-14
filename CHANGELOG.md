@@ -2,6 +2,14 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.10.0] - 2026-07-14
+
+### Added
+
+- 新增只读 `gm audit contradictions`，报告 claim 内部 supports/contradicts evidence 并存。
+- 同时报告 canonical claim 间显式 `contradicts` relation，并保留双方路径、状态和理由。
+- Audit 不裁决冲突、不写入 Markdown/索引，也不修改 confidence 或 status。
+
 ## [0.9.0] - 2026-07-14
 
 ### Added

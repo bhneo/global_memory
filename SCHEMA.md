@@ -81,6 +81,8 @@ evidence:
 
 每条 evidence 的 `source_id` 必须属于 claim 的 `source_ids`。`supports` 与 `contradicts` 可以同时存在；`context` 表示来源相关但尚不自动构成正反证据。`confidence` 不取代 `uncertainty`：前者是当前判断强度，后者保留未决限制。
 
+`gm audit contradictions` 以 `evidence[].stance` 中同一 claim 的 `supports` 与 `contradicts` 并存、以及 claim `relations` 中类型为 `contradicts` 的边为输入。它是只读报告，不新增冲突字段，也不自动变更 claim status。
+
 ## 去重语义
 
 - source family identity：`source_kind + canonical_locator` 的 SHA-256 派生稳定 ID。

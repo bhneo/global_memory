@@ -36,6 +36,7 @@ gm recover
 gm propose-update <canonical-id> --from-file candidate.md --reason "新证据改变了适用范围"
 gm search "原始文字"
 gm lint
+gm audit contradictions
 gm backup manifest
 gm backup create D:\GlobalMemoryRawBackup
 gm backup verify D:\GlobalMemoryRawBackup
@@ -69,6 +70,7 @@ gm doctor
 - `gm show <id>` / `gm related <id>`：读取对象与 typed relations。
 - `gm rebuild-index`：从文件重建 SQLite FTS5。
 - `gm lint`：只读检查 wikilink/relation、claim 来源、raw 哈希、proposal/candidate/base 完整性；孤立 canonical 页面以 warning 报告。
+- `gm audit contradictions`：只读报告同一 claim 内正反 evidence 并存，以及 claim 之间显式 `contradicts` relation；不自动裁决或修改状态。
 - `gm backup manifest [--output <path>]`：生成整个 `vault/raw/` 的 SHA-256 manifest；默认写入本地 `data/backups/`。
 - `gm backup create <外部目录>`：增量复制 raw source record 与 content/blob；已存在同 hash 文件跳过，不覆盖冲突文件。
 - `gm backup verify <外部目录>`：校验备份 manifest、文件大小和 SHA-256。
@@ -118,6 +120,10 @@ Canonical approve 在写入任何 target 前，会原子创建 `system/recovery/
 若 candidate 类型为 `claim`，还必须填写 `evidence[]`、`applicability[]` 与 `uncertainty`。每条 evidence 需要来源、位置、摘录、`supports` / `contradicts` / `context` 方向和理由；详见 [SCHEMA.md](SCHEMA.md)。
 
 这条命令默认不会发送 raw、prompt 或任何文件到 provider；它也不会自动批准模型结论。模型输出仍要经过 `show → approve/reject/defer/revise`，并适用现有并发保护和 approval recovery。
+
+## Contradiction audit
+
+`gm audit contradictions` 只扫描 canonical claim。输出保留产生冲突的 evidence（来源、位置、摘录、理由）和显式 relation 的双方路径及理由。正反 evidence 并存是需要审阅的认知信号，不是 schema 错误；audit 始终不写入 Markdown、不改变 confidence/status，也不选择任何一方为真。
 
 恢复采用 roll forward：当前文件必须仍是 journal 记录的写前或写后状态。若用户在中断后又修改了 target/proposal，恢复会返回 blocked 并保留 journal，不会覆盖第三种状态。Recovery journal 含可能敏感的候选正文，仅保存在本地并由 `.gitignore` 排除。
 
