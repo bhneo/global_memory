@@ -21,6 +21,7 @@
 - 修改行为时同步修改测试；运行相关测试和全量测试后才能声称完成。
 - 不默认扫描整个 vault；先读 `INDEX.md`、`SCHEMA.md`，再检索少量候选。
 - 知识回答必须能回到 `source_ids` 和 raw content；AI 摘要不得替代来源。
+- 逐字引用必须标为 `quote` 并回验 extraction span；转述、翻译、表格值、图示解释和计算不得伪装成原文 quote。
 - Agent 只能创建 proposal。未经用户明确授权，不得直接修改 canonical knowledge。
 - 任务结束更新 `PROJECT_STATE.md`；用户可见行为改变时更新 `CHANGELOG.md`。
 - 重要且难以逆转的选择写 ADR；不为假想需求构建复杂抽象。

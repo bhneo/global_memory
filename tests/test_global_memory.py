@@ -14,11 +14,13 @@ from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
 from global_memory.cli import build_parser, contradiction_audit, doctor, lint
 from global_memory.context import ContextPackService
 from global_memory.errors import ImmutableContentError, ValidationError
+from global_memory.extraction import ExtractionService
 from global_memory.markdown import read_document, render_document
 from global_memory.proposals import ProposalService
 from global_memory.recovery import ApprovalRecoveryManager
 from global_memory.raw_store import RawStoreService
 from global_memory.repository import Repository, sha256_bytes
+from global_memory.works import WorkService
 
 
 @pytest.fixture()
@@ -67,6 +69,41 @@ def create_approved_claim(repo: Repository, text: str = "Original canonical clai
     proposal = service.compile(captured.source_id)
     target = service.approve(proposal.proposal_id)
     return captured, repo.root / target
+
+
+def make_text_pdf(pages: list[str]) -> bytes:
+    """Create a tiny dependency-free PDF fixture with one text stream per page."""
+    objects: list[bytes] = []
+    page_ids = [3 + index * 2 for index in range(len(pages))]
+    font_id = 3 + len(pages) * 2
+    objects.append(b"<< /Type /Catalog /Pages 2 0 R >>")
+    kids = " ".join(f"{page_id} 0 R" for page_id in page_ids)
+    objects.append(f"<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>".encode())
+    for index, text in enumerate(pages):
+        page_id = page_ids[index]
+        content_id = page_id + 1
+        objects.append(
+            f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] "
+            f"/Resources << /Font << /F1 {font_id} 0 R >> >> /Contents {content_id} 0 R >>".encode()
+        )
+        escaped = text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+        stream = f"BT /F1 12 Tf 72 720 Td ({escaped}) Tj ET".encode()
+        objects.append(f"<< /Length {len(stream)} >>\nstream\n".encode() + stream + b"\nendstream")
+    objects.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+    payload = bytearray(b"%PDF-1.4\n")
+    offsets = [0]
+    for number, obj in enumerate(objects, start=1):
+        offsets.append(len(payload))
+        payload.extend(f"{number} 0 obj\n".encode() + obj + b"\nendobj\n")
+    xref = len(payload)
+    payload.extend(f"xref\n0 {len(objects) + 1}\n".encode())
+    payload.extend(b"0000000000 65535 f \n")
+    for offset in offsets[1:]:
+        payload.extend(f"{offset:010d} 00000 n \n".encode())
+    payload.extend(
+        f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref}\n%%EOF\n".encode()
+    )
+    return bytes(payload)
 
 
 def test_same_url_is_duplicate(repo: Repository) -> None:
@@ -167,6 +204,161 @@ def test_raw_store_migration_is_recoverable_and_idempotent(
     second = RawStoreService(repo).migrate()
     assert second.updated_sources == 0
     assert second.backup_path is None
+
+
+def test_html_extraction_removes_navigation_and_script(repo: Repository) -> None:
+    html = b"""<html><head><title>Article Title</title><script>secret()</script></head>
+    <body><nav>menu noise</nav><main><h1>Useful Heading</h1><p>First paragraph.</p>
+    <p>Second paragraph.</p></main><footer>footer noise</footer></body></html>"""
+    captured = CaptureService(repo)._write_source(
+        kind="web", original_locator="https://example.com/article",
+        canonical_locator="https://example.com/article", content=html, title="Article Title",
+        import_method="test", content_type="text/html; charset=utf-8",
+    )
+    result = ExtractionService(repo).extract(captured.source_id)
+    _, metadata, body = ExtractionService(repo).find(result.extraction_id)
+    assert result.status == "ready"
+    assert metadata["input_sha256"] == captured.content_id.removeprefix("content_")
+    assert "Useful Heading" in body and "First paragraph" in body
+    assert "secret" not in body and "menu noise" not in body and "footer noise" not in body
+
+
+def test_pdf_extraction_preserves_page_boundaries_and_rebuilds(
+    repo: Repository, workspace: Path
+) -> None:
+    pdf_path = workspace / "多页论文.pdf"
+    pdf_path.write_bytes(make_text_pdf(["First page evidence", "Second page evidence"]))
+    captured = CaptureService(repo).capture_file(pdf_path)
+    service = ExtractionService(repo)
+    result = service.extract(captured.source_id)
+    extraction_path = repo.root / result.extraction_path
+    _, metadata, body = service.find(result.extraction_id)
+    assert metadata["page_count"] == 2
+    assert "<!-- page: 1 -->" in body and "First page evidence" in body
+    assert "<!-- page: 2 -->" in body and "Second page evidence" in body
+    raw_before = (repo.root / captured.raw_content_path).read_bytes()
+    extraction_path.unlink()
+    rebuilt = service.extract(captured.source_id, rebuild=True)
+    assert (repo.root / rebuilt.extraction_path).exists()
+    assert (repo.root / captured.raw_content_path).read_bytes() == raw_before
+
+
+def test_chinese_encoding_fallback_and_failed_extraction_preserve_raw(repo: Repository) -> None:
+    payload = "中文 GB18030 抽取".encode("gb18030")
+    captured = CaptureService(repo)._write_source(
+        kind="files", original_locator="C:/资料/中文.txt", canonical_locator="file:c:/资料/中文.txt",
+        content=payload, title="中文.txt", import_method="test",
+        content_type="text/plain; charset=gb18030", original_filename="中文.txt",
+    )
+    raw_before = (repo.root / captured.raw_content_path).read_bytes()
+    result = ExtractionService(repo).extract(captured.source_id)
+    _, metadata, body = ExtractionService(repo).find(result.extraction_id)
+    assert "中文 GB18030 抽取" in body
+    assert metadata["warnings"]
+
+    binary = CaptureService(repo)._write_source(
+        kind="files", original_locator="C:/资料/data.bin", canonical_locator="file:c:/资料/data.bin",
+        content=b"\xff\xfe\x00\x81", title="data.bin", import_method="test",
+        content_type="application/octet-stream", original_filename="data.bin",
+    )
+    binary_before = (repo.root / binary.raw_content_path).read_bytes()
+    failed = ExtractionService(repo).extract(binary.source_id)
+    assert failed.status == "error"
+    assert (repo.root / binary.raw_content_path).read_bytes() == binary_before
+    assert (repo.root / captured.raw_content_path).read_bytes() == raw_before
+
+
+def test_multiple_arxiv_captures_enrich_one_auditable_work(
+    repo: Repository, workspace: Path
+) -> None:
+    payload = make_text_pdf(["same paper"])
+    remote = CaptureService(repo)._write_source(
+        kind="web", original_locator="https://arxiv.org/pdf/2607.11119",
+        canonical_locator="https://arxiv.org/pdf/2607.11119", content=payload,
+        title="Interface First Robot Control", import_method="test", content_type="application/pdf",
+    )
+    local_path = workspace / "VIA-paper.pdf"
+    local_path.write_bytes(payload)
+    local = CaptureService(repo).capture_file(local_path)
+    source_before = (repo.root / local.source_path).read_bytes()
+    proposal = WorkService(repo).propose(
+        [remote.source_id, local.source_id], arxiv_id="2607.11119v1",
+        title="Interface First Robot Control", authors=["Researcher A"],
+    )
+    assert proposal.action == "create"
+    assert not (repo.root / proposal.target_path).exists()
+    ProposalService(repo).approve(proposal.proposal_id)
+    work, _ = read_document(repo.root / proposal.target_path)
+    assert work["id"] == "work_arxiv_2607_11119"
+    assert work["arxiv_id"] == "2607.11119"
+    assert set(work["source_ids"]) == {remote.source_id, local.source_id}
+    assert (repo.root / local.source_path).read_bytes() == source_before
+
+    abstract = CaptureService(repo)._write_source(
+        kind="web", original_locator="https://arxiv.org/abs/2607.11119",
+        canonical_locator="https://arxiv.org/abs/2607.11119", content=b"abstract page",
+        title="VIA abstract", import_method="test", content_type="text/plain",
+    )
+    update = WorkService(repo).propose([abstract.source_id])
+    assert update.action == "update"
+    _, update_metadata, _ = repo.find_document(update.proposal_id)
+    assert update_metadata["target_id"] == work["id"]
+    ProposalService(repo).approve(update.proposal_id)
+    updated, _ = read_document(repo.root / update.target_path)
+    assert abstract.source_id in updated["source_ids"]
+    works = [metadata for path in repo.canonical_documents() for metadata, _ in [read_document(path)] if metadata.get("type") == "work"]
+    assert len(works) == 1
+
+
+def test_typed_evidence_quote_translation_table_figure_and_calculation(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Exact quoted evidence and more context.")
+    extraction_result = ExtractionService(repo).extract(captured.source_id)
+    _, extraction, body = ExtractionService(repo).find(extraction_result.extraction_id)
+    original = "Exact quoted evidence"
+    start = body.index(original)
+    common = {
+        "source_id": captured.source_id, "stance": "supports",
+        "input_sha256": extraction["input_sha256"], "verification_status": "verified",
+        "reason": "测试证据分类。",
+    }
+    evidence = [
+        {**common, "evidence_id": "ev_quote", "evidence_kind": "quote",
+         "content_id": captured.content_id, "extraction_id": extraction_result.extraction_id,
+         "span_start": start, "span_end": start + len(original), "original_text": original,
+         "page": 1},
+        {**common, "evidence_id": "ev_para", "evidence_kind": "paraphrase",
+         "section": "第 1 段", "interpretation": "证据表达了一个可验证陈述。"},
+        {**common, "evidence_id": "ev_translation", "evidence_kind": "translation",
+         "section": "第 1 段", "original_text": original,
+         "translated_text": "精确引用的证据", "target_language": "zh-CN"},
+        {**common, "evidence_id": "ev_table", "evidence_kind": "table_value",
+         "page": 2, "table": "Table 1", "row": "success", "column": "method A",
+         "value": 97.8, "unit": "%"},
+        {**common, "evidence_id": "ev_figure", "evidence_kind": "figure",
+         "page": 3, "figure": "Figure 2", "interpretation": "曲线在末段上升。"},
+        {**common, "evidence_id": "ev_calc", "evidence_kind": "calculation",
+         "input_evidence_ids": ["ev_table"], "calculation_method": "97.8 / 2",
+         "result": 48.9, "unit": "%"},
+    ]
+    metadata = {
+        "id": "claim_typed_evidence", "type": "claim", "status": "proposal",
+        "title": "Typed evidence", "created_at": "2026-07-15T10:00:00+08:00",
+        "updated_at": "2026-07-15T10:00:00+08:00", "aliases": [], "tags": [],
+        "domains": [], "confidence": "medium", "source_ids": [captured.source_id],
+        "relations": [], "evidence": evidence, "applicability": ["test"],
+        "uncertainty": "test only",
+    }
+    candidate = repo.root / "data/derived/typed-evidence.md"
+    candidate.write_text(render_document(metadata, "typed evidence"), encoding="utf-8")
+    repo._validate_metadata(metadata, candidate)
+
+    evidence[1]["verification_status"] = "verbatim"
+    with pytest.raises(ValidationError, match="paraphrase"):
+        repo._validate_metadata(metadata, candidate)
+    evidence[1]["verification_status"] = "verified"
+    evidence[0]["original_text"] = "not the extraction span"
+    with pytest.raises(ValidationError, match="quote"):
+        repo._validate_metadata(metadata, candidate)
 
 
 def test_unchanged_refresh_reuses_latest_version_without_proposal(repo: Repository) -> None:

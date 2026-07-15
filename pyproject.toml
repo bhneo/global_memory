@@ -12,6 +12,7 @@ dependencies = []
 
 [project.optional-dependencies]
 test = ["pytest>=8,<9"]
+pdf = ["pypdf>=5,<7"]
 
 [project.scripts]
 gm = "global_memory.cli:main"

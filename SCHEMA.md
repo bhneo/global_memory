@@ -24,7 +24,15 @@ change_reason: null
 ---
 ```
 
-稳定 ID 不依赖标题或文件位置。第一版对象类型：`source`、`intuition`、`entity`、`concept`、`claim`、`question`、`tension`、`analogy`、`hypothesis`、`project`、`decision`、`experiment`、`failure`、`opportunity`、`proposal`。
+稳定 ID 不依赖标题或文件位置。对象类型包括：`source`、`work`、`intuition`、`entity`、`concept`、`claim`、`question`、`tension`、`analogy`、`hypothesis`、`project`、`decision`、`experiment`、`failure`、`opportunity`、`synthesis`、`proposal`。
+
+## Derived extraction
+
+Extraction 位于 `data/derived/extractions/`，不进入 canonical 索引。字段至少包括 `extraction_id`、`source_id`、`content_id`、`input_sha256`、`extractor`、`extractor_version`、`extracted_at`、`mime_type`、`language`、`page_count`、`character_count`、`status`、`warnings[]`。状态为 `ready`、`error` 或 `stale`。
+
+## Logical work
+
+Work 使用 `type: work`，保存 `work_type`、`canonical_title`、`authors[]`、`published_at`、`doi`、`arxiv_id`、`repository_url`、`version`、`language`、`aliases[]`、`same_work_as[]` 和 `supersedes_version`。多个 capture 通过 `source_ids` 关联；任何 enrichment 必须先生成 proposal。
 
 ## Typed relation
 
@@ -88,6 +96,8 @@ evidence:
 ```
 
 每条 evidence 的 `source_id` 必须属于 claim 的 `source_ids`。`supports` 与 `contradicts` 可以同时存在；`context` 表示来源相关但尚不自动构成正反证据。`confidence` 不取代 `uncertainty`：前者是当前判断强度，后者保留未决限制。
+
+新 evidence 使用 `evidence_id` 和 `evidence_kind`，允许：`quote`、`paraphrase`、`translation`、`table_value`、`figure`、`calculation`。共同 provenance 字段包括 `source_id`、可选 `work_id/content_id/extraction_id`、`page/section/span_start/span_end`、`verification_status`、`input_sha256`、`extractor/extractor_version`。Quote 必须逐字匹配 extraction span；paraphrase 不能标为 verbatim；translation 必须同时有 `original_text`、`translated_text` 和目标语言；table_value 必须保留单位；calculation 必须引用同一 claim 内存在的输入 evidence ID，并记录方法与结果。
 
 `gm audit contradictions` 以 `evidence[].stance` 中同一 claim 的 `supports` 与 `contradicts` 并存、以及 claim `relations` 中类型为 `contradicts` 的边为输入。它是只读报告，不新增冲突字段，也不自动变更 claim status。
 

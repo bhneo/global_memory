@@ -20,7 +20,7 @@ from .markdown import atomic_write_text, read_document, render_document
 OBJECT_TYPES = {
     "source", "intuition", "entity", "concept", "claim", "question",
     "tension", "analogy", "hypothesis", "project", "decision",
-    "experiment", "failure", "opportunity", "synthesis", "proposal",
+    "experiment", "failure", "opportunity", "synthesis", "work", "proposal",
 }
 RELATION_TYPES = {
     "supports", "contradicts", "refines", "analogous_to", "derived_from",
@@ -28,6 +28,7 @@ RELATION_TYPES = {
 }
 CONFIDENCE_LEVELS = {"unknown", "low", "medium", "high"}
 EVIDENCE_STANCES = {"supports", "contradicts", "context"}
+EVIDENCE_KINDS = {"quote", "paraphrase", "translation", "table_value", "figure", "calculation"}
 CANONICAL_ROOTS = ("knowledge", "frontier", "action")
 TZ = ZoneInfo("Asia/Shanghai")
 
@@ -78,6 +79,7 @@ class Repository:
             "vault/raw/web/content", "vault/raw/files/content", "vault/raw/files/blobs",
             "vault/raw/personal-notes/content", "vault/knowledge/entities",
             "vault/knowledge/concepts", "vault/knowledge/claims", "vault/knowledge/patterns",
+            "vault/knowledge/works",
             "vault/knowledge/comparisons", "vault/knowledge/syntheses",
             "vault/frontier/intuitions", "vault/frontier/questions", "vault/frontier/tensions",
             "vault/frontier/analogies", "vault/frontier/hypotheses", "vault/frontier/anomalies",
@@ -86,6 +88,7 @@ class Repository:
             "vault/archive", "data/imports", "data/derived", "data/indexes", "data/backups",
             "system/logs", "system/reports", "system/error-book",
             "system/recovery",
+            "data/derived/extractions",
         ]
         for directory in directories:
             (self.root / directory).mkdir(parents=True, exist_ok=True)
@@ -225,6 +228,7 @@ class Repository:
                 evidence = metadata["evidence"]
                 if not isinstance(evidence, list):
                     raise ValidationError(f"{self.rel(path)} 的 evidence 必须是列表")
+                evidence_ids: set[str] = set()
                 for item in evidence:
                     if not isinstance(item, dict):
                         raise ValidationError(f"{self.rel(path)} 的 evidence 条目必须是对象")
@@ -232,9 +236,70 @@ class Repository:
                         raise ValidationError(f"{self.rel(path)} 的 evidence 必须引用 source_ids 中的来源")
                     if item.get("stance") not in EVIDENCE_STANCES:
                         raise ValidationError(f"{self.rel(path)} 的 evidence stance 非法")
+                    evidence_kind = item.get("evidence_kind")
+                    if evidence_kind is not None:
+                        if evidence_kind not in EVIDENCE_KINDS:
+                            raise ValidationError(f"{self.rel(path)} 的 evidence_kind 非法: {evidence_kind}")
+                        evidence_id = item.get("evidence_id")
+                        if not isinstance(evidence_id, str) or not evidence_id:
+                            raise ValidationError(f"{self.rel(path)} 的结构化 evidence 缺少 evidence_id")
+                        if evidence_id in evidence_ids:
+                            raise ValidationError(f"{self.rel(path)} 的 evidence_id 重复: {evidence_id}")
+                        evidence_ids.add(evidence_id)
+                        self._validate_typed_evidence(item, path)
                     for key in ("location", "excerpt", "reason"):
-                        if not isinstance(item.get(key), str) or not item[key].strip():
+                        if evidence_kind is None and (
+                            not isinstance(item.get(key), str) or not item[key].strip()
+                        ):
                             raise ValidationError(f"{self.rel(path)} 的 evidence 缺少 {key}")
+                for item in evidence:
+                    if item.get("evidence_kind") == "calculation":
+                        inputs = item.get("input_evidence_ids")
+                        if not isinstance(inputs, list) or not inputs or not set(inputs) <= evidence_ids:
+                            raise ValidationError(f"{self.rel(path)} 的 calculation 输入 evidence 无效")
+
+    def _validate_typed_evidence(self, item: dict[str, Any], path: Path) -> None:
+        kind = item["evidence_kind"]
+        for key in ("verification_status", "input_sha256", "reason"):
+            if not isinstance(item.get(key), str) or not item[key].strip():
+                raise ValidationError(f"{self.rel(path)} 的 {kind} evidence 缺少 {key}")
+        if kind == "quote":
+            required = ("extraction_id", "span_start", "span_end", "original_text")
+            if any(item.get(key) is None for key in required):
+                raise ValidationError(f"{self.rel(path)} 的 quote 缺少 extraction/span/original_text")
+            from .extraction import ExtractionService
+            extraction_service = ExtractionService(self)
+            _, extraction, _ = extraction_service.find(str(item["extraction_id"]))
+            if (
+                extraction.get("source_id") != item.get("source_id")
+                or extraction.get("input_sha256") != item.get("input_sha256")
+                or (item.get("content_id") and extraction.get("content_id") != item.get("content_id"))
+            ):
+                raise ValidationError(f"{self.rel(path)} 的 quote provenance 与 extraction 不一致")
+            if not extraction_service.verify_span(
+                str(item["extraction_id"]), int(item["span_start"]),
+                int(item["span_end"]), str(item["original_text"]),
+            ):
+                raise ValidationError(f"{self.rel(path)} 的 quote 无法回验 extraction span")
+        elif kind == "paraphrase":
+            if not item.get("interpretation") or not any(item.get(key) is not None for key in ("page", "section", "span_start")):
+                raise ValidationError(f"{self.rel(path)} 的 paraphrase 缺少转述内容或来源位置")
+            if str(item.get("verification_status", "")).lower() in {"verbatim", "exact-quote"}:
+                raise ValidationError(f"{self.rel(path)} 的 paraphrase 不能标记为逐字 quote")
+        elif kind == "translation":
+            if not item.get("original_text") or not item.get("translated_text") or not item.get("target_language"):
+                raise ValidationError(f"{self.rel(path)} 的 translation 必须保留原文、译文和目标语言")
+            if not any(item.get(key) is not None for key in ("page", "section", "span_start")):
+                raise ValidationError(f"{self.rel(path)} 的 translation 缺少原文位置")
+        elif kind == "table_value":
+            if item.get("value") is None or not item.get("unit") or not any(item.get(key) is not None for key in ("table", "page")):
+                raise ValidationError(f"{self.rel(path)} 的 table_value 必须保留数值、单位和表格/页码")
+        elif kind == "figure":
+            if not item.get("figure") or item.get("page") is None or not item.get("interpretation"):
+                raise ValidationError(f"{self.rel(path)} 的 figure 必须保留图号、页码和解释")
+        elif kind == "calculation":
+            if not item.get("calculation_method") or item.get("result") is None:
+                raise ValidationError(f"{self.rel(path)} 的 calculation 缺少方法或结果")
 
     def rebuild_index(self) -> int:
         self.index_path.parent.mkdir(parents=True, exist_ok=True)

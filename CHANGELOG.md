@@ -9,6 +9,9 @@
 - M5 第一阶段：新增跨 URL、文件与粘贴入口共享的全局 content-addressed raw object store。
 - 新增 `gm raw verify` 与 `gm migrate raw-store --dry-run|--verify`，迁移支持自动 source 备份、本地 journal 续做和幂等重跑。
 - Source capture 新增 MIME、原始文件名与建议显示扩展名；URL path 后缀不再决定物理对象类型。
+- 新增 `gm extract`：支持文本/Markdown、HTML 正文、PDF 页码边界、中文编码降级、error/stale/rebuild。
+- 新增 logical work enrichment proposal，同一 arXiv 的多个 capture 可审计聚合而不覆盖 source。
+- Evidence schema 新增 quote、paraphrase、translation、table_value、figure、calculation；quote 可回验 extraction span。
 
 ### Changed
 

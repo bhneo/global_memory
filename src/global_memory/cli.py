@@ -11,11 +11,13 @@ from .backups import RawBackupService
 from .capture import CaptureService
 from .context import ContextPackService
 from .errors import GlobalMemoryError
+from .extraction import ExtractionService
 from .markdown import read_document
 from .proposals import ProposalService
 from .recovery import ApprovalRecoveryManager
 from .raw_store import RawStoreService
 from .repository import Repository, sha256_bytes
+from .works import WorkService
 
 
 PROPOSAL_STATUSES = {"pending", "deferred", "superseded", "published", "approved", "rejected"}
@@ -52,6 +54,18 @@ def build_parser() -> argparse.ArgumentParser:
     capture_text.add_argument("--title", default="人工输入")
     capture_text.add_argument("--comment", default="")
     commands.add_parser("inbox", help="列出尚未 compile 的来源")
+    extract = commands.add_parser("extract", help="从 immutable raw 创建可重建的 derived extraction")
+    extract.add_argument("source_id")
+    extract.add_argument("--rebuild", action="store_true")
+    extractions = commands.add_parser("extractions", help="列出 derived extractions")
+    extractions.add_argument("--source")
+    work = commands.add_parser("work", help="审计式识别 logical document/work")
+    work_commands = work.add_subparsers(dest="work_command", required=True)
+    work_propose = work_commands.add_parser("propose")
+    work_propose.add_argument("source_ids", nargs="+")
+    work_propose.add_argument("--arxiv-id")
+    work_propose.add_argument("--title")
+    work_propose.add_argument("--author", action="append", default=[])
     compile_parser = commands.add_parser("compile", help="为来源生成 proposal")
     compile_parser.add_argument("source_id")
     synthesize = commands.add_parser("synthesize", help="从多个 canonical claim 生成待审综合 proposal")
@@ -513,6 +527,8 @@ def run(args: argparse.Namespace) -> int:
     proposals = ProposalService(repository)
     backups = RawBackupService(repository)
     raw_store = RawStoreService(repository)
+    extraction_service = ExtractionService(repository)
+    works = WorkService(repository)
     if args.command == "capture":
         _print(captures.capture(args.target, args.comment, refresh=args.refresh).__dict__)
     elif args.command == "capture-text":
@@ -520,6 +536,22 @@ def run(args: argparse.Namespace) -> int:
         _print(captures.capture_text(text, args.comment, args.title).__dict__)
     elif args.command == "inbox":
         _print(proposals.inbox())
+    elif args.command == "extract":
+        result = extraction_service.extract(args.source_id, rebuild=args.rebuild)
+        _print(result.__dict__)
+        return 0 if result.status == "ready" else 1
+    elif args.command == "extractions":
+        items = []
+        for path in extraction_service.documents():
+            metadata, _ = read_document(path)
+            if args.source and metadata.get("source_id") != args.source:
+                continue
+            items.append({**metadata, "path": repository.rel(path)})
+        _print(items)
+    elif args.command == "work":
+        _print(works.propose(
+            args.source_ids, arxiv_id=args.arxiv_id, title=args.title, authors=args.author
+        ).__dict__)
     elif args.command == "compile":
         _print(proposals.compile(args.source_id).__dict__)
     elif args.command == "synthesize":

@@ -12,6 +12,9 @@ M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成
 - 全局 content-addressed raw store：不同 capture kind 的相同 bytes 共用 `objects/sha256/` 物理对象；source provenance 保持独立。
 - `gm migrate raw-store` 支持 dry-run、自动 source 备份、journal 续做、幂等重跑与迁移后验证；当前 6 个 source 已合并为 5 个唯一对象，旧路径未删除。
 - `gm raw verify` 校验 content_id、对象路径与磁盘 SHA-256。
+- `gm extract` 生成绑定 input hash/extractor version 的 derived extraction；支持文本、Markdown、HTML、PDF 页码、中文编码降级、warning/error/stale/rebuild。
+- `gm work propose` 以审计 proposal 聚合 logical work；已测试同一 arXiv 的 PDF URL、本地 PDF 和 abstract capture 只形成一个 work，source record 不变。
+- Evidence taxonomy 支持 quote、paraphrase、translation、table_value、figure、calculation；quote 必须逐字回验 extraction span。
 - canonical URL 规范化、同来源去重、跨来源内容去重且不丢 source record。
 - SQLite FTS5 + 中文子串 fallback；结果包含来源 ID。
 - 确定性规则 compile proposal、candidate 哈希、内容级 unified diff。
@@ -54,7 +57,7 @@ M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成
 
 ## What is being implemented
 
-- 正在实现 derived extraction layer，随后是 logical work、evidence taxonomy 和 bundle compiler。
+- Derived extraction、logical work 与 evidence taxonomy 已完成；正在实现 bundle compiler 与 item-level review。
 
 ## Known defects
 

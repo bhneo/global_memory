@@ -25,6 +25,7 @@ CANONICAL_DIRECTORIES = {
     "concept": "vault/knowledge/concepts",
     "claim": "vault/knowledge/claims",
     "synthesis": "vault/knowledge/syntheses",
+    "work": "vault/knowledge/works",
     "intuition": "vault/frontier/intuitions",
     "question": "vault/frontier/questions",
     "tension": "vault/frontier/tensions",
