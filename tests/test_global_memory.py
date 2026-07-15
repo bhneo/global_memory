@@ -539,6 +539,90 @@ def test_model_candidate_import_records_reproducibility_and_requires_approval(
     assert "模型候选内容" in approved_body
 
 
+def test_validated_claim_can_publish_provisional_then_promote(
+    repo: Repository, workspace: Path
+) -> None:
+    captured = CaptureService(repo).capture_text("Evidence supports a bounded claim.")
+    metadata = {
+        "id": "claim_provisional_flow", "type": "claim", "status": "proposal",
+        "title": "可分级发布的主张", "created_at": "2026-07-15T10:00:00+08:00",
+        "updated_at": "2026-07-15T10:00:00+08:00", "aliases": [], "tags": [],
+        "domains": ["knowledge-management"], "confidence": "medium",
+        "source_ids": [captured.source_id],
+        "evidence": [{
+            "source_id": captured.source_id, "location": "第 1 段",
+            "excerpt": "Evidence supports a bounded claim.", "stance": "supports",
+            "reason": "来源直接支持该限定主张。",
+        }],
+        "applicability": ["仅限该来源明确描述的范围。"],
+        "uncertainty": "尚未经过用户人工确认。",
+        "relations": [{
+            "type": "derived_from", "target_id": captured.source_id,
+            "reason": "从该来源提取",
+        }],
+    }
+    candidate = workspace / "provisional-candidate.md"
+    candidate.write_text(render_document(metadata, "bounded searchable claim"), encoding="utf-8")
+    proposal = ProposalService(repo).propose_model_candidate(
+        captured.source_id, candidate, "cursor", "test-model", "v1",
+        "未经人工确认", "批量导入", None,
+    )
+
+    service = ProposalService(repo)
+    target = service.publish(proposal.proposal_id)
+    published, _ = read_document(repo.root / target)
+    assert published["status"] == "provisional"
+    assert published["published_via"] == proposal.proposal_id
+    assert "approved_via" not in published
+    _, proposal_metadata, _ = repo.find_document(proposal.proposal_id)
+    assert proposal_metadata["status"] == "published"
+    result = next(item for item in repo.search("bounded") if item.id == metadata["id"])
+    assert result.status == "provisional"
+    pack = ContextPackService(repo).build("bounded", 512).as_dict()
+    item = next(item for item in pack["items"] if item["id"] == metadata["id"])
+    assert item["knowledge_status"] == "provisional"
+
+    service.promote(metadata["id"], "用户核对原文后确认")
+    confirmed, _ = read_document(repo.root / target)
+    assert confirmed["status"] == "confirmed"
+    assert confirmed["confirmed_by"] == "human-cli"
+
+
+def test_provisional_publish_blocks_conflicting_or_high_risk_claim(
+    repo: Repository, workspace: Path
+) -> None:
+    captured = CaptureService(repo).capture_text("A disputed investment claim.")
+    metadata = {
+        "id": "claim_blocked_provisional", "type": "claim", "status": "proposal",
+        "title": "高风险主张", "created_at": "2026-07-15T10:00:00+08:00",
+        "updated_at": "2026-07-15T10:00:00+08:00", "aliases": [],
+        "tags": ["investment"], "domains": [], "confidence": "medium",
+        "source_ids": [captured.source_id],
+        "evidence": [{
+            "source_id": captured.source_id, "location": "第 1 段",
+            "excerpt": "A disputed investment claim.", "stance": "supports",
+            "reason": "来源提出该主张。",
+        }],
+        "applicability": ["测试"], "uncertainty": "高风险且未经确认。",
+        "relations": [],
+    }
+    candidate = workspace / "blocked-candidate.md"
+    candidate.write_text(render_document(metadata, "blocked"), encoding="utf-8")
+    proposal = ProposalService(repo).propose_model_candidate(
+        captured.source_id, candidate, "cursor", "test-model", "v1", "高风险", "测试", None,
+    )
+    with pytest.raises(ValidationError, match="高风险"):
+        ProposalService(repo).publish(proposal.proposal_id)
+    assert not (repo.root / proposal.target_path).exists()
+
+
+def test_cli_exposes_publish_and_promote_commands() -> None:
+    published = build_parser().parse_args(["proposal", "publish", "proposal_123"])
+    assert published.proposal_command == "publish"
+    promoted = build_parser().parse_args(["promote", "claim_123", "--reason", "reviewed"])
+    assert promoted.target_id == "claim_123"
+
+
 def test_model_candidate_requires_input_source_provenance(repo: Repository, workspace: Path) -> None:
     captured = CaptureService(repo).capture_text("Model provenance validation.")
     candidate_metadata = {

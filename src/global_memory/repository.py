@@ -51,6 +51,7 @@ class SearchResult:
     type: str
     title: str
     path: str
+    status: str
     source_ids: list[str]
     snippet: str
 
@@ -297,6 +298,7 @@ class Repository:
         return [
             SearchResult(
                 id=row["id"], type=row["type"], title=row["title"], path=row["path"],
+                status=row["status"],
                 source_ids=json.loads(row["source_ids"]), snippet=row["snippet"] or "",
             )
             for row in rows[:limit]

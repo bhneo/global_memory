@@ -13,7 +13,7 @@
 2. Evidence 的每条记录保存 `source_id`、位置、摘录、方向和理由，且 source 必须出现在 claim `source_ids` 中。
 3. Evidence direction 只允许 `supports`、`contradicts`、`context`。正反证据可以并存，`context` 不构成自动事实判断。
 4. `confidence` 只允许 `unknown`、`low`、`medium`、`high`；它表达当前判断强度，不能取代 `uncertainty`。
-5. 规则 compile 只生成 `context` evidence；model claim 在导入时必须提交完整 evidence/applicability/uncertainty，以便人工审阅。
+5. 规则 compile 只生成 `context` evidence；model claim 在导入时必须提交完整 evidence/applicability/uncertainty，以便自动门禁和必要的人工审阅。
 
 ## Consequences
 

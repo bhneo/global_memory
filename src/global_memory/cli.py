@@ -17,7 +17,7 @@ from .recovery import ApprovalRecoveryManager
 from .repository import Repository, sha256_bytes
 
 
-PROPOSAL_STATUSES = {"pending", "deferred", "superseded", "approved", "rejected"}
+PROPOSAL_STATUSES = {"pending", "deferred", "superseded", "published", "approved", "rejected"}
 WIKILINK_PATTERN = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
 
 
@@ -76,7 +76,7 @@ def build_parser() -> argparse.ArgumentParser:
     model_propose.add_argument("--reason", required=True)
     proposals = commands.add_parser("proposals", help="列出 proposals")
     proposals.add_argument(
-        "--status", choices=["pending", "deferred", "superseded", "approved", "rejected"]
+        "--status", choices=["pending", "deferred", "superseded", "published", "approved", "rejected"]
     )
 
     proposal = commands.add_parser("proposal", help="审阅 proposal")
@@ -85,6 +85,10 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_show.add_argument("proposal_id")
     proposal_approve = proposal_commands.add_parser("approve")
     proposal_approve.add_argument("proposal_id")
+    proposal_publish = proposal_commands.add_parser(
+        "publish", help="经自动门禁发布为可检索但未人工确认的 provisional knowledge"
+    )
+    proposal_publish.add_argument("proposal_id")
     proposal_reject = proposal_commands.add_parser("reject")
     proposal_reject.add_argument("proposal_id")
     proposal_reject.add_argument("--reason", default="")
@@ -95,6 +99,10 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_revise.add_argument("proposal_id")
     proposal_revise.add_argument("--from-file", dest="candidate_file", required=True)
     proposal_revise.add_argument("--reason", required=True)
+
+    promote = commands.add_parser("promote", help="将 provisional canonical knowledge 显式晋升为 confirmed")
+    promote.add_argument("target_id")
+    promote.add_argument("--reason", default="")
 
     search = commands.add_parser("search", help="全文检索来源和 canonical knowledge")
     search.add_argument("query")
@@ -527,12 +535,16 @@ def run(args: argparse.Namespace) -> int:
             _print(proposals.show(args.proposal_id))
         elif args.proposal_command == "approve":
             _print({"approved": args.proposal_id, "target_path": proposals.approve(args.proposal_id)})
+        elif args.proposal_command == "publish":
+            _print({"published": args.proposal_id, "target_path": proposals.publish(args.proposal_id)})
         elif args.proposal_command == "reject":
             _print({"rejected": args.proposal_id, "proposal_path": proposals.reject(args.proposal_id, args.reason)})
         elif args.proposal_command == "defer":
             _print({"deferred": args.proposal_id, "proposal_path": proposals.defer(args.proposal_id, args.reason)})
         else:
             _print(proposals.revise(args.proposal_id, args.candidate_file, args.reason).__dict__)
+    elif args.command == "promote":
+        _print({"confirmed": args.target_id, "target_path": proposals.promote(args.target_id, args.reason)})
     elif args.command == "search":
         _print([result.__dict__ for result in repository.search(args.query, args.limit)])
     elif args.command == "context":

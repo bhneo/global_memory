@@ -14,8 +14,12 @@ from .recovery import ApprovalRecoveryManager, FailureHook
 from .repository import Repository, now_iso, sha256_bytes, slugify
 
 
-CANONICAL_STATUSES = {"confirmed", "contested", "superseded", "archived"}
+CANONICAL_STATUSES = {"provisional", "confirmed", "contested", "superseded", "archived"}
 REVIEWABLE_PROPOSAL_STATUSES = {"pending", "deferred"}
+PROVISIONAL_BLOCKED_TAGS = {
+    "medical", "medicine", "health", "healthcare", "legal", "law",
+    "finance", "financial", "investment", "医疗", "健康", "法律", "金融", "投资",
+}
 CANONICAL_DIRECTORIES = {
     "entity": "vault/knowledge/entities",
     "concept": "vault/knowledge/concepts",
@@ -1146,11 +1150,47 @@ class ProposalService:
             old["target_path"], action,
         )
 
-    def approve(self, proposal_id: str) -> str:
+    def _validate_provisional_candidate(self, proposal: dict[str, Any], candidate: dict[str, Any]) -> None:
+        if proposal.get("proposal_kind") in {"source_refresh", "relation_discovery", "deterministic_synthesis"}:
+            raise ValidationError("该 proposal 类型不能自动发布为 provisional，必须人工 approve")
+        if candidate.get("type") != "claim":
+            raise ValidationError("当前 provisional 自动发布只允许结构化 claim")
+        if candidate.get("confidence") not in {"low", "medium", "high"}:
+            raise ValidationError("provisional claim 必须给出明确 confidence")
+        if not candidate.get("source_ids"):
+            raise ValidationError("provisional claim 必须保留 source_ids")
+        if not candidate.get("applicability"):
+            raise ValidationError("provisional claim 必须声明 applicability")
+        if not candidate.get("uncertainty"):
+            raise ValidationError("provisional claim 必须声明 uncertainty")
+        evidence = candidate.get("evidence")
+        if not isinstance(evidence, list) or not evidence:
+            raise ValidationError("provisional claim 必须包含结构化 evidence")
+        if not any(item.get("stance") == "supports" for item in evidence if isinstance(item, dict)):
+            raise ValidationError("provisional claim 至少需要一条 supports evidence")
+        if any(item.get("stance") == "contradicts" for item in evidence if isinstance(item, dict)):
+            raise ValidationError("含 contradicts evidence 的 claim 必须人工审阅")
+        risk_labels = {
+            str(label).strip().lower()
+            for label in [*candidate.get("tags", []), *candidate.get("domains", [])]
+        }
+        if risk_labels & PROVISIONAL_BLOCKED_TAGS:
+            raise ValidationError("高风险领域 claim 必须人工 approve")
+
+    def publish(self, proposal_id: str) -> str:
+        """Publish a validated claim as searchable but not human-confirmed knowledge."""
+        return self.approve(proposal_id, canonical_status="provisional", human_review=False)
+
+    def approve(
+        self, proposal_id: str, *, canonical_status: str | None = None,
+        human_review: bool = True,
+    ) -> str:
         proposal_path, proposal, proposal_body = self._load_proposal(proposal_id)
         if proposal.get("status") not in REVIEWABLE_PROPOSAL_STATUSES:
             raise ValidationError(f"proposal 状态不可批准: {proposal.get('status')}")
         if proposal.get("proposal_kind") == "source_refresh":
+            if not human_review:
+                raise ValidationError("source refresh 必须人工 approve")
             target_path = self.repository.resolve_inside(proposal["target_path"])
             target, _ = read_document(target_path)
             _, previous, _ = self._source(proposal["previous_source_id"])
@@ -1184,6 +1224,8 @@ class ProposalService:
             )
             return self.repository.rel(target_path)
         if proposal.get("proposal_kind") == "relation_discovery":
+            if not human_review:
+                raise ValidationError("relation discovery 必须人工 approve")
             self._validate_discovery_inputs(proposal)
             approved_at = now_iso()
             proposal["status"] = "approved"
@@ -1206,6 +1248,8 @@ class ProposalService:
             raise ValidationError("candidate 身份或状态无效")
         if proposal.get("proposal_kind") == "deterministic_synthesis":
             self._validate_synthesis_inputs(proposal)
+        if not human_review:
+            self._validate_provisional_candidate(proposal, candidate)
         target_path = self.repository.resolve_inside(proposal["target_path"])
         target_before_sha256: str | None = None
         if proposal["action"] == "create" and target_path.exists():
@@ -1235,19 +1279,27 @@ class ProposalService:
         approved_at = now_iso()
         canonical = dict(candidate)
         proposed_status = canonical.pop("proposed_status", default_status)
+        if canonical_status is not None:
+            proposed_status = canonical_status
         if proposed_status not in CANONICAL_STATUSES:
             raise ValidationError(f"candidate proposed_status 非法: {proposed_status}")
         canonical["status"] = proposed_status
         canonical["updated_at"] = approved_at
-        canonical["approved_via"] = proposal_id
+        if human_review:
+            canonical["approved_via"] = proposal_id
+        else:
+            canonical["published_via"] = proposal_id
         canonical["change_reason"] = proposal.get(
             "change_reason", f"人工批准 proposal {proposal_id}"
         )
         canonical_text = render_document(canonical, body)
-        proposal["status"] = "approved"
+        proposal["status"] = "approved" if human_review else "published"
         proposal["updated_at"] = approved_at
         proposal["reviewed_at"] = approved_at
-        proposal["review_reason"] = "人工通过 CLI 明确批准"
+        proposal["review_reason"] = (
+            "人工通过 CLI 明确批准" if human_review
+            else "通过结构与风险门禁，发布为 provisional；尚未人工确认"
+        )
         proposal_after_text = render_document(proposal, proposal_body)
 
         recovery = ApprovalRecoveryManager(self.repository)
@@ -1261,13 +1313,35 @@ class ProposalService:
             proposal_before_sha256=sha256_bytes(proposal_path.read_bytes()),
             proposal_after_text=proposal_after_text,
             audit_payload={
-                "event": "approved", "proposal_id": proposal_id,
+                "event": "approved" if human_review else "published-provisional",
+                "proposal_id": proposal_id,
                 "target_path": proposal["target_path"],
             },
         )
         if self.failure_hook is not None:
             self.failure_hook("prepared")
         recovery.recover_one(journal_path, self.failure_hook)
+        return self.repository.rel(target_path)
+
+    def promote(self, target_id: str, reason: str = "") -> str:
+        """Explicitly promote provisional canonical knowledge to human-confirmed."""
+        target_path, metadata, body = self.repository.find_document(target_id)
+        if metadata.get("type") in {"source", "proposal"}:
+            raise ValidationError("只有 canonical knowledge 可以晋升")
+        if metadata.get("status") != "provisional":
+            raise ValidationError(f"只有 provisional 对象可以晋升: {metadata.get('status')}")
+        confirmed_at = now_iso()
+        metadata["status"] = "confirmed"
+        metadata["updated_at"] = confirmed_at
+        metadata["confirmed_at"] = confirmed_at
+        metadata["confirmed_by"] = "human-cli"
+        metadata["confirmation_reason"] = reason or "用户通过 CLI 显式确认"
+        atomic_write_text(target_path, render_document(metadata, body))
+        self.repository.append_event(
+            "proposal-events",
+            {"event": "promoted-confirmed", "target_id": target_id, "reason": reason},
+        )
+        self.repository.rebuild_index()
         return self.repository.rel(target_path)
 
     def reject(self, proposal_id: str, reason: str = "") -> str:

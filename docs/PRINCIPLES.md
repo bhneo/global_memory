@@ -5,7 +5,7 @@
 3. **Obsidian-ready，Obsidian-optional。** 使用 Frontmatter、相对附件和 wikilinks，但核心不依赖插件数据库。
 4. **raw 只追加。** 修正通过新版本、补充记录或状态变化表达，不静默覆盖旧证据。
 5. **来源与解释分层。** 原文、人的直觉、Agent 解释、人工确认知识、认知前沿、行动对象和派生索引职责分离。
-6. **Agent 只能提议。** 默认不得静默修改 canonical knowledge、升级事实、合并概念或批量重写。
+6. **Agent 不能静默升级事实。** Agent 可在显式、可审计的自动门禁下把合格 claim 发布为 `provisional`，但不得自行晋升为 `confirmed`、合并概念或批量重写。
 7. **保留认知演化。** 使用 contested、superseded、archived、valid_during、superseded_by、change_reason 表达变化。
 8. **未知用途合法。** intuition、anomaly、tension、analogy、hypothesis 都有长期位置。
 9. **关系重质量。** 每条边有类型和理由，不设固定链接配额。

@@ -22,7 +22,7 @@
 
 ## M3 — 高质量编译与认知治理
 
-- Provider-neutral model processor（仍只产 proposal）。（已完成：外部 candidate 导入边界）
+- Provider-neutral model processor（先产 proposal）。（已完成：外部 candidate 导入边界，以及 provisional/confirmed 分级发布）
 - Claim 定位、矛盾证据、适用条件和不确定性 schema。（已完成）
 - Contradiction audit。（已完成）
 - 可审阅 synthesis proposal。（已完成；自动周期调度暂缓）

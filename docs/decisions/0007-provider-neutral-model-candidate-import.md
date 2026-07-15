@@ -10,7 +10,7 @@ Global Memory 需要能够利用模型提炼资料，但不应把任何特定 SD
 ## Decision
 
 1. 第一版模型边界不调用 provider。用户在自己选择的模型环境中生成 candidate Markdown，再用 `gm model-propose` 显式导入。
-2. Candidate 必须使用既有 proposal schema，保留输入 `source_id`，并经过同一套不可变保存、diff、approve/reject/defer/revise、乐观并发和 recovery 流程。
+2. Candidate 必须使用既有 proposal schema，保留输入 `source_id`，并经过同一套不可变保存、diff、publish/approve/reject/defer/revise、乐观并发和 recovery 流程。符合 ADR 0013 门禁的 claim 可发布为 provisional；confirmed 仍需人工确认。
 3. 每个 `model_candidate` proposal 保存 provider、model、prompt version、可选 prompt SHA-256、输入 source ID/content SHA-256 与不确定性。
 4. Prompt 本文和 raw 本文不复制进 proposal，也不由 CLI 向 provider 发送；外部发送行为属于用户选择的模型环境。
 5. 未来实际 provider adapter 只能扩展该导入边界，必须默认显式授权并产出同一审计字段和 proposal schema。

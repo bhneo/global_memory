@@ -34,6 +34,7 @@ class ContextPack:
                 "notes": [
                     "Context Pack 是临时读取视图，不写入 Markdown、索引或日志。",
                     "它不替代检索，不把命中或摘录升级为事实，也不改变 canonical 状态。",
+                    "provisional 表示已通过自动门禁但尚未人工确认；调用方必须保留该信任标记。",
                     "token 为保守估算；每项保留路径、哈希、来源和入选理由，供调用方回溯。",
                 ],
             },
@@ -172,6 +173,7 @@ class ContextPackService:
                 {
                     "id": str(metadata["id"]),
                     "type": object_type,
+                    "knowledge_status": str(metadata.get("status")),
                     "title": str(metadata["title"]),
                     "path": self.repository.rel(path),
                     "document_sha256": sha256_bytes(path.read_bytes()),
@@ -181,7 +183,7 @@ class ContextPackService:
                     "content": content,
                     "selection_reason": (
                         f"全文检索命中第 {search_rank} 位；"
-                        f"对象类型为 {object_type}；保留其显式来源链。"
+                        f"对象类型为 {object_type}；状态为 {metadata.get('status')}；保留其显式来源链。"
                     ),
                 },
             ))

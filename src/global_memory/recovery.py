@@ -75,14 +75,22 @@ class ApprovalRecoveryManager:
 
         target_metadata, _ = parse_document_text(target_after_text)
         proposal_metadata, _ = parse_document_text(proposal_after_text)
+        approved_pair = (
+            target_metadata.get("approved_via") == proposal_id
+            and proposal_metadata.get("status") == "approved"
+        )
+        published_pair = (
+            target_metadata.get("published_via") == proposal_id
+            and target_metadata.get("status") == "provisional"
+            and proposal_metadata.get("status") == "published"
+        )
         if (
             target_metadata.get("id") != target_id
-            or target_metadata.get("approved_via") != proposal_id
             or proposal_metadata.get("id") != proposal_id
-            or proposal_metadata.get("status") != "approved"
+            or not (approved_pair or published_pair)
         ):
-            raise ValidationError("拒绝创建内容身份无效的 approval journal")
-        operation_id = f"approve_{proposal_id}"
+            raise ValidationError("拒绝创建内容身份无效的 canonical journal")
+        operation_id = f"{'approve' if approved_pair else 'publish'}_{proposal_id}"
         record = {
             "journal_version": 1,
             "operation": "approve_canonical",
@@ -143,15 +151,23 @@ class ApprovalRecoveryManager:
             raise ValidationError(f"journal proposal payload 哈希不匹配: {path.name}")
         target_metadata, _ = parse_document_text(target_after)
         proposal_metadata, _ = parse_document_text(proposal_after)
+        approved_pair = (
+            target_metadata.get("approved_via") == record["proposal_id"]
+            and proposal_metadata.get("status") == "approved"
+        )
+        published_pair = (
+            target_metadata.get("published_via") == record["proposal_id"]
+            and target_metadata.get("status") == "provisional"
+            and proposal_metadata.get("status") == "published"
+        )
         if (
             not record["target_path"].startswith(
                 ("vault/knowledge/", "vault/frontier/", "vault/action/")
             )
             or not record["proposal_path"].startswith("vault/proposals/proposal-")
             or target_metadata.get("id") != record["target_id"]
-            or target_metadata.get("approved_via") != record["proposal_id"]
             or proposal_metadata.get("id") != record["proposal_id"]
-            or proposal_metadata.get("status") != "approved"
+            or not (approved_pair or published_pair)
             or record["audit_payload"].get("operation_id") != record["operation_id"]
         ):
             raise ValidationError(f"journal 身份或路径约束无效: {path.name}")

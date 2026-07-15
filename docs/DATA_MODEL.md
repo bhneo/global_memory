@@ -6,7 +6,7 @@
 |---|---|---:|---:|
 | Content object | 原始 bytes SHA-256 | 是 | 否 |
 | Source record | kind + canonical locator SHA-256 | 否 | 否 |
-| Knowledge object | 稳定语义 ID | 不适用 | 仅经批准 proposal |
+| Knowledge object | 稳定语义 ID | 不适用 | 经门禁发布或人工批准的 proposal |
 | Proposal | source + candidate hash | 同编译结果复用 | 状态可审计变化 |
 | SQLite row | 从 Markdown ID 派生 | 不适用 | 可删除重建 |
 
@@ -37,7 +37,7 @@ Relation discovery 是 proposal 元数据，不是知识图自动写入。它把
 
 ## 状态演化
 
-典型状态：`proposal → confirmed → contested → superseded|archived`。状态不是置信度；`confirmed` 只说明经过审批进入 canonical，不代表客观真理。变化必须更新 `updated_at`、`change_reason`，必要时设置 `superseded_by` 和 `valid_during`。
+典型状态：`proposal → provisional → confirmed → contested → superseded|archived`。`provisional` 已可检索但尚未人工确认；`confirmed` 表示用户显式确认，仍不代表客观真理。状态不是置信度。变化必须更新 `updated_at`、`change_reason`，必要时设置 `superseded_by` 和 `valid_during`。
 
 ## Context Pack
 

@@ -30,6 +30,8 @@ gm compile <source-id>
 gm model-propose <source-id> --candidate model-candidate.md --provider local --model my-model --prompt-version v1 --prompt-file prompt.md --uncertainty "待人工核验" --reason "导入模型结果"
 gm proposal show <proposal-id>
 gm proposal approve <proposal-id>
+gm proposal publish <proposal-id>
+gm promote <canonical-id> --reason "已核对原文"
 gm proposal defer <proposal-id> --reason "等待补充证据"
 gm proposal revise <proposal-id> --from-file revised-candidate.md --reason "人工修订候选主张"
 gm recover
@@ -100,7 +102,9 @@ gm doctor
 
 ## Canonical update 语义
 
-Candidate 必须是 UTF-8 Markdown，保持 target 的 `id`、`type`、`created_at`，使用 `status: proposal`；可用 `proposed_status` 建议 `confirmed`、`contested`、`superseded` 或 `archived`。Claim 必须保留至少一个 `source_id`。
+Candidate 必须是 UTF-8 Markdown，保持 target 的 `id`、`type`、`created_at`，使用 `status: proposal`；可用 `proposed_status` 建议 `provisional`、`confirmed`、`contested`、`superseded` 或 `archived`。Claim 必须保留至少一个 `source_id`。
+
+批量导入时，结构化 claim 可通过 `proposal publish` 进入 `provisional`：它会立即进入全文检索和 Context Pack，但明确标注为“已通过自动门禁、尚未人工确认”。缺少来源、证据、适用范围或不确定性，包含反证，属于医疗、法律、金融等高风险领域，或不是 claim 的 proposal，都必须保留在待审区并使用人工 `proposal approve`。用户核对后用 `promote` 将其晋升为 `confirmed`。
 
 `propose-update` 会不可变保存当时的 base snapshot 和 candidate，并记录两者 SHA-256。审批时 target 必须仍与 base 完全相同；如期间发生人工编辑，审批会失败且不写文件。再次运行 `proposal show` 可看到 Base→Candidate 和 Base→Current，随后应基于当前 canonical 重新创建 proposal。系统当前不自动合并冲突。
 
@@ -122,7 +126,7 @@ Canonical approve 在写入任何 target 前，会原子创建 `system/recovery/
 
 ## Provider-neutral model proposal
 
-模型处理器的第一版是“外部 candidate 导入器”，而不是 SDK 或云端调用器。请在你选择的模型环境中生成 UTF-8 candidate Markdown，再通过 `gm model-propose` 显式导入。Candidate 必须使用 `status: proposal`，并在 `source_ids` 中保留输入 source；系统将不可变保存 candidate、生成 diff，并记录 `provider`、`model`、`prompt_version`、可选 `prompt_sha256`、输入 source/content hash 与不确定性。
+模型处理器的第一版是“外部 candidate 导入器”，而不是 SDK 或云端调用器。请在你选择的模型环境中生成 UTF-8 candidate Markdown，再通过 `gm model-propose` 显式导入。Candidate 必须使用 `status: proposal`，并在 `source_ids` 中保留输入 source；系统将不可变保存 candidate、生成 diff，并记录 `provider`、`model`、`prompt_version`、可选 `prompt_sha256`、输入 source/content hash 与不确定性。导入后可按 ADR 0013 选择门禁发布为 provisional 或人工批准为 confirmed。
 
 若 candidate 类型为 `claim`，还必须填写 `evidence[]`、`applicability[]` 与 `uncertainty`。每条 evidence 需要来源、位置、摘录、`supports` / `contradicts` / `context` 方向和理由；详见 [SCHEMA.md](SCHEMA.md)。
 

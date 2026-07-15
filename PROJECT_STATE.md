@@ -12,7 +12,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 - canonical URL 规范化、同来源去重、跨来源内容去重且不丢 source record。
 - SQLite FTS5 + 中文子串 fallback；结果包含来源 ID。
 - 确定性规则 compile proposal、candidate 哈希、内容级 unified diff。
-- approve/reject gate；未批准 proposal 不触碰 canonical knowledge。
+- 分级发布 gate：合格的结构化 claim 可先进入 `provisional` canonical；`approved`/`confirmed` 仍要求用户显式确认。
 - typed relation 校验、show、related、status、doctor、索引全量重建。
 - Windows 路径、中文文件名和索引文件原子替换测试。
 - 显式 `gm capture <url> --refresh`；未变化时去重，变化时追加版本。
@@ -47,7 +47,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 - VIA 验收确认 canonical claim 可被 `VIA`、`waypoint` 等内容查询召回，Context Pack 在 600/1200 token budget 下保留 claim、source_ids、文档 hash 与 raw source hash；原始 PDF 正文仍未进入派生全文索引。
 - VIA 首次导入暴露了范围治理问题：材料入库是为了积累跨领域知识并验证 Global Memory，不要求每条来源都映射为系统自身的设计启发；范围纠正 proposal 已经用户明确批准，canonical 正文现只保留机器人论文知识、实验结果与适用边界，纠偏原因保留在审计 metadata 中。
 - 首轮 quickstart 端到端测试 claim 已按用户要求从 `vault/knowledge/claims/` 物理移除，并在 `vault/archive/` 只保留最小墓碑；Context Pack 默认排除其 source，raw、proposal 和 approval 历史继续用于审计回溯。
-- Cursor 首批真实材料导入完成两篇论文、八条 model proposal；人工 PDF 复核后已通过 revision 补全自包含正文、收紧 33×/2.4× 结论范围，并为 Play2Perfect 增加官方 arXiv 页面来源。原八条 proposal 保留为 superseded，新八条仍为 pending，尚未写入 canonical。
+- Cursor 首批真实材料导入完成两篇论文、八条 model proposal；人工 PDF 复核后已通过 revision 补全自包含正文、收紧 33×/2.4× 结论范围，并为 Play2Perfect 增加官方 arXiv 页面来源。原八条 proposal 保留为 superseded，新八条仍为 pending，尚未写入 canonical；可在新门禁下逐条发布为 provisional。
 
 ## What is being implemented
 
@@ -72,7 +72,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 - Markdown/raw source 为真相源；SQLite 仅为可重建派生层。
 - 第一版零运行时第三方依赖，使用 argparse、urllib 与 SQLite FTS5。
 - 相同内容不同来源共享 content object，但保留独立 source record。
-- compile 默认只生成低置信度 proposal；canonical 写入必须明确 approve。
+- compile 默认只生成低置信度 proposal；自动发布仅限证据结构完整、无反证、非高风险领域的 claim，并固定写为 provisional；confirmed 必须显式 approve 或 promote。
 - 真实示例已完成 capture → compile → diff → approve → search；`gm doctor` 返回 `ok: true`。
 - ADR 0002 确定显式 refresh、append-only source version 和独立 refresh proposal。
 - ADR 0003 确定 canonical update 使用乐观并发；冲突拒绝覆盖且不自动合并。
@@ -88,7 +88,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 
 ## Next concrete task
 
-人工审阅 Cursor 首批八条修订 proposal，按论文分批批准；随后设计 PDF 正文的可重建派生提取层，要求保留 extractor/version/input hash/page provenance。
+用 provisional 门禁发布 Cursor 首批八条修订 proposal；仅对需要长期背书的关键结论人工 promote。随后设计 PDF 正文的可重建派生提取层，要求保留 extractor/version/input hash/page provenance。
 
 ## Do not do yet
 
