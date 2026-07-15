@@ -1,10 +1,10 @@
 ---
 id: "proposal_2bda12923e2b1eb92619a249"
 type: "proposal"
-status: "pending"
+status: "approved"
 title: "更新 VIA 表明稳定的视觉工具界面可让通用 Agent 在限定仿真任务中零样本闭环控制机器人"
 created_at: "2026-07-15T11:46:12+08:00"
-updated_at: "2026-07-15T11:46:12+08:00"
+updated_at: "2026-07-15T11:48:55+08:00"
 aliases: []
 tags: []
 domains: []
@@ -21,8 +21,8 @@ base_sha256: "68293f443040863e62c6890f58ad0fa752c8cd333b9d267eef8f94c9b09ac7d5"
 candidate_path: "vault/proposals/candidate-proposal_2bda12923e2b1eb92619a249.md"
 candidate_sha256: "91da9afb63f1033b4f846f3fe3aa20fe2f37adbada50c34653c79fd577fda2bb"
 change_reason: "真实材料导入的目标是忠实保存论文知识并验证系统，不要求材料服务于 Global Memory 自身设计；删除越界的架构类比"
-reviewed_at: null
-review_reason: null
+reviewed_at: "2026-07-15T11:48:55+08:00"
+review_reason: "人工通过 CLI 明确批准"
 ---
 
 # 更新 VIA 表明稳定的视觉工具界面可让通用 Agent 在限定仿真任务中零样本闭环控制机器人

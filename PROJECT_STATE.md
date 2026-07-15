@@ -45,7 +45,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 - `gm context <query> --token-budget <n>` 只读生成临时 Context Pack：确定性选择少量 source/claim/synthesis，逐项保留文档 hash、来源链和选择理由；不写入 Markdown、索引或日志，也不提升事实状态。
 - 第一条真实论文材料 VIA（arXiv:2607.11119v1）已完成官方 URL raw capture、带页码证据与反外推边界的 proposal 审阅，并经用户明确批准写入 canonical claim。
 - VIA 验收确认 canonical claim 可被 `VIA`、`waypoint` 等内容查询召回，Context Pack 在 600/1200 token budget 下保留 claim、source_ids、文档 hash 与 raw source hash；原始 PDF 正文仍未进入派生全文索引。
-- VIA 首次导入暴露了范围治理问题：材料入库是为了积累跨领域知识并验证 Global Memory，不要求每条来源都映射为系统自身的设计启发；已为删除越界架构类比、恢复纯机器人论文知识创建 canonical update proposal，等待明确批准。
+- VIA 首次导入暴露了范围治理问题：材料入库是为了积累跨领域知识并验证 Global Memory，不要求每条来源都映射为系统自身的设计启发；范围纠正 proposal 已经用户明确批准，canonical 正文现只保留机器人论文知识、实验结果与适用边界，纠偏原因保留在审计 metadata 中。
 
 ## What is being implemented
 
@@ -86,7 +86,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 
 ## Next concrete task
 
-先审阅并批准 VIA 范围纠正 proposal；随后设计 PDF 正文的可重建派生提取层，要求保留 extractor/version/input hash/page provenance，并用 VIA 验证中文短语、source version 与 token budget 下的召回质量。
+设计 PDF 正文的可重建派生提取层，要求保留 extractor/version/input hash/page provenance，并用 VIA 验证中文短语、source version 与 token budget 下的召回质量。
 
 ## Do not do yet
 
