@@ -320,6 +320,28 @@ def test_context_pack_uses_only_the_latest_source_in_a_family(repo: Repository) 
     assert any(item["id"] == first.source_id and "旧版本" in item["reason"] for item in pack["omitted"])
 
 
+def test_context_pack_excludes_archived_canonical_knowledge(repo: Repository) -> None:
+    captured, target_path = create_approved_claim(repo, "Archived quickstart fixture knowledge.")
+    metadata, body = read_document(target_path)
+    metadata["status"] = "archived"
+    target_path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    pack = ContextPackService(repo).build("Archived quickstart", token_budget=400).as_dict()
+
+    target_id = str(metadata["id"])
+    assert target_id not in {item["id"] for item in pack["items"]}
+    assert captured.source_id not in {item["id"] for item in pack["items"]}
+    assert any(
+        item["id"] == target_id and "已归档" in item["reason"]
+        for item in pack["omitted"]
+    )
+    assert any(
+        item["id"] == captured.source_id and "仅被已归档" in item["reason"]
+        for item in pack["omitted"]
+    )
+
+
 def test_lint_accepts_valid_truth_and_proposal_chain(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Lint checks provenance and proposal integrity.")
     proposal = ProposalService(repo).compile(captured.source_id)

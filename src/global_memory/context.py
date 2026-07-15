@@ -114,6 +114,16 @@ class ContextPackService:
                 latest[family] = (version_key, str(metadata["id"]))
         return {item[1] for item in latest.values()}
 
+    def _archived_only_source_ids(self) -> set[str]:
+        """Return sources referenced by archived canonical knowledge and no active canonical."""
+        archived: set[str] = set()
+        active: set[str] = set()
+        for path in self.repository.canonical_documents():
+            metadata, _ = read_document(path)
+            destination = archived if metadata.get("status") == "archived" else active
+            destination.update(str(item) for item in metadata.get("source_ids", []))
+        return archived - active
+
     def build(self, query: str, token_budget: int = 1_200) -> ContextPack:
         query = query.strip()
         if not query:
@@ -124,6 +134,7 @@ class ContextPackService:
             )
 
         latest_source_ids = self._latest_source_ids()
+        archived_only_source_ids = self._archived_only_source_ids()
         ranked: list[tuple[int, int, dict[str, Any]]] = []
         omitted: list[dict[str, Any]] = []
         for search_rank, result in enumerate(self.repository.search(query, SEARCH_LIMIT), start=1):
@@ -131,10 +142,22 @@ class ContextPackService:
             object_type = str(metadata.get("type"))
             if object_type not in {"source", "claim", "synthesis"}:
                 continue
+            if object_type != "source" and metadata.get("status") == "archived":
+                omitted.append({
+                    "id": str(metadata["id"]),
+                    "reason": "canonical 对象已归档；Context Pack 默认排除非活动知识",
+                })
+                continue
             if object_type == "source" and str(metadata["id"]) not in latest_source_ids:
                 omitted.append({
                     "id": str(metadata["id"]),
                     "reason": "同一 source family 的旧版本；Context Pack 默认只选最新版本",
+                })
+                continue
+            if object_type == "source" and str(metadata["id"]) in archived_only_source_ids:
+                omitted.append({
+                    "id": str(metadata["id"]),
+                    "reason": "source 仅被已归档 canonical 引用；Context Pack 默认排除",
                 })
                 continue
             content = self._content(metadata, body)

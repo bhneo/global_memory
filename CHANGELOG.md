@@ -2,6 +2,13 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.13.0] - 2026-07-15
+
+### Changed
+
+- Context Pack 默认排除 `archived` claim 与 synthesis；只被归档 canonical 引用且没有活动 canonical 引用的 source 也默认排除，使无效或测试知识完整退出活动上下文。
+- 归档对象仍保留在 Markdown 真相层与索引中，可通过 `search`/`show` 回溯审计历史。
+
 ## [0.12.0] - 2026-07-14
 
 ### Added

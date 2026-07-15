@@ -46,6 +46,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 - 第一条真实论文材料 VIA（arXiv:2607.11119v1）已完成官方 URL raw capture、带页码证据与反外推边界的 proposal 审阅，并经用户明确批准写入 canonical claim。
 - VIA 验收确认 canonical claim 可被 `VIA`、`waypoint` 等内容查询召回，Context Pack 在 600/1200 token budget 下保留 claim、source_ids、文档 hash 与 raw source hash；原始 PDF 正文仍未进入派生全文索引。
 - VIA 首次导入暴露了范围治理问题：材料入库是为了积累跨领域知识并验证 Global Memory，不要求每条来源都映射为系统自身的设计启发；范围纠正 proposal 已经用户明确批准，canonical 正文现只保留机器人论文知识、实验结果与适用边界，纠偏原因保留在审计 metadata 中。
+- 首轮 quickstart 端到端测试 claim 已按用户要求归档；Context Pack 现默认排除 archived canonical，以及只被归档 canonical 引用的 source，使整组测试/失效材料退出活动上下文，同时保留 raw、proposal 和 approval 历史供审计回溯。
 
 ## What is being implemented
 

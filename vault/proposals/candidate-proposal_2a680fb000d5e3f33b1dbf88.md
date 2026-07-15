@@ -1,10 +1,11 @@
 ---
 id: "claim_7f62757ed57fd38ba06e3309"
 type: "claim"
-status: "archived"
+status: "proposal"
+proposed_status: "archived"
 title: "归档：quickstart 端到端验收测试主张"
 created_at: "2026-07-14T17:09:53+08:00"
-updated_at: "2026-07-15T11:52:30+08:00"
+updated_at: "2026-07-14T17:09:53+08:00"
 aliases: []
 tags: ["test-fixture"]
 domains: []
@@ -13,8 +14,7 @@ source_ids: ["source_b361ac9cddb531dba17c360e"]
 relations: [{"type": "derived_from", "target_id": "source_b361ac9cddb531dba17c360e", "reason": "由初始 quickstart 验收 source 的规则编译结果产生"}]
 superseded_by: null
 valid_during: null
-change_reason: "移除首轮端到端验收测试 claim，不再作为有效知识；保留 raw 与审计历史"
-approved_via: "proposal_2a680fb000d5e3f33b1dbf88"
+change_reason: "该对象仅用于首轮 capture → compile → approve → search 端到端验收，不属于需要长期保留在有效知识视图中的真实知识"
 ---
 
 # 归档：quickstart 端到端验收测试主张
