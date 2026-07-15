@@ -47,6 +47,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 - VIA 验收确认 canonical claim 可被 `VIA`、`waypoint` 等内容查询召回，Context Pack 在 600/1200 token budget 下保留 claim、source_ids、文档 hash 与 raw source hash；原始 PDF 正文仍未进入派生全文索引。
 - VIA 首次导入暴露了范围治理问题：材料入库是为了积累跨领域知识并验证 Global Memory，不要求每条来源都映射为系统自身的设计启发；范围纠正 proposal 已经用户明确批准，canonical 正文现只保留机器人论文知识、实验结果与适用边界，纠偏原因保留在审计 metadata 中。
 - 首轮 quickstart 端到端测试 claim 已按用户要求从 `vault/knowledge/claims/` 物理移除，并在 `vault/archive/` 只保留最小墓碑；Context Pack 默认排除其 source，raw、proposal 和 approval 历史继续用于审计回溯。
+- Cursor 首批真实材料导入完成两篇论文、八条 model proposal；人工 PDF 复核后已通过 revision 补全自包含正文、收紧 33×/2.4× 结论范围，并为 Play2Perfect 增加官方 arXiv 页面来源。原八条 proposal 保留为 superseded，新八条仍为 pending，尚未写入 canonical。
 
 ## What is being implemented
 
@@ -87,7 +88,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 
 ## Next concrete task
 
-设计 PDF 正文的可重建派生提取层，要求保留 extractor/version/input hash/page provenance，并用 VIA 验证中文短语、source version 与 token budget 下的召回质量。
+人工审阅 Cursor 首批八条修订 proposal，按论文分批批准；随后设计 PDF 正文的可重建派生提取层，要求保留 extractor/version/input hash/page provenance。
 
 ## Do not do yet
 
