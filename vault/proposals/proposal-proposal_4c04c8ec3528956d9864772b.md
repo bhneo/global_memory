@@ -1,10 +1,10 @@
 ---
 id: "proposal_4c04c8ec3528956d9864772b"
 type: "proposal"
-status: "pending"
+status: "approved"
 title: "修订：模型提议：VIA 表明稳定的视觉工具界面可让通用 Agent 在限定仿真任务中零样本闭环控制机器人"
 created_at: "2026-07-15T11:34:09+08:00"
-updated_at: "2026-07-15T11:34:09+08:00"
+updated_at: "2026-07-15T11:41:30+08:00"
 aliases: []
 tags: []
 domains: []
@@ -22,8 +22,8 @@ candidate_path: "vault/proposals/candidate-proposal_4c04c8ec3528956d9864772b.md"
 candidate_sha256: "65ca531b6303f5ec6630073293bb61f50dfb6e40199db41b20b1f969e1dd0b2d"
 change_reason: "URL capture 已完成，改用官方 arXiv web source 作为主证据链；保留旧 proposal 与本地重复来源审计历史"
 revision_of: "proposal_ab07afad179e245bd689b95d"
-reviewed_at: null
-review_reason: null
+reviewed_at: "2026-07-15T11:41:30+08:00"
+review_reason: "人工通过 CLI 明确批准"
 ---
 
 # 修订：模型提议：VIA 表明稳定的视觉工具界面可让通用 Agent 在限定仿真任务中零样本闭环控制机器人
