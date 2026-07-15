@@ -11,6 +11,7 @@ import pytest
 
 from global_memory.capture import CaptureService, canonicalize_url
 from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
+from global_memory.bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService
 from global_memory.cli import build_parser, contradiction_audit, doctor, lint
 from global_memory.context import ContextPackService
 from global_memory.errors import ImmutableContentError, ValidationError
@@ -359,6 +360,112 @@ def test_typed_evidence_quote_translation_table_figure_and_calculation(repo: Rep
     evidence[0]["original_text"] = "not the extraction span"
     with pytest.raises(ValidationError, match="quote"):
         repo._validate_metadata(metadata, candidate)
+
+
+def test_compile_bundle_isolated_until_item_level_atomic_review(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Concept: Materialized memory view\n\n"
+        "Claim: A derived view can be rebuilt from its source.\n\n"
+        "Question: When should the view be refreshed?",
+        title="Bundle fixture",
+    )
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    assert bundle.item_count == 3
+    proposal, body = read_document(repo.root / bundle.proposal_path)
+    assert proposal["proposal_kind"] == "compile_bundle"
+    assert proposal["existing_context"] == []
+    assert "Items and diffs" in body
+    for item in proposal["bundle_items"]:
+        assert not (repo.root / item["target_path"]).exists()
+
+    review = BundleReviewService(repo)
+    concept_item = next(item["item_id"] for item in proposal["bundle_items"] if item["object_type"] == "concept")
+    approved = review.approve(bundle.proposal_id, [concept_item])
+    assert approved["remaining_items"] == 2
+    updated_proposal, _ = read_document(repo.root / bundle.proposal_path)
+    concept = next(item for item in updated_proposal["bundle_items"] if item["item_id"] == concept_item)
+    assert concept["decision"] == "approved"
+    assert (repo.root / concept["target_path"]).exists()
+    question_item = next(item["item_id"] for item in updated_proposal["bundle_items"] if item["object_type"] == "question")
+    review.reject(bundle.proposal_id, [question_item], "暂不保留该问题")
+    final_review = review.approve(bundle.proposal_id)
+    assert final_review["remaining_items"] == 0
+    final_proposal, _ = read_document(repo.root / bundle.proposal_path)
+    assert final_proposal["status"] == "approved"
+    assert {item["decision"] for item in final_proposal["bundle_items"]} == {"approved", "rejected"}
+    assert lint(repo)["ok"] is True
+
+
+def test_bundle_compiler_updates_existing_concept_instead_of_duplicate(repo: Repository) -> None:
+    first = CaptureService(repo).capture_text("Concept: Shared mechanism", title="First")
+    first_bundle = BundleCompiler(repo).compile(first.source_id)
+    BundleReviewService(repo).approve(first_bundle.proposal_id)
+    second = CaptureService(repo).capture_text("Concept: Shared mechanism", title="Second")
+    second_bundle = BundleCompiler(repo).compile(second.source_id)
+    second_proposal, _ = read_document(repo.root / second_bundle.proposal_path)
+    assert second_proposal["existing_context"]
+    assert second_proposal["bundle_items"][0]["action"] == "update"
+    BundleReviewService(repo).approve(second_bundle.proposal_id)
+    concepts = [
+        metadata for path in repo.canonical_documents()
+        for metadata, _ in [read_document(path)] if metadata.get("type") == "concept"
+    ]
+    assert len(concepts) == 1
+    assert set(concepts[0]["source_ids"]) == {first.source_id, second.source_id}
+
+
+def test_bundle_approval_recovers_all_targets_after_interruption(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Concept: Recovery concept\n\nClaim: Recovery preserves every selected item.",
+        title="Recovery bundle",
+    )
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+
+    def fail_after_targets(phase: str) -> None:
+        if phase == "targets_written":
+            raise RuntimeError("simulated bundle interruption")
+
+    with pytest.raises(RuntimeError, match="interruption"):
+        BundleReviewService(repo, failure_hook=fail_after_targets).approve(bundle.proposal_id)
+    assert BundleRecoveryManager(repo).pending()
+    recovered = BundleRecoveryManager(repo).recover_all()
+    assert len(recovered["recovered"]) == 1 and not recovered["blocked"]
+    proposal, _ = read_document(repo.root / bundle.proposal_path)
+    assert proposal["status"] == "approved"
+    assert all((repo.root / item["target_path"]).exists() for item in proposal["bundle_items"])
+
+
+def test_bundle_provider_output_is_schema_validated(repo: Repository) -> None:
+    class InvalidProvider:
+        name = "invalid-test-provider"
+        def compile(self, source, extraction, text, existing_context, schema):
+            return [{"object_type": "made_up", "title": "bad", "body": "bad"}]
+
+    captured = CaptureService(repo).capture_text("provider input")
+    with pytest.raises(ValidationError, match="object_type"):
+        BundleCompiler(repo, InvalidProvider()).compile(captured.source_id)
+
+
+def test_bundle_item_revision_preserves_old_candidate(repo: Repository, workspace: Path) -> None:
+    captured = CaptureService(repo).capture_text("Concept: Revisable concept")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / bundle.proposal_path)
+    item = proposal["bundle_items"][0]
+    old_path = repo.root / item["candidate_path"]
+    old_bytes = old_path.read_bytes()
+    candidate, body = read_document(old_path)
+    candidate["updated_at"] = "2026-07-15T20:00:00+08:00"
+    revised_file = workspace / "revised-bundle-item.md"
+    revised_file.write_text(render_document(candidate, body + "\nHuman clarification."), encoding="utf-8")
+    result = BundleReviewService(repo).revise_item(
+        bundle.proposal_id, item["item_id"], revised_file, "补充人工澄清"
+    )
+    assert old_path.read_bytes() == old_bytes
+    assert (repo.root / result["candidate_path"]).exists()
+    updated, _ = read_document(repo.root / bundle.proposal_path)
+    assert updated["bundle_items"][0]["revision_history"][0]["candidate_path"] == item["candidate_path"]
+    BundleReviewService(repo).approve(bundle.proposal_id)
+    assert lint(repo)["ok"] is True
 
 
 def test_unchanged_refresh_reuses_latest_version_without_proposal(repo: Repository) -> None:

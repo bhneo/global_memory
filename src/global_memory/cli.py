@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from .backups import RawBackupService
+from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService
 from .capture import CaptureService
 from .context import ContextPackService
 from .errors import GlobalMemoryError
@@ -98,8 +99,11 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_commands = proposal.add_subparsers(dest="proposal_command", required=True)
     proposal_show = proposal_commands.add_parser("show")
     proposal_show.add_argument("proposal_id")
+    proposal_diff = proposal_commands.add_parser("diff")
+    proposal_diff.add_argument("proposal_id")
     proposal_approve = proposal_commands.add_parser("approve")
     proposal_approve.add_argument("proposal_id")
+    proposal_approve.add_argument("--items", help="逗号分隔的 compile bundle item IDs")
     proposal_publish = proposal_commands.add_parser(
         "publish", help="经自动门禁发布为可检索但未人工确认的 provisional knowledge"
     )
@@ -107,6 +111,7 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_reject = proposal_commands.add_parser("reject")
     proposal_reject.add_argument("proposal_id")
     proposal_reject.add_argument("--reason", default="")
+    proposal_reject.add_argument("--items", help="逗号分隔的 compile bundle item IDs")
     proposal_defer = proposal_commands.add_parser("defer")
     proposal_defer.add_argument("proposal_id")
     proposal_defer.add_argument("--reason", default="")
@@ -114,6 +119,7 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_revise.add_argument("proposal_id")
     proposal_revise.add_argument("--from-file", dest="candidate_file", required=True)
     proposal_revise.add_argument("--reason", required=True)
+    proposal_revise.add_argument("--item", help="要编辑的 compile bundle item ID")
 
     promote = commands.add_parser("promote", help="将 provisional canonical knowledge 显式晋升为 confirmed")
     promote.add_argument("target_id")
@@ -206,7 +212,7 @@ def doctor(repository: Repository) -> dict[str, object]:
     except Exception as exc:
         indexed_count = None
         issues.append(f"索引不可用: {exc}")
-    recovery_journals = ApprovalRecoveryManager(repository).pending()
+    recovery_journals = [*ApprovalRecoveryManager(repository).pending(), *BundleRecoveryManager(repository).pending()]
     for journal in recovery_journals:
         issues.append(f"存在未完成 approval recovery journal: {repository.rel(journal)}")
     return {
@@ -319,6 +325,38 @@ def lint(repository: Repository) -> dict[str, object]:
             for key in ("previous_source_id", "new_source_id"):
                 if proposal.get(key) not in sources:
                     errors.append(f"source refresh 引用不存在: {repository.rel(path)} -> {key}")
+            continue
+        if proposal_kind == "compile_bundle":
+            items = proposal.get("bundle_items")
+            if not isinstance(items, list) or not items:
+                errors.append(f"compile bundle 缺少 bundle_items: {repository.rel(path)}")
+                continue
+            for item in items:
+                if not isinstance(item, dict):
+                    errors.append(f"compile bundle item 非对象: {repository.rel(path)}")
+                    continue
+                for key in ("item_id", "candidate_path", "candidate_sha256", "target_id", "target_path", "action", "decision"):
+                    if item.get(key) is None:
+                        errors.append(f"compile bundle item 缺少 {key}: {repository.rel(path)}")
+                try:
+                    for revision in item.get("revision_history", []):
+                        if isinstance(revision, dict) and revision.get("candidate_path"):
+                            referenced_candidates.add(repository.resolve_inside(str(revision["candidate_path"])))
+                    candidate_path = repository.resolve_inside(str(item["candidate_path"]))
+                    referenced_candidates.add(candidate_path)
+                    if not candidate_path.is_file() or sha256_bytes(candidate_path.read_bytes()) != item.get("candidate_sha256"):
+                        errors.append(f"compile bundle candidate 缺失或哈希不匹配: {item.get('item_id')}")
+                    else:
+                        candidate, _ = read_document(candidate_path)
+                        if candidate.get("id") != item.get("target_id") or candidate.get("status") != "proposal":
+                            errors.append(f"compile bundle candidate 身份无效: {item.get('item_id')}")
+                    if item.get("action") == "update":
+                        base_path = repository.resolve_inside(str(item.get("base_path")))
+                        referenced_bases.add(base_path)
+                        if not base_path.is_file() or sha256_bytes(base_path.read_bytes()) != item.get("base_sha256"):
+                            errors.append(f"compile bundle base 缺失或哈希不匹配: {item.get('item_id')}")
+                except Exception as exc:
+                    errors.append(f"compile bundle item 无效: {item.get('item_id')}: {exc}")
             continue
         if proposal_kind == "model_candidate":
             model_run = proposal.get("model_run")
@@ -553,7 +591,7 @@ def run(args: argparse.Namespace) -> int:
             args.source_ids, arxiv_id=args.arxiv_id, title=args.title, authors=args.author
         ).__dict__)
     elif args.command == "compile":
-        _print(proposals.compile(args.source_id).__dict__)
+        _print(BundleCompiler(repository).compile(args.source_id).__dict__)
     elif args.command == "synthesize":
         _print(proposals.synthesize(args.claim_ids).__dict__)
     elif args.command == "discover":
@@ -574,18 +612,42 @@ def run(args: argparse.Namespace) -> int:
     elif args.command == "proposals":
         _print(proposals.list(args.status))
     elif args.command == "proposal":
-        if args.proposal_command == "show":
+        if args.proposal_command in {"show", "diff"}:
             _print(proposals.show(args.proposal_id))
         elif args.proposal_command == "approve":
-            _print({"approved": args.proposal_id, "target_path": proposals.approve(args.proposal_id)})
+            _, proposal_metadata, _ = repository.find_document(args.proposal_id)
+            if proposal_metadata.get("proposal_kind") == "compile_bundle":
+                item_ids = args.items.split(",") if args.items else None
+                _print(BundleReviewService(repository).approve(args.proposal_id, item_ids))
+            else:
+                if args.items:
+                    raise GlobalMemoryError("--items 只适用于 compile bundle")
+                _print({"approved": args.proposal_id, "target_path": proposals.approve(args.proposal_id)})
         elif args.proposal_command == "publish":
             _print({"published": args.proposal_id, "target_path": proposals.publish(args.proposal_id)})
         elif args.proposal_command == "reject":
-            _print({"rejected": args.proposal_id, "proposal_path": proposals.reject(args.proposal_id, args.reason)})
+            _, proposal_metadata, _ = repository.find_document(args.proposal_id)
+            if proposal_metadata.get("proposal_kind") == "compile_bundle":
+                item_ids = args.items.split(",") if args.items else None
+                _print(BundleReviewService(repository).reject(args.proposal_id, item_ids, args.reason))
+            else:
+                if args.items:
+                    raise GlobalMemoryError("--items 只适用于 compile bundle")
+                _print({"rejected": args.proposal_id, "proposal_path": proposals.reject(args.proposal_id, args.reason)})
         elif args.proposal_command == "defer":
             _print({"deferred": args.proposal_id, "proposal_path": proposals.defer(args.proposal_id, args.reason)})
         else:
-            _print(proposals.revise(args.proposal_id, args.candidate_file, args.reason).__dict__)
+            _, proposal_metadata, _ = repository.find_document(args.proposal_id)
+            if proposal_metadata.get("proposal_kind") == "compile_bundle":
+                if not args.item:
+                    raise GlobalMemoryError("compile bundle revise 必须指定 --item")
+                _print(BundleReviewService(repository).revise_item(
+                    args.proposal_id, args.item, args.candidate_file, args.reason
+                ))
+            else:
+                if args.item:
+                    raise GlobalMemoryError("--item 只适用于 compile bundle")
+                _print(proposals.revise(args.proposal_id, args.candidate_file, args.reason).__dict__)
     elif args.command == "promote":
         _print({"confirmed": args.target_id, "target_path": proposals.promote(args.target_id, args.reason)})
     elif args.command == "search":
@@ -604,7 +666,7 @@ def run(args: argparse.Namespace) -> int:
                 state: len(proposals.list(state))
                 for state in ("pending", "deferred", "superseded", "published", "approved", "rejected")
             },
-            "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()),
+            "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()) + len(BundleRecoveryManager(repository).pending()),
         })
     elif args.command == "rebuild-index":
         _print({"indexed_documents": repository.rebuild_index(), "index": repository.rel(repository.index_path)})
@@ -649,7 +711,12 @@ def run(args: argparse.Namespace) -> int:
             _print(result)
             return 0 if result["ok"] else 1
     elif args.command == "recover":
-        result = ApprovalRecoveryManager(repository).recover_all()
+        approval = ApprovalRecoveryManager(repository).recover_all()
+        bundle = BundleRecoveryManager(repository).recover_all()
+        result = {
+            "recovered": [*approval["recovered"], *bundle["recovered"]],
+            "blocked": [*approval["blocked"], *bundle["blocked"]],
+        }
         _print(result)
         return 1 if result["blocked"] else 0
     return 0

@@ -15,6 +15,8 @@ M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成
 - `gm extract` 生成绑定 input hash/extractor version 的 derived extraction；支持文本、Markdown、HTML、PDF 页码、中文编码降级、warning/error/stale/rebuild。
 - `gm work propose` 以审计 proposal 聚合 logical work；已测试同一 arXiv 的 PDF URL、本地 PDF 和 abstract capture 只形成一个 work，source record 不变。
 - Evidence taxonomy 支持 quote、paraphrase、translation、table_value、figure、calculation；quote 必须逐字回验 extraction span。
+- CLI `gm compile` 已升级为检索优先 Compile Bundle；deterministic fallback 只生成有显式材料的类型，不强制填充 schema。
+- Bundle review 支持完整 diff、source/evidence、潜在冲突、approve all、按 item approve/reject/revise；多目标批准由 bundle recovery journal 幂等续做。
 - canonical URL 规范化、同来源去重、跨来源内容去重且不丢 source record。
 - SQLite FTS5 + 中文子串 fallback；结果包含来源 ID。
 - 确定性规则 compile proposal、candidate 哈希、内容级 unified diff。
@@ -57,7 +59,7 @@ M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成
 
 ## What is being implemented
 
-- Derived extraction、logical work 与 evidence taxonomy 已完成；正在实现 bundle compiler 与 item-level review。
+- Bundle compiler 与 item-level review 已完成；正在扩展 Context Pack profiles、检索过滤和有限 relation traversal。
 
 ## Known defects
 

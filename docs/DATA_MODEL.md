@@ -20,6 +20,8 @@ Extraction 不是 source 或 raw：它保存抽取文本和页码边界，绑定
 
 Work 是 canonical metadata object，聚合多个 capture 的现实世界作品身份。它用 `source_ids` 和 `derived_from` 保留所有 capture，不反向改写 source。Work enrichment 继续走 proposal、diff、乐观并发和 approval recovery。
 
+Compile Bundle 是一个 proposal 内的 item 集合。每项保存 `item_id/object_type/action/target/base/candidate/hash/decision/potential_conflicts`。Candidate 与 base 不可变；item revision 写新 candidate 并保留 revision history。一次批准选择的所有 item 共用 bundle recovery operation，避免部分成功被误认为完整提交。
+
 Canonical update proposal 将 target 在提案时的完整 Markdown 复制为 base snapshot。Base 不是新的 canonical 版本，而是乐观并发令牌和审计证据；candidate 是建议结果，current 是审批时实际文件。只有 `hash(current) == hash(base)` 才允许 candidate 进入 canonical。
 
 Approval recovery journal 不进入知识图，也不进入 Git。它是短生命周期的本地事务记录，保存已授权审批的确定输出和阶段。Knowledge/proposal Markdown 与 audit event 完成后，journal 可安全删除；存在 journal 表示审批尚未达到完整终态。

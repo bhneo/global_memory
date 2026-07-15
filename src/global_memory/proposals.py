@@ -940,7 +940,7 @@ class ProposalService:
         compiled_sources = {
             source_id
             for proposal in self.list()
-            if proposal.get("proposal_kind", "knowledge_compile") == "knowledge_compile"
+            if proposal.get("proposal_kind", "knowledge_compile") in {"knowledge_compile", "compile_bundle"}
             for source_id in proposal.get("source_ids", [])
         }
         result = []

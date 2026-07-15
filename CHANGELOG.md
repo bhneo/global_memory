@@ -12,6 +12,8 @@
 - 新增 `gm extract`：支持文本/Markdown、HTML 正文、PDF 页码边界、中文编码降级、error/stale/rebuild。
 - 新增 logical work enrichment proposal，同一 arXiv 的多个 capture 可审计聚合而不覆盖 source。
 - Evidence schema 新增 quote、paraphrase、translation、table_value、figure、calculation；quote 可回验 extraction span。
+- `gm compile` 升级为检索优先的 Compile Bundle，支持多类型候选、create/update 判定、潜在冲突、provenance report 和 provider-neutral 接口。
+- Bundle review 支持 approve all、按 item approve/reject/revise，并用多目标 recovery journal 保证中断可恢复。
 
 ### Changed
 
