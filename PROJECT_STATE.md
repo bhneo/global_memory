@@ -17,6 +17,9 @@ M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成
 - Evidence taxonomy 支持 quote、paraphrase、translation、table_value、figure、calculation；quote 必须逐字回验 extraction span。
 - CLI `gm compile` 已升级为检索优先 Compile Bundle；deterministic fallback 只生成有显式材料的类型，不强制填充 schema。
 - Bundle review 支持完整 diff、source/evidence、潜在冲突、approve all、按 item approve/reject/revise；多目标批准由 bundle recovery journal 幂等续做。
+- Context Pack 支持 execution/research/exploration profile、组合、project/domain/type/status/time/source-kind 过滤、有界 relation traversal、evidence 与 truncation report。
+- SQLite/FTS 对 title、aliases、tags、domains、body 分字段检索；结果解释 metadata/body/关系命中，proposal 仅在显式请求时出现。
+- 旧 `discover` 保留兼容别名，用户界面准确称为 `related-content`，不再把词汇重合描述为真正 serendipity。
 - canonical URL 规范化、同来源去重、跨来源内容去重且不丢 source record。
 - SQLite FTS5 + 中文子串 fallback；结果包含来源 ID。
 - 确定性规则 compile proposal、candidate 哈希、内容级 unified diff。
@@ -59,7 +62,7 @@ M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成
 
 ## What is being implemented
 
-- Bundle compiler 与 item-level review 已完成；正在扩展 Context Pack profiles、检索过滤和有限 relation traversal。
+- Context Pack profiles 与混合检索已完成；正在补齐 CI、跨平台/迁移/重建演示和 M5 验收报告。
 
 ## Known defects
 

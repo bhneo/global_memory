@@ -14,6 +14,8 @@
 - Evidence schema 新增 quote、paraphrase、translation、table_value、figure、calculation；quote 可回验 extraction span。
 - `gm compile` 升级为检索优先的 Compile Bundle，支持多类型候选、create/update 判定、潜在冲突、provenance report 和 provider-neutral 接口。
 - Bundle review 支持 approve all、按 item approve/reject/revise，并用多目标 recovery journal 保证中断可恢复。
+- Context Pack 新增 execution/research/exploration profile、组合使用、metadata filters、有限 relation traversal、evidence 视图和截断报告。
+- Search 新增分字段加权、type/status/canonical/proposal 过滤与 match reason；`related-content` 准确替代对旧 discover 的 serendipity 表述。
 
 ### Changed
 

@@ -125,6 +125,8 @@ evidence:
 
 `vault/` 和 raw content 是真相层。`data/indexes/global_memory.sqlite3` 中的 documents、relations 和 FTS5 均由 Markdown/raw 重建，不允许成为唯一数据载体。
 
+SQLite documents 派生索引保存 title、aliases、tags、domains、body、type、status、source kind 与 provenance；FTS 对 metadata 字段赋予高于 body 的权重。`search` 结果必须返回 status 和 `match_reason`，关系扩展结果注明 depth、relation type 和起点。
+
 ## Operational recovery journal
 
 `system/recovery/approve-<proposal-id>.json` 是审批中的本地事务材料，不是知识对象。字段包括 `journal_version`、`operation_id`、`phase`、target/proposal path、写前/写后 SHA-256、预期写后完整文本和 audit payload。Phase 依次为 `prepared`、`target_written`、`proposal_written`、`audit_written`、`index_rebuilt`。成功后删除；未完成时 `doctor` 必须报告。

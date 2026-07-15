@@ -71,8 +71,10 @@ def build_parser() -> argparse.ArgumentParser:
     compile_parser.add_argument("source_id")
     synthesize = commands.add_parser("synthesize", help="从多个 canonical claim 生成待审综合 proposal")
     synthesize.add_argument("claim_ids", nargs="+")
-    discover = commands.add_parser("discover", help="为 canonical claim 生成可解释的关联候选 proposal")
+    discover = commands.add_parser("discover", help="兼容别名：related-content（词汇/metadata 关联候选）")
     discover.add_argument("seed_id")
+    related_content = commands.add_parser("related-content", help="生成可解释的 related-content 候选；不声称真正 serendipity")
+    related_content.add_argument("seed_id")
     update_parser = commands.add_parser(
         "propose-update", help="从 UTF-8 Markdown candidate 创建 canonical update proposal"
     )
@@ -128,8 +130,23 @@ def build_parser() -> argparse.ArgumentParser:
     search = commands.add_parser("search", help="全文检索来源和 canonical knowledge")
     search.add_argument("query")
     search.add_argument("--limit", type=int, default=20)
+    search.add_argument("--types", help="逗号分隔 object types")
+    search.add_argument("--statuses", help="逗号分隔 statuses")
+    search.add_argument("--canonical-only", action="store_true")
+    search.add_argument("--include-proposals", action="store_true")
+    search.add_argument("--relation-depth", type=int, default=0)
     context = commands.add_parser("context", help="按 query 和 token budget 生成只读 Context Pack")
-    context.add_argument("query")
+    context.add_argument("query", nargs="?")
+    context.add_argument("--question")
+    context.add_argument("--profile", default="research")
+    context.add_argument("--project")
+    context.add_argument("--domain")
+    context.add_argument("--types")
+    context.add_argument("--statuses")
+    context.add_argument("--updated-since")
+    context.add_argument("--source-kind")
+    context.add_argument("--include-proposals", action="store_true")
+    context.add_argument("--relation-depth", type=int, default=1)
     context.add_argument("--token-budget", type=int, default=1200)
     show = commands.add_parser("show", help="按稳定 ID 显示对象")
     show.add_argument("object_id")
@@ -594,7 +611,7 @@ def run(args: argparse.Namespace) -> int:
         _print(BundleCompiler(repository).compile(args.source_id).__dict__)
     elif args.command == "synthesize":
         _print(proposals.synthesize(args.claim_ids).__dict__)
-    elif args.command == "discover":
+    elif args.command in {"discover", "related-content"}:
         _print(proposals.discover(args.seed_id).__dict__)
     elif args.command == "propose-update":
         _print(
@@ -651,9 +668,33 @@ def run(args: argparse.Namespace) -> int:
     elif args.command == "promote":
         _print({"confirmed": args.target_id, "target_path": proposals.promote(args.target_id, args.reason)})
     elif args.command == "search":
-        _print([result.__dict__ for result in repository.search(args.query, args.limit)])
+        filters = {
+            "object_types": set(args.types.split(",")) if args.types else None,
+            "statuses": set(args.statuses.split(",")) if args.statuses else None,
+            "canonical_only": args.canonical_only,
+            "include_proposals": args.include_proposals,
+        }
+        results = (
+            repository.search_with_relations(
+                args.query, args.limit, max_depth=args.relation_depth,
+                max_nodes=max(1, min(100, args.limit)), **filters,
+            ) if args.relation_depth else repository.search(args.query, args.limit, **filters)
+        )
+        _print([result.__dict__ for result in results])
     elif args.command == "context":
-        _print(ContextPackService(repository).build(args.query, args.token_budget).as_dict())
+        question = args.question or args.query
+        if not question:
+            raise GlobalMemoryError("context 必须提供 positional query 或 --question")
+        _print(ContextPackService(repository).build(
+            question, args.token_budget,
+            profiles=[item for item in args.profile.split(",") if item], project=args.project,
+            domains=set(args.domain.split(",")) if args.domain else None,
+            object_types=set(args.types.split(",")) if args.types else None,
+            statuses=set(args.statuses.split(",")) if args.statuses else None,
+            updated_since=args.updated_since,
+            source_kinds=set(args.source_kind.split(",")) if args.source_kind else None,
+            include_proposals=args.include_proposals, relation_depth=args.relation_depth,
+        ).as_dict())
     elif args.command == "show":
         path, metadata, body = repository.find_document(args.object_id)
         _print({"path": repository.rel(path), "metadata": metadata, "body": body})

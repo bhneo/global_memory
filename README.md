@@ -31,6 +31,8 @@ gm proposal diff <bundle-proposal-id>
 gm proposal approve <bundle-proposal-id> --items claim-1,concept-2
 gm proposal reject <bundle-proposal-id> --items question-3 --reason "暂不保留"
 gm proposal revise <bundle-proposal-id> --item claim-1 --from-file revised.md --reason "人工修订"
+gm search "query" --types claim,concept --statuses confirmed,provisional --relation-depth 1
+gm context --profile execution,research --project project_id --question "当前问题" --token-budget 20000
 gm model-propose <source-id> --candidate model-candidate.md --provider local --model my-model --prompt-version v1 --prompt-file prompt.md --uncertainty "待人工核验" --reason "导入模型结果"
 gm proposal show <proposal-id>
 gm proposal approve <proposal-id>
@@ -122,6 +124,8 @@ Candidate 必须是 UTF-8 Markdown，保持 target 的 `id`、`type`、`created_
 `gm extract` 从 raw 创建可重建正文：文本/Markdown 保留内容，HTML 去除明显模板噪声，PDF 保留逐页边界。PDF 支持是 optional dependency：`pip install -e .[pdf]`。`gm work propose` 把多个 capture 作为同一现实作品的候选聚合，只有 approve 后才写 logical work，且从不改写 source capture。
 
 `gm compile` 现在先读取 extraction 并检索已有 canonical，再生成 Compile Bundle。Deterministic fallback 只识别显式 `Concept:/Claim:/Question:/Hypothesis:/Tension:/Analogy:` 标记；没有标记时只保留第一段逐字材料，不为了填满 schema 强制生成对象。Bundle 支持整体或按 item approve/reject/revise；一组批准通过多目标 recovery journal 原子续做。
+
+Context Pack 支持 `execution`、`research`、`exploration` profile 及组合，可按 project/domain/type/status/time/source kind 过滤，并沿 typed relations 做深度与节点数受限的扩展。Proposal 默认不进入；只有显式 `--include-proposals` 才返回，并保留 pending/proposal 状态。搜索对 title、aliases、tags、domains 和 body 分字段加权。
 
 `propose-update` 会不可变保存当时的 base snapshot 和 candidate，并记录两者 SHA-256。审批时 target 必须仍与 base 完全相同；如期间发生人工编辑，审批会失败且不写文件。再次运行 `proposal show` 可看到 Base→Candidate 和 Base→Current，随后应基于当前 canonical 重新创建 proposal。系统当前不自动合并冲突。
 

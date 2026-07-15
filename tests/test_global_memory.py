@@ -72,6 +72,33 @@ def create_approved_claim(repo: Repository, text: str = "Original canonical clai
     return captured, repo.root / target
 
 
+def write_canonical_fixture(
+    repo: Repository, object_type: str, object_id: str, title: str, body: str,
+    source_ids: list[str], *, status: str = "confirmed", domains: list[str] | None = None,
+    relations: list[dict[str, str]] | None = None,
+) -> Path:
+    directories = {
+        "project": "vault/action/projects", "goal": "vault/action/goals",
+        "architecture": "vault/action/architectures", "decision": "vault/action/decisions",
+        "experiment": "vault/action/experiments", "failure": "vault/action/failures",
+        "opportunity": "vault/action/opportunities", "concept": "vault/knowledge/concepts",
+        "claim": "vault/knowledge/claims", "question": "vault/frontier/questions",
+        "intuition": "vault/frontier/intuitions", "tension": "vault/frontier/tensions",
+        "analogy": "vault/frontier/analogies", "anomaly": "vault/frontier/anomalies",
+        "hypothesis": "vault/frontier/hypotheses",
+    }
+    metadata = {
+        "id": object_id, "type": object_type, "status": status, "title": title,
+        "created_at": "2026-07-15T10:00:00+08:00", "updated_at": "2026-07-15T10:00:00+08:00",
+        "aliases": [], "tags": [], "domains": domains or [], "confidence": "medium",
+        "source_ids": source_ids, "relations": relations or [],
+    }
+    path = repo.root / directories[object_type] / f"{object_id}.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    return path
+
+
 def make_text_pdf(pages: list[str]) -> bytes:
     """Create a tiny dependency-free PDF fixture with one text stream per page."""
     objects: list[bytes] = []
@@ -466,6 +493,85 @@ def test_bundle_item_revision_preserves_old_candidate(repo: Repository, workspac
     assert updated["bundle_items"][0]["revision_history"][0]["candidate_path"] == item["candidate_path"]
     BundleReviewService(repo).approve(bundle.proposal_id)
     assert lint(repo)["ok"] is True
+
+
+def test_context_profiles_select_expected_layers_and_relation_expansion(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("M5 shared context source evidence", title="Shared source")
+    source_ids = [captured.source_id]
+    project_id = "project_m5_context"
+    write_canonical_fixture(repo, "project", project_id, "M5 shared context project", "M5 shared context project goal", source_ids)
+    for object_type in ("goal", "architecture", "decision", "experiment", "failure", "opportunity"):
+        title = "Related decision" if object_type == "decision" else f"M5 shared context {object_type}"
+        detail = "relation-only decision" if object_type == "decision" else f"M5 shared context {object_type} details"
+        write_canonical_fixture(
+            repo, object_type, f"{object_type}_m5", title, detail, source_ids,
+            relations=[{"type": "applied_in", "target_id": project_id, "reason": "belongs to project"}],
+        )
+    for object_type in ("concept", "claim", "question"):
+        write_canonical_fixture(
+            repo, object_type, f"{object_type}_research", f"M5 shared context {object_type}",
+            f"M5 shared context {object_type} evidence", source_ids, domains=["memory"],
+        )
+    for object_type in ("intuition", "tension", "analogy", "anomaly", "hypothesis"):
+        write_canonical_fixture(
+            repo, object_type, f"{object_type}_explore", f"M5 shared context {object_type}",
+            f"M5 shared context {object_type} exploration", source_ids,
+        )
+    repo.rebuild_index()
+    service = ContextPackService(repo)
+    execution = service.build("M5 shared context", 5000, profiles=["execution"], relation_depth=1).as_dict()
+    execution_types = {item["type"] for item in execution["items"]}
+    assert {"project", "goal", "architecture", "decision", "experiment", "failure"} <= execution_types
+    assert any(item["match_reason"].startswith("relation") for item in execution["items"])
+    research = service.build(
+        "M5 shared context", 5000, profiles=["research"], domains={"memory"},
+        object_types={"claim", "concept", "question"}, relation_depth=0,
+    ).as_dict()
+    assert {item["type"] for item in research["items"]} == {"claim", "concept", "question"}
+    exploration = service.build("M5 shared context", 5000, profiles=["exploration"]).as_dict()
+    assert {"intuition", "tension", "analogy", "anomaly", "hypothesis"} <= {item["type"] for item in exploration["items"]}
+    combined = service.build("M5 shared context", 5000, profiles=["execution", "research"]).as_dict()
+    assert "project" in {item["type"] for item in combined["items"]}
+    assert "claim" in {item["type"] for item in combined["items"]}
+    assert all(item["source_ids"] for item in combined["items"])
+
+
+def test_context_never_confuses_pending_bundle_with_canonical(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Claim: proposal boundary token", title="Proposal boundary")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    normal = ContextPackService(repo).build("proposal boundary token", 1200).as_dict()
+    assert all(item["type"] != "proposal" for item in normal["items"])
+    explicit = ContextPackService(repo).build(
+        "proposal boundary token", 2000, include_proposals=True,
+        object_types={"proposal", "source"}, statuses={"pending", "captured"},
+    ).as_dict()
+    proposal_item = next(item for item in explicit["items"] if item["id"] == bundle.proposal_id)
+    assert proposal_item["type"] == "proposal"
+    assert proposal_item["knowledge_status"] == "pending"
+
+
+def test_search_filters_weighted_metadata_and_bounded_traversal(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("source body", title="source")
+    project = write_canonical_fixture(
+        repo, "project", "project_search", "Weighted Needle Project", "project body", [captured.source_id],
+        domains=["architecture"],
+    )
+    write_canonical_fixture(
+        repo, "decision", "decision_search", "Related Decision", "decision body", [captured.source_id],
+        relations=[{"type": "applied_in", "target_id": "project_search", "reason": "project decision"}],
+    )
+    repo.rebuild_index()
+    result = repo.search("Weighted Needle", object_types={"project"}, statuses={"confirmed"})
+    assert result[0].id == "project_search"
+    assert result[0].match_reason == "metadata:title"
+    expanded = repo.search_with_relations(
+        "Weighted Needle", max_depth=1, max_nodes=5, object_types={"project", "decision"}
+    )
+    assert {item.id for item in expanded} == {"project_search", "decision_search"}
+    assert any(item.match_reason.startswith("relation depth 1") for item in expanded)
+    with pytest.raises(ValidationError, match="depth"):
+        repo.search_with_relations("Weighted", max_depth=4)
+    assert project.exists()
 
 
 def test_unchanged_refresh_reuses_latest_version_without_proposal(repo: Repository) -> None:

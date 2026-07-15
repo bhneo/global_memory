@@ -53,6 +53,8 @@ Relation discovery 是 proposal 元数据，不是知识图自动写入。它把
 
 Context Pack 不是新的 knowledge object，也不进入 proposal/canonical 状态机。它是由明确 query、token budget 与当前本地索引临时生成的读取视图；每个入选项保留对象路径、文档 SHA-256、`source_ids`、内容片段和选择理由。它可以为 Agent 提供工作上下文，但不能替代检索、来源链或人工审批，也不得把命中内容解释为新增事实。
 
+Profile、filters、relation depth 和 truncation report 都属于 Context Pack 请求/响应，不写入 truth layer。Evidence 以紧凑可定位视图随 claim 返回并计入预算。Relation expansion 只接受 depth 0..3、nodes 1..100，防止无边界遍历。
+
 ## 文件位置
 
 位置表达职责，不表达永久身份。ID 在移动文件后保持不变。文件名包含 ID 以利于无索引检索；标题变化不应改变 ID。

@@ -19,7 +19,7 @@ from .markdown import atomic_write_text, read_document, render_document
 
 OBJECT_TYPES = {
     "source", "intuition", "entity", "concept", "claim", "question",
-    "tension", "analogy", "hypothesis", "project", "decision",
+    "tension", "analogy", "anomaly", "hypothesis", "project", "goal", "architecture", "decision",
     "experiment", "failure", "opportunity", "synthesis", "work", "proposal",
 }
 RELATION_TYPES = {
@@ -55,6 +55,7 @@ class SearchResult:
     status: str
     source_ids: list[str]
     snippet: str
+    match_reason: str = "full-text"
 
 
 class Repository:
@@ -84,6 +85,7 @@ class Repository:
             "vault/frontier/intuitions", "vault/frontier/questions", "vault/frontier/tensions",
             "vault/frontier/analogies", "vault/frontier/hypotheses", "vault/frontier/anomalies",
             "vault/action/projects", "vault/action/decisions", "vault/action/experiments",
+            "vault/action/goals", "vault/action/architectures",
             "vault/action/failures", "vault/action/opportunities", "vault/proposals",
             "vault/archive", "data/imports", "data/derived", "data/indexes", "data/backups",
             "system/logs", "system/reports", "system/error-book",
@@ -165,7 +167,10 @@ class Repository:
                 path TEXT NOT NULL UNIQUE,
                 source_ids TEXT NOT NULL,
                 body TEXT NOT NULL,
+                aliases TEXT NOT NULL,
                 tags TEXT NOT NULL,
+                domains TEXT NOT NULL,
+                source_kind TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
             CREATE TABLE relations (
@@ -176,7 +181,7 @@ class Repository:
                 PRIMARY KEY (source_id, relation_type, target_id)
             );
             CREATE VIRTUAL TABLE documents_fts USING fts5(
-                id UNINDEXED, title, body, tags, tokenize='unicode61'
+                id UNINDEXED, title, aliases, tags, domains, body, tokenize='unicode61'
             );
             """
         )
@@ -319,15 +324,18 @@ class Repository:
                         source_ids = [metadata["id"]]
                     index_body = self._document_index_body(path, metadata, body)
                     tags = " ".join(str(item) for item in metadata.get("tags", []))
+                    aliases = " ".join(str(item) for item in metadata.get("aliases", []))
+                    domains = " ".join(str(item) for item in metadata.get("domains", []))
                     values = (
                         metadata["id"], metadata["type"], metadata["title"],
                         metadata["status"], self.rel(path), json.dumps(source_ids, ensure_ascii=False),
-                        index_body, tags, metadata["updated_at"],
+                        index_body, aliases, tags, domains, str(metadata.get("source_kind", "")),
+                        metadata["updated_at"],
                     )
-                    connection.execute("INSERT INTO documents VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", values)
+                    connection.execute("INSERT INTO documents VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", values)
                     connection.execute(
-                        "INSERT INTO documents_fts(id, title, body, tags) VALUES (?, ?, ?, ?)",
-                        (metadata["id"], metadata["title"], index_body, tags),
+                        "INSERT INTO documents_fts(id, title, aliases, tags, domains, body) VALUES (?, ?, ?, ?, ?, ?)",
+                        (metadata["id"], metadata["title"], aliases, tags, domains, index_body),
                     )
                     for relation in metadata.get("relations", []):
                         connection.execute(
@@ -341,39 +349,147 @@ class Repository:
         finally:
             temp_path.unlink(missing_ok=True)
 
-    def search(self, query: str, limit: int = 20) -> list[SearchResult]:
+    def search(
+        self, query: str, limit: int = 20, *, object_types: set[str] | None = None,
+        statuses: set[str] | None = None, canonical_only: bool = False,
+        include_proposals: bool = False, domains: set[str] | None = None,
+        source_kinds: set[str] | None = None,
+    ) -> list[SearchResult]:
         self.ensure_initialized()
         query = query.strip()
         if not query:
             raise ValidationError("搜索词不能为空")
         fts_query = " ".join(f'"{token.replace(chr(34), chr(34) * 2)}"' for token in query.split())
+        clauses: list[str] = []
+        parameters: list[Any] = [fts_query]
+        if object_types:
+            clauses.append(f"d.type IN ({','.join('?' for _ in object_types)})")
+            parameters.extend(sorted(object_types))
+        if statuses:
+            clauses.append(f"d.status IN ({','.join('?' for _ in statuses)})")
+            parameters.extend(sorted(statuses))
+        if canonical_only:
+            clauses.append("d.type != 'source'")
+        if domains:
+            clauses.append("(" + " OR ".join("d.domains LIKE ?" for _ in domains) + ")")
+            parameters.extend(f"%{domain}%" for domain in sorted(domains))
+        if source_kinds:
+            clauses.append(f"(d.type != 'source' OR d.source_kind IN ({','.join('?' for _ in source_kinds)}))")
+            parameters.extend(sorted(source_kinds))
+        where = (" AND " + " AND ".join(clauses)) if clauses else ""
         with closing(sqlite3.connect(self.index_path)) as connection:
             connection.row_factory = sqlite3.Row
             rows = connection.execute(
-                """
-                SELECT d.*, snippet(documents_fts, 2, '[', ']', '…', 18) AS snippet
+                f"""
+                SELECT d.*, snippet(documents_fts, 5, '[', ']', '…', 18) AS snippet,
+                       bm25(documents_fts, 0.0, 8.0, 5.0, 4.0, 3.0, 1.0) AS rank
                 FROM documents_fts JOIN documents d ON d.id = documents_fts.id
-                WHERE documents_fts MATCH ? LIMIT ?
+                WHERE documents_fts MATCH ?{where} ORDER BY rank LIMIT ?
                 """,
-                (fts_query, limit),
+                (*parameters, limit),
             ).fetchall()
             seen = {row["id"] for row in rows}
             if len(rows) < limit:
                 like = f"%{query}%"
+                fallback_clauses = ["(title LIKE ? OR aliases LIKE ? OR tags LIKE ? OR domains LIKE ? OR body LIKE ?)"]
+                fallback_parameters: list[Any] = [like, like, like, like, like]
+                fallback_clauses.extend(clause.replace("d.", "") for clause in clauses)
+                fallback_parameters.extend(parameters[1:])
                 fallback = connection.execute(
-                    "SELECT *, substr(body, 1, 240) AS snippet FROM documents "
-                    "WHERE (title LIKE ? OR body LIKE ?) LIMIT ?",
-                    (like, like, limit),
+                    "SELECT *, substr(body, 1, 240) AS snippet FROM documents WHERE "
+                    + " AND ".join(fallback_clauses) + " LIMIT ?",
+                    (*fallback_parameters, limit),
                 ).fetchall()
                 rows.extend(row for row in fallback if row["id"] not in seen)
-        return [
+        results = [
             SearchResult(
                 id=row["id"], type=row["type"], title=row["title"], path=row["path"],
                 status=row["status"],
                 source_ids=json.loads(row["source_ids"]), snippet=row["snippet"] or "",
+                match_reason=self._match_reason(query, row),
             )
             for row in rows[:limit]
         ]
+        if include_proposals and len(results) < limit:
+            needle = query.casefold()
+            seen = {item.id for item in results}
+            for path in self.proposal_documents():
+                metadata, body = read_document(path)
+                haystack = " ".join([
+                    str(metadata.get("title", "")), body,
+                    *map(str, metadata.get("aliases", [])), *map(str, metadata.get("tags", [])),
+                    *map(str, metadata.get("domains", [])),
+                ]).casefold()
+                if needle not in haystack or metadata["id"] in seen:
+                    continue
+                if object_types and "proposal" not in object_types:
+                    continue
+                if statuses and metadata.get("status") not in statuses:
+                    continue
+                results.append(SearchResult(
+                    id=str(metadata["id"]), type="proposal", title=str(metadata["title"]),
+                    path=self.rel(path), status=str(metadata["status"]),
+                    source_ids=list(metadata.get("source_ids", [])), snippet=body[:240],
+                    match_reason="explicit proposal text match",
+                ))
+                if len(results) >= limit:
+                    break
+        return results[:limit]
+
+    @staticmethod
+    def _match_reason(query: str, row: sqlite3.Row) -> str:
+        needle = query.casefold()
+        for field in ("title", "aliases", "tags", "domains"):
+            if needle in str(row[field]).casefold():
+                return f"metadata:{field}"
+        return "full-text:body"
+
+    def search_with_relations(
+        self, query: str, limit: int = 20, *, max_depth: int = 1,
+        max_nodes: int = 30, **filters: Any,
+    ) -> list[SearchResult]:
+        if not 0 <= max_depth <= 3 or not 1 <= max_nodes <= 100:
+            raise ValidationError("relation traversal 限制为 depth 0..3、nodes 1..100")
+        seeds = self.search(query, min(limit, max_nodes), **filters)
+        results = list(seeds)
+        seen = {item.id for item in results}
+        frontier = [(item.id, 0) for item in seeds]
+        while frontier and len(results) < min(limit, max_nodes):
+            current_id, depth = frontier.pop(0)
+            if depth >= max_depth:
+                continue
+            for relation in self.related(current_id):
+                neighbor = relation["target_id"] if relation["source_id"] == current_id else relation["source_id"]
+                if neighbor in seen:
+                    continue
+                try:
+                    path, metadata, body = self.find_document(neighbor)
+                except NotFoundError:
+                    continue
+                if metadata.get("type") == "proposal" and not filters.get("include_proposals"):
+                    continue
+                if filters.get("canonical_only") and metadata.get("type") == "source":
+                    continue
+                object_types = filters.get("object_types")
+                statuses = filters.get("statuses")
+                if object_types and metadata.get("type") not in object_types:
+                    continue
+                if statuses and metadata.get("status") not in statuses:
+                    continue
+                seen.add(neighbor)
+                source_ids = list(metadata.get("source_ids", []))
+                if metadata.get("type") == "source":
+                    source_ids = [neighbor]
+                results.append(SearchResult(
+                    id=neighbor, type=str(metadata["type"]), title=str(metadata["title"]),
+                    path=self.rel(path), status=str(metadata["status"]), source_ids=source_ids,
+                    snippet=body[:240],
+                    match_reason=f"relation depth {depth + 1}: {relation['relation_type']} via {current_id}",
+                ))
+                frontier.append((neighbor, depth + 1))
+                if len(results) >= min(limit, max_nodes):
+                    break
+        return results
 
     def find_document(self, object_id: str) -> tuple[Path, dict[str, Any], str]:
         candidates = list(self.all_indexed_documents()) + list(self.proposal_documents())
