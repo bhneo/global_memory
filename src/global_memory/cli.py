@@ -50,6 +50,16 @@ def build_parser() -> argparse.ArgumentParser:
         "--refresh", action="store_true",
         help="显式重新抓取 URL；变化时追加 source version 并生成 review proposal",
     )
+    capture_wechat = commands.add_parser(
+        "capture-wechat",
+        help="捕获单篇微信公众号文章（移动端 UA + 元数据解析）",
+    )
+    capture_wechat.add_argument("url")
+    capture_wechat.add_argument("--comment", default="")
+    capture_wechat.add_argument(
+        "--refresh", action="store_true",
+        help="显式重新抓取；内容变化时追加 source version",
+    )
     capture_text = commands.add_parser("capture-text", help="捕获粘贴文本；默认从 stdin 读取")
     capture_text.add_argument("--text")
     capture_text.add_argument("--title", default="人工输入")
@@ -244,6 +254,41 @@ def doctor(repository: Repository) -> dict[str, object]:
     }
 
 
+def _approved_target_physically_purged(repository: Repository, proposal: dict[str, object]) -> bool:
+    """Allow approved proposals whose archived target was later removed from vault/archive."""
+    target_id = str(proposal.get("target_id", ""))
+    if not target_id or proposal.get("status") != "approved":
+        return False
+
+    def archived_candidate(candidate_path_value: object) -> bool:
+        if not candidate_path_value:
+            return False
+        try:
+            candidate_path = repository.resolve_inside(str(candidate_path_value))
+            candidate, _ = read_document(candidate_path)
+        except Exception:
+            return False
+        return (
+            candidate.get("id") == target_id
+            and candidate.get("proposed_status") == "archived"
+        )
+
+    if proposal.get("action") == "update" and archived_candidate(proposal.get("candidate_path")):
+        return True
+    for path in repository.proposal_documents():
+        other, _ = read_document(path)
+        if (
+            other.get("type") != "proposal"
+            or other.get("status") != "approved"
+            or other.get("target_id") != target_id
+            or other.get("action") != "update"
+        ):
+            continue
+        if archived_candidate(other.get("candidate_path")):
+            return True
+    return False
+
+
 def lint(repository: Repository) -> dict[str, object]:
     """Check truth-layer references without rebuilding or modifying the repository."""
     errors: list[str] = []
@@ -267,9 +312,23 @@ def lint(repository: Repository) -> dict[str, object]:
             errors.append(f"无法读取或校验 candidate {repository.rel(path)}: {exc}")
 
     indexed = [(path, metadata, body) for path, metadata, body, role in records if role == "document"]
+    archived: list[tuple[Path, dict[str, object], str]] = []
+    for path in repository.archive_documents():
+        try:
+            metadata, body = read_document(path)
+            repository._validate_metadata(metadata, path)
+            archived.append((path, metadata, body))
+        except Exception as exc:
+            errors.append(f"无法读取或校验归档对象 {repository.rel(path)}: {exc}")
     sources = {str(metadata["id"]) for _, metadata, _ in indexed if metadata.get("type") == "source"}
+    sources.update(
+        str(metadata["id"]) for _, metadata, _ in archived if metadata.get("type") == "source"
+    )
     proposal_ids = {str(metadata["id"]) for _, metadata, _ in indexed if metadata.get("type") == "proposal"}
     object_ids = {str(metadata["id"]) for _, metadata, _ in indexed if metadata.get("type") != "proposal"}
+    object_ids.update(
+        str(metadata["id"]) for _, metadata, _ in archived if metadata.get("type") != "proposal"
+    )
     known_ids = sources | proposal_ids | object_ids
     relation_targets: dict[str, int] = {object_id: 0 for object_id in known_ids}
     referenced_candidates: set[Path] = set()
@@ -314,7 +373,7 @@ def lint(repository: Repository) -> dict[str, object]:
                     relation_targets[str(target_id)] = relation_targets.get(str(target_id), 0) + 1
         check_wikilinks(path, body)
 
-    for path, metadata, _ in indexed:
+    for path, metadata, _ in [*indexed, *archived]:
         if metadata.get("type") == "source":
             raw_path = metadata.get("raw_content_path")
             if not raw_path:
@@ -478,7 +537,9 @@ def lint(repository: Repository) -> dict[str, object]:
                         if archived_metadata.get("id") == proposal.get("target_id"):
                             archived_target = archived_path
                             break
-                    if archived_target is None:
+                    if archived_target is None and not _approved_target_physically_purged(
+                        repository, proposal
+                    ):
                         errors.append(f"proposal target 不存在: {repository.rel(path)} -> {target_path_value}")
             except Exception as exc:
                 errors.append(f"proposal target 路径无效: {repository.rel(path)}: {exc}")
@@ -588,6 +649,8 @@ def run(args: argparse.Namespace) -> int:
     works = WorkService(repository)
     if args.command == "capture":
         _print(captures.capture(args.target, args.comment, refresh=args.refresh).__dict__)
+    elif args.command == "capture-wechat":
+        _print(captures.capture_wechat_url(args.url, args.comment, refresh=args.refresh).__dict__)
     elif args.command == "capture-text":
         text = args.text if args.text is not None else sys.stdin.read()
         _print(captures.capture_text(text, args.comment, args.title).__dict__)

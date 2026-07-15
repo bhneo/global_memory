@@ -13,6 +13,11 @@ from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 from .errors import ValidationError
 from .markdown import read_document, render_document
 from .repository import Repository, now_iso, sha256_bytes
+from .wechat import (
+    canonicalize_wechat_url,
+    fetch_wechat_article,
+    is_wechat_article_url,
+)
 
 
 TRACKING_PARAMETERS = {"fbclid", "gclid", "dclid", "mc_cid", "mc_eid", "igshid"}
@@ -297,6 +302,8 @@ class CaptureService:
         )
 
     def capture_url(self, url: str, comment: str = "", refresh: bool = False) -> CaptureResult:
+        if is_wechat_article_url(url):
+            return self.capture_wechat_url(url, comment, refresh=refresh)
         canonical = canonicalize_url(url)
         versions = self._versions_for_locator(canonical)
         if versions and not refresh:
@@ -324,6 +331,33 @@ class CaptureService:
             kind="web", original_locator=url, canonical_locator=canonicalize_url(final_url),
             content=content, title=title, comment=comment, import_method="cli-url",
             content_type=content_type, original_filename=original_filename, refresh=refresh,
+        )
+
+    def capture_wechat_url(self, url: str, comment: str = "", refresh: bool = False) -> CaptureResult:
+        canonical = canonicalize_wechat_url(url)
+        versions = self._versions_for_locator(canonical)
+        if versions and not refresh:
+            latest_path, latest = versions[-1]
+            self.repository.append_event(
+                "capture-events", {"event": "duplicate-source", "source_id": latest["id"], "locator": url}
+            )
+            return self._result_for_existing(latest_path, latest)
+        fetched = fetch_wechat_article(url)
+        metadata = fetched.metadata
+        title = metadata.title or urlsplit(fetched.final_url).path.rsplit("/", 1)[-1] or "微信公众号文章"
+        author = metadata.author or metadata.account_name
+        return self._write_source(
+            kind="wechat",
+            original_locator=url,
+            canonical_locator=canonicalize_wechat_url(fetched.final_url),
+            content=fetched.content,
+            title=title,
+            author=author,
+            published_at=metadata.published_at,
+            comment=comment,
+            import_method="cli-wechat",
+            content_type=fetched.content_type,
+            refresh=refresh,
         )
 
     def capture(self, target: str, comment: str = "", refresh: bool = False) -> CaptureResult:

@@ -78,7 +78,7 @@ class Repository:
         directories = [
             "vault/raw/objects/sha256",
             "vault/raw/web/content", "vault/raw/files/content", "vault/raw/files/blobs",
-            "vault/raw/personal-notes/content", "vault/knowledge/entities",
+            "vault/raw/wechat", "vault/raw/personal-notes/content", "vault/knowledge/entities",
             "vault/knowledge/concepts", "vault/knowledge/claims", "vault/knowledge/patterns",
             "vault/knowledge/works",
             "vault/knowledge/comparisons", "vault/knowledge/syntheses",
@@ -506,7 +506,11 @@ class Repository:
         return results
 
     def find_document(self, object_id: str) -> tuple[Path, dict[str, Any], str]:
-        candidates = list(self.all_indexed_documents()) + list(self.proposal_documents())
+        candidates = (
+            list(self.all_indexed_documents())
+            + list(self.archive_documents())
+            + list(self.proposal_documents())
+        )
         candidates += list((self.root / "vault" / "proposals").glob("candidate-*.md"))
         for path in candidates:
             metadata, body = read_document(path)

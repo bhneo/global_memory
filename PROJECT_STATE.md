@@ -8,6 +8,7 @@ M5：Real Knowledge Compilation 核心实现完成；工程验收通过，真实
 
 - Python 标准库 CLI 与本地仓库初始化。
 - 文本、本地文件和 HTTP(S) URL capture。
+- 单篇微信公众号文章 capture：`gm capture-wechat` 或 `gm capture <mp.weixin.qq.com/s/...>`；使用移动端 UA 抓取 HTML，解析标题/作者/公众号/发布时间，并以 `source_kind: wechat` 入库。
 - 不可变 raw content、结构化 source Markdown、SHA-256 与 capture audit event。
 - 全局 content-addressed raw store：不同 capture kind 的相同 bytes 共用 `objects/sha256/` 物理对象；source provenance 保持独立。
 - `gm migrate raw-store` 支持 dry-run、自动 source 备份、journal 续做、幂等重跑与迁移后验证；当前 6 个 source 已合并为 5 个唯一对象，旧路径未删除。
@@ -60,7 +61,7 @@ M5：Real Knowledge Compilation 核心实现完成；工程验收通过，真实
 - 第一条真实论文材料 VIA（arXiv:2607.11119v1）已完成官方 URL raw capture、带页码证据与反外推边界的 proposal 审阅，并经用户明确批准写入 canonical claim。
 - VIA 验收确认 canonical claim 可被 `VIA`、`waypoint` 等内容查询召回；其 20 页 PDF 已生成带页码边界的本地 extraction。
 - VIA 首次导入暴露了范围治理问题：材料入库是为了积累跨领域知识并验证 Global Memory，不要求每条来源都映射为系统自身的设计启发；范围纠正 proposal 已经用户明确批准，canonical 正文现只保留机器人论文知识、实验结果与适用边界，纠偏原因保留在审计 metadata 中。
-- 首轮 quickstart 端到端测试 claim 已按用户要求从 `vault/knowledge/claims/` 物理移除，并在 `vault/archive/` 只保留最小墓碑；Context Pack 默认排除其 source，raw、proposal 和 approval 历史继续用于审计回溯。
+- 首轮 quickstart 端到端测试 fixture 已按用户要求完整清理：source 移入 `vault/archive/` 并移出活动索引，claim 墓碑与 `examples/quickstart-note.md` 已删除；不可变 raw object 与 compile/approve proposal 历史保留供审计；`find_document` 与 `gm lint` 可解析归档 source。
 - Cursor 首批真实材料导入完成两篇论文、八条 model proposal；人工 PDF 复核后已通过 revision 补全自包含正文、收紧 33×/2.4× 结论范围，并为 Play2Perfect 增加官方 arXiv 页面来源。原八条 proposal 保留为 superseded，新八条仍为 pending，尚未写入 canonical；可在新门禁下逐条发布为 provisional。
 
 ## What is being implemented

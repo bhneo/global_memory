@@ -2,6 +2,13 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.16.0] - 2026-07-15
+
+### Added
+
+- 新增 `gm capture-wechat` 与微信文章 URL 自动识别：单篇 `mp.weixin.qq.com/s/...` 可用移动端 UA 抓取、解析元数据并以 `source_kind: wechat` 写入 raw vault。
+- 新增 `wechat-article-v1` extractor：优先从 `#js_content` 提取正文，改善公众号 HTML 的 `gm extract` 质量。
+
 ## [0.15.0] - 2026-07-15
 
 ### Added
@@ -22,6 +29,7 @@
 ### Changed
 
 - 现有 6 个 source 已迁移到 5 个唯一 content object，保留旧 raw 文件且未删除 provenance。
+- quickstart 验收 fixture 已从活动 vault 清理：source 归档、示例文件删除；`find_document` 与 `gm lint` 可解析归档 source 以维护 proposal 审计链。
 
 ## [0.14.0] - 2026-07-15
 

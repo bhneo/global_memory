@@ -11,9 +11,11 @@ from typing import Any
 from .errors import NotFoundError, ValidationError
 from .markdown import atomic_write_text, read_document, render_document
 from .repository import Repository, now_iso, sha256_bytes
+from .wechat import extract_js_content_html
 
 
 EXTRACTOR_VERSION = "1.0"
+WECHAT_EXTRACTOR = "wechat-article-v1"
 
 
 class _ArticleHTMLParser(HTMLParser):
@@ -167,7 +169,29 @@ class ExtractionService:
         except Exception as exc:
             return "", None, [f"PDF 提取失败: {exc}"], "error"
 
-    def _extract_payload(self, payload: bytes, mime: str, content_type: str) -> tuple[str, str, int | None, list[str], str, str | None]:
+    def _extract_html(self, decoded: str, *, prefer_wechat: bool = False) -> tuple[str, str, list[str], str]:
+        fragment = extract_js_content_html(decoded) if prefer_wechat else None
+        if fragment is None and ("id=\"js_content\"" in decoded or "id='js_content'" in decoded):
+            fragment = extract_js_content_html(decoded)
+        parser = _ArticleHTMLParser()
+        try:
+            parser.feed(fragment or decoded)
+            text = parser.result()
+            extractor = WECHAT_EXTRACTOR if fragment else "html-article-v1"
+            if not text:
+                return "", extractor, ["HTML 未提取到正文"], "error"
+            return text, extractor, [], "ready"
+        except Exception as exc:
+            return "", "html-article-v1", [f"HTML 提取失败: {exc}"], "error"
+
+    def _extract_payload(
+        self,
+        payload: bytes,
+        mime: str,
+        content_type: str,
+        *,
+        source_kind: str = "",
+    ) -> tuple[str, str, int | None, list[str], str, str | None]:
         if mime == "application/pdf":
             text, pages, warnings, status = self._extract_pdf(payload)
             return text, "pypdf", pages, warnings, status, None
@@ -175,15 +199,10 @@ class ExtractionService:
         if decoded is None:
             return "", "text-decoder", None, warnings, "error", None
         if mime in {"text/html", "application/xhtml+xml"} or re.search(r"<html\b|<!doctype\s+html", decoded[:1000], re.I):
-            parser = _ArticleHTMLParser()
-            try:
-                parser.feed(decoded)
-                text = parser.result()
-                if not text:
-                    return "", "html-article-v1", None, [*warnings, "HTML 未提取到正文"], "error", encoding
-                return text, "html-article-v1", None, warnings, "ready", encoding
-            except Exception as exc:
-                return "", "html-article-v1", None, [*warnings, f"HTML 提取失败: {exc}"], "error", encoding
+            text, extractor, warnings, status = self._extract_html(
+                decoded, prefer_wechat=source_kind == "wechat"
+            )
+            return text, extractor, None, warnings, status, encoding
         return decoded, "text-decoder", None, warnings, "ready", encoding
 
     def extract(self, source_id: str, rebuild: bool = False) -> ExtractionResult:
@@ -198,7 +217,7 @@ class ExtractionService:
         mime = str(source.get("mime_type") or source.get("content_type", "")).split(";", 1)[0].lower()
         content_type = str(source.get("content_type", mime))
         text, extractor, page_count, warnings, status, encoding = self._extract_payload(
-            payload, mime, content_type
+            payload, mime, content_type, source_kind=str(source.get("source_kind", ""))
         )
         digest = hashlib.sha256(
             f"{source_id}\n{input_sha}\n{extractor}\n{EXTRACTOR_VERSION}".encode("utf-8")

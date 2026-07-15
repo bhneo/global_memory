@@ -955,6 +955,23 @@ def test_lint_accepts_approved_target_moved_to_archive(repo: Repository) -> None
     assert result["errors"] == []
 
 
+def test_find_document_and_lint_resolve_archived_source(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Archived source fixture.")
+    source_path = next(path for path in repo.source_documents() if path.name.endswith(f"{captured.source_id}.md"))
+    archived_path = repo.root / "vault" / "archive" / source_path.name
+    archived_path.parent.mkdir(parents=True, exist_ok=True)
+    metadata, body = read_document(source_path)
+    metadata["status"] = "archived"
+    archived_path.write_text(render_document(metadata, body), encoding="utf-8")
+    source_path.unlink()
+    repo.rebuild_index()
+
+    resolved_path, resolved_metadata, _ = repo.find_document(captured.source_id)
+    assert resolved_path == archived_path
+    assert resolved_metadata["status"] == "archived"
+    assert lint(repo)["ok"] is True
+
+
 def test_lint_reports_broken_references_hashes_and_orphans(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Lint failure fixture.")
     proposal = ProposalService(repo).compile(captured.source_id)
@@ -1960,3 +1977,122 @@ def test_recovery_rejects_tampered_journal_payload(repo: Repository) -> None:
 def test_recover_cli_arguments() -> None:
     args = build_parser().parse_args(["recover"])
     assert args.command == "recover"
+
+
+WECHAT_ARTICLE_HTML = """<!DOCTYPE html>
+<html>
+<head>
+<meta property="og:title" content="测试文章标题" />
+<meta property="og:article:author" content="张三" />
+<script>var ct = "1710000000"; var nickname = htmlDecode("测试公众号");</script>
+</head>
+<body>
+<h1 id="activity-name">测试文章标题</h1>
+<div id="js_name">测试公众号</div>
+<div class="rich_media_content" id="js_content">
+<p>第一段正文内容。</p>
+<p>第二段正文内容。</p>
+</div>
+</body>
+</html>"""
+
+
+def test_wechat_url_detection_and_canonicalization() -> None:
+    from global_memory.wechat import canonicalize_wechat_url, is_wechat_article_url
+
+    short = "https://mp.weixin.qq.com/s/AbCdEfGhIjKl?utm_source=foo"
+    long = (
+        "https://mp.weixin.qq.com/s?__biz=MzA4MTg1NzYyNQ==&mid=2650812345"
+        "&idx=1&sn=abc123&chksm=deadbeef&scene=27"
+    )
+    assert is_wechat_article_url(short) is True
+    assert is_wechat_article_url(long) is True
+    assert is_wechat_article_url("https://example.com/s/foo") is False
+    assert canonicalize_wechat_url(short) == "https://mp.weixin.qq.com/s/AbCdEfGhIjKl"
+    assert canonicalize_wechat_url(long) == (
+        "https://mp.weixin.qq.com/s?"
+        "__biz=MzA4MTg1NzYyNQ%3D%3D&idx=1&mid=2650812345&sn=abc123"
+    )
+
+
+def test_capture_wechat_article_parses_metadata_and_extracts_body(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from global_memory.wechat import parse_wechat_metadata
+
+    class Response:
+        def __init__(self, body: bytes, final_url: str):
+            self.body = body
+            self.headers = {"Content-Type": "text/html; charset=utf-8"}
+            self.final_url = final_url
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self, _limit: int) -> bytes:
+            return self.body
+
+        def geturl(self) -> str:
+            return self.final_url
+
+    url = "https://mp.weixin.qq.com/s/AbCdEfGhIjKl"
+    monkeypatch.setattr(
+        "global_memory.wechat.urllib.request.urlopen",
+        lambda *_args, **_kwargs: Response(WECHAT_ARTICLE_HTML.encode("utf-8"), url),
+    )
+    metadata = parse_wechat_metadata(WECHAT_ARTICLE_HTML)
+    assert metadata.title == "测试文章标题"
+    assert metadata.author == "张三"
+    assert metadata.account_name == "测试公众号"
+    assert metadata.published_at is not None
+
+    captured = CaptureService(repo).capture_wechat_url(url, "微信单篇导入测试")
+    source_path = repo.root / captured.source_path
+    source_meta, _ = read_document(source_path)
+    assert source_meta["source_kind"] == "wechat"
+    assert source_meta["import_method"] == "cli-wechat"
+    assert source_meta["author"] == "张三"
+    assert source_meta["published_at"] is not None
+
+    extracted = ExtractionService(repo).extract(captured.source_id)
+    assert extracted.status == "ready"
+    assert extracted.extractor == "wechat-article-v1"
+    _, extraction_meta, body = ExtractionService(repo).find(extracted.extraction_id)
+    assert "第一段正文内容" in body
+    assert "第二段正文内容" in body
+    assert extraction_meta["extractor"] == "wechat-article-v1"
+
+
+def test_capture_wechat_cli_command(repo: Repository, monkeypatch: pytest.MonkeyPatch) -> None:
+    class Response:
+        def __init__(self, body: bytes):
+            self.body = body
+            self.headers = {"Content-Type": "text/html; charset=utf-8"}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *_args):
+            return False
+
+        def read(self, _limit: int) -> bytes:
+            return self.body
+
+        def geturl(self) -> str:
+            return "https://mp.weixin.qq.com/s/AbCdEfGhIjKl"
+
+    monkeypatch.setattr(
+        "global_memory.wechat.urllib.request.urlopen",
+        lambda *_args, **_kwargs: Response(WECHAT_ARTICLE_HTML.encode("utf-8")),
+    )
+    args = build_parser().parse_args(
+        ["capture-wechat", "https://mp.weixin.qq.com/s/AbCdEfGhIjKl", "--comment", "cli"]
+    )
+    assert args.command == "capture-wechat"
+    captured = CaptureService(repo).capture_wechat_url(args.url, args.comment)
+    assert captured.duplicate_source is False
+    duplicate = CaptureService(repo).capture_wechat_url(args.url, args.comment)
+    assert duplicate.duplicate_source is True

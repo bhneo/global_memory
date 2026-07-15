@@ -1,12 +1,12 @@
 ---
 id: "source_b361ac9cddb531dba17c360e"
 type: "source"
-status: "captured"
-title: "quickstart-note.md"
+status: "archived"
+title: "quickstart-note.md（已归档验收 fixture）"
 created_at: "2026-07-14T17:09:52+08:00"
-updated_at: "2026-07-15T15:52:39+08:00"
+updated_at: "2026-07-15T17:50:00+08:00"
 aliases: []
-tags: []
+tags: ["test-fixture"]
 domains: []
 confidence: "unknown"
 source_ids: []
@@ -23,21 +23,18 @@ content_id: "content_ee793f83244b50e18761334267164e575b4f1fb40fa9d1277cae5b4cb6d
 raw_content_path: "vault/raw/objects/sha256/ee/79/ee793f83244b50e18761334267164e575b4f1fb40fa9d1277cae5b4cb6db10d7"
 save_reason: "首轮端到端验收示例"
 import_method: "cli-file"
-processing_status: "inbox"
+processing_status: "archived"
 content_type: "text/markdown"
 mime_type: "text/markdown"
 original_filename: "quickstart-note.md"
 display_extension: ".md"
+change_reason: "用户要求清理 quickstart 验收 fixture；source 移出活动 raw 索引，不可变 raw object 与 proposal 历史保留"
 ---
 
-# quickstart-note.md
+# quickstart-note.md（已归档）
 
-> 原始内容：[vault/raw/files/content/content_ee793f83244b50e18761334267164e575b4f1fb40fa9d1277cae5b4cb6db10d7.txt](./content/content_ee793f83244b50e18761334267164e575b4f1fb40fa9d1277cae5b4cb6db10d7.txt)
+> 原始内容：`vault/raw/objects/sha256/ee/79/ee793f83244b50e18761334267164e575b4f1fb40fa9d1277cae5b4cb6db10d7`
 
 ## 保存理由
 
-首轮端到端验收示例
-
-## 内容预览
-
-# 示例输入：为什么需要来源链 长期知识系统的价值不只在于快速返回答案，也在于答案可以回到当时保存的原文、时间和保存理由。索引可以重建，证据链不能凭空重建。
+首轮端到端验收示例。该对象已从活动 source 索引移除，仅供 proposal 审计链回溯。
