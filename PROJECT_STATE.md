@@ -43,6 +43,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 - `gm discover` 以共享 source、tags、relation target 和关键词生成关联候选，保留可解释信号与输入 hash。
 - Relation discovery approve 只记录已审阅，绝不自动修改 canonical relation；采纳关系仍须独立 update proposal。
 - `gm context <query> --token-budget <n>` 只读生成临时 Context Pack：确定性选择少量 source/claim/synthesis，逐项保留文档 hash、来源链和选择理由；不写入 Markdown、索引或日志，也不提升事实状态。
+- 第一条真实论文材料 VIA（arXiv:2607.11119v1）已完成官方 URL raw capture，并生成带页码证据、适用范围和反外推边界的待审 model candidate；未写入 canonical knowledge。
 
 ## What is being implemented
 
@@ -83,7 +84,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 
 ## Next concrete task
 
-基于真实语料进行 Context Pack 验收：验证不同 query、中文短语、source version 与 token budget 下的召回、裁剪和来源呈现质量。
+继续逐条导入真实语料并进行 Context Pack 验收：先人工审阅 VIA proposal，再验证不同 query、中文短语、source version 与 token budget 下的召回、裁剪和来源呈现质量。
 
 ## Do not do yet
 
