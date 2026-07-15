@@ -14,7 +14,7 @@
 
 ## 知识区域
 
-- `vault/raw/`：只追加的来源记录与原始内容。
+- `vault/raw/`：只追加的 source capture；物理原文统一位于 `objects/sha256/` 全局内容对象库。
 - `vault/knowledge/`：人工确认的 entity、concept、claim、pattern、comparison、synthesis。
 - `vault/frontier/`：intuition、question、tension、analogy、hypothesis、anomaly。
 - `vault/action/`：project、decision、experiment、failure、opportunity。

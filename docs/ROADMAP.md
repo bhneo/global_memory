@@ -1,5 +1,12 @@
 # Roadmap
 
+## M5 — Real Knowledge Compilation（进行中）
+
+- 全局 content-addressed raw store、完整性校验与可恢复迁移。（已完成）
+- Derived extraction、logical work、evidence taxonomy。（下一步）
+- Bundle compiler、选择性审批、Context Pack profiles 与有限关系遍历。（待实现）
+- 跨平台 CI、重建演示和本地真实跨领域验证。（待实现）
+
 ## M1 — 最小可信闭环（已完成）
 
 - Capture URL、文本、本地文件。

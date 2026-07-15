@@ -18,7 +18,9 @@ canonical 层    knowledge | frontier | action
 
 ### 真相层
 
-Raw content 以 bytes 的 SHA-256 命名并独占创建。Source record 是独立 Markdown，保存来源身份、捕获时间、保存理由、content hash 和相对路径。同内容不同来源共用 content object，但 source record 不合并。
+Raw content 以 bytes 的 SHA-256 命名并独占创建，统一存放在 `vault/raw/objects/sha256/<前2位>/<次2位>/<完整哈希>`。路径不含 capture kind、URL 后缀或显示扩展名。Source record 是独立 Markdown，保存来源身份、捕获时间、保存理由、content hash、MIME、原始文件名、建议显示扩展名和对象相对路径。同内容不同来源共用 content object，但 source record 不合并。
+
+旧的 `raw/<kind>/content|blobs` 通过 `gm migrate raw-store` 迁移。迁移先备份 source record，再独占写全局对象，使用本地 journal 逐条更新 source，完成后校验全部引用。旧对象默认保留；只有独立、明确的清理动作才可删除。
 
 同一 canonical URL 属于一个 source family。普通 capture 只做已有来源去重；显式 `--refresh` 才重新抓取。变化内容产生带 `version_number` 和 `previous_version_id` 的新 immutable source record；即使内容回到旧 hash，也保留为新的时间版本。
 

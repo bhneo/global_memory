@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "global-memory-local"
-version = "0.14.0"
+version = "0.15.0"
 description = "Local-first, model-independent personal knowledge infrastructure"
 readme = "README.md"
 requires-python = ">=3.11"

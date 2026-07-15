@@ -18,6 +18,20 @@ from .repository import Repository, now_iso, sha256_bytes
 TRACKING_PARAMETERS = {"fbclid", "gclid", "dclid", "mc_cid", "mc_eid", "igshid"}
 
 
+def _display_extension(content_type: str, original_filename: str = "") -> str:
+    """Return presentation metadata only; it never participates in object identity."""
+    mime = content_type.split(";", 1)[0].strip().lower()
+    guessed = mimetypes.guess_extension(mime, strict=False)
+    if guessed:
+        return guessed
+    return Path(original_filename).suffix.lower() if original_filename else ""
+
+
+def _content_disposition_filename(value: str) -> str:
+    match = re.search(r"filename\*?=(?:UTF-8''|\")?([^\";]+)", value, re.I)
+    return Path(match.group(1).strip()).name if match else ""
+
+
 def canonicalize_url(url: str) -> str:
     parts = urlsplit(url.strip())
     if parts.scheme.lower() not in {"http", "https"} or not parts.hostname:
@@ -138,6 +152,7 @@ class CaptureService:
         comment: str = "",
         import_method: str,
         content_type: str = "text/plain; charset=utf-8",
+        original_filename: str = "",
         refresh: bool = False,
     ) -> CaptureResult:
         self.repository.ensure_initialized()
@@ -176,15 +191,7 @@ class CaptureService:
             else f"source_{source_digest[:12]}_v{version_number:04d}_{digest[:12]}"
         )
         decoded = _decode_text(content, content_type)
-        is_text = decoded is not None and (
-            content_type.lower().startswith("text/") or kind == "personal-notes"
-        )
-        if is_text:
-            extension = ".html" if "html" in content_type.lower() else ".txt"
-            raw_path = self.repository.root / "vault" / "raw" / kind / "content" / f"{content_id}{extension}"
-        else:
-            extension = Path(urlsplit(original_locator).path).suffix or mimetypes.guess_extension(content_type.split(";", 1)[0]) or ".bin"
-            raw_path = self.repository.root / "vault" / "raw" / kind / "blobs" / f"{content_id}{extension}"
+        raw_path = self.repository.content_object_path(digest)
         created_content = self.repository.immutable_write(raw_path, content)
 
         timestamp = now_iso()
@@ -216,13 +223,16 @@ class CaptureService:
             "import_method": import_method,
             "processing_status": "inbox",
             "content_type": content_type,
+            "mime_type": content_type.split(";", 1)[0].strip().lower(),
+            "original_filename": original_filename,
+            "display_extension": _display_extension(content_type, original_filename),
             "source_family_id": source_family_id,
             "version_number": version_number,
             "previous_version_id": latest.get("id") if latest else None,
         }
         body = (
             f"# {metadata['title']}\n\n"
-            f"> 原始内容：[{self.repository.rel(raw_path)}](./{raw_path.relative_to(source_path.parent).as_posix()})\n\n"
+            f"> 原始内容：[{self.repository.rel(raw_path)}]({Path(os.path.relpath(raw_path, source_path.parent)).as_posix()})\n\n"
             "## 来源版本\n\n"
             f"- Family：`{source_family_id}`\n"
             f"- Version：`{version_number}`\n"
@@ -283,6 +293,7 @@ class CaptureService:
             kind="files", original_locator=str(source_path), canonical_locator=canonical,
             content=source_path.read_bytes(), title=source_path.name, comment=comment,
             import_method="cli-file", content_type=content_type,
+            original_filename=source_path.name,
         )
 
     def capture_url(self, url: str, comment: str = "", refresh: bool = False) -> CaptureResult:
@@ -301,6 +312,9 @@ class CaptureService:
                 if len(content) > 20_000_000:
                     raise ValidationError("URL 内容超过第一版 20 MB 限制")
                 content_type = response.headers.get("Content-Type", "application/octet-stream")
+                original_filename = _content_disposition_filename(
+                    response.headers.get("Content-Disposition", "")
+                )
                 final_url = response.geturl()
         except OSError as exc:
             raise ValidationError(f"URL 获取失败: {exc}") from exc
@@ -309,7 +323,7 @@ class CaptureService:
         return self._write_source(
             kind="web", original_locator=url, canonical_locator=canonicalize_url(final_url),
             content=content, title=title, comment=comment, import_method="cli-url",
-            content_type=content_type, refresh=refresh,
+            content_type=content_type, original_filename=original_filename, refresh=refresh,
         )
 
     def capture(self, target: str, comment: str = "", refresh: bool = False) -> CaptureResult:

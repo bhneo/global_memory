@@ -14,6 +14,7 @@ from .errors import GlobalMemoryError
 from .markdown import read_document
 from .proposals import ProposalService
 from .recovery import ApprovalRecoveryManager
+from .raw_store import RawStoreService
 from .repository import Repository, sha256_bytes
 
 
@@ -129,6 +130,15 @@ def build_parser() -> argparse.ArgumentParser:
     backup_restore = backup_commands.add_parser("restore")
     backup_restore.add_argument("directory")
     backup_restore.add_argument("--apply", action="store_true")
+    raw = commands.add_parser("raw", help="校验全局 content-addressed raw object store")
+    raw_commands = raw.add_subparsers(dest="raw_command", required=True)
+    raw_commands.add_parser("verify", help="校验 source、content_id、object path 与磁盘哈希")
+    migrate = commands.add_parser("migrate", help="执行可恢复的数据迁移")
+    migrate_commands = migrate.add_subparsers(dest="migrate_command", required=True)
+    raw_store_migration = migrate_commands.add_parser("raw-store")
+    raw_store_mode = raw_store_migration.add_mutually_exclusive_group()
+    raw_store_mode.add_argument("--dry-run", action="store_true")
+    raw_store_mode.add_argument("--verify", action="store_true")
     audit = commands.add_parser("audit", help="只读生成知识治理审计报告")
     audit_commands = audit.add_subparsers(dest="audit_command", required=True)
     audit_commands.add_parser("contradictions", help="报告 evidence 与 relation 中的显式冲突")
@@ -502,6 +512,7 @@ def run(args: argparse.Namespace) -> int:
     captures = CaptureService(repository)
     proposals = ProposalService(repository)
     backups = RawBackupService(repository)
+    raw_store = RawStoreService(repository)
     if args.command == "capture":
         _print(captures.capture(args.target, args.comment, refresh=args.refresh).__dict__)
     elif args.command == "capture-text":
@@ -559,7 +570,7 @@ def run(args: argparse.Namespace) -> int:
             "root": str(repository.root), "objects_by_type": repository.count_by_type(),
             "inbox": len(proposals.inbox()), "proposals_by_status": {
                 state: len(proposals.list(state))
-                for state in ("pending", "deferred", "superseded", "approved", "rejected")
+                for state in ("pending", "deferred", "superseded", "published", "approved", "rejected")
             },
             "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()),
         })
@@ -588,6 +599,18 @@ def run(args: argparse.Namespace) -> int:
             result = backups.restore(args.directory, apply=args.apply)
             _print(result)
             return 0 if result["ok"] else 1
+    elif args.command == "raw":
+        result = raw_store.verify()
+        _print(result)
+        return 0 if result["ok"] else 1
+    elif args.command == "migrate":
+        if args.verify:
+            result = raw_store.verify()
+            _print(result)
+            return 0 if result["ok"] else 1
+        result = raw_store.plan() if args.dry_run else raw_store.migrate()
+        _print(result.__dict__)
+        return 0 if not result.errors else 1
     elif args.command == "audit":
         if args.audit_command == "contradictions":
             result = contradiction_audit(repository)

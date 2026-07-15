@@ -32,6 +32,10 @@ gm proposal show <proposal-id>
 gm proposal approve <proposal-id>
 gm proposal publish <proposal-id>
 gm promote <canonical-id> --reason "已核对原文"
+gm raw verify
+gm migrate raw-store --dry-run
+gm migrate raw-store
+gm migrate raw-store --verify
 gm proposal defer <proposal-id> --reason "等待补充证据"
 gm proposal revise <proposal-id> --from-file revised-candidate.md --reason "人工修订候选主张"
 gm recover
@@ -105,6 +109,8 @@ gm doctor
 Candidate 必须是 UTF-8 Markdown，保持 target 的 `id`、`type`、`created_at`，使用 `status: proposal`；可用 `proposed_status` 建议 `provisional`、`confirmed`、`contested`、`superseded` 或 `archived`。Claim 必须保留至少一个 `source_id`。
 
 批量导入时，结构化 claim 可通过 `proposal publish` 进入 `provisional`：它会立即进入全文检索和 Context Pack，但明确标注为“已通过自动门禁、尚未人工确认”。缺少来源、证据、适用范围或不确定性，包含反证，属于医疗、法律、金融等高风险领域，或不是 claim 的 proposal，都必须保留在待审区并使用人工 `proposal approve`。用户核对后用 `promote` 将其晋升为 `confirmed`。
+
+所有新 capture 的 bytes 进入与入口无关的 `vault/raw/objects/sha256/`。URL、本地文件和粘贴文本只要 bytes 相同就共享一个物理对象，同时保留各自 source record。`gm raw verify` 校验引用与磁盘哈希；旧布局先运行 migration dry-run，再正式迁移。迁移会自动备份 source record并保留旧 payload，不执行清理。
 
 `propose-update` 会不可变保存当时的 base snapshot 和 candidate，并记录两者 SHA-256。审批时 target 必须仍与 base 完全相同；如期间发生人工编辑，审批会失败且不写文件。再次运行 `proposal show` 可看到 Base→Candidate 和 Base→Current，随后应基于当前 canonical 重新创建 proposal。系统当前不自动合并冲突。
 

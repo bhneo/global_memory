@@ -12,6 +12,8 @@
 
 Source identity 从单层扩展为两层：family 代表 canonical locator，version 代表该 family 在某个捕获时点的不可变证据。v1 保持原有 ID 兼容；v2 起的 ID 包含连续序号与 content hash 前缀。`previous_version_id` 构成可审计时间链，不使用覆盖表达网页变化。
 
+Content object identity 只取决于原始 bytes 的 SHA-256。所有 capture channel 共用 `vault/raw/objects/sha256/<prefix>/<full-hash>`；`content_id` 固定为 `content_<full-hash>`。MIME、原始文件名和显示扩展名属于 source capture metadata，不参与物理对象身份。
+
 Canonical update proposal 将 target 在提案时的完整 Markdown 复制为 base snapshot。Base 不是新的 canonical 版本，而是乐观并发令牌和审计证据；candidate 是建议结果，current 是审批时实际文件。只有 `hash(current) == hash(base)` 才允许 candidate 进入 canonical。
 
 Approval recovery journal 不进入知识图，也不进入 Git。它是短生命周期的本地事务记录，保存已授权审批的确定输出和阶段。Knowledge/proposal Markdown 与 audit event 完成后，journal 可安全删除；存在 journal 表示审批尚未达到完整终态。

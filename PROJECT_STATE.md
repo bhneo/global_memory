@@ -2,13 +2,16 @@
 
 ## Current milestone
 
-M4：渐进式检索的第一版 Context Pack 已完成。
+M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成并迁移，derived extraction 是下一纵向切片。
 
 ## What is working
 
 - Python 标准库 CLI 与本地仓库初始化。
 - 文本、本地文件和 HTTP(S) URL capture。
 - 不可变 raw content、结构化 source Markdown、SHA-256 与 capture audit event。
+- 全局 content-addressed raw store：不同 capture kind 的相同 bytes 共用 `objects/sha256/` 物理对象；source provenance 保持独立。
+- `gm migrate raw-store` 支持 dry-run、自动 source 备份、journal 续做、幂等重跑与迁移后验证；当前 6 个 source 已合并为 5 个唯一对象，旧路径未删除。
+- `gm raw verify` 校验 content_id、对象路径与磁盘 SHA-256。
 - canonical URL 规范化、同来源去重、跨来源内容去重且不丢 source record。
 - SQLite FTS5 + 中文子串 fallback；结果包含来源 ID。
 - 确定性规则 compile proposal、candidate 哈希、内容级 unified diff。
@@ -51,7 +54,7 @@ M4：渐进式检索的第一版 Context Pack 已完成。
 
 ## What is being implemented
 
-- 无进行中的功能；仓库处于可接管状态。
+- 正在实现 derived extraction layer，随后是 logical work、evidence taxonomy 和 bundle compiler。
 
 ## Known defects
 

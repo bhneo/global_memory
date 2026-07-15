@@ -28,7 +28,7 @@
 
 ## Safety boundaries
 
-- 不得删除、覆盖或静默改写 `vault/raw/` 中的 source record 和 raw content。
+- 不得删除、覆盖或静默改写 `vault/raw/` 中的 source record 和 raw content。物理内容对象只能写入由完整 SHA-256 决定的 `vault/raw/objects/sha256/` 路径；capture kind 不得参与对象身份。
 - 不得把模型生成内容伪装为用户原始判断。
 - 不得未经审批修改 `vault/knowledge/`、`vault/frontier/` 或 `vault/action/` 中已确认对象。
 - 不得将推测静默升级为事实；保留 `confidence`、适用条件和冲突证据。

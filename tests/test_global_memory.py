@@ -17,6 +17,7 @@ from global_memory.errors import ImmutableContentError, ValidationError
 from global_memory.markdown import read_document, render_document
 from global_memory.proposals import ProposalService
 from global_memory.recovery import ApprovalRecoveryManager
+from global_memory.raw_store import RawStoreService
 from global_memory.repository import Repository, sha256_bytes
 
 
@@ -91,6 +92,81 @@ def test_same_content_from_different_urls_preserves_both_sources(repo: Repositor
     assert second.source_id != first.source_id
     assert second.raw_content_path == first.raw_content_path
     assert len(list(repo.source_documents())) == 2
+
+
+def test_same_pdf_from_url_and_local_file_share_global_object(
+    repo: Repository, workspace: Path
+) -> None:
+    payload = b"%PDF-1.4\nshared-pdf-fixture\n%%EOF"
+    remote = CaptureService(repo)._write_source(
+        kind="web", original_locator="https://arxiv.org/pdf/2607.11119",
+        canonical_locator="https://arxiv.org/pdf/2607.11119", content=payload,
+        title="Remote paper", import_method="test", content_type="application/pdf",
+    )
+    local_path = workspace / "论文副本.pdf"
+    local_path.write_bytes(payload)
+    local = CaptureService(repo).capture_file(local_path, "local copy")
+
+    assert remote.source_id != local.source_id
+    assert remote.content_id == local.content_id
+    assert remote.raw_content_path == local.raw_content_path
+    assert remote.raw_content_path.endswith(remote.content_id.removeprefix("content_"))
+    assert "/objects/sha256/" in remote.raw_content_path
+    remote_source = repo.root / remote.source_path
+    remote_source.unlink()
+    assert (repo.root / local.raw_content_path).read_bytes() == payload
+
+
+def test_text_and_txt_file_share_global_object(repo: Repository, workspace: Path) -> None:
+    text = "中文内容通过两个入口共享对象。"
+    pasted = CaptureService(repo).capture_text(text, title="粘贴文本")
+    local_path = workspace / "中文资料.txt"
+    local_path.write_text(text, encoding="utf-8")
+    local = CaptureService(repo).capture_file(local_path)
+    assert pasted.source_id != local.source_id
+    assert pasted.content_id == local.content_id
+    assert pasted.raw_content_path == local.raw_content_path
+    _, metadata, _ = repo.find_document(local.source_id)
+    assert metadata["original_filename"] == "中文资料.txt"
+    assert metadata["display_extension"] == ".txt"
+
+
+def test_raw_store_migration_is_recoverable_and_idempotent(
+    repo: Repository, workspace: Path
+) -> None:
+    captured = CaptureService(repo).capture_text("legacy raw migration")
+    source_path = repo.root / captured.source_path
+    metadata, body = read_document(source_path)
+    object_path = repo.root / captured.raw_content_path
+    legacy_path = repo.root / "vault/raw/personal-notes/content/legacy.txt"
+    legacy_path.parent.mkdir(parents=True, exist_ok=True)
+    legacy_path.write_bytes(object_path.read_bytes())
+    metadata["raw_content_path"] = repo.rel(legacy_path)
+    source_path.write_text(render_document(metadata, body), encoding="utf-8")
+    object_path.unlink()
+
+    plan = RawStoreService(repo).plan()
+    assert plan.dry_run is True
+    assert plan.updated_sources == 1
+    assert not object_path.exists()
+
+    calls = 0
+    def fail_once(phase: str) -> None:
+        nonlocal calls
+        if phase == "source_written" and calls == 0:
+            calls += 1
+            raise RuntimeError("simulated interruption")
+
+    with pytest.raises(RuntimeError, match="interruption"):
+        RawStoreService(repo, failure_hook=fail_once).migrate()
+    assert RawStoreService(repo).journal_path.exists()
+    report = RawStoreService(repo).migrate()
+    assert report.updated_sources == 1
+    assert report.backup_path
+    assert RawStoreService(repo).verify()["ok"] is True
+    second = RawStoreService(repo).migrate()
+    assert second.updated_sources == 0
+    assert second.backup_path is None
 
 
 def test_unchanged_refresh_reuses_latest_version_without_proposal(repo: Repository) -> None:

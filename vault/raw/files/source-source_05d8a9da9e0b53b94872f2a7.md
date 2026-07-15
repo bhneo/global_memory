@@ -4,7 +4,7 @@ type: "source"
 status: "captured"
 title: ".tmp-play2perfect-2606.26428.pdf"
 created_at: "2026-07-15T12:16:31+08:00"
-updated_at: "2026-07-15T12:16:31+08:00"
+updated_at: "2026-07-15T15:52:39+08:00"
 aliases: []
 tags: []
 domains: []
@@ -20,7 +20,7 @@ captured_at: "2026-07-15T12:16:31+08:00"
 published_at: null
 content_sha256: "a5eb515ece7fd538a7bda60c3ee1df1506ff255f13d9dad1ba2b99dd44139a47"
 content_id: "content_a5eb515ece7fd538a7bda60c3ee1df1506ff255f13d9dad1ba2b99dd44139a47"
-raw_content_path: "vault/raw/files/blobs/content_a5eb515ece7fd538a7bda60c3ee1df1506ff255f13d9dad1ba2b99dd44139a47.pdf"
+raw_content_path: "vault/raw/objects/sha256/a5/eb/a5eb515ece7fd538a7bda60c3ee1df1506ff255f13d9dad1ba2b99dd44139a47"
 save_reason: "原始论文 arXiv:2606.26428 Play2Perfect；URL PDF 超 20MB 改本地 capture"
 import_method: "cli-file"
 processing_status: "inbox"
@@ -28,6 +28,9 @@ content_type: "application/pdf"
 source_family_id: "source_family_05d8a9da9e0b53b94872f2a7"
 version_number: 1
 previous_version_id: null
+mime_type: "application/pdf"
+original_filename: ".tmp-play2perfect-2606.26428.pdf"
+display_extension: ".pdf"
 ---
 
 # .tmp-play2perfect-2606.26428.pdf

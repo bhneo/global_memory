@@ -42,13 +42,14 @@ Source 除基础字段外必须包含：
 - `original_title`、`author`。
 - `original_locator`、`canonical_locator`。
 - `captured_at`、可空 `published_at`。
-- `content_sha256`、`content_id`、`raw_content_path`。
+- `content_sha256`、`content_id`、`raw_content_path`。对象路径固定由完整内容哈希派生：`vault/raw/objects/sha256/<前2位>/<次2位>/<完整哈希>`。
+- `mime_type`、`original_filename`、`display_extension`：只用于解释和显示，不参与 content identity。
 - `save_reason`、`import_method`、`processing_status`、`content_type`。
 - `source_family_id`：由 source kind 与 canonical locator 派生的版本族 ID。
 - `version_number`：族内从 1 开始的连续序号。
 - `previous_version_id`：上一版本 ID；v1 为 `null`。
 
-`source record` 与 `raw content` 均通过独占创建写入。文本内容按 hash 存在 `content/`；二进制在 `blobs/`，默认不提交 Git。
+`source record` 与 `raw content` 均通过独占创建写入。所有新 raw bytes 不分入口统一进入全局 object store；旧 `content/`、`blobs/` 仅作为迁移前兼容输入，迁移不自动删除。
 
 ## Proposal record
 

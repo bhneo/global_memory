@@ -4,7 +4,7 @@ type: "source"
 status: "captured"
 title: "quickstart-note.md"
 created_at: "2026-07-14T17:09:52+08:00"
-updated_at: "2026-07-14T17:09:52+08:00"
+updated_at: "2026-07-15T15:52:39+08:00"
 aliases: []
 tags: []
 domains: []
@@ -20,11 +20,14 @@ captured_at: "2026-07-14T17:09:52+08:00"
 published_at: null
 content_sha256: "ee793f83244b50e18761334267164e575b4f1fb40fa9d1277cae5b4cb6db10d7"
 content_id: "content_ee793f83244b50e18761334267164e575b4f1fb40fa9d1277cae5b4cb6db10d7"
-raw_content_path: "vault/raw/files/content/content_ee793f83244b50e18761334267164e575b4f1fb40fa9d1277cae5b4cb6db10d7.txt"
+raw_content_path: "vault/raw/objects/sha256/ee/79/ee793f83244b50e18761334267164e575b4f1fb40fa9d1277cae5b4cb6db10d7"
 save_reason: "首轮端到端验收示例"
 import_method: "cli-file"
 processing_status: "inbox"
 content_type: "text/markdown"
+mime_type: "text/markdown"
+original_filename: "quickstart-note.md"
+display_extension: ".md"
 ---
 
 # quickstart-note.md

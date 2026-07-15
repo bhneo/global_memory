@@ -74,6 +74,7 @@ class Repository:
 
     def init(self) -> None:
         directories = [
+            "vault/raw/objects/sha256",
             "vault/raw/web/content", "vault/raw/files/content", "vault/raw/files/blobs",
             "vault/raw/personal-notes/content", "vault/knowledge/entities",
             "vault/knowledge/concepts", "vault/knowledge/claims", "vault/knowledge/patterns",
@@ -89,6 +90,11 @@ class Repository:
         for directory in directories:
             (self.root / directory).mkdir(parents=True, exist_ok=True)
         self.rebuild_index()
+
+    def content_object_path(self, digest: str) -> Path:
+        if not re.fullmatch(r"[0-9a-f]{64}", digest):
+            raise ValidationError(f"非法 SHA-256: {digest}")
+        return self.root / "vault" / "raw" / "objects" / "sha256" / digest[:2] / digest[2:4] / digest
 
     def ensure_initialized(self) -> None:
         if not (self.root / "vault").is_dir():

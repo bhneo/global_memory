@@ -26,3 +26,5 @@ system/recovery/*
 # Large/binary raw payloads stay local and require an explicit backup policy.
 vault/raw/**/blobs/*
 !vault/raw/**/blobs/.gitkeep
+vault/raw/objects/sha256/*
+!vault/raw/objects/sha256/.gitkeep

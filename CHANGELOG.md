@@ -2,6 +2,18 @@
 
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
+## [0.15.0] - 2026-07-15
+
+### Added
+
+- M5 第一阶段：新增跨 URL、文件与粘贴入口共享的全局 content-addressed raw object store。
+- 新增 `gm raw verify` 与 `gm migrate raw-store --dry-run|--verify`，迁移支持自动 source 备份、本地 journal 续做和幂等重跑。
+- Source capture 新增 MIME、原始文件名与建议显示扩展名；URL path 后缀不再决定物理对象类型。
+
+### Changed
+
+- 现有 6 个 source 已迁移到 5 个唯一 content object，保留旧 raw 文件且未删除 provenance。
+
 ## [0.13.0] - 2026-07-15
 
 ### Changed
