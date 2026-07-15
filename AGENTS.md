@@ -40,4 +40,4 @@
 
 ## Canonical write gate
 
-允许直接写 canonical 的唯一常规路径是：pending proposal → 人工查看内容级 diff → 明确 approve → 写入带 `approved_via` 的对象 → 记录 audit event → 重建索引。修复 schema 或迁移 canonical 数据也必须先取得明确授权并提供可检查 diff。
+允许写 canonical 的常规路径只有两种：合格 claim 经显式自动门禁发布为带 `published_via` 的 provisional；或 pending proposal 经人工查看 diff 后明确 approve，写入带 `approved_via` 的 confirmed/其他审阅状态。两者都必须记录 audit 并重建索引。修复 schema 或迁移 canonical 数据也必须先取得明确授权并提供可检查 diff。

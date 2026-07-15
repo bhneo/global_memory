@@ -4,6 +4,7 @@ import sqlite3
 import shutil
 import uuid
 import json
+import sys
 from contextlib import closing
 from pathlib import Path
 
@@ -11,7 +12,7 @@ import pytest
 
 from global_memory.capture import CaptureService, canonicalize_url
 from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
-from global_memory.bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService
+from global_memory.bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from global_memory.cli import build_parser, contradiction_audit, doctor, lint
 from global_memory.context import ContextPackService
 from global_memory.errors import ImmutableContentError, ValidationError
@@ -271,6 +272,39 @@ def test_pdf_extraction_preserves_page_boundaries_and_rebuilds(
     assert (repo.root / captured.raw_content_path).read_bytes() == raw_before
 
 
+def test_pdf_optional_dependency_missing_is_graceful(
+    repo: Repository, workspace: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    pdf_path = workspace / "optional.pdf"
+    pdf_path.write_bytes(make_text_pdf(["optional dependency"]));
+    captured = CaptureService(repo).capture_file(pdf_path)
+    monkeypatch.setitem(sys.modules, "pypdf", None)
+    result = ExtractionService(repo).extract(captured.source_id)
+    assert result.status == "error"
+    assert "pip install -e .[pdf]" in result.warnings[0]
+    assert (repo.root / captured.raw_content_path).read_bytes() == pdf_path.read_bytes()
+
+
+def test_extraction_marks_old_input_stale(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("first extraction input")
+    service = ExtractionService(repo)
+    first = service.extract(captured.source_id)
+    source_path = repo.root / captured.source_path
+    source, body = read_document(source_path)
+    replacement = b"second extraction input"
+    digest = sha256_bytes(replacement)
+    replacement_path = repo.content_object_path(digest)
+    repo.immutable_write(replacement_path, replacement)
+    source["content_sha256"] = digest
+    source["content_id"] = f"content_{digest}"
+    source["raw_content_path"] = repo.rel(replacement_path)
+    source_path.write_text(render_document(source, body), encoding="utf-8")
+    second = service.extract(captured.source_id)
+    _, old_metadata, _ = service.find(first.extraction_id)
+    assert first.extraction_id != second.extraction_id
+    assert old_metadata["status"] == "stale"
+
+
 def test_chinese_encoding_fallback_and_failed_extraction_preserve_raw(repo: Repository) -> None:
     payload = "中文 GB18030 抽取".encode("gb18030")
     captured = CaptureService(repo)._write_source(
@@ -473,6 +507,51 @@ def test_bundle_provider_output_is_schema_validated(repo: Repository) -> None:
         BundleCompiler(repo, InvalidProvider()).compile(captured.source_id)
 
 
+def test_bundle_preserves_explicit_contradiction_candidate(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Claim: [contradicts:claim_existing] A conflicting bounded statement."
+    )
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / bundle.proposal_path)
+    assert proposal["contradiction_candidates"][0]["target_id"] == "claim_existing"
+    assert proposal["bundle_items"][0]["potential_conflicts"]
+    assert not (repo.root / proposal["bundle_items"][0]["target_path"]).exists()
+
+
+def test_external_json_bundle_adapter_never_writes_without_proposal(
+    repo: Repository, workspace: Path
+) -> None:
+    captured = CaptureService(repo).capture_text("external provider input")
+    bundle_file = workspace / "bundle.json"
+    bundle_file.write_text(json.dumps({"items": [{
+        "object_type": "question", "title": "What remains uncertain?",
+        "body": "What remains uncertain?", "span_start": 0,
+    }]}), encoding="utf-8")
+    result = BundleCompiler(repo, JsonBundleProvider(bundle_file, "cursor-json-v1")).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / result.proposal_path)
+    assert proposal["processor"] == "cursor-json-v1"
+    assert not (repo.root / proposal["bundle_items"][0]["target_path"]).exists()
+
+
+def test_external_bundle_can_propose_work_enrichment(repo: Repository, workspace: Path) -> None:
+    captured = CaptureService(repo).capture_text("work metadata input")
+    bundle_file = workspace / "work-bundle.json"
+    bundle_file.write_text(json.dumps({"items": [{
+        "object_type": "work", "title": "Auditable Work", "body": "Logical work metadata.",
+        "metadata": {
+            "id": "work_arxiv_2600_00001", "work_type": "paper",
+            "canonical_title": "Auditable Work", "authors": ["Author"],
+            "arxiv_id": "2600.00001", "language": "en", "same_work_as": [],
+        },
+    }]}), encoding="utf-8")
+    result = BundleCompiler(repo, JsonBundleProvider(bundle_file)).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / result.proposal_path)
+    item = proposal["bundle_items"][0]
+    candidate, _ = read_document(repo.root / item["candidate_path"])
+    assert candidate["type"] == "work" and candidate["arxiv_id"] == "2600.00001"
+    assert not (repo.root / item["target_path"]).exists()
+
+
 def test_bundle_item_revision_preserves_old_candidate(repo: Repository, workspace: Path) -> None:
     captured = CaptureService(repo).capture_text("Concept: Revisable concept")
     bundle = BundleCompiler(repo).compile(captured.source_id)
@@ -572,6 +651,32 @@ def test_search_filters_weighted_metadata_and_bounded_traversal(repo: Repository
     with pytest.raises(ValidationError, match="depth"):
         repo.search_with_relations("Weighted", max_depth=4)
     assert project.exists()
+
+
+def test_long_unicode_paths_and_posix_metadata_are_cross_platform(repo: Repository, workspace: Path) -> None:
+    nested = workspace
+    while len(str(nested)) < 190:
+        nested = nested / "中文长路径层级"
+    nested.mkdir(parents=True)
+    local = nested / ("很长的中文文件名" * 4 + ".txt")
+    local.write_text("跨平台路径分隔符验证", encoding="utf-8")
+    captured = CaptureService(repo).capture_file(local)
+    assert "/" in captured.raw_content_path and "\\" not in captured.raw_content_path
+    assert (repo.root / Path(captured.raw_content_path)).is_file()
+    assert RawStoreService(repo).verify()["ok"] is True
+
+
+def test_index_rebuild_survives_deleted_derived_extraction(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Claim: Derived data is rebuildable.")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    BundleReviewService(repo).approve(bundle.proposal_id)
+    extraction_path, _, _ = ExtractionService(repo).latest_for_source(captured.source_id)
+    extraction_path.unlink()
+    repo.index_path.unlink()
+    assert repo.rebuild_index() >= 2
+    rebuilt = ExtractionService(repo).extract(captured.source_id, rebuild=True)
+    assert rebuilt.status == "ready"
+    assert repo.search("Derived data")
 
 
 def test_unchanged_refresh_reuses_latest_version_without_proposal(repo: Repository) -> None:

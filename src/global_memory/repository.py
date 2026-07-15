@@ -274,7 +274,21 @@ class Repository:
                 raise ValidationError(f"{self.rel(path)} 的 quote 缺少 extraction/span/original_text")
             from .extraction import ExtractionService
             extraction_service = ExtractionService(self)
-            _, extraction, _ = extraction_service.find(str(item["extraction_id"]))
+            try:
+                _, extraction, _ = extraction_service.find(str(item["extraction_id"]))
+            except NotFoundError:
+                relative = self.rel(path)
+                if not relative.startswith(("vault/knowledge/", "vault/frontier/", "vault/action/")):
+                    raise ValidationError(f"{relative} 的 quote extraction 不存在")
+                _, source, _ = self.find_document(str(item.get("source_id")))
+                if (
+                    source.get("content_sha256") != item.get("input_sha256")
+                    or (item.get("content_id") and source.get("content_id") != item.get("content_id"))
+                ):
+                    raise ValidationError(f"{relative} 的 quote provenance 与 source 不一致")
+                # Derived extraction is deliberately deletable. Canonical Markdown and raw
+                # remain index-rebuildable; exact span is rechecked when extraction is rebuilt.
+                return
             if (
                 extraction.get("source_id") != item.get("source_id")
                 or extraction.get("input_sha256") != item.get("input_sha256")

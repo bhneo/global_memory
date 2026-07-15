@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from .backups import RawBackupService
-from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService
+from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from .capture import CaptureService
 from .context import ContextPackService
 from .errors import GlobalMemoryError
@@ -69,6 +69,8 @@ def build_parser() -> argparse.ArgumentParser:
     work_propose.add_argument("--author", action="append", default=[])
     compile_parser = commands.add_parser("compile", help="为来源生成 proposal")
     compile_parser.add_argument("source_id")
+    compile_parser.add_argument("--bundle-file", help="外部 provider 生成的本地 JSON items；核心不调用模型")
+    compile_parser.add_argument("--provider-name", default="external-json-bundle-v1")
     synthesize = commands.add_parser("synthesize", help="从多个 canonical claim 生成待审综合 proposal")
     synthesize.add_argument("claim_ids", nargs="+")
     discover = commands.add_parser("discover", help="兼容别名：related-content（词汇/metadata 关联候选）")
@@ -608,7 +610,8 @@ def run(args: argparse.Namespace) -> int:
             args.source_ids, arxiv_id=args.arxiv_id, title=args.title, authors=args.author
         ).__dict__)
     elif args.command == "compile":
-        _print(BundleCompiler(repository).compile(args.source_id).__dict__)
+        provider = JsonBundleProvider(args.bundle_file, args.provider_name) if args.bundle_file else None
+        _print(BundleCompiler(repository, provider).compile(args.source_id).__dict__)
     elif args.command == "synthesize":
         _print(proposals.synthesize(args.claim_ids).__dict__)
     elif args.command in {"discover", "related-content"}:

@@ -26,7 +26,8 @@ gm init
 gm capture-text --text "人的原始文字会原样保留" --comment "验证最小闭环"
 gm capture https://example.com/article --refresh --comment "显式检查网页是否更新"
 gm inbox
-gm compile <source-id> # 生成 Compile Bundle Proposal
+gm compile <source-id> # deterministic fallback，生成 Compile Bundle Proposal
+gm compile <source-id> --bundle-file cursor-output.json --provider-name cursor-json-v1
 gm proposal diff <bundle-proposal-id>
 gm proposal approve <bundle-proposal-id> --items claim-1,concept-2
 gm proposal reject <bundle-proposal-id> --items question-3 --reason "暂不保留"
@@ -126,6 +127,10 @@ Candidate 必须是 UTF-8 Markdown，保持 target 的 `id`、`type`、`created_
 `gm compile` 现在先读取 extraction 并检索已有 canonical，再生成 Compile Bundle。Deterministic fallback 只识别显式 `Concept:/Claim:/Question:/Hypothesis:/Tension:/Analogy:` 标记；没有标记时只保留第一段逐字材料，不为了填满 schema 强制生成对象。Bundle 支持整体或按 item approve/reject/revise；一组批准通过多目标 recovery journal 原子续做。
 
 Context Pack 支持 `execution`、`research`、`exploration` profile 及组合，可按 project/domain/type/status/time/source kind 过滤，并沿 typed relations 做深度与节点数受限的扩展。Proposal 默认不进入；只有显式 `--include-proposals` 才返回，并保留 pending/proposal 状态。搜索对 title、aliases、tags、domains 和 body 分字段加权。
+
+外部模型不需要绑定 SDK：让 Cursor 或其他 provider 输出 `{"items": [...]}` JSON，再用 `--bundle-file` 导入。模型输出仍必须通过本地 schema validation，只能形成 proposal，不能直接写或批准 canonical。
+
+工程验收可运行 `python scripts/m5_acceptance_demo.py`。该脚本在忽略的 `data/derived/` 测试 Vault 中演示完整 M5 流程，不读取私人目录，也不修改真实 canonical。
 
 `propose-update` 会不可变保存当时的 base snapshot 和 candidate，并记录两者 SHA-256。审批时 target 必须仍与 base 完全相同；如期间发生人工编辑，审批会失败且不写文件。再次运行 `proposal show` 可看到 Base→Candidate 和 Base→Current，随后应基于当前 canonical 重新创建 proposal。系统当前不自动合并冲突。
 

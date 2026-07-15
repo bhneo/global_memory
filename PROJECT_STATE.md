@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成并迁移，derived extraction 是下一纵向切片。
+M5：Real Knowledge Compilation 核心实现完成；工程验收通过，真实跨领域 20–30 份资料验证因当前样本不足而保持未完成。
 
 ## What is working
 
@@ -20,6 +20,9 @@ M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成
 - Context Pack 支持 execution/research/exploration profile、组合、project/domain/type/status/time/source-kind 过滤、有界 relation traversal、evidence 与 truncation report。
 - SQLite/FTS 对 title、aliases、tags、domains、body 分字段检索；结果解释 metadata/body/关系命中，proposal 仅在显式请求时出现。
 - 旧 `discover` 保留兼容别名，用户界面准确称为 `related-content`，不再把词汇重合描述为真正 serendipity。
+- GitHub Actions 配置覆盖 Ubuntu/Windows 与 Python 3.11/3.12/3.13，并执行 pytest、doctor、lint、raw integrity、migration dry-run 和 M5 acceptance smoke。
+- `scripts/m5_acceptance_demo.py` 演示跨入口 PDF 去重、两页 extraction、7-item bundle、三 profile Context Pack 与 index/extraction 重建。
+- 当前 6 个真实 capture 已全部生成本地 extraction：4 PDF、1 HTML、1 Markdown，均 ready 且无 warning；VIA 和 Play2Perfect 各有一个 pending work enrichment proposal。
 - canonical URL 规范化、同来源去重、跨来源内容去重且不丢 source record。
 - SQLite FTS5 + 中文子串 fallback；结果包含来源 ID。
 - 确定性规则 compile proposal、candidate 哈希、内容级 unified diff。
@@ -51,26 +54,27 @@ M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成
 - `gm audit contradictions` 报告 canonical claim 内部正反 evidence 并存，以及跨 claim 的显式 `contradicts` relation；审计不裁决、不写入。
 - `gm synthesize` 从至少两个 canonical claim 生成仅汇总显式材料的 synthesis candidate，保留输入来源和 relation。
 - Synthesis approval 前重验所有输入 claim hash；输入变化时拒绝批准，不生成自动/夜间任务。
-- `gm discover` 以共享 source、tags、relation target 和关键词生成关联候选，保留可解释信号与输入 hash。
+- `gm related-content`（旧 `discover` 兼容别名）以共享 source、tags、relation target 和关键词生成关联候选，保留可解释信号与输入 hash。
 - Relation discovery approve 只记录已审阅，绝不自动修改 canonical relation；采纳关系仍须独立 update proposal。
-- `gm context <query> --token-budget <n>` 只读生成临时 Context Pack：确定性选择少量 source/claim/synthesis，逐项保留文档 hash、来源链和选择理由；不写入 Markdown、索引或日志，也不提升事实状态。
+- `gm context` 按 profile/filter/token budget 只读生成临时 Context Pack，保留文档 hash、来源链、evidence、状态、命中/选择理由与截断报告。
 - 第一条真实论文材料 VIA（arXiv:2607.11119v1）已完成官方 URL raw capture、带页码证据与反外推边界的 proposal 审阅，并经用户明确批准写入 canonical claim。
-- VIA 验收确认 canonical claim 可被 `VIA`、`waypoint` 等内容查询召回，Context Pack 在 600/1200 token budget 下保留 claim、source_ids、文档 hash 与 raw source hash；原始 PDF 正文仍未进入派生全文索引。
+- VIA 验收确认 canonical claim 可被 `VIA`、`waypoint` 等内容查询召回；其 20 页 PDF 已生成带页码边界的本地 extraction。
 - VIA 首次导入暴露了范围治理问题：材料入库是为了积累跨领域知识并验证 Global Memory，不要求每条来源都映射为系统自身的设计启发；范围纠正 proposal 已经用户明确批准，canonical 正文现只保留机器人论文知识、实验结果与适用边界，纠偏原因保留在审计 metadata 中。
 - 首轮 quickstart 端到端测试 claim 已按用户要求从 `vault/knowledge/claims/` 物理移除，并在 `vault/archive/` 只保留最小墓碑；Context Pack 默认排除其 source，raw、proposal 和 approval 历史继续用于审计回溯。
 - Cursor 首批真实材料导入完成两篇论文、八条 model proposal；人工 PDF 复核后已通过 revision 补全自包含正文、收紧 33×/2.4× 结论范围，并为 Play2Perfect 增加官方 arXiv 页面来源。原八条 proposal 保留为 superseded，新八条仍为 pending，尚未写入 canonical；可在新门禁下逐条发布为 provisional。
 
 ## What is being implemented
 
-- Context Pack profiles 与混合检索已完成；正在补齐 CI、跨平台/迁移/重建演示和 M5 验收报告。
+- 无进行中的核心代码；等待通过正常资料导入完成 20–30 份真实跨领域验证。
 
 ## Known defects
 
 - URL 抓取只处理静态响应，不执行 JavaScript；网页正文仍可能包含 HTML 噪声。
-- 第一版 compile 是确定性开头摘录，只验证治理闭环，不等同于高质量知识抽取。
-- 二进制内容只保存和哈希，尚未提取 PDF、Office 或图片正文。
+- Deterministic bundle fallback 只识别显式类型标记或保留第一段逐字材料，不等同于高质量模型语义编译。
+- PDF 已支持文本提取但不做 OCR；Office、图片和扫描 PDF 正文仍未提取。
 - `search` 目前会同时返回同一 family 的多个版本；Context Pack 已默认过滤直接入选 source 的旧版本，但尚无通用 latest/accepted 搜索视图。
 - Blocked recovery journal 尚无自动解决命令，必须人工核验第三状态后决定重新提案或受控清理。
+- 当前真实资料集中在具身智能领域且只有约 3 个 work，尚不足以验证跨领域知识复利和三条人工认可的远距离连接。
 
 ## Unresolved architectural questions
 
@@ -99,7 +103,7 @@ M5：Real Knowledge Compilation 正在实施；全局 raw object store 已完成
 
 ## Next concrete task
 
-用 provisional 门禁发布 Cursor 首批八条修订 proposal；仅对需要长期背书的关键结论人工 promote。随后设计 PDF 正文的可重建派生提取层，要求保留 extractor/version/input hash/page provenance。
+审阅并决定两个 work enrichment proposal；随后随用户正常导入真实资料完成 20–30 份跨领域验证。Cursor 首批八条修订 claim 可按新 extraction/evidence 回溯后发布为 provisional，不应批量自动确认。
 
 ## Do not do yet
 

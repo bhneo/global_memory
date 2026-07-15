@@ -16,10 +16,20 @@
 - Bundle review 支持 approve all、按 item approve/reject/revise，并用多目标 recovery journal 保证中断可恢复。
 - Context Pack 新增 execution/research/exploration profile、组合使用、metadata filters、有限 relation traversal、evidence 视图和截断报告。
 - Search 新增分字段加权、type/status/canonical/proposal 过滤与 match reason；`related-content` 准确替代对旧 discover 的 serendipity 表述。
+- 新增 provider-neutral external JSON bundle adapter；模型环境只生成本地 JSON，核心继续负责 schema、proposal 和审批。
+- 新增 Windows/Linux、Python 3.11–3.13 CI 矩阵及 M5 acceptance demo；本地真实 6 source extraction 已全部 ready。
 
 ### Changed
 
 - 现有 6 个 source 已迁移到 5 个唯一 content object，保留旧 raw 文件且未删除 provenance。
+
+## [0.14.0] - 2026-07-15
+
+### Added
+
+- 新增 `provisional` canonical trust level；合格结构化 claim 可经自动门禁发布并立即检索，但不等同人工确认。
+- 新增 `gm promote`，由用户把 provisional 显式晋升为 confirmed。
+- Search 与 Context Pack 返回知识状态，approval recovery 同时支持 provisional publication。
 
 ## [0.13.0] - 2026-07-15
 

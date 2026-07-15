@@ -33,6 +33,14 @@ class DeterministicCompilerProvider:
         "hypothesis": re.compile(r"^(?:hypothesis|假设)\s*[:：]\s*(.+)$", re.I),
         "tension": re.compile(r"^(?:tension|张力)\s*[:：]\s*(.+)$", re.I),
         "analogy": re.compile(r"^(?:analogy|类比)\s*[:：]\s*(.+)$", re.I),
+        "anomaly": re.compile(r"^(?:anomaly|异常)\s*[:：]\s*(.+)$", re.I),
+        "project": re.compile(r"^(?:project|项目)\s*[:：]\s*(.+)$", re.I),
+        "goal": re.compile(r"^(?:goal|目标)\s*[:：]\s*(.+)$", re.I),
+        "architecture": re.compile(r"^(?:architecture|架构)\s*[:：]\s*(.+)$", re.I),
+        "decision": re.compile(r"^(?:decision|决策)\s*[:：]\s*(.+)$", re.I),
+        "experiment": re.compile(r"^(?:experiment|实验)\s*[:：]\s*(.+)$", re.I),
+        "failure": re.compile(r"^(?:failure|失败)\s*[:：]\s*(.+)$", re.I),
+        "opportunity": re.compile(r"^(?:opportunity|机会)\s*[:：]\s*(.+)$", re.I),
     }
 
     def compile(
@@ -63,6 +71,29 @@ class DeterministicCompilerProvider:
             "body": statement, "span_start": text.find(statement),
             "explicit_marker": False,
         }]
+
+
+class JsonBundleProvider:
+    """Provider-neutral adapter for externally generated, local JSON bundle items."""
+
+    def __init__(self, path: Path | str, name: str = "external-json-bundle-v1"):
+        self.path = Path(path).expanduser().resolve()
+        self.name = name
+
+    def compile(
+        self, source: dict[str, Any], extraction: dict[str, Any], text: str,
+        existing_context: list[dict[str, Any]], schema: dict[str, Any],
+    ) -> list[dict[str, Any]]:
+        if not self.path.is_file():
+            raise ValidationError(f"external bundle JSON 不存在: {self.path}")
+        try:
+            payload = json.loads(self.path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise ValidationError(f"无法读取 external bundle JSON: {exc}") from exc
+        items = payload.get("items") if isinstance(payload, dict) else payload
+        if not isinstance(items, list):
+            raise ValidationError("external bundle JSON 必须是 item 列表或包含 items 列表")
+        return items
 
 
 @dataclass(frozen=True)
@@ -180,7 +211,7 @@ class BundleCompiler:
         prepared: list[dict[str, Any]] = []
         for index, spec in enumerate(specs, start=1):
             object_type = str(spec.get("object_type", ""))
-            if object_type not in CANONICAL_DIRECTORIES or object_type in {"work", "synthesis"}:
+            if object_type not in CANONICAL_DIRECTORIES or object_type == "synthesis":
                 raise ValidationError(f"compiler provider 返回不支持的 object_type: {object_type}")
             title = str(spec.get("title", "")).strip()
             body_text = str(spec.get("body", "")).strip()
@@ -199,8 +230,14 @@ class BundleCompiler:
                 if source_id not in target.get("source_ids", []):
                     canonical_body = old_body.rstrip() + f"\n\n## 新增来源材料\n\n- `{source_id}`：{body_text}\n"
             else:
+                supplied_metadata = spec.get("metadata", {})
+                if supplied_metadata is not None and not isinstance(supplied_metadata, dict):
+                    raise ValidationError("compiler provider item.metadata 必须是对象")
+                explicit_id = str((supplied_metadata or {}).get("id", ""))
+                if object_type == "work" and not explicit_id:
+                    raise ValidationError("bundle work enrichment 必须提供 metadata.id 稳定身份")
                 digest = hashlib.sha256(f"{object_type}\n{self._semantic_key(title)}".encode("utf-8")).hexdigest()
-                target_id = f"{object_type}_{digest[:24]}"
+                target_id = explicit_id or f"{object_type}_{digest[:24]}"
                 target_path = self.repository.root / CANONICAL_DIRECTORIES[object_type] / f"{target_id}-{slugify(title)}.md"
                 action = "create"
                 base_bytes = b""
@@ -221,6 +258,11 @@ class BundleCompiler:
                 "source_ids": source_ids, "relations": relations,
                 "change_reason": f"compile bundle from {source_id}",
             }
+            extra_metadata = spec.get("metadata", {}) or {}
+            protected = {"id", "type", "status", "created_at", "updated_at", "source_ids", "relations"}
+            for key, value in extra_metadata.items():
+                if key not in protected:
+                    candidate[key] = value
             if action == "update":
                 candidate["proposed_status"] = target.get("status", "confirmed")
             if object_type == "claim":

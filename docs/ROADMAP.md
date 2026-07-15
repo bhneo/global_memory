@@ -6,7 +6,8 @@
 - Derived extraction、logical work、evidence taxonomy。（下一步）
 - Bundle compiler、选择性审批与原子 recovery。（已完成）
 - Context Pack profiles、metadata filters 与有限关系遍历。（已完成）
-- 跨平台 CI、重建演示和本地真实跨领域验证。（进行中）
+- 跨平台 CI 与重建演示。（已完成）
+- 本地 20–30 份真实跨领域验证。（样本不足；随正常导入继续，不伪造完成）
 - 跨平台 CI、重建演示和本地真实跨领域验证。（待实现）
 
 ## M1 — 最小可信闭环（已完成）
