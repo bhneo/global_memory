@@ -383,7 +383,14 @@ def lint(repository: Repository) -> dict[str, object]:
                     if target.get("id") != proposal.get("target_id"):
                         errors.append(f"proposal target ID 不匹配: {repository.rel(path)}")
                 elif action == "update" or status == "approved":
-                    errors.append(f"proposal target 不存在: {repository.rel(path)} -> {target_path_value}")
+                    archived_target = None
+                    for archived_path in repository.archive_documents():
+                        archived_metadata, _ = read_document(archived_path)
+                        if archived_metadata.get("id") == proposal.get("target_id"):
+                            archived_target = archived_path
+                            break
+                    if archived_target is None:
+                        errors.append(f"proposal target 不存在: {repository.rel(path)} -> {target_path_value}")
             except Exception as exc:
                 errors.append(f"proposal target 路径无效: {repository.rel(path)}: {exc}")
         if action == "update":

@@ -87,6 +87,7 @@ gm doctor
 ## 安全边界
 
 - raw content 与 source record 通过独占创建写入，普通流程不能覆盖。
+- 已明确归档并需要清理活动目录的 canonical 可移入 `vault/archive/`，以最小墓碑保留 ID、来源和审计理由；归档目录不进入活动索引。
 - compile 只写 `vault/proposals/`；只有明确 approve 才写 canonical knowledge。
 - candidate 有 SHA-256 校验，审批前被改动会被拒绝。
 - SQLite 位于 `data/indexes/`，不进入 Git，可随时重建。

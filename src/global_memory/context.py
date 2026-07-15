@@ -118,7 +118,7 @@ class ContextPackService:
         """Return sources referenced by archived canonical knowledge and no active canonical."""
         archived: set[str] = set()
         active: set[str] = set()
-        for path in self.repository.canonical_documents():
+        for path in [*self.repository.canonical_documents(), *self.repository.archive_documents()]:
             metadata, _ = read_document(path)
             destination = archived if metadata.get("status") == "archived" else active
             destination.update(str(item) for item in metadata.get("source_ids", []))

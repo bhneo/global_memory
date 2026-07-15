@@ -129,6 +129,11 @@ class Repository:
             if path.exists():
                 yield from path.rglob("*.md")
 
+    def archive_documents(self) -> Iterable[Path]:
+        path = self.root / "vault" / "archive"
+        if path.exists():
+            yield from path.rglob("*.md")
+
     def proposal_documents(self) -> Iterable[Path]:
         path = self.root / "vault" / "proposals"
         if path.exists():

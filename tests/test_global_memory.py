@@ -354,6 +354,21 @@ def test_lint_accepts_valid_truth_and_proposal_chain(repo: Repository) -> None:
     assert proposal.proposal_id
 
 
+def test_lint_accepts_approved_target_moved_to_archive(repo: Repository) -> None:
+    _, target_path = create_approved_claim(repo, "Disposable fixture knowledge.")
+    archived_path = repo.root / "vault" / "archive" / target_path.name
+    archived_path.parent.mkdir(parents=True, exist_ok=True)
+    metadata, body = read_document(target_path)
+    metadata["status"] = "archived"
+    archived_path.write_text(render_document(metadata, body), encoding="utf-8")
+    target_path.unlink()
+
+    result = lint(repo)
+
+    assert result["ok"] is True
+    assert result["errors"] == []
+
+
 def test_lint_reports_broken_references_hashes_and_orphans(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Lint failure fixture.")
     proposal = ProposalService(repo).compile(captured.source_id)

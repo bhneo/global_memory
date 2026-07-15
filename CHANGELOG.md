@@ -8,6 +8,7 @@
 
 - Context Pack 默认排除 `archived` claim 与 synthesis；只被归档 canonical 引用且没有活动 canonical 引用的 source 也默认排除，使无效或测试知识完整退出活动上下文。
 - 归档对象仍保留在 Markdown 真相层与索引中，可通过 `search`/`show` 回溯审计历史。
+- 支持把需要物理清理的 archived canonical 移入不参与活动索引的 `vault/archive/`，以最小墓碑维持历史 proposal 的 target 审计链。
 
 ## [0.12.0] - 2026-07-14
 
