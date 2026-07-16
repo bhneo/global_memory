@@ -1,5 +1,15 @@
 # Roadmap
 
+## M6 — Knowledge Distillation and Graph Formation（已完成工程与首轮受控蒸馏）
+
+- P0：batch runs/formal proposal 分离、quality gate、derived source lifecycle。（完成）
+- P1：atomic claim、typed object/source-only、bundle review、authority/follow-up、epistemic dimensions、typed relations。（完成）
+- P2：33-source corpus distillation，62-item proposal graph，canonical writes 0。（完成）
+- 验收：106 tests、doctor/lint/raw integrity、migration dry-run、M6 nine-scenario demo。（以本轮最终实测为准）
+- 后续：人工拆分 3 个 compound claims；核验 23 个 partial-entailment claims；关闭 11 个 primary follow-ups；分批批准高价值 concept/question/tension/synthesis。
+
+M7 候选只聚焦知识使用效果：新资料对已有 concept/claim 的真正 update/refine、项目决策反馈、长期 contradiction 演化。暂不引入 embedding、图数据库、复杂前端或自动 canonical 写入。
+
 ## M5 — Real Knowledge Compilation（进行中）
 
 - 全局 content-addressed raw store、完整性校验与可恢复迁移。（已完成）

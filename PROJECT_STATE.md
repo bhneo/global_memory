@@ -1,5 +1,13 @@
 # Current State
 
+## M6 current milestone — completed 2026-07-16
+
+M6 Knowledge Distillation and Graph Formation 已完成工程实现与 33-source 受控重编译。临时 batch 双重真相源已迁移并清理；source lifecycle、quality gate、atomic claim gate、knowledge classification、bundle review、authority/follow-up、epistemic dimensions、typed relations 与 proposal-aware Context Pack 已落地。
+
+真实语料结果：143 个 input model proposals（其中 134 个待审）被保留并 supersede 到唯一 pending corpus bundle；bundle 含 62 items：14 concept、23 claim（20 atomic、3 compound/needs_split，23 条 evidence coverage 均为 partial）、6 question、4 tension、5 hypothesis、4 analogy、2 synthesis、2 experiment、1 project、1 opportunity。11 个 source-only、1 个 invalid source、11 个 open primary-source follow-up；canonical writes = 0。
+
+当前 source processing state：22 awaiting_review、10 completed、1 failed、0 inbox。未完成边界：62 items 仍需人工 bundle review；3 个 compound claims 必须拆分，23 个 claims 必须做 entailment/primary-source 核验后才能批准；11 个 follow-up 尚未关闭。
+
 ## Current milestone
 
 M5：Real Knowledge Compilation 核心实现完成；工程验收通过，真实跨领域 20–30 份资料验证因当前样本不足而保持未完成。

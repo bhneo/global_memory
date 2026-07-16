@@ -1,5 +1,25 @@
 # Global Memory
 
+## M6：Knowledge Distillation and Graph Formation
+
+当前真实语料已从 143 条逐条 model candidates 受控蒸馏为一个 62-item source-collection bundle：14 concepts、23 claims、6 questions、4 tensions、5 hypotheses、4 analogy proposals、2 syntheses，以及 4 个 action/project candidates。旧 proposals 保留为 superseded；新对象全部仍是 proposal，canonical 写入数为 0。
+
+常用命令：
+
+```text
+gm quality <source-id>
+gm source status <source-id>
+gm review queue
+gm review bundle <bundle-id> --summary
+gm followups
+gm runs list
+gm migrate batch-artifacts --dry-run
+gm distill corpus --dry-run
+gm context Epiplexity --profile exploration --include-proposals
+```
+
+编译顺序为 quality gate → extraction/evidence → atomicity → existing-knowledge lookup → typed bundle → review。deleted/login/anti-bot/too-short 等 source 保留 provenance，但不生成知识 proposal。Context Pack 默认只读 canonical/source；显式包含 proposal 时逐项显示 truth layer、authority、verification 与选择理由。
+
 Global Memory 是一个本地优先、用户拥有、模型无关的个人长期认知基础设施。Markdown 与不可变 raw source 是长期真相源；SQLite、全文索引、缓存和未来的向量索引都只是可删除、可重建的派生层。
 
 当前版本完成第一阶段最小纵向闭环：

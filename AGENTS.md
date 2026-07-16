@@ -1,5 +1,15 @@
 # Global Memory Agent Protocol
 
+## M6 operating rules
+
+- 每次 compile 前先过 source availability/content quality gate；无效来源保留 capture 并创建 follow-up，不制造知识。
+- 不把所有材料压成 claim。先判断 concept/claim/question/tension/hypothesis/analogy/anomaly/intuition/synthesis 或 source-only。
+- Claim 必须经过 atomicity 与 evidence coverage 检查；compound、partial/missing evidence、degraded extraction 不可直接 confirmed。
+- 优先检索已有 concept/claim/question/tension/project，再选择 create/update/refine/support/contradict/supersede/link/defer/source-only。
+- 主要审阅单位是 bundle；任何 item/relation 写 canonical 仍须 proposal gate。Analogy 永远先作为 proposal，必须写 where_it_breaks。
+- quote exact、extraction quality、source authority、evidence entailment 与 claim confidence 是不同维度，不得互相替代。
+- `.tmp-*` 与 `system/runs/` 不是知识层；正式 candidate 只在 `vault/proposals/`。
+
 ## Source of truth
 
 本地仓库、Markdown 知识对象和不可变 raw source 是项目真相源。聊天上下文、模型记忆、SQLite、缓存和外部服务都不是最终真相源。

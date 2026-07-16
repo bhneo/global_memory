@@ -1,5 +1,14 @@
 # Global Memory Index
 
+## M6 navigation
+
+- 正式 proposal：`vault/proposals/`；当前主要审阅单位是 source/source-collection bundle。
+- Primary-source/recovery tasks：`vault/followups/`。
+- 用户注意力补充：`vault/annotations/`，与 immutable source fact 分离。
+- 可删除运行记录：`system/runs/`；不得保存唯一 candidate。
+- 推荐顺序：`gm review queue` → `gm review bundle <id> --summary` → 指定 item 审批/修订/defer/source-only。
+- Research/Exploration Context 若要看到待审图，必须显式 `--include-proposals`；输出中的 `truth_layer` 不得丢弃。
+
 本页是人类与 Agent 的渐进式入口，不是全库内容清单。
 
 ## 先读

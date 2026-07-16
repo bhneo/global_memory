@@ -31,3 +31,11 @@ jobs:
           python -m global_memory.cli --root .ci-vault migrate raw-store --dry-run
       - name: M5 acceptance smoke
         run: python scripts/m5_acceptance_demo.py
+      - name: M6 governance and real-corpus acceptance
+        run: |
+          python -m global_memory.cli --root . doctor
+          python -m global_memory.cli --root . lint
+          python -m global_memory.cli --root . raw verify
+          python -m global_memory.cli --root . migrate raw-store --dry-run
+          python -m global_memory.cli --root . migrate batch-artifacts --dry-run
+          python scripts/m6_acceptance_demo.py --root .

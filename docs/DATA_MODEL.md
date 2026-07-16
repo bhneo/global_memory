@@ -1,5 +1,20 @@
 # Data Model
 
+## M6 objects and states
+
+| Object | Durable role | Gate |
+|---|---|---|
+| Source quality | availability/content/extraction/authority derived assessment | blocks compile when invalid |
+| Processing state | event/formal-data derived lifecycle | rebuildable, never capture fact |
+| Bundle proposal | source-level review unit with metrics and items | pending/deferred/approved/rejected |
+| Concept | stable reusable semantic node | create or update, avoid same-name duplicate |
+| Claim | atomic testable assertion with evidence | compound/partial/degraded blocked |
+| Question/Tension/Hypothesis | unresolved frontier | preserved, not auto-resolved |
+| Analogy | cross-domain structural proposal | boundary and confidence required |
+| Follow-up | primary-source/recovery task | auditable status history |
+
+New relation edges carry type, target, reason, confidence, created_by and status. Context Pack adds `truth_layer`, `source_authority` and a verification view without changing underlying objects.
+
 ## 身份层
 
 | 对象 | 身份来源 | 是否可共享 | 是否可覆盖 |

@@ -1,5 +1,21 @@
 # Architecture
 
+## M6 pipeline
+
+```text
+immutable capture
+  -> derived extraction + quality assessment + lifecycle
+  -> existing-knowledge lookup + atomicity/classification
+  -> source/source-collection bundle proposal
+  -> item-level review + recovery journal
+  -> canonical knowledge (only after gate)
+
+secondary source -> formal follow-up -> primary capture/verification
+system/runs + SQLite + quality/lifecycle JSON = rebuildable derived layers
+```
+
+M6 不引入 graph database：图仍由 Markdown typed relations 表达，SQLite 只做可重建检索/遍历。Corpus distillation 只生成候选图；它不得绕过 review gate。
+
 ## 分层
 
 ```text

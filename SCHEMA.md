@@ -1,4 +1,14 @@
-# Global Memory Schema v0.15
+# Global Memory Schema v0.17
+
+## M6 knowledge graph extensions
+
+- `source` capture fact remains immutable; processing state is derived from extraction, quality, proposals and events.
+- Quality records separate `availability_status`, `content_quality`, `extraction_quality` and `source_authority`.
+- Claims add `atomicity_status`, `evidence_coverage`, `quote_verification`, `evidence_entailment`, `claim_confidence` and `publication_gate`.
+- Formal knowledge types include concept, claim, question, tension, hypothesis, analogy, anomaly, intuition and synthesis. `source_only` is a successful compile disposition.
+- A bundle proposal owns `bundle_items[]`, metrics, follow-ups, duplicate/conflict findings and unresolved items. Candidate Markdown remains immutable; revisions point to new files.
+- M6 typed relations require type/target/reason plus confidence, created_by and status on new proposal edges.
+- `vault/followups/` stores primary-source and recovery tasks. `system/runs/` and `data/derived/` are rebuildable, non-truth layers.
 
 所有对象是 UTF-8 Markdown，使用 YAML Frontmatter。实现当前输出 JSON-compatible YAML 值，以便零依赖解析；标准 YAML 工具和 Obsidian 仍可读取。
 

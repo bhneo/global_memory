@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.17.0] - 2026-07-16
+
+### Added
+
+- M6 quality gate、source lifecycle、atomic claim gate、source-only disposition、typed knowledge objects、bundle review、primary-source follow-ups、epistemic dimensions 和 relation governance。
+- `gm quality/source status/source history/review/followups/runs/migrate batch-artifacts/distill corpus` 命令，以及 9 场景 M6 acceptance demo。
+- Context Pack 可在显式请求时展开 proposal bundle candidates，并标明 canonical/proposal/source-capture、authority、verification 与 relation/match reason。
+- ADR 0020–0028。
+
+### Changed
+
+- `.tmp-batch-import` 经 dry-run、正式 proposal 匹配与备份后清理；临时目录不再是知识真相源。
+- 33 个 source 的 143 个 model proposals 受控蒸馏为唯一 62-item corpus bundle；旧 candidate/proposal 历史保留为 superseded，未自动写 canonical。
+- Windows CLI 输出固定为 UTF-8，避免包含特殊字符的 evidence/context JSON 编码失败。
+
+### Known limits
+
+- 23 条候选 claim 的 evidence entailment 尚未人工确认，均保持 partial；3 条 compound claim 保持 needs_split。
+- 11 个 primary-source follow-up 尚未关闭，跨领域 analogy/synthesis 均只是待审 proposal。
+
 所有重要用户可见变更记录在此。版本遵循语义化版本的意图，但在 `1.0` 前允许小步调整 CLI。
 
 ## [0.16.0] - 2026-07-15
