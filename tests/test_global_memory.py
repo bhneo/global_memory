@@ -2464,6 +2464,26 @@ def test_context_pack_markdown_is_versioned_and_preserves_provenance(repo: Repos
     assert "## Truncation report" in markdown
 
 
+def test_context_pack_relaxes_empty_natural_language_query_and_renders_status(
+    repo: Repository,
+) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Claim: VIA supports bounded robot control conclusions with explicit limits. " * 5,
+        title="VIA bounded robot control",
+    )
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    BundleReviewService(repo).approve(bundle.proposal_id, item_ids=["claim-1"])
+
+    pack = ContextPackService(repo).build(
+        "VIA robot control 的实验结论和适用边界是什么", token_budget=1200
+    )
+    markdown = pack.as_markdown()
+
+    assert pack.filters["query_fallback"] == "VIA"
+    assert pack.items
+    assert "Type/status: `claim` / `confirmed`" in markdown
+
+
 def test_obsidian_views_are_rebuildable_and_do_not_change_canonical(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Obsidian source", title="Obsidian source")
     before = (repo.root / captured.source_path).read_bytes()

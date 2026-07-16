@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.19.2] - 2026-07-16
+
+### Fixed
+
+- The first real Codex M7 acceptance found that a natural-language Context Pack query could return no items when strict all-term matching failed. Empty primary retrieval now retries distinctive whitespace-delimited terms and records `filters.query_fallback`.
+- Markdown Context Packs now render `knowledge_status` instead of displaying `None` from a nonexistent `status` field.
+
+### Added
+
+- Recorded the first real Codex `INDEX → context → task → receipt → proposal` acceptance as an immutable receipt/source and a pending, human-reviewable experiment proposal. No canonical write was performed.
+
 ## [0.19.1] - 2026-07-16
 
 ### Added

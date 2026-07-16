@@ -77,7 +77,7 @@ class ContextPack:
         ]
         for item in self.items:
             lines.append(f"## {item.get('title', item.get('id'))}\n\n")
-            lines.append(f"- ID: `{item.get('id')}`\n- Type/status: `{item.get('type')}` / `{item.get('status')}`\n")
+            lines.append(f"- ID: `{item.get('id')}`\n- Type/status: `{item.get('type')}` / `{item.get('knowledge_status')}`\n")
             lines.append(f"- Truth layer: `{item.get('truth_layer')}`\n- Path: `{item.get('path')}`\n")
             lines.append(f"- Sources: {', '.join(item.get('source_ids', [])) or 'none'}\n")
             if item.get("evidence"):
@@ -359,6 +359,24 @@ class ContextPackService:
             object_types=allowed_types, statuses=statuses, include_proposals=include_proposals,
             domains=domains, source_kinds=source_kinds,
         )
+        if not results:
+            fallback_terms = []
+            for term in query.split():
+                cleaned = term.strip("，。！？；：,.!?;:()[]{}\"'")
+                if len(cleaned) >= 3 and cleaned.casefold() not in {
+                    "what", "which", "how", "the", "and", "是什么",
+                }:
+                    fallback_terms.append(cleaned)
+            for term in fallback_terms:
+                results = self.repository.search_with_relations(
+                    term, SEARCH_LIMIT, max_depth=relation_depth, max_nodes=SEARCH_LIMIT,
+                    object_types=allowed_types, statuses=statuses,
+                    include_proposals=include_proposals, domains=domains,
+                    source_kinds=source_kinds,
+                )
+                if results:
+                    filter_report["query_fallback"] = term
+                    break
         for search_rank, result in enumerate(results, start=1):
             path, metadata, body = self.repository.find_document(result.id)
             object_type = str(metadata.get("type"))

@@ -15,7 +15,7 @@ Current handoff (2026-07-16): M6.1 primary follow-up closure and the M7 lightwei
 
 - Codex/Cursor/Claude 轻量入口、Context Pack v1、receipt → proposal、Obsidian 可重建视图。（完成）
 - 统一维护报告：完整性、积压、receipt、弱证据、陈旧对象和派生视图状态。（当前切片）
-- 三个 Agent 各完成一次真实 read → task → receipt → proposal 验收。（待真实使用）
+- 三个 Agent 各完成一次真实 read → task → receipt → proposal 验收。（Codex 已完成；Cursor/Claude 待真实使用）
 - 新资料对已有 concept/claim 的 update/refine/support/contradict 候选，以及项目决策反馈和长期 contradiction 演化。（待实现）
 - 知识复用统计与人工认可的跨领域连接验证。（待真实数据验证）
 
