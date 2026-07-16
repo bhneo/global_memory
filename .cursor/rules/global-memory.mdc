@@ -13,3 +13,4 @@ alwaysApply: true
 - A receipt proposal still requires the repository's normal review/approval policy.
 - Do not include secrets, full chat transcripts, or unsupported inference in a receipt.
 - Use `gm maintain` for read-only health/backlog checks. `--rebuild-derived` refreshes disposable indexes/views only and does not permit canonical edits.
+- On Windows PowerShell, prefer `.\\scripts\\gm.ps1`; `gm` may resolve to the built-in `Get-Member` alias.

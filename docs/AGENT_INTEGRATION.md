@@ -49,3 +49,5 @@ These files use ordinary Markdown, YAML frontmatter, and path-based wikilinks. T
 ## Maintenance
 
 Run `gm maintain` for the normal read-only health and backlog report. It also reports whether generated Obsidian views are missing or stale. Run `gm maintain --rebuild-derived` only when an explicit refresh is wanted; it rebuilds SQLite and the three Obsidian notes, but never raw, proposal, receipt, or canonical content.
+
+On Windows PowerShell, invoke the same commands through `.\\scripts\\gm.ps1` when the bare `gm` name resolves to the built-in `Get-Member` alias.

@@ -359,7 +359,7 @@ class ContextPackService:
             object_types=allowed_types, statuses=statuses, include_proposals=include_proposals,
             domains=domains, source_kinds=source_kinds,
         )
-        if not results:
+        if not any(result.type not in {"source", "proposal"} for result in results):
             fallback_terms = []
             for term in query.split():
                 cleaned = term.strip("，。！？；：,.!?;:()[]{}\"'")
@@ -367,16 +367,26 @@ class ContextPackService:
                     "what", "which", "how", "the", "and", "是什么",
                 }:
                     fallback_terms.append(cleaned)
-            for term in fallback_terms:
-                results = self.repository.search_with_relations(
+            expanded_by = []
+            seen_result_ids = {result.id for result in results}
+            for term in fallback_terms[:4]:
+                expanded = self.repository.search_with_relations(
                     term, SEARCH_LIMIT, max_depth=relation_depth, max_nodes=SEARCH_LIMIT,
                     object_types=allowed_types, statuses=statuses,
                     include_proposals=include_proposals, domains=domains,
                     source_kinds=source_kinds,
                 )
-                if results:
-                    filter_report["query_fallback"] = term
+                new_results = [item for item in expanded if item.id not in seen_result_ids]
+                if new_results:
+                    results.extend(new_results)
+                    seen_result_ids.update(item.id for item in new_results)
+                    expanded_by.append(term)
+                if any(result.type not in {"source", "proposal"} for result in results):
                     break
+            if expanded_by:
+                filter_report["query_expansion"] = expanded_by
+                if len(results) == len(new_results):
+                    filter_report["query_fallback"] = expanded_by[0]
         for search_rank, result in enumerate(results, start=1):
             path, metadata, body = self.repository.find_document(result.id)
             object_type = str(metadata.get("type"))
@@ -467,6 +477,22 @@ class ContextPackService:
                 query, profiles=profiles, allowed_types=allowed_types,
                 statuses=statuses, domains=domains,
             ))
+        canonical_source_ids = {
+            source_id
+            for _, _, item in ranked
+            if item["truth_layer"] == "canonical"
+            for source_id in item["source_ids"]
+        }
+        ranked = [
+            (
+                score - 25
+                if item["type"] == "source" and item["id"] in canonical_source_ids
+                else score,
+                search_rank,
+                item,
+            )
+            for score, search_rank, item in ranked
+        ]
         ranked.sort(key=lambda item: (item[0], item[1], item[2]["id"]))
 
         available = token_budget - 48  # reserve room for outer query and policy metadata

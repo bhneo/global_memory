@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.19.3] - 2026-07-16
+
+### Fixed
+
+- Cursor acceptance exposed that an exact-query receipt source could prevent canonical candidates from entering retrieval. Context Pack now expands a source-only result set with distinctive terms, records `filters.query_expansion`, prioritizes canonical knowledge, then prioritizes that knowledge's explicit source chain over unrelated receipts.
+- Windows guidance now prefers `.\\scripts\\gm.ps1` because PowerShell may resolve `gm` to the built-in `Get-Member` alias.
+
+### Added
+
+- Recorded the real Cursor read → task → receipt → proposal acceptance as a pending experiment proposal with a complete item revision. No canonical write was performed.
+
 ## [0.19.2] - 2026-07-16
 
 ### Fixed

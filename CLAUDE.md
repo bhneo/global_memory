@@ -15,3 +15,5 @@ This repository is the shared, local-first Global Memory. Before working here:
 Receipts should contain only durable decisions, verified facts, unresolved questions, changed assumptions, and source references. Exclude chat transcript filler and secrets.
 
 Use `gm maintain` to inspect maintenance state without writes. `gm maintain --rebuild-derived` may refresh SQLite and Obsidian views only; it never authorizes canonical changes.
+
+On Windows PowerShell prefer `.\\scripts\\gm.ps1`; `gm` may resolve to the built-in `Get-Member` alias.

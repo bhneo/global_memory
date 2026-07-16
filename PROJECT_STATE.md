@@ -1,5 +1,7 @@
 # Current State
 
+> M7 Cursor acceptance (2026-07-16): Cursor completed the real read → task → receipt → proposal path without canonical writes. It exposed source-only exact-query capture by prior receipts and the Windows `gm`/`Get-Member` alias collision. Retrieval now expands source-only sets, ranks canonical first and its explicit source chain second. Claude acceptance remains.
+
 > M7 Codex acceptance (2026-07-16): the first real Codex read → task → receipt → proposal run completed. It exposed and repaired empty natural-language fallback retrieval and incorrect Markdown status rendering. The resulting acceptance experiment remains pending for human review; canonical writes remain unchanged. Cursor and Claude acceptance are next.
 
 > M7 first vertical slice (2026-07-16): Codex, Cursor, and Claude now share lightweight filesystem adapters, a versioned bounded Context Pack, immutable session receipts routed through the existing proposal gate, and rebuildable Obsidian navigation views. No assistant-specific truth store, plugin dependency, MCP service, or direct canonical write was introduced. Hermes/OpenHuman remain intentionally out of scope.

@@ -2473,14 +2473,21 @@ def test_context_pack_relaxes_empty_natural_language_query_and_renders_status(
     )
     bundle = BundleCompiler(repo).compile(captured.source_id)
     BundleReviewService(repo).approve(bundle.proposal_id, item_ids=["claim-1"])
+    CaptureService(repo).capture_text(
+        "Task: VIA robot control 的实验结论和适用边界是什么. "
+        "This is a session receipt that repeats the exact query but is not canonical. " * 4,
+        title="Session receipt: competing source",
+    )
 
     pack = ContextPackService(repo).build(
         "VIA robot control 的实验结论和适用边界是什么", token_budget=1200
     )
     markdown = pack.as_markdown()
 
-    assert pack.filters["query_fallback"] == "VIA"
+    assert pack.filters["query_expansion"] == ["VIA"]
     assert pack.items
+    assert pack.items[0]["type"] == "claim"
+    assert any(item["id"] == captured.source_id for item in pack.items[1:])
     assert "Type/status: `claim` / `confirmed`" in markdown
 
 

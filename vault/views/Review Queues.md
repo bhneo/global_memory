@@ -7,7 +7,7 @@ generator: gm-obsidian-v1
 
 > Generated navigation view. Rebuild with `gm obsidian build`; do not treat it as a truth source.
 
-## Pending proposals (19)
+## Pending proposals (20)
 
 - `proposal_0e1b5b493ea68c0127447da6` — 修订：模型提议：Agentic-VLA 在 LIBERO-Long 上达到 90% 成功率所需迭代约为 EVOLVE-VLA 的 2.4 倍更少（700 vs 1680） (`vault/proposals/proposal-proposal_0e1b5b493ea68c0127447da6.md`)
 - `proposal_1e4548999e2e2dbf0a44fc97` — 修订：模型提议：Play2Perfect 表明 play 预训练向装配迁移的关键是迫使手指 in-hand 操控而非固定抓握下的手臂运动 (`vault/proposals/proposal-proposal_1e4548999e2e2dbf0a44fc97.md`)
@@ -20,6 +20,7 @@ generator: gm-obsidian-v1
 - `proposal_936bef300af748cd71b2475d` — Work enrichment：From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence (`vault/proposals/proposal-proposal_936bef300af748cd71b2475d.md`)
 - `proposal_a99124724d635b4102390d75` — 修订：模型提议：Agentic-VLA 在 LIBERO 上报告平均成功率 97.8%，Long 套件相对 SFT 基线提升 12.3 个百分点 (`vault/proposals/proposal-proposal_a99124724d635b4102390d75.md`)
 - `proposal_bfb8c7a5d874d11f0c424ee4` — Work enrichment：[2605.10500] SkillEvolver: Skill Learning as a Meta-Skill (`vault/proposals/proposal-proposal_bfb8c7a5d874d11f0c424ee4.md`)
+- `proposal_bundle_c8181a6c545b74c2e642` — Compile bundle：Session receipt: M7 Cursor real acceptance (`vault/proposals/proposal-proposal_bundle_c8181a6c545b74c2e642.md`)
 - `proposal_bundle_d0aa087dcd1d1fd8e996` — Compile bundle：Session receipt: M7 Codex real acceptance (`vault/proposals/proposal-proposal_bundle_d0aa087dcd1d1fd8e996.md`)
 - `proposal_corpus_m6_6078ce0966734a116581` — M6：33 个 Source 的受控知识蒸馏 (`vault/proposals/proposal-proposal_corpus_m6_6078ce0966734a116581.md`)
 - `proposal_dd90cb79a3e96422ce09d61c` — Work enrichment：VIA: Interface-first Robot Control (`vault/proposals/proposal-proposal_dd90cb79a3e96422ce09d61c.md`)
