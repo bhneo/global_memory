@@ -91,6 +91,7 @@ class Repository:
             "vault/archive", "data/imports", "data/derived", "data/indexes", "data/backups",
             "system/logs", "system/reports", "system/error-book",
             "system/recovery", "system/runs", "vault/followups", "vault/annotations",
+            "vault/views", "vault/receipts",
             "data/derived/extractions", "data/derived/quality",
         ]
         for directory in directories:

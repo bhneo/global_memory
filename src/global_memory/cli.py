@@ -16,6 +16,7 @@ from .errors import GlobalMemoryError
 from .extraction import ExtractionService
 from .followups import FollowupService
 from .lifecycle import SourceAnnotationService, SourceLifecycleService
+from .obsidian import ObsidianViewService
 from .markdown import read_document
 from .proposals import ProposalService
 from .recovery import ApprovalRecoveryManager
@@ -24,6 +25,7 @@ from .quality import SourceQualityService
 from .review import SourceBundleReviewService
 from .runs import BatchArtifactMigrator, RunArtifactService
 from .repository import Repository, sha256_bytes
+from .receipts import ReceiptService
 from .works import WorkService
 
 
@@ -231,6 +233,19 @@ def build_parser() -> argparse.ArgumentParser:
     context.add_argument("--include-proposals", action="store_true")
     context.add_argument("--relation-depth", type=int, default=1)
     context.add_argument("--token-budget", type=int, default=1200)
+    context.add_argument("--format", choices=["json", "markdown"], default="json")
+    obsidian = commands.add_parser("obsidian", help="构建可重建的 Obsidian 导航视图")
+    obsidian_commands = obsidian.add_subparsers(dest="obsidian_command", required=True)
+    obsidian_commands.add_parser("build")
+    receipt = commands.add_parser("receipt", help="创建 session receipt 并通过 proposal 写回")
+    receipt_commands = receipt.add_subparsers(dest="receipt_command", required=True)
+    receipt_create = receipt_commands.add_parser("create")
+    receipt_create.add_argument("--agent", choices=["codex", "cursor", "claude"], required=True)
+    receipt_create.add_argument("--project", required=True)
+    receipt_create.add_argument("--task", required=True)
+    receipt_create.add_argument("--from-file", required=True)
+    receipt_propose = receipt_commands.add_parser("propose")
+    receipt_propose.add_argument("receipt_id")
     show = commands.add_parser("show", help="按稳定 ID 显示对象")
     show.add_argument("object_id")
     related = commands.add_parser("related", help="显示 typed relations")
@@ -941,7 +956,7 @@ def run(args: argparse.Namespace) -> int:
         question = args.question or args.query
         if not question:
             raise GlobalMemoryError("context 必须提供 positional query 或 --question")
-        _print(ContextPackService(repository).build(
+        pack = ContextPackService(repository).build(
             question, args.token_budget,
             profiles=[item for item in args.profile.split(",") if item], project=args.project,
             domains=set(args.domain.split(",")) if args.domain else None,
@@ -950,7 +965,16 @@ def run(args: argparse.Namespace) -> int:
             updated_since=args.updated_since,
             source_kinds=set(args.source_kind.split(",")) if args.source_kind else None,
             include_proposals=args.include_proposals, relation_depth=args.relation_depth,
-        ).as_dict())
+        )
+        _print(pack.as_markdown() if args.format == "markdown" else pack.as_dict())
+    elif args.command == "obsidian":
+        _print(ObsidianViewService(repository).build())
+    elif args.command == "receipt":
+        service = ReceiptService(repository)
+        if args.receipt_command == "create":
+            _print(service.create(args.agent, args.project, args.task, args.from_file))
+        else:
+            _print(service.propose(args.receipt_id))
     elif args.command == "show":
         path, metadata, body = repository.find_document(args.object_id)
         _print({"path": repository.rel(path), "metadata": metadata, "body": body})

@@ -1,4 +1,11 @@
-# Global Memory Schema v0.17
+# Global Memory Schema v0.19
+
+## M7 agent interchange
+
+- `Context Pack v1` is a temporary derived read contract. JSON and Markdown forms carry `context_pack_version`, query/profile/filter/budget data, selected items with truth/status/path/source/evidence/verification/selection fields, and a truncation report.
+- `receipt` is an immutable agent handoff under `vault/receipts/`. Required fields are `id`, `type`, `status`, `title`, timestamps, `agent`, `project`, `task`, `receipt_version`, and `content_sha256`.
+- Receipt agents are currently `codex`, `cursor`, and `claude`. A receipt is not canonical knowledge; `gm receipt propose` captures it as a source and routes it through the normal proposal gate.
+- `vault/INDEX.md` and `vault/views/*.md` are generated Obsidian navigation notes. They are not indexed truth objects and may be rebuilt from canonical/proposal state.
 
 ## M6 knowledge graph extensions
 

@@ -22,7 +22,9 @@ from global_memory.extraction import ExtractionService
 from global_memory.followups import FollowupService
 from global_memory.lifecycle import SourceAnnotationService, SourceLifecycleService
 from global_memory.markdown import read_document, render_document
+from global_memory.obsidian import ObsidianViewService
 from global_memory.proposals import ProposalService
+from global_memory.receipts import ReceiptService
 from global_memory.recovery import ApprovalRecoveryManager
 from global_memory.raw_store import RawStoreService
 from global_memory.quality import SourceQualityService, normalize_primary_locator
@@ -2447,3 +2449,71 @@ def test_capture_wechat_cli_command(repo: Repository, monkeypatch: pytest.Monkey
     assert captured.duplicate_source is False
     duplicate = CaptureService(repo).capture_wechat_url(args.url, args.comment)
     assert duplicate.duplicate_source is True
+def test_context_pack_markdown_is_versioned_and_preserves_provenance(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Claim: Bounded context preserves provenance.", title="Context contract"
+    )
+    repo.rebuild_index()
+    pack = ContextPackService(repo).build("bounded context", token_budget=800)
+
+    assert pack.as_dict()["context_pack_version"] == 1
+    markdown = pack.as_markdown()
+    assert "context_pack_version: 1" in markdown
+    assert captured.source_id in markdown
+    assert "## Truncation report" in markdown
+
+
+def test_obsidian_views_are_rebuildable_and_do_not_change_canonical(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Obsidian source", title="Obsidian source")
+    before = (repo.root / captured.source_path).read_bytes()
+    service = ObsidianViewService(repo)
+
+    first = service.build()
+    first_bytes = {
+        relative: (repo.root / relative).read_bytes() for relative in first["written"]
+    }
+    second = service.build()
+
+    assert first["written"] == second["written"]
+    assert first_bytes == {
+        relative: (repo.root / relative).read_bytes() for relative in second["written"]
+    }
+    assert (repo.root / captured.source_path).read_bytes() == before
+    assert "Generated navigation view" in (repo.root / "vault/INDEX.md").read_text(encoding="utf-8")
+
+
+def test_receipt_is_immutable_idempotent_and_proposes_without_canonical_write(
+    repo: Repository, workspace: Path
+) -> None:
+    input_file = workspace / "receipt.md"
+    input_file.write_text(
+        "Claim: Context must remain bounded.\n\nSource: local acceptance observation.",
+        encoding="utf-8",
+    )
+    service = ReceiptService(repo)
+    first = service.create("cursor", "global-memory", "bounded read", input_file)
+    second = service.create("cursor", "global-memory", "bounded read", input_file)
+
+    assert first == second
+    result = service.propose(first["receipt_id"])
+    assert result["proposal_id"]
+    assert (repo.root / result["proposal_path"]).exists()
+    assert list(repo.canonical_documents()) == []
+
+
+def test_receipt_rejects_unknown_agent(repo: Repository, workspace: Path) -> None:
+    input_file = workspace / "receipt.md"
+    input_file.write_text("durable note", encoding="utf-8")
+    with pytest.raises(ValidationError, match="unsupported receipt agent"):
+        ReceiptService(repo).create("hermes", "project", "task", input_file)
+
+
+def test_agent_adapter_files_define_the_shared_memory_contract() -> None:
+    root = Path(__file__).parents[1]
+    assert "gm receipt create --agent claude" in (root / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "gm receipt create --agent cursor" in (
+        root / ".cursor/rules/global-memory.mdc"
+    ).read_text(encoding="utf-8")
+    agents = (root / "AGENTS.md").read_text(encoding="utf-8")
+    assert "gm context \"<question>\" --format markdown" in agents
+    assert "gm receipt create --agent codex" in agents

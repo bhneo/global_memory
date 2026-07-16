@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.19.0] - 2026-07-16
+
+### Added
+
+- Added thin filesystem entries for Codex (`AGENTS.md`), Cursor (`.cursor/rules/global-memory.mdc`), and Claude (`CLAUDE.md`) that share one provider-neutral read/write protocol.
+- Added versioned JSON/Markdown Context Pack output, immutable session receipts, and receipt-to-proposal routing. Agent write-back cannot directly change canonical knowledge.
+- Added rebuildable Obsidian home/catalog/review views using standard Markdown, YAML frontmatter, and path-based wikilinks; no plugin is required.
+- Added ADR 0029, integration guidance, and regression coverage for bounded reads, deterministic views, receipt idempotence, unsupported adapters, and canonical-write isolation.
+
 ## [0.18.7] - 2026-07-16
 
 ### Added

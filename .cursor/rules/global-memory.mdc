@@ -1,0 +1,14 @@
+---
+description: Use the shared Global Memory with bounded reads and governed write-back
+alwaysApply: true
+---
+
+# Global Memory protocol
+
+- Read `AGENTS.md` and `vault/INDEX.md` before memory work.
+- Use `gm context "<question>" --format markdown --token-budget 1200` as the task entry. Do not load the whole vault by default.
+- Preserve IDs, status, truth layer, evidence, source IDs, and uncertainty from the Context Pack.
+- `vault/raw/` and canonical Markdown are durable truth. `data/indexes/`, Context Packs, and `vault/views/` are disposable views.
+- Never edit canonical knowledge as an assistant write-back. Write a concise UTF-8 session receipt, then run `gm receipt create --agent cursor ...` and `gm receipt propose <receipt-id>`.
+- A receipt proposal still requires the repository's normal review/approval policy.
+- Do not include secrets, full chat transcripts, or unsupported inference in a receipt.

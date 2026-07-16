@@ -43,6 +43,7 @@ class ContextPack:
 
     def as_dict(self) -> dict[str, Any]:
         return {
+            "context_pack_version": 1,
             "query": self.query,
             "token_budget": self.token_budget,
             "estimated_tokens": self.estimated_tokens,
@@ -65,6 +66,30 @@ class ContextPack:
                 ],
             },
         }
+
+    def as_markdown(self) -> str:
+        data = self.as_dict()
+        lines = [
+            "---\ncontext_pack_version: 1\ntruth_layer: derived_read_only\n---\n\n",
+            "# Global Memory Context Pack\n\n",
+            f"- Query: {self.query}\n- Profiles: {', '.join(self.profiles)}\n",
+            f"- Token budget: {self.token_budget}\n- Estimated tokens: {self.estimated_tokens}\n\n",
+        ]
+        for item in self.items:
+            lines.append(f"## {item.get('title', item.get('id'))}\n\n")
+            lines.append(f"- ID: `{item.get('id')}`\n- Type/status: `{item.get('type')}` / `{item.get('status')}`\n")
+            lines.append(f"- Truth layer: `{item.get('truth_layer')}`\n- Path: `{item.get('path')}`\n")
+            lines.append(f"- Sources: {', '.join(item.get('source_ids', [])) or 'none'}\n")
+            if item.get("evidence"):
+                lines.append(f"- Evidence: `{item['evidence']}`\n")
+            if item.get("verification"):
+                lines.append(f"- Verification: `{item['verification']}`\n")
+            lines.append(f"- Selection: {item.get('selection_reason', item.get('match_reason', 'ranked match'))}\n\n")
+            lines.append(str(item.get("content", item.get("snippet", ""))).strip() + "\n\n")
+        report = data["truncation_report"]
+        lines.append("## Truncation report\n\n")
+        lines.append(f"- Selected: {report['selected_items']}\n- Omitted: {report['omitted_items']}\n- Budget exhausted: {str(report['budget_exhausted']).lower()}\n")
+        return "".join(lines)
 
 
 class ContextPackService:

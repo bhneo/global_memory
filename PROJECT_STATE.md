@@ -1,5 +1,7 @@
 # Current State
 
+> M7 first vertical slice (2026-07-16): Codex, Cursor, and Claude now share lightweight filesystem adapters, a versioned bounded Context Pack, immutable session receipts routed through the existing proposal gate, and rebuildable Obsidian navigation views. No assistant-specific truth store, plugin dependency, MCP service, or direct canonical write was introduced. Hermes/OpenHuman remain intentionally out of scope.
+
 > M6.1 follow-up closure (2026-07-16): all primary-source follow-ups are resolved (open = 0). The final four locators yielded two valid MARL papers and two valid Xbotics repositories, but none fully entails the associated broad secondary claims; those claims intentionally remain partial/low. This is an evidence-boundary result, not an ingestion failure. No canonical write was performed.
 
 > M6.1 update (Epiplexity primary review): arXiv:2601.03220 abstract and 65-page PDF are captured and extracted. The definition claim is corrected to the paper's compute-bounded MDL program-length definition and now carries the explicit no-OOD-guarantee boundary. Current state: 44 sources, 4 open follow-ups, 68 active items, 29 atomic claims (9 full, 20 partial), and no canonical write.
@@ -80,7 +82,7 @@ M5：Real Knowledge Compilation 核心实现完成；工程验收通过，真实
 
 ## What is being implemented
 
-- 无进行中的核心代码；等待通过正常资料导入完成 20–30 份真实跨领域验证。
+- M7 lightweight agent/Obsidian entry is implemented. Next validation is ordinary use from Codex, Cursor, and Claude while real articles continue to enter through the governed import path.
 
 ## Known defects
 

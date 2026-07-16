@@ -18,6 +18,10 @@ gm runs list
 gm migrate batch-artifacts --dry-run
 gm distill corpus --dry-run
 gm context Epiplexity --profile exploration --include-proposals
+gm context "当前任务需要哪些记忆" --format markdown --token-budget 1200
+gm obsidian build
+gm receipt create --agent cursor --project global-memory --task "session handoff" --from-file receipt.md
+gm receipt propose <receipt-id>
 ```
 
 编译顺序为 quality gate → extraction/evidence → atomicity → existing-knowledge lookup → typed bundle → review。deleted/login/anti-bot/too-short 等 source 保留 provenance，但不生成知识 proposal。Context Pack 默认只读 canonical/source；显式包含 proposal 时逐项显示 truth layer、authority、verification 与选择理由。

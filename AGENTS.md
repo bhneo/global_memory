@@ -1,5 +1,15 @@
 # Global Memory Agent Protocol
 
+## Lightweight agent entry (M7)
+
+- Codex, Cursor, and Claude use this same repository as one shared memory; tool-local instructions are adapters, not separate truth stores.
+- Start from `vault/INDEX.md`, then request a bounded Context Pack with `gm context "<question>" --format markdown --token-budget 1200`. Do not scan the whole vault by default.
+- Preserve each selected item's truth layer, status, evidence, source IDs, uncertainty, path, and selection reason. Follow raw/source links when a claim needs verification.
+- `vault/views/` and Context Packs are rebuildable views. Canonical Markdown and immutable raw remain the durable truth layers.
+- For durable write-back, create a concise session receipt with `gm receipt create --agent codex ...`, then use `gm receipt propose <receipt-id>`. This creates a review proposal and never grants approval.
+- Receipt content should contain durable decisions, verified observations, changed assumptions, open questions, and sources—not transcript filler, secrets, or unsupported conclusions.
+- Obsidian opens `vault/`; rebuild its navigation with `gm obsidian build`. See `docs/AGENT_INTEGRATION.md` and ADR 0029.
+
 ## M6 operating rules
 
 - 每次 compile 前先过 source availability/content quality gate；无效来源保留 capture 并创建 follow-up，不制造知识。
