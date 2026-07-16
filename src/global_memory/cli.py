@@ -187,6 +187,11 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_revise.add_argument("--from-file", dest="candidate_file", required=True)
     proposal_revise.add_argument("--reason", required=True)
     proposal_revise.add_argument("--item", help="要编辑的 compile bundle item ID")
+    proposal_split = proposal_commands.add_parser("split-item")
+    proposal_split.add_argument("proposal_id")
+    proposal_split.add_argument("--item", required=True, help="要拆分的 compound item ID")
+    proposal_split.add_argument("--from-files", required=True, help="逗号分隔的 atomic candidate 文件")
+    proposal_split.add_argument("--reason", required=True)
 
     promote = commands.add_parser("promote", help="将 provisional canonical knowledge 显式晋升为 confirmed")
     promote.add_argument("target_id")
@@ -878,6 +883,10 @@ def run(args: argparse.Namespace) -> int:
                 _print({"rejected": args.proposal_id, "proposal_path": proposals.reject(args.proposal_id, args.reason)})
         elif args.proposal_command == "defer":
             _print({"deferred": args.proposal_id, "proposal_path": proposals.defer(args.proposal_id, args.reason)})
+        elif args.proposal_command == "split-item":
+            _print(BundleReviewService(repository).split_item(
+                args.proposal_id, args.item, args.from_files.split(","), args.reason
+            ))
         else:
             _, proposal_metadata, _ = repository.find_document(args.proposal_id)
             if proposal_metadata.get("proposal_kind") in {"compile_bundle", "source_bundle", "corpus_distillation"}:

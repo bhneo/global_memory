@@ -647,7 +647,8 @@ def test_compile_bundle_isolated_until_item_level_atomic_review(repo: Repository
     final_proposal, _ = read_document(repo.root / bundle.proposal_path)
     assert final_proposal["status"] == "approved"
     assert {item["decision"] for item in final_proposal["bundle_items"]} == {"approved", "rejected"}
-    assert lint(repo)["ok"] is True
+    lint_result = lint(repo)
+    assert lint_result["ok"] is True, lint_result["errors"]
 
 
 def test_bundle_compiler_updates_existing_concept_instead_of_duplicate(repo: Repository) -> None:
@@ -764,7 +765,50 @@ def test_bundle_item_revision_preserves_old_candidate(repo: Repository, workspac
     updated, _ = read_document(repo.root / bundle.proposal_path)
     assert updated["bundle_items"][0]["revision_history"][0]["candidate_path"] == item["candidate_path"]
     BundleReviewService(repo).approve(bundle.proposal_id)
-    assert lint(repo)["ok"] is True
+    lint_result = lint(repo)
+    assert lint_result["ok"] is True, lint_result["errors"]
+
+
+def test_bundle_compound_item_split_preserves_parent_and_adds_atomic_children(repo: Repository, workspace: Path) -> None:
+    captured = CaptureService(repo).capture_text("Claim: first assertion")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    proposal_path = repo.root / str(bundle.proposal_path)
+    proposal, _ = read_document(proposal_path)
+    parent = proposal["bundle_items"][0]
+    parent_path = repo.root / parent["candidate_path"]
+    parent_candidate, parent_body = read_document(parent_path)
+    parent_candidate["atomicity_status"] = "compound"
+    parent_candidate["publication_gate"] = "needs_split"
+    parent_text = render_document(parent_candidate, parent_body)
+    parent_path.write_text(parent_text, encoding="utf-8")
+    parent["atomicity_status"] = "compound"
+    parent["candidate_sha256"] = sha256_bytes(parent_path.read_bytes())
+    proposal_path.write_text(render_document(proposal, "# Compound fixture\n"), encoding="utf-8")
+    assert parent["atomicity_status"] == "compound"
+    files = []
+    for index, body in enumerate(("first assertion", "it records a second assertion"), start=1):
+        candidate = {
+            **parent_candidate, "id": f"claim_split_child_{index}", "title": body,
+            "atomicity_status": "atomic", "evidence_coverage": "partial",
+            "publication_gate": "needs_review", "split_from": parent_candidate["id"],
+        }
+        path = workspace / f"child-{index}.md"
+        path.write_text(render_document(candidate, body), encoding="utf-8")
+        files.append(path)
+    result = BundleReviewService(repo).split_item(
+        str(bundle.proposal_id), parent["item_id"], files, "拆成两个可独立核验的断言",
+    )
+    assert len(result["child_items"]) == 2
+    updated, _ = read_document(proposal_path)
+    old = next(item for item in updated["bundle_items"] if item["item_id"] == parent["item_id"])
+    children = [item for item in updated["bundle_items"] if item.get("split_from_item_id") == parent["item_id"]]
+    assert old["decision"] == "superseded" and old["split_into"] == result["child_items"]
+    assert len(children) == 2 and all(item["decision"] == "pending" for item in children)
+    assert not any((repo.root / item["target_path"]).exists() for item in children)
+    with pytest.raises(ValidationError):
+        BundleReviewService(repo).approve(str(bundle.proposal_id), [children[0]["item_id"]])
+    lint_result = lint(repo)
+    assert lint_result["ok"] is True, lint_result["errors"]
 
 
 def test_context_profiles_select_expected_layers_and_relation_expansion(repo: Repository) -> None:

@@ -35,6 +35,8 @@ def main() -> int:
 
     candidates = []
     for item in bundle.get("bundle_items", []):
+        if item.get("decision") == "superseded":
+            continue
         candidate_path = repo.resolve_inside(str(item["candidate_path"]))
         candidate, body = read_document(candidate_path)
         candidates.append((item, candidate, body))

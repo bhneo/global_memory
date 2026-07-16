@@ -1,0 +1,29 @@
+---
+id: "claim_wechat_ergodicity_time_ensemble_equivalence_20260716"
+type: "claim"
+status: "proposal"
+title: "该文将遍历性描述为个体时间平均与群体平均相等的条件"
+created_at: "2026-07-16T00:36:00+08:00"
+updated_at: "2026-07-16T18:00:00+08:00"
+aliases: []
+tags: ["ergodicity", "time-average", "ensemble-average"]
+domains: ["statistical-physics", "decision-theory"]
+confidence: "medium"
+source_ids: ["source_9d39636775b188c87d6a001f"]
+relations: [{"type": "derived_from", "target_id": "source_9d39636775b188c87d6a001f", "reason": "由二手科普材料中的时间平均与群体平均说明拆分", "confidence": "low", "created_by": "m6.1-human-directed-split", "status": "proposal"}]
+applicability: ["遍历性假设科普"]
+uncertainty: "当前证据来自二手科普，尚未回到原始理论材料核验严格定义。"
+evidence: [{"evidence_id": "ev_631", "evidence_kind": "quote", "source_id": "source_9d39636775b188c87d6a001f", "content_id": "content_0fe84716255d0f351c82744980c66aa1eeff10d2d08ed2c770ccbe7d6ece9f33", "extraction_id": "extraction_c6f5aba2b1a589d028d27b57", "input_sha256": "0fe84716255d0f351c82744980c66aa1eeff10d2d08ed2c770ccbe7d6ece9f33", "span_start": 631, "span_end": 677, "original_text": "时间平均：描述一个个体在足够长的时间里，多次经历同一过程后所得的平均结果；\n\n右侧是群体平均", "section": "遍历性定义", "stance": "supports", "verification_status": "verified", "reason": "文内对时间平均与群体平均关系的说明。"}]
+atomicity_status: "atomic"
+evidence_coverage: "partial"
+quote_verification: "exact"
+extraction_quality: "good"
+epistemic_source_authority: "secondary"
+evidence_entailment: "partial"
+claim_confidence: "medium"
+publication_gate: "needs_review"
+split_from: "claim_wechat_ergodicity_time_vs_ensemble_20260716"
+split_reason: "将定义性断言与现实路径风险断言分开核验"
+---
+
+该文将遍历性描述为个体时间平均与群体平均相等的条件。

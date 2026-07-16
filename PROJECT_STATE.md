@@ -4,9 +4,9 @@
 
 M6 Knowledge Distillation and Graph Formation 已完成工程实现与 33-source 受控重编译。临时 batch 双重真相源已迁移并清理；source lifecycle、quality gate、atomic claim gate、knowledge classification、bundle review、authority/follow-up、epistemic dimensions、typed relations 与 proposal-aware Context Pack 已落地。
 
-真实语料结果：143 个 input model proposals（其中 134 个待审）被保留并 supersede 到唯一 pending corpus bundle；bundle 含 62 items：14 concept、23 claim（20 atomic、3 compound/needs_split，23 条 evidence coverage 均为 partial）、6 question、4 tension、5 hypothesis、4 analogy、2 synthesis、2 experiment、1 project、1 opportunity。11 个 source-only、1 个 invalid source、10 个 open primary-source follow-up；canonical writes = 0。
+真实语料结果：143 个 input model proposals（其中 134 个待审）被保留并 supersede 到唯一 pending corpus bundle；当前活动 bundle 含 65 items：14 concept、26 atomic claim（全部 evidence coverage 为 partial）、6 question、4 tension、5 hypothesis、4 analogy、2 synthesis、2 experiment、1 project、1 opportunity。另保留 3 个已拆分 compound item 为 superseded 历史。11 个 source-only、1 个 invalid source、10 个 open primary-source follow-up；canonical writes = 0。
 
-当前 source processing state：22 awaiting_review、10 completed、1 failed、0 inbox。未完成边界：62 items 仍需人工 bundle review；3 个 compound claims 必须拆分，23 个 claims 必须做 entailment/primary-source 核验后才能批准；10 个 follow-up 尚未关闭。M6.1 已把 arXiv PDF/abstract/version/残缺引用规范成稳定 locator，4 个旧记录保留为 superseded，重复任务已合并且 corpus bundle 引用已迁移；未改 canonical。
+当前 source processing state：22 awaiting_review、10 completed、1 failed、0 inbox。未完成边界：65 个活动 items 仍需人工 bundle review；26 个 atomic claims 必须做 entailment/primary-source 核验后才能批准；10 个 follow-up 尚未关闭。M6.1 已完成 locator 规范化，并把 3 个 compound claims 拆成 6 个证据各自绑定的 atomic children；原 item 与未被当前证据支持的附加措辞保留在 superseded 历史中；未改 canonical。
 
 ## Current milestone
 

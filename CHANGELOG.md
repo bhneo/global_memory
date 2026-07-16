@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.18.0] - 2026-07-16
+
+### Added
+
+- 新增 `gm proposal split-item`：compound bundle item 可拆成至少两个独立 atomic candidates；校验来源边界、原 claim lineage、唯一 target 与候选 schema。
+- 原 compound item 保留为 `superseded` 并记录 `split_into`；六个真实子 claim 继续保持 partial evidence 和 proposal gate，未写 canonical。
+
+### Changed
+
+- M6 corpus 当前为 65 个活动 items、26 个 atomic claims、0 个活动 compound claims；另保留 3 个 superseded compound 历史项。
+
 ## [0.17.1] - 2026-07-16
 
 ### Fixed

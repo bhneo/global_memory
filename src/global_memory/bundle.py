@@ -601,3 +601,79 @@ class BundleReviewService:
         })
         return {"proposal_id": proposal_id, "item_id": item_id,
                 "candidate_path": self.repository.rel(revision_path), "candidate_sha256": digest}
+
+    def split_item(
+        self, proposal_id: str, item_id: str, candidate_files: list[Path | str], reason: str,
+    ) -> dict[str, Any]:
+        """Replace one pending compound claim with independently reviewable atomic children."""
+        proposal_path, proposal, body = self._load(proposal_id)
+        selected = self._selected(proposal, [item_id])[0]
+        if selected.get("object_type") != "claim" or selected.get("atomicity_status") != "compound":
+            raise ValidationError("只能拆分 pending compound claim")
+        if len(candidate_files) < 2 or not reason.strip():
+            raise ValidationError("claim split 至少需要两个 candidate 文件和 reason")
+        original_path = self.repository.resolve_inside(str(selected["candidate_path"]))
+        original, _ = read_document(original_path)
+        existing_targets = {str(item["target_id"]) for item in proposal.get("bundle_items", [])}
+        timestamp = now_iso()
+        children: list[dict[str, Any]] = []
+        for index, candidate_file in enumerate(candidate_files, start=1):
+            input_path = Path(candidate_file).expanduser().resolve()
+            if not input_path.is_file():
+                raise ValidationError(f"split candidate 不存在: {input_path}")
+            candidate_text = input_path.read_text(encoding="utf-8")
+            candidate, _ = read_document(input_path)
+            self.repository._validate_metadata(candidate, input_path)
+            if candidate.get("type") != "claim" or candidate.get("status") != "proposal":
+                raise ValidationError("split candidate 必须是 proposal claim")
+            if candidate.get("atomicity_status") != "atomic":
+                raise ValidationError("split child 必须标记为 atomic")
+            if candidate.get("split_from") != original.get("id"):
+                raise ValidationError("split child 必须记录原 claim ID")
+            if not set(candidate.get("source_ids", [])) <= set(original.get("source_ids", [])):
+                raise ValidationError("split child 不得引入原 claim 之外的 source")
+            target_id = str(candidate["id"])
+            if target_id in existing_targets or any(child["target_id"] == target_id for child in children):
+                raise ValidationError(f"split child target 重复: {target_id}")
+            digest = sha256_bytes(candidate_text.encode("utf-8"))
+            child_item_id = f"{item_id}.split-{index}"
+            stored = self.repository.root / "vault/proposals" / f"candidate-{proposal_id}-{child_item_id}-{digest[:12]}.md"
+            self.repository.immutable_write(stored, candidate_text.encode("utf-8"))
+            target = self.repository.root / CANONICAL_DIRECTORIES["claim"] / f"{target_id}-{slugify(str(candidate['title']))}.md"
+            children.append({
+                "item_id": child_item_id, "object_type": "claim", "action": "create",
+                "target_id": target_id, "target_path": self.repository.rel(target),
+                "base_path": None, "base_sha256": None,
+                "candidate_path": self.repository.rel(stored), "candidate_sha256": digest,
+                "decision": "pending", "potential_conflicts": [], "review_tier": "low",
+                "atomicity_status": "atomic", "evidence_coverage": candidate.get("evidence_coverage"),
+                "split_from_item_id": item_id, "split_reason": reason.strip(),
+            })
+        selected["decision"] = "superseded"
+        selected["reviewed_at"] = timestamp
+        selected["review_reason"] = reason.strip()
+        selected["split_into"] = [child["item_id"] for child in children]
+        proposal["bundle_items"].extend(children)
+        proposal["updated_at"] = timestamp
+        metrics = proposal.get("bundle_metrics", {})
+        metrics["new_object_count"] = sum(
+            item.get("decision") == "pending" and item.get("action") == "create"
+            for item in proposal["bundle_items"]
+        )
+        metrics["review_cost_estimate"] = sum(item.get("decision") == "pending" for item in proposal["bundle_items"])
+        node_counts = metrics.get("node_counts", {})
+        node_counts["claim"] = sum(
+            item.get("decision") == "pending" and item.get("object_type") == "claim"
+            for item in proposal["bundle_items"]
+        )
+        body = body.rstrip() + (
+            f"\n\n## Item split: {item_id}\n\n- Reason: {reason.strip()}\n"
+            f"- Children: {', '.join(child['item_id'] for child in children)}\n"
+        )
+        atomic_write_text(proposal_path, render_document(proposal, body))
+        self.repository.append_event("proposal-events", {
+            "event": "bundle-item-split", "proposal_id": proposal_id, "item_id": item_id,
+            "child_item_ids": [child["item_id"] for child in children], "reason": reason.strip(),
+        })
+        return {"proposal_id": proposal_id, "superseded_item": item_id,
+                "child_items": [child["item_id"] for child in children]}
