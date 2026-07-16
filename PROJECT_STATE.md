@@ -1,5 +1,7 @@
 # Current State
 
+> M6.1 follow-up closure (2026-07-16): all primary-source follow-ups are resolved (open = 0). The final four locators yielded two valid MARL papers and two valid Xbotics repositories, but none fully entails the associated broad secondary claims; those claims intentionally remain partial/low. This is an evidence-boundary result, not an ingestion failure. No canonical write was performed.
+
 > M6.1 update (Epiplexity primary review): arXiv:2601.03220 abstract and 65-page PDF are captured and extracted. The definition claim is corrected to the paper's compute-bounded MDL program-length definition and now carries the explicit no-OOD-guarantee boundary. Current state: 44 sources, 4 open follow-ups, 68 active items, 29 atomic claims (9 full, 20 partial), and no canonical write.
 
 > M6.1 update (2026-07-16): the two parameter-space-symmetry compound claims have been split into four primary-verified atomic proposal claims. The active bundle now contains 68 items and 29 atomic claims (8 full evidence, 21 partial evidence), with 5 primary-source follow-ups still open and no canonical write.

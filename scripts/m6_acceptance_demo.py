@@ -63,11 +63,22 @@ def main() -> int:
     require(any(len(candidate.get("source_ids", [])) >= 2 for candidate in concept_candidates), "no multi-source concept reuse")
     require(counts["tension"] >= 1 and counts["question"] >= 1, "tension/question missing")
     followups = {item["id"]: item for item in FollowupService(repo).list()}
+    referenced_followup_ids = list(bundle.get("primary_source_followups", []))
+    require(
+        all(item_id in followups for item_id in referenced_followup_ids),
+        "bundle references a missing primary-source follow-up",
+    )
+    require(
+        all(
+            followups[item_id].get("status") in {"missing", "resolved", "captured", "not_required", "superseded"}
+            for item_id in referenced_followup_ids
+        ),
+        "primary-source follow-up has an invalid lifecycle status",
+    )
     open_followups = [
-        followups[item_id] for item_id in bundle.get("primary_source_followups", [])
-        if item_id in followups and followups[item_id].get("status") not in {"resolved", "captured", "not_required"}
+        followups[item_id] for item_id in referenced_followup_ids
+        if followups[item_id].get("status") not in {"resolved", "captured", "not_required", "superseded"}
     ]
-    require(open_followups, "primary-source follow-up missing")
     require(counts["analogy"] >= 3 and counts["synthesis"] >= 2, "graph distillation targets missing")
     require(all(candidate.get("status") == "proposal" for _, candidate, _ in candidates), "candidate escaped proposal layer")
     canonical_ids = set()

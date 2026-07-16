@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.18.7] - 2026-07-16
+
+### Added
+
+- 捕获并抽取 arXiv:1810.08647（26 页）、arXiv:1811.05931（10 页）以及 Xbotics Embodied AI Job/Guide 两个 GitHub 仓库，全部 extraction 为 ready 且无 warning。
+- 为两篇 arXiv 论文建立 work proposals，并关闭最后 4 个 primary-source follow-ups；当前 open follow-ups 为 0。
+
+### Changed
+
+- Primary review 确认两篇 arXiv 论文分别研究 social influence intrinsic reward 与 evolved altruistic motivation，只能作为具体 MARL 实例，不能证明二手文章概括的宽泛“Barto 统一奖励框架”，因此相关 claim 保持 partial。
+- Xbotics Job/Guide 仓库分别是招聘汇总与学习指南，不包含 Kairos-HomeWorld 的训练或 sim-to-real 结果；相关 Kairos claim 保持 low/partial，未制造 primary support。
+- 当前 primary-follow-up 队列已清零；partial claims 作为明确的证据状态保留，等待未来真正匹配的来源，而非作为未完成导入错误。
+
+### Fixed
+
+- M6 acceptance demo 不再错误要求至少存在一个 open follow-up；现在校验 bundle 引用完整性和 follow-up 生命周期，因此队列正确清零后仍可通过验收。
+
 ## [0.18.6] - 2026-07-16
 
 ### Added
