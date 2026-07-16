@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.18.3] - 2026-07-16
+
+### Changed
+
+- PhySO compound item 已拆成 RNN/RL generator 与 physical-units constraint 两个 atomic children，并分别由 primary PDF 第 21/1 页逐字核验为 full evidence；旧 item 保留为 superseded。
+- M6 corpus 当前为 66 个活动 items、27 个 atomic claims，其中 4 个 full、23 个 partial；canonical writes 仍为 0。
+
+### Fixed
+
+- 同一 primary quote 的 section/page 修订现在替换同 ID evidence 并创建新 candidate revision，不再产生重复 evidence 条目。
+
 ## [0.18.2] - 2026-07-16
 
 ### Added

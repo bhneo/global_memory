@@ -842,6 +842,12 @@ def test_bundle_atomic_item_primary_quote_verification_is_span_checked(repo: Rep
     assert candidate["evidence_coverage"] == "full"
     assert candidate["epistemic_source_authority"] == "primary"
     assert candidate["evidence"][-1]["original_text"] == quote
+    corrected = service.verify_item_quote(
+        str(bundle.proposal_id), item["item_id"], captured.source_id,
+        extraction["extraction_id"], start, quote, "corrected fixture", "primary verification",
+    )
+    corrected_candidate, _ = read_document(repo.root / corrected["candidate_path"])
+    assert sum(evidence["evidence_id"] == result["evidence_id"] for evidence in corrected_candidate["evidence"]) == 1
     approved = service.approve(str(bundle.proposal_id), [item["item_id"]])
     assert approved["approved_items"] == [item["item_id"]]
 

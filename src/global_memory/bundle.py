@@ -705,13 +705,20 @@ class BundleReviewService:
             f"{source_id}\n{extraction_id}\n{span_start}\n{original_text}".encode()
         ).hexdigest()[:12]
         evidence = list(candidate.get("evidence", []))
-        evidence.append({
+        verified_evidence = {
             "evidence_id": evidence_id, "evidence_kind": "quote", "source_id": source_id,
             "content_id": source.get("content_id"), "extraction_id": extraction_id,
             "input_sha256": extraction.get("input_sha256"), "span_start": span_start,
             "span_end": span_end, "original_text": original_text, "section": section,
             "stance": "supports", "verification_status": "verified", "reason": reason.strip(),
-        })
+        }
+        existing_evidence = next((
+            index for index, item in enumerate(evidence) if item.get("evidence_id") == evidence_id
+        ), None)
+        if existing_evidence is None:
+            evidence.append(verified_evidence)
+        else:
+            evidence[existing_evidence] = verified_evidence
         candidate["evidence"] = evidence
         candidate["source_ids"] = list(dict.fromkeys([*candidate.get("source_ids", []), source_id]))
         relations = list(candidate.get("relations", []))
