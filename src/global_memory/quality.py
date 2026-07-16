@@ -5,7 +5,7 @@ import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
 from .errors import ValidationError
 from .extraction import ExtractionService
@@ -32,9 +32,30 @@ _ANTI_BOT = ("访问过于频繁", "环境异常", "安全验证", "captcha", "v
 _ACCESS = ("access denied", "无权访问", "forbidden", "permission denied")
 _BOILERPLATE = ("微信公众平台", "javascript is disabled", "enable javascript", "点击阅读全文")
 _PRIMARY_LOCATOR = re.compile(
-    r"https?://(?:arxiv\.org/(?:abs|pdf)/[^\s\]\)]+|doi\.org/[^\s\]\)]+|github\.com/[^\s\]\)]+)",
+    r"https?://(?:arxiv\.org/(?:abs|pdf)/[^\s\[\]\)<>\"'，。；：、]+|doi\.org/[^\s\[\]\)<>\"'，。；：、]+|github\.com/[^\s\[\]\)<>\"'，。；：、]+)",
     re.I,
 )
+_ARXIV_PATH = re.compile(r"^/(?:abs|pdf)/(\d{4}\.\d{4,5})(?:v\d+)?(?:\.pdf)?/?$", re.I)
+_TRAILING_LOCATOR_PUNCTUATION = ".,;:!?，。；：！？、"
+
+
+def normalize_primary_locator(locator: str) -> str:
+    """Return a stable work locator suitable for follow-up identity and dedupe."""
+    value = locator.strip().rstrip(_TRAILING_LOCATOR_PUNCTUATION)
+    # Extraction from prose may include a reference marker such as ``.pdf[7``.
+    value = re.sub(r"\[\d+[^\s]*$", "", value).rstrip(_TRAILING_LOCATOR_PUNCTUATION)
+    parsed = urlsplit(value)
+    host = (parsed.hostname or "").casefold()
+    if parsed.scheme.casefold() not in {"http", "https"}:
+        return value
+    if host == "arxiv.org":
+        match = _ARXIV_PATH.match(parsed.path)
+        if match:
+            return f"https://arxiv.org/abs/{match.group(1)}"
+    path = parsed.path.rstrip("/") or "/"
+    if host == "doi.org":
+        path = path.casefold()
+    return urlunsplit(("https", host, path, "", ""))
 
 
 @dataclass(frozen=True)
@@ -134,7 +155,7 @@ class SourceQualityService:
         if status == "ready" and warnings and quality == "valid":
             quality, extraction_quality = "degraded", "degraded"
             reasons.extend(warnings)
-        locators = sorted(set(_PRIMARY_LOCATOR.findall(text)))
+        locators = sorted({normalize_primary_locator(item) for item in _PRIMARY_LOCATOR.findall(text)})
         allowed = availability in {"available", "partial"} and quality in {"valid", "degraded"}
         result = QualityAssessment(
             source_id=source_id, assessed_at=now_iso(), availability_status=availability,

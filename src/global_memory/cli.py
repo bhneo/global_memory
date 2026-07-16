@@ -156,6 +156,8 @@ def build_parser() -> argparse.ArgumentParser:
     followup_detect.add_argument("source_id")
     followup_show = followup_commands.add_parser("show")
     followup_show.add_argument("followup_id")
+    followup_normalize = followup_commands.add_parser("normalize-locators")
+    followup_normalize.add_argument("--apply", action="store_true", help="写入迁移；默认仅 dry-run")
     followup_resolve = followup_commands.add_parser("resolve")
     followup_resolve.add_argument("followup_id")
     followup_resolve.add_argument("--captured-source")
@@ -847,6 +849,8 @@ def run(args: argparse.Namespace) -> int:
             _print(followup_service.detect(args.source_id))
         elif args.followup_command == "show":
             _print(followup_service.show(args.followup_id))
+        elif args.followup_command == "normalize-locators":
+            _print(followup_service.normalize_locators(apply=args.apply))
         else:
             _print({"path": followup_service.resolve(args.followup_id, args.captured_source)})
     elif args.command == "proposal":

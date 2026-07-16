@@ -12,6 +12,8 @@ gm source status <source-id>
 gm review queue
 gm review bundle <bundle-id> --summary
 gm followups
+gm followup normalize-locators             # 默认 dry-run
+gm followup normalize-locators --apply     # 备份后迁移并保留 superseded 历史
 gm runs list
 gm migrate batch-artifacts --dry-run
 gm distill corpus --dry-run
@@ -102,6 +104,7 @@ gm doctor
 - `gm compile <source-id>`：生成低置信度 proposal，不修改 canonical knowledge。
 - `gm model-propose <source-id> --candidate <Markdown> ...`：导入用户明确提供的外部模型 candidate；记录 provider/model/prompt version/输入哈希与不确定性，但命令自身不调用 provider。
 - `gm proposals [--status pending]`：列出 proposal。
+- `gm followups`：列出活动 primary-source/recovery 任务；`gm followup normalize-locators [--apply]` 规范化 locator、合并重复任务并重写 proposal 引用，默认只输出迁移计划。
 - `gm proposal show|approve|defer|reject <proposal-id>`：查看 diff、明确审批或暂缓处理。
 - `gm proposal revise <id> --from-file <candidate.md> --reason "..."`：用新的不可变 candidate 替代待审 proposal。
 - `gm propose-update <id> --from-file <candidate.md> --reason "..."`：创建受并发保护的 canonical update proposal。

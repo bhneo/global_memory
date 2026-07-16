@@ -25,7 +25,7 @@ from global_memory.markdown import read_document, render_document
 from global_memory.proposals import ProposalService
 from global_memory.recovery import ApprovalRecoveryManager
 from global_memory.raw_store import RawStoreService
-from global_memory.quality import SourceQualityService
+from global_memory.quality import SourceQualityService, normalize_primary_locator
 from global_memory.review import SourceBundleReviewService
 from global_memory.runs import BatchArtifactMigrator, RunArtifactService
 from global_memory.repository import Repository, sha256_bytes
@@ -187,6 +187,76 @@ def test_m6_primary_followup_and_source_bundle_review(repo: Repository) -> None:
     shown = SourceBundleReviewService(repo).show(str(bundle.proposal_id))
     assert shown["source_authority"] == "secondary_analysis"
     assert shown["primary_source_followups"]
+
+
+@pytest.mark.parametrize(
+    ("locator", "expected"),
+    [
+        ("https://arxiv.org/pdf/1810.08647.pdf", "https://arxiv.org/abs/1810.08647"),
+        ("https://arxiv.org/pdf/1810.08647v1.pdf[7", "https://arxiv.org/abs/1810.08647"),
+        ("http://arxiv.org/abs/2601.03220v2", "https://arxiv.org/abs/2601.03220"),
+        ("https://GitHub.com/Xbotics/Job/?tab=readme", "https://github.com/Xbotics/Job"),
+    ],
+)
+def test_m61_primary_locator_normalization(locator: str, expected: str) -> None:
+    assert normalize_primary_locator(locator) == expected
+
+
+def test_m61_quality_detection_deduplicates_malformed_arxiv_variants(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "References https://arxiv.org/pdf/1810.08647.pdf and "
+        "https://arxiv.org/pdf/1810.08647v1.pdf[7 plus "
+        "https://arxiv.org/pdf/1811.05931v1.pdf[6."
+    )
+    assessment = SourceQualityService(repo).assess(captured.source_id)
+    assert assessment.primary_source_locators == [
+        "https://arxiv.org/abs/1810.08647",
+        "https://arxiv.org/abs/1811.05931",
+    ]
+
+
+def test_m61_followup_locator_migration_is_dry_run_backed_up_and_idempotent(repo: Repository) -> None:
+    source = CaptureService(repo).capture_text("Secondary interpretation with primary references")
+    service = FollowupService(repo)
+    legacy_ids = []
+    for locator in (
+        "https://arxiv.org/pdf/1810.08647.pdf",
+        "https://arxiv.org/pdf/1810.08647v1.pdf[7",
+    ):
+        legacy_id = service._id(source.source_id, locator, "primary_source")
+        legacy_ids.append(legacy_id)
+        metadata = {
+            "id": legacy_id, "type": "followup", "status": "missing",
+            "title": f"Primary source follow-up for {source.source_id}",
+            "created_at": "2026-07-15T10:00:00+08:00", "updated_at": "2026-07-15T10:00:00+08:00",
+            "source_id": source.source_id, "followup_kind": "primary_source",
+            "primary_source_locator": locator, "reason": "legacy extraction",
+            "captured_source_id": None, "resolution_history": [],
+        }
+        service._path(legacy_id).write_text(render_document(metadata, "# Legacy follow-up\n"), encoding="utf-8")
+    proposal_path = repo.root / "vault/proposals/proposal-locator-migration.md"
+    proposal = {
+        "id": "proposal_locator_migration", "type": "proposal", "status": "pending",
+        "title": "Locator migration fixture", "created_at": "2026-07-15T10:00:00+08:00",
+        "updated_at": "2026-07-15T10:00:00+08:00", "primary_source_followups": legacy_ids,
+    }
+    proposal_path.write_text(render_document(proposal, "# Proposal\n"), encoding="utf-8")
+    before = {path: path.read_bytes() for path in [*service.directory.glob("*.md"), proposal_path]}
+
+    dry = service.normalize_locators()
+    assert dry["dry_run"] and dry["changed_followups"] == 2 and dry["active_after"] == 1
+    assert all(path.read_bytes() == content for path, content in before.items())
+
+    applied = service.normalize_locators(apply=True)
+    assert not applied["dry_run"] and applied["backup_path"]
+    assert (repo.root / str(applied["backup_path"])).is_dir()
+    active = service.list()
+    assert len(active) == 1
+    assert active[0]["primary_source_locator"] == "https://arxiv.org/abs/1810.08647"
+    assert len(service.list(include_superseded=True)) == 3
+    migrated_proposal, _ = read_document(proposal_path)
+    assert migrated_proposal["primary_source_followups"] == [active[0]["id"]]
+    assert service.normalize_locators(apply=True)["changed_followups"] == 0
 
 
 def _write_json_bundle(repo: Repository, items: list[dict[str, object]]) -> Path:

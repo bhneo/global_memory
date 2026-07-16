@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.17.1] - 2026-07-16
+
+### Fixed
+
+- Primary-source locator 现在会清理残缺脚注，并将 arXiv PDF、abstract 与版本 URL 归一为同一稳定任务身份。
+- 新增默认 dry-run 的 `gm followup normalize-locators [--apply]`；应用迁移前备份受影响文件，旧 follow-up 保留为 `superseded`，proposal 引用同步去重，重复执行零变更。
+- 真实 M6 corpus 的活动 follow-up 从 11 个纠正为 10 个；4 个旧记录迁移到 3 个规范记录，canonical writes 仍为 0。
+
 ## [0.17.0] - 2026-07-16
 
 ### Added
