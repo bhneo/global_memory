@@ -1,0 +1,24 @@
+---
+id: "claim_wechat_buffon_needle_20260715"
+title: "该文称蒲丰投针实验中当平行线间距 a 等于 2 倍针长 l 时，n/k 近似 π"
+tags: ["pi", "buffon-needle", "probability"]
+domains: ["mathematics", "probability"]
+confidence: "medium"
+applicability: ["文内 a=2l 的小游戏设定", "蒲丰实验概率推导概述"]
+uncertainty: "近似关系依赖大数定律与实验次数；文内亦指出精确度与投掷次数不成简单正比并提及最优停止问题。"
+evidence: [{"evidence_id": "ev_1820", "evidence_kind": "quote", "source_id": "source_a86d60369a021d93d1e863aa", "content_id": "content_9143ea8d31cc8d7534db5de546450b2be5f4dd4d90eb7b8c94b337e8cf7c3295", "extraction_id": "extraction_59d5676353f0e4b5a43e38ec", "input_sha256": "9143ea8d31cc8d7534db5de546450b2be5f4dd4d90eb7b8c94b337e8cf7c3295", "span_start": 1820, "span_end": 1909, "original_text": "在纸上画满相距4厘米的平行线，找来n根2厘米长的牙签，随机地抛在纸上，最后统计牙签与平行线相交的次数k，计算n/k的值。\n\n随机抛掷\n\n统计后发现，n/k的值与圆周率π十分接近！", "section": "实验步骤", "stance": "supports", "verification_status": "verified", "reason": "文内对投针统计与 π 接近性的描述。"}, {"evidence_id": "ev_2169", "evidence_kind": "quote", "source_id": "source_a86d60369a021d93d1e863aa", "content_id": "content_9143ea8d31cc8d7534db5de546450b2be5f4dd4d90eb7b8c94b337e8cf7c3295", "extraction_id": "extraction_59d5676353f0e4b5a43e38ec", "input_sha256": "9143ea8d31cc8d7534db5de546450b2be5f4dd4d90eb7b8c94b337e8cf7c3295", "span_start": 2169, "span_end": 2202, "original_text": "在上述小游戏中，我们选择了参数a=2l，因此，正好得到n/k=π。", "section": "a=2l 结论", "stance": "supports", "verification_status": "verified", "reason": "文内对参数选择与 n/k=π 的推导结论。"}, {"evidence_id": "ev_2424", "evidence_kind": "quote", "source_id": "source_a86d60369a021d93d1e863aa", "content_id": "content_9143ea8d31cc8d7534db5de546450b2be5f4dd4d90eb7b8c94b337e8cf7c3295", "extraction_id": "extraction_59d5676353f0e4b5a43e38ec", "input_sha256": "9143ea8d31cc8d7534db5de546450b2be5f4dd4d90eb7b8c94b337e8cf7c3295", "span_start": 2424, "span_end": 2494, "original_text": "蒲丰实验是第一个用几何形式表达概率问题的例子，首次使用了随机实验处理确定性的数学问题，这不仅是蒙特卡洛方法的雏形，也促进了积分几何学的诞生。", "section": "历史意义", "stance": "supports", "verification_status": "verified", "reason": "文内对蒲丰实验历史地位的表述。"}]
+type: "claim"
+status: "proposal"
+created_at: "2026-07-15T19:25:00+08:00"
+updated_at: "2026-07-15T19:25:00+08:00"
+aliases: []
+superseded_by: null
+valid_during: null
+change_reason: "批量导入圆周率科普文章；等待人工核验"
+source_ids: ["source_a86d60369a021d93d1e863aa"]
+relations: [{"type": "derived_from", "target_id": "source_a86d60369a021d93d1e863aa", "reason": "由中科院物理所公众号科普文章归纳；非原始研究论文"}]
+---
+
+# 蒲丰投针
+
+a=2l 时 n/k 近似 π。

@@ -1,0 +1,73 @@
+---
+id: "proposal_9b8367a29e59998c8fc5a9c5"
+type: "proposal"
+status: "pending"
+title: "模型提议：该文称 Qwen-RobotWorld 以自然语言统一 20+ 本体与 500+ 动作类别，在 860 万视频-文本对（>2 亿帧）上训练，采用 60 层双流 MMDiT + Qwen2.5-VL 动作编码器"
+created_at: "2026-07-16T11:19:48+08:00"
+updated_at: "2026-07-16T11:19:48+08:00"
+aliases: []
+tags: []
+domains: []
+confidence: "low"
+source_ids: ["source_11bc6c51fa038191e33bc9a7"]
+relations: []
+proposal_kind: "model_candidate"
+processor: "external-model-candidate-v1"
+action: "create"
+target_id: "claim_wechat_qwen_robotworld_language_action_20260716"
+target_path: "vault/knowledge/claims/claim_wechat_qwen_robotworld_language_action_20260716-该文称-qwen-robotworld-以自然语言统一-20-本体与-500-动作类别-在-860-万视频-文本对-2-亿帧-上.md"
+base_path: null
+base_sha256: null
+candidate_path: "vault/proposals/candidate-proposal_9b8367a29e59998c8fc5a9c5.md"
+candidate_sha256: "f061370c96a144df112f79617868b7df2b296cd8f4b6b9be1ae66a49250b546c"
+change_reason: "导入 claim_wechat_qwen_robotworld_language_action_20260716"
+model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_11bc6c51fa038191e33bc9a7", "input_sha256": "ee8016cabd1c0eaccb570735f1d909141dfcab8a05da10364adb722f13aa88b6", "uncertainty": "机器人前瞻 vendor 通稿；SOTA/benchmark 数字 confidence 低，需回阿里官方材料核验。"}
+reviewed_at: null
+review_reason: null
+---
+
+# 模型提议：该文称 Qwen-RobotWorld 以自然语言统一 20+ 本体与 500+ 动作类别，在 860 万视频-文本对（>2 亿帧）上训练，采用 60 层双流 MMDiT + Qwen2.5-VL 动作编码器
+
+## 模型运行记录
+
+- Provider：`cursor`
+- Model：`composer-2.5`
+- Prompt version：`knowledge-import-v2`
+- Prompt SHA-256：`not-recorded`
+- Input source：`source_11bc6c51fa038191e33bc9a7`
+- Input SHA-256：`ee8016cabd1c0eaccb570735f1d909141dfcab8a05da10364adb722f13aa88b6`
+- 不确定性：机器人前瞻 vendor 通稿；SOTA/benchmark 数字 confidence 低，需回阿里官方材料核验。
+- 提议理由：导入 claim_wechat_qwen_robotworld_language_action_20260716
+- 隐私边界：此命令不调用 provider；candidate 由用户在仓库外生成后显式提供。
+
+## Base → Candidate Diff
+
+```diff
+--- /dev/null
++++ candidate:vault/knowledge/claims/claim_wechat_qwen_robotworld_language_action_20260716-该文称-qwen-robotworld-以自然语言统一-20-本体与-500-动作类别-在-860-万视频-文本对-2-亿帧-上.md
+@@ -0,0 +1,24 @@
++---
++id: "claim_wechat_qwen_robotworld_language_action_20260716"
++title: "该文称 Qwen-RobotWorld 以自然语言统一 20+ 本体与 500+ 动作类别，在 860 万视频-文本对（>2 亿帧）上训练，采用 60 层双流 MMDiT + Qwen2.5-VL 动作编码器"
++tags: ["world-model", "MMDiT", "synthetic-data"]
++domains: ["robotics", "generative-models"]
++confidence: "low"
++applicability: ["操作/驾驶/导航联合强化", "EWMBench/DreamGen 第一叙述"]
++uncertainty: "榜单第一等为发布稿自称；物理规律遵循 claim 未附独立评测细节。"
++evidence: [{"evidence_id": "ev_3190", "evidence_kind": "quote", "source_id": "source_11bc6c51fa038191e33bc9a7", "content_id": "content_ee8016cabd1c0eaccb570735f1d909141dfcab8a05da10364adb722f13aa88b6", "extraction_id": "extraction_abc5ebaba4c64d5f80e1daa8", "input_sha256": "ee8016cabd1c0eaccb570735f1d909141dfcab8a05da10364adb722f13aa88b6", "span_start": 3190, "span_end": 3205, "original_text": "860万视频-文本对，逾2亿帧", "section": "语料规模", "stance": "supports", "verification_status": "verified", "reason": "文内对具身世界知识语料库规模。"}, {"evidence_id": "ev_357", "evidence_kind": "quote", "source_id": "source_11bc6c51fa038191e33bc9a7", "content_id": "content_ee8016cabd1c0eaccb570735f1d909141dfcab8a05da10364adb722f13aa88b6", "extraction_id": "extraction_abc5ebaba4c64d5f80e1daa8", "input_sha256": "ee8016cabd1c0eaccb570735f1d909141dfcab8a05da10364adb722f13aa88b6", "span_start": 357, "span_end": 3177, "original_text": "自然语言动作接口，把视觉语言能力接入世界动力学预测，让同一个世界模型能够跨操作、驾驶和导航场景预测符合物理规律的未来。\n\nQwen-RobotNav在宇树科技四足机器人Go2（NVIDIA Jetson Thor，推理延迟196ms）上零样本部署，仅使用单个低分辨率相机，机器人在一套从未见过的公寓中，就根据逐步的语言指令跨多个房间执行任务。\n\n阿里本次发布的三个模型各自独立可用，但由于它们都提供语言优先的接口，通用Qwen模型可以将它们作为物理世界工具进行组合，将通用智能直接连接到物理行动。\n\n阿里打造了一个内部项目机器人智能体框架Qwen-RobotClaw，让Qwen VLM智能体将Qwen-Robot Suite模型作为物理世界工具调用，同时管理长程任务所需的上下文与记忆，推动物理智能走向更通用、更复杂的真实应用场景。\n\n研究人员已经将这种开放世界探索能力部署到真实环境中，后续将发布更多技术细节。例如用户要求智能体在真实建筑中找到一个可用的卫生间，智能体首先扫描周围环境，沿走廊线索寻找卫生间标识，发现“暂停使用”标牌判断该卫生间不可用，随即重新规划路线前往建筑另一侧寻找，直到找到可用卫生间。\n\n此外，阿里还开放了具身智能评测平台Chat2Robot，用户可以在浏览器中与机器人对话，即可观察机器人的实时响应。Chat2Robot目前仅支持Qwen-RobotManip，且部署策略仅使用RoboTwin-Clean数据集进行训练，该数据集仅包含50个任务。\n\nChat2Robot体验地址：\n\nhttps://qwen-robotmanip.d-robotics.cc/?spm=a2ty_o06.30285417.0.0.79f7c921DFswuC\n\n01.\n\nQwen-RobotNav：1560万条数据训练未见过展馆也能精准导航\n\n智能体要操作物体需要先到达目标位置，但不同导航任务对历史信息的需求差异大，指令跟随需要保留长程上下文，目标追踪则几乎只关注最近几帧，任何固定的视觉分配策略都无法同时满足这两类需求。\n\n基于此，Qwen-RobotNav将视觉分配策略本身参数化，根据任务模式选择导航行为、通过可调节参数决定视觉历史的编码方式。该模型的训练样本包含1560万条，同时联合视觉语言数据以保留感知能力，一套权重统一五类导航任务。\n\n指令跟随方面，在一个从未见过的展览馆中评估往返导航任务：机器人首先根据语言指令从客厅导航21.78米至病房，随后接收反向指令，要求精确地沿原路返回。这一任务中，模型需要在长距离中保持空间感知，在正向和反向两个方向上识别多样的视觉地标，并仅凭语言实现双向位置控制。\n\nQwen-RobotNav包含四大核心亮点：\n\n统一多域导航：单一模型、单组权重，在5个导航领域实现8项SOTA，包含目标搜索、跟踪率等测试。\n\n可控观测协议：视觉词元预算、时间衰减、逐相机权重、帧采样模式四个控制轴作为推理时参数暴露，训练时逐样本随机化，无需重新训练或修改Qwen3-VL架构即可适配任意配置\n\n智能体导航系统：作为双层系统中可重配置的导航原语，Qwen3.6-Plus作为上层规划器分解长时序目标并调度可配置的导航调用，配合双层记忆机制，在EXPRESS-Bench上提升15.4%，导航步数减少77%。\n\n开放环境泛化：在宇树科技四足机器人Go2上零样本部署，机器人能逐步的语言指令跨多个房间执行任务。\n\n在跨本体迁移方面，其单套模型权重同时服务于腿式机器人导航与自动驾驶，在NAVSIM闭环驾驶测试中，Qwen-RobotNav-4B达到91.4 PDMS。\n\n02.\n\nQwen-RobotManip：仅用单一通用策略可跨场景、跨任务执行操作\n\n物理智能体与真实世界交互需要通过机械臂等完成操作任务，但机械臂在不同场景的关节配置和动作空间有很大区别，核心挑战在于让形态各异的机器人在表示层面实现兼容，使跨机器人、跨数据源的大规模训练产生协同效应而非相互冲突。\n\n在此基础上，Qwen-RobotManip以Qwen3.5-4B VL为骨干、结合流匹配DiT动作头，通过三种机制解决这一问题。\n\n其统一的80维状态-动作表示在单臂、双臂、灵巧手和移动平台等本体间共享，相机坐标系下的末端执行器增量位姿动作，使视觉上相似的运动在不同机器人之间数值上也相近，从而屏蔽形态差异，上下文策略自适应将执行历史视为隐式的本体标识，实现推理时在线行为校准。\n\n研究人员利用开源的11320小时机器人数据、开源的1933小时第一人称人类视频，以及人-机迁移数据合成管线从人类视频合成的跨15个本体的24808小时机器人数据，共计超38100小时数据训练模型。\n\nQwen-RobotManip能通过单一通用策略处理跨多类物体、任务和场景的复杂操作：其还可以在真实环境和仿真中执行多样化的未见指令，如下图所示第一排为真实环境、第二排为仿真环境：此外，在其他本体上训练的任务可零样本迁移至新本体执行（第一排），并通过少量示教快速适应全新任务（第二排）：\n\nQwen-RobotManip的核心亮点包括：\n\n统一跨本体对齐框架：统一的80维状态-动作表示兼容多样化本体，相机坐标系末端执行器增量位姿使视觉相似运动数值相近，上下文策略自适应将执行历史作为隐式本体标识，三者共同实现跨本体一致信号提取；\n\n大规模人-机迁移数据合成：管线将1933小时第一人称人类视频，经由动作重定向、手部去除与补绘、仿真渲染及深度辅助融合，转化为跨15个本体的24808小时机器人演示，配合多阶段数据策划管线确保数据质量；\n\n分布外泛化：该模型在多个基准测试中超越π0.5，证实了语言条件控制能力；RoboTwin-XE零样本跨本体迁移性能达到先前最优的3倍；\n\n真实环境表现：RoboChallenge Table30 v1通用赛道以45% SR排名第一，包揽冠亚，领先季军20%；在真实机器人平台上的域内与域外任务、少样本适应及跨本体技能迁移中达到先前最优的2倍。\n\n基于此，研究人员发现，对齐是规模化的前提。只有具备统一跨本体表示的模型（UnifiedSpace+ UnifiedEEF）才能展现出稳定的对数线性数据规模化曲线，没有对齐，增加更多数据只会产生抖动或持平的曲线，规模化无法弥补未对齐表征框架的固有缺陷。\n\n03.\n\nQwen-RobotWorld：解决真实世界数据稀缺难题能跨本体生成机器人操作效果\n\n面对机器人稀缺的真实世界经验，Qwen-RobotWorld通过直接学习世界的状态转移函数来解决这一问题：给定当前观测和一个自然语言动作，预测世界接下来将呈现的样子。\n\n关键设计是将所有动作以自然语言表达，这将末端执行器位姿、转向指令和导航路标点统一为单一接口，使20余种本体类型和500余个动作类别", "section": "语言动作接口", "stance": "supports", "verification_status": "verified", "reason": "文内对统一自然语言动作接口的说明。"}]
++type: "claim"
++status: "proposal"
++created_at: "2026-07-16T11:20:00+08:00"
++updated_at: "2026-07-16T11:20:00+08:00"
++aliases: []
++superseded_by: null
++valid_during: null
++change_reason: "批量导入 Qwen-Robot 发布稿；等待人工核验"
++source_ids: ["source_11bc6c51fa038191e33bc9a7"]
++relations: [{"type": "derived_from", "target_id": "source_11bc6c51fa038191e33bc9a7", "reason": "机器人前瞻报道阿里 Qwen-Robot 系列发布（2026-06-16）；属 vendor/媒体软文"}]
++---
++
++# RobotWorld
++
++给定观测+语言动作预测下一观测；可作合成数据引擎。
+```
