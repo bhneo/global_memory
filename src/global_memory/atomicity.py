@@ -7,7 +7,7 @@ from typing import Any
 
 ATOMICITY_STATUSES = {"atomic", "compound", "uncertain"}
 EVIDENCE_COVERAGE = {"full", "partial", "missing"}
-_CONNECTOR = re.compile(r"(?:；|;|，(?:并且|同时|以及|此外|还)|\s+(?:and|as well as|while also)\s+)", re.I)
+_CONNECTOR = re.compile(r"(?:；|;|，(?:并且|并|同时|以及|此外|还)|\s+(?:and|as well as|while also)\s+)", re.I)
 
 
 @dataclass(frozen=True)

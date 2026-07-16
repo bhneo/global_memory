@@ -29,7 +29,7 @@ SOURCE_AUTHORITIES = {
 _DELETED = ("内容已删除", "该内容已被发布者删除", "此内容因违规无法查看", "page has been removed")
 _LOGIN = ("登录后继续", "请先登录", "扫码登录", "sign in to continue", "login required")
 _ANTI_BOT = ("访问过于频繁", "环境异常", "安全验证", "captcha", "verify you are human", "anti-bot")
-_ACCESS = ("access denied", "无权访问", "forbidden", "permission denied")
+_ACCESS = ("access denied", "无权访问", "permission denied", "403 forbidden")
 _BOILERPLATE = ("微信公众平台", "javascript is disabled", "enable javascript", "点击阅读全文")
 _PRIMARY_LOCATOR = re.compile(
     r"https?://(?:arxiv\.org/(?:abs|pdf)/[^\s\[\]\)<>\"'，。；：、]+|doi\.org/[^\s\[\]\)<>\"'，。；：、]+|github\.com/[^\s\[\]\)<>\"'，。；：、]+)",

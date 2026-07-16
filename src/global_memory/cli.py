@@ -201,6 +201,10 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_verify.add_argument("--quote", required=True)
     proposal_verify.add_argument("--section", required=True)
     proposal_verify.add_argument("--reason", required=True)
+    proposal_mark_compound = proposal_commands.add_parser("mark-compound")
+    proposal_mark_compound.add_argument("proposal_id")
+    proposal_mark_compound.add_argument("--item", required=True)
+    proposal_mark_compound.add_argument("--reason", required=True)
 
     promote = commands.add_parser("promote", help="将 provisional canonical knowledge 显式晋升为 confirmed")
     promote.add_argument("target_id")
@@ -900,6 +904,10 @@ def run(args: argparse.Namespace) -> int:
             _print(BundleReviewService(repository).verify_item_quote(
                 args.proposal_id, args.item, args.source, args.extraction,
                 args.span_start, args.quote, args.section, args.reason,
+            ))
+        elif args.proposal_command == "mark-compound":
+            _print(BundleReviewService(repository).mark_item_compound(
+                args.proposal_id, args.item, args.reason,
             ))
         else:
             _, proposal_metadata, _ = repository.find_document(args.proposal_id)

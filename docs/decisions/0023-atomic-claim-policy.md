@@ -11,6 +11,8 @@ Bundle 内的可靠拆分使用显式 `split-item`：每个 child 必须是 atom
 
 Primary-source 核验必须绑定已捕获 source、ready extraction、逐字匹配 span 和 section/page。通过核验只创建新的不可变 candidate revision，并可把该原子 claim 的 evidence coverage/entailment 提升为 full；它不等于用户批准，也不自动写 canonical。
 
+Primary review 发现 atomicity 漏检时，必须先创建 `mark-compound` correction revision 恢复 `needs_split` gate，再进行拆分；不得因为已经找到原文而用 evidence upgrade 掩盖复合断言。
+
 ## 结果
 
 字符定位不再等同于完整蕴含，未来 support、refine 与 contradict 可以作用于更小断言。

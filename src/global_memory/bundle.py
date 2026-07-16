@@ -758,3 +758,38 @@ class BundleReviewService:
         })
         return {"proposal_id": proposal_id, "item_id": item_id,
                 "candidate_path": self.repository.rel(revision_path), "evidence_id": evidence_id}
+
+    def mark_item_compound(self, proposal_id: str, item_id: str, reason: str) -> dict[str, Any]:
+        """Correct a pending claim's atomicity without erasing its previous candidate."""
+        proposal_path, proposal, body = self._load(proposal_id)
+        selected = self._selected(proposal, [item_id])[0]
+        candidate_path = self.repository.resolve_inside(str(selected["candidate_path"]))
+        candidate, candidate_body = read_document(candidate_path)
+        if candidate.get("type") != "claim" or not reason.strip():
+            raise ValidationError("mark-compound 需要 pending claim 和 reason")
+        timestamp = now_iso()
+        candidate["atomicity_status"] = "compound"
+        candidate["publication_gate"] = "needs_split"
+        candidate["updated_at"] = timestamp
+        candidate_text = render_document(candidate, candidate_body)
+        digest = sha256_bytes(candidate_text.encode("utf-8"))
+        revision_path = self.repository.root / "vault/proposals" / f"candidate-{proposal_id}-{item_id}-compound-{digest[:12]}.md"
+        self.repository.immutable_write(revision_path, candidate_text.encode("utf-8"))
+        selected.setdefault("revision_history", []).append({
+            "candidate_path": selected["candidate_path"], "candidate_sha256": selected["candidate_sha256"],
+            "reason": reason.strip(), "revised_at": timestamp,
+        })
+        selected["candidate_path"] = self.repository.rel(revision_path)
+        selected["candidate_sha256"] = digest
+        selected["atomicity_status"] = "compound"
+        selected["review_tier"] = "low"
+        selected["review_reason"] = reason.strip()
+        proposal["updated_at"] = timestamp
+        body = body.rstrip() + f"\n\n## Atomicity correction: {item_id}\n\n- Reason: {reason.strip()}\n"
+        atomic_write_text(proposal_path, render_document(proposal, body))
+        self.repository.append_event("proposal-events", {
+            "event": "bundle-item-marked-compound", "proposal_id": proposal_id,
+            "item_id": item_id, "reason": reason.strip(),
+        })
+        return {"proposal_id": proposal_id, "item_id": item_id,
+                "candidate_path": self.repository.rel(revision_path), "atomicity_status": "compound"}

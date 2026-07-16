@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.18.2] - 2026-07-16
+
+### Added
+
+- 捕获 EmbodiSkill abstract/PDF、PhySO abstract/PDF 与 PhySO 官方 GitHub；五份 extraction 均 ready，新增两个 work enrichment proposals，并关闭三个 follow-ups。
+- 新增 `gm proposal mark-compound`，原文复核发现 atomicity 漏检时可用不可变 revision 恢复 needs-split gate。
+
+### Fixed
+
+- `forbidden symbols` 不再被质量门禁误判为 `403 Forbidden`；PhySO 115k 字符 PDF 现正确识别为 available/valid。
+- PhySO 方法 claim 经 primary review 识别为复合断言，已重新阻止发布，未错误升级为 full evidence。
+
 ## [0.18.1] - 2026-07-16
 
 ### Added

@@ -1,16 +1,16 @@
 ---
 id: "followup_1ad0daa0b6809bee9d04"
 type: "followup"
-status: "missing"
+status: "resolved"
 title: "Primary source follow-up for source_ef99e322cc662cffb7eb5c8f"
 created_at: "2026-07-16T16:28:38+08:00"
-updated_at: "2026-07-16T16:28:38+08:00"
+updated_at: "2026-07-16T18:59:16+08:00"
 source_id: "source_ef99e322cc662cffb7eb5c8f"
 followup_kind: "primary_source"
 primary_source_locator: "https://arxiv.org/abs/2303.03192"
 reason: "secondary source cites an identifiable primary locator"
-captured_source_id: null
-resolution_history: []
+captured_source_id: "source_b85c7e35189fedbd359efa94"
+resolution_history: [{"at": "2026-07-16T18:59:16+08:00", "status": "resolved", "captured_source_id": "source_b85c7e35189fedbd359efa94"}]
 ---
 
 # Primary source follow-up

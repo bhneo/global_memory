@@ -119,6 +119,14 @@ def test_m6_quality_gate_accepts_normal_article_and_reports_degraded(repo: Repos
     assert degraded.compile_allowed
 
 
+def test_m6_quality_gate_does_not_treat_forbidden_symbol_as_access_denied(repo: Repository) -> None:
+    text = ("The algorithm excludes forbidden symbols that violate unit constraints. " * 20).encode()
+    captured = capture_web_bytes(repo, "https://example.com/physics-paper", text)
+    result = SourceQualityService(repo).assess(captured.source_id)
+    assert result.availability_status == "available"
+    assert result.content_quality == "valid"
+
+
 def test_m6_atomic_claim_split_and_partial_coverage_gate(repo: Repository) -> None:
     statement = "模型使用双编码器，并且训练数据包含三类任务，同时评测报告提升百分之十"
     inspected = AtomicClaimInspector.inspect(statement, ["模型使用双编码器"])
@@ -129,6 +137,7 @@ def test_m6_atomic_claim_split_and_partial_coverage_gate(repo: Repository) -> No
     )
     assert len(split) == 3
     assert all(item["atomicity_status"] == "atomic" for item in split)
+    assert AtomicClaimInspector.inspect("方法使用强化学习，并纳入物理单位约束", ["证据"]).status == "compound"
 
 
 def test_m6_lifecycle_derives_review_state_without_mutating_source(repo: Repository) -> None:
@@ -835,6 +844,23 @@ def test_bundle_atomic_item_primary_quote_verification_is_span_checked(repo: Rep
     assert candidate["evidence"][-1]["original_text"] == quote
     approved = service.approve(str(bundle.proposal_id), [item["item_id"]])
     assert approved["approved_items"] == [item["item_id"]]
+
+
+def test_bundle_item_atomicity_correction_preserves_previous_candidate(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Claim: method summary")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / str(bundle.proposal_path))
+    item = proposal["bundle_items"][0]
+    old_path = repo.root / item["candidate_path"]
+    old_bytes = old_path.read_bytes()
+    result = BundleReviewService(repo).mark_item_compound(
+        str(bundle.proposal_id), item["item_id"], "primary source review found two testable clauses",
+    )
+    assert old_path.read_bytes() == old_bytes
+    candidate, _ = read_document(repo.root / result["candidate_path"])
+    assert candidate["atomicity_status"] == "compound"
+    with pytest.raises(ValidationError):
+        BundleReviewService(repo).approve(str(bundle.proposal_id), [item["item_id"]])
 
 
 def test_context_profiles_select_expected_layers_and_relation_expansion(repo: Repository) -> None:
