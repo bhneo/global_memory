@@ -12,3 +12,4 @@ alwaysApply: true
 - Never edit canonical knowledge as an assistant write-back. Write a concise UTF-8 session receipt, then run `gm receipt create --agent cursor ...` and `gm receipt propose <receipt-id>`.
 - A receipt proposal still requires the repository's normal review/approval policy.
 - Do not include secrets, full chat transcripts, or unsupported inference in a receipt.
+- Use `gm maintain` for read-only health/backlog checks. `--rebuild-derived` refreshes disposable indexes/views only and does not permit canonical edits.

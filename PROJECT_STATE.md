@@ -2,6 +2,8 @@
 
 > M7 first vertical slice (2026-07-16): Codex, Cursor, and Claude now share lightweight filesystem adapters, a versioned bounded Context Pack, immutable session receipts routed through the existing proposal gate, and rebuildable Obsidian navigation views. No assistant-specific truth store, plugin dependency, MCP service, or direct canonical write was introduced. Hermes/OpenHuman remain intentionally out of scope.
 
+> M7 maintenance slice (2026-07-16): `gm maintain` now provides a default read-only integrity/backlog/receipt/evidence/view-freshness report; `--rebuild-derived` explicitly rebuilds only SQLite and Obsidian views. ROADMAP and current-state handoff were reconciled with live counts.
+
 > M6.1 follow-up closure (2026-07-16): all primary-source follow-ups are resolved (open = 0). The final four locators yielded two valid MARL papers and two valid Xbotics repositories, but none fully entails the associated broad secondary claims; those claims intentionally remain partial/low. This is an evidence-boundary result, not an ingestion failure. No canonical write was performed.
 
 > M6.1 update (Epiplexity primary review): arXiv:2601.03220 abstract and 65-page PDF are captured and extracted. The definition claim is corrected to the paper's compute-bounded MDL program-length definition and now carries the explicit no-OOD-guarantee boundary. Current state: 44 sources, 4 open follow-ups, 68 active items, 29 atomic claims (9 full, 20 partial), and no canonical write.
@@ -82,7 +84,7 @@ M5：Real Knowledge Compilation 核心实现完成；工程验收通过，真实
 
 ## What is being implemented
 
-- M7 lightweight agent/Obsidian entry is implemented. Next validation is ordinary use from Codex, Cursor, and Claude while real articles continue to enter through the governed import path.
+- M7 lightweight agent/Obsidian entry and maintenance report are implemented. Next validation is one real read → task → receipt → proposal run from each of Codex, Cursor, and Claude while real articles continue through the governed import path.
 
 ## Known defects
 
@@ -91,7 +93,7 @@ M5：Real Knowledge Compilation 核心实现完成；工程验收通过，真实
 - PDF 已支持文本提取但不做 OCR；Office、图片和扫描 PDF 正文仍未提取。
 - `search` 目前会同时返回同一 family 的多个版本；Context Pack 已默认过滤直接入选 source 的旧版本，但尚无通用 latest/accepted 搜索视图。
 - Blocked recovery journal 尚无自动解决命令，必须人工核验第三状态后决定重新提案或受控清理。
-- 当前真实资料集中在具身智能领域且只有约 3 个 work，尚不足以验证跨领域知识复利和三条人工认可的远距离连接。
+- 当前已有 50 个 source，但绝大多数知识仍停留在 proposal/inbox，canonical 只有 1 条 claim；尚不足以验证跨领域知识复利和三条人工认可的远距离连接。
 
 ## Unresolved architectural questions
 
@@ -120,7 +122,7 @@ M5：Real Knowledge Compilation 核心实现完成；工程验收通过，真实
 
 ## Next concrete task
 
-审阅并决定两个 work enrichment proposal；随后随用户正常导入真实资料完成 20–30 份跨领域验证。Cursor 首批八条修订 claim 可按新 extraction/evidence 回溯后发布为 provisional，不应批量自动确认。
+用 Codex、Cursor、Claude 各完成一次真实 read → task → receipt → proposal 验收。并行按价值选择性审阅 18 个 pending proposal；不批量自动确认。
 
 ## Do not do yet
 

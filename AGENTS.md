@@ -9,6 +9,7 @@
 - For durable write-back, create a concise session receipt with `gm receipt create --agent codex ...`, then use `gm receipt propose <receipt-id>`. This creates a review proposal and never grants approval.
 - Receipt content should contain durable decisions, verified observations, changed assumptions, open questions, and sources—not transcript filler, secrets, or unsupported conclusions.
 - Obsidian opens `vault/`; rebuild its navigation with `gm obsidian build`. See `docs/AGENT_INTEGRATION.md` and ADR 0029.
+- Use `gm maintain` for a read-only maintenance check. `gm maintain --rebuild-derived` may refresh SQLite/Obsidian views only; neither mode authorizes canonical edits.
 
 ## M6 operating rules
 

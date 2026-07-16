@@ -45,3 +45,7 @@ Open the repository's `vault/` directory as an Obsidian vault. Run `gm obsidian 
 - `vault/views/Review Queues.md`: proposals, weak evidence, and stale/historical items.
 
 These files use ordinary Markdown, YAML frontmatter, and path-based wikilinks. They are generated navigation views, not a second database or a truth layer. Rebuild them whenever canonical/proposal state changes. Personal Obsidian workspace state and plugins are intentionally not required or committed.
+
+## Maintenance
+
+Run `gm maintain` for the normal read-only health and backlog report. It also reports whether generated Obsidian views are missing or stale. Run `gm maintain --rebuild-derived` only when an explicit refresh is wanted; it rebuilds SQLite and the three Obsidian notes, but never raw, proposal, receipt, or canonical content.

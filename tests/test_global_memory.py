@@ -14,7 +14,7 @@ from global_memory.capture import CaptureService, canonicalize_url
 from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
 from global_memory.bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from global_memory.atomicity import AtomicClaimInspector
-from global_memory.cli import build_parser, contradiction_audit, doctor, lint
+from global_memory.cli import build_parser, contradiction_audit, doctor, lint, run
 from global_memory.context import ContextPackService
 from global_memory.distillation import CorpusDistillationService
 from global_memory.errors import ImmutableContentError, ValidationError
@@ -22,6 +22,7 @@ from global_memory.extraction import ExtractionService
 from global_memory.followups import FollowupService
 from global_memory.lifecycle import SourceAnnotationService, SourceLifecycleService
 from global_memory.markdown import read_document, render_document
+from global_memory.maintenance import MaintenanceService
 from global_memory.obsidian import ObsidianViewService
 from global_memory.proposals import ProposalService
 from global_memory.receipts import ReceiptService
@@ -2517,3 +2518,68 @@ def test_agent_adapter_files_define_the_shared_memory_contract() -> None:
     agents = (root / "AGENTS.md").read_text(encoding="utf-8")
     assert "gm context \"<question>\" --format markdown" in agents
     assert "gm receipt create --agent codex" in agents
+
+
+def test_maintenance_inventory_reports_actionable_backlog(
+    repo: Repository, workspace: Path
+) -> None:
+    input_file = workspace / "maintenance-receipt.md"
+    input_file.write_text("Claim: Maintenance is explicit.", encoding="utf-8")
+    receipt = ReceiptService(repo).create("codex", "global-memory", "maintenance", input_file)
+    weak_proposal = {
+        "id": "proposal_maintenance_weak", "type": "proposal", "status": "pending",
+        "title": "Weak evidence fixture", "created_at": "2026-07-16T00:00:00+08:00",
+        "updated_at": "2026-07-16T00:00:00+08:00", "confidence": "unknown",
+        "source_ids": [], "relations": [], "proposal_kind": "compile_bundle",
+        "bundle_items": [{
+            "item_id": "claim-1", "object_type": "claim", "decision": "pending",
+            "evidence_coverage": "partial",
+        }],
+    }
+    (repo.root / "vault/proposals/proposal-proposal_maintenance_weak.md").write_text(
+        render_document(weak_proposal, "Weak evidence fixture."), encoding="utf-8"
+    )
+    CaptureService(repo).capture_text("Inbox item.", title="Inbox item")
+
+    inventory = MaintenanceService(repo).inventory()
+
+    assert inventory["inbox_count"] == 1
+    assert inventory["uncaptured_receipt_ids"] == [receipt["receipt_id"]]
+    assert inventory["weak_evidence_proposal_items"]
+    assert any("receipt" in action for action in inventory["recommended_actions"])
+    assert any("inbox" in action for action in inventory["recommended_actions"])
+
+
+def test_maintain_defaults_to_read_only(repo: Repository, capsys: pytest.CaptureFixture[str]) -> None:
+    before = {
+        path: path.read_bytes()
+        for path in repo.root.rglob("*")
+        if path.is_file()
+    }
+    args = build_parser().parse_args(["--root", str(repo.root), "maintain"])
+
+    assert run(args) == 0
+    output = json.loads(capsys.readouterr().out)
+    after = {
+        path: path.read_bytes()
+        for path in repo.root.rglob("*")
+        if path.is_file()
+    }
+    assert output["mode"] == "read-only"
+    assert output["rebuilt"] is None
+    assert output["derived_views"]["current"] is False
+    assert before == after
+
+
+def test_maintain_can_explicitly_rebuild_derived_views(
+    repo: Repository, capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = build_parser().parse_args(
+        ["--root", str(repo.root), "maintain", "--rebuild-derived"]
+    )
+    assert run(args) == 0
+    output = json.loads(capsys.readouterr().out)
+    assert output["mode"] == "rebuild-derived"
+    assert output["rebuilt"]["obsidian"]["ok"] is True
+    assert output["derived_views"]["current"] is True
+    assert (repo.root / "vault/INDEX.md").exists()

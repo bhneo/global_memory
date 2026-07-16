@@ -16,6 +16,7 @@ from .errors import GlobalMemoryError
 from .extraction import ExtractionService
 from .followups import FollowupService
 from .lifecycle import SourceAnnotationService, SourceLifecycleService
+from .maintenance import MaintenanceService
 from .obsidian import ObsidianViewService
 from .markdown import read_document
 from .proposals import ProposalService
@@ -246,6 +247,8 @@ def build_parser() -> argparse.ArgumentParser:
     receipt_create.add_argument("--from-file", required=True)
     receipt_propose = receipt_commands.add_parser("propose")
     receipt_propose.add_argument("receipt_id")
+    maintain = commands.add_parser("maintain", help="汇总只读维护状态；可显式重建派生层")
+    maintain.add_argument("--rebuild-derived", action="store_true")
     show = commands.add_parser("show", help="按稳定 ID 显示对象")
     show.add_argument("object_id")
     related = commands.add_parser("related", help="显示 typed relations")
@@ -975,6 +978,30 @@ def run(args: argparse.Namespace) -> int:
             _print(service.create(args.agent, args.project, args.task, args.from_file))
         else:
             _print(service.propose(args.receipt_id))
+    elif args.command == "maintain":
+        rebuilt = None
+        if args.rebuild_derived:
+            rebuilt = {
+                "indexed_documents": repository.rebuild_index(),
+                "obsidian": ObsidianViewService(repository).build(),
+            }
+        doctor_result = doctor(repository)
+        lint_result = lint(repository)
+        raw_result = raw_store.verify()
+        result = {
+            "ok": doctor_result["ok"] and lint_result["ok"] and raw_result["ok"],
+            "mode": "rebuild-derived" if args.rebuild_derived else "read-only",
+            "integrity": {
+                "doctor": doctor_result,
+                "lint": lint_result,
+                "raw": raw_result,
+            },
+            "inventory": MaintenanceService(repository).inventory(),
+            "derived_views": ObsidianViewService(repository).status(),
+            "rebuilt": rebuilt,
+        }
+        _print(result)
+        return 0 if result["ok"] else 1
     elif args.command == "show":
         path, metadata, body = repository.find_document(args.object_id)
         _print({"path": repository.rel(path), "metadata": metadata, "body": body})

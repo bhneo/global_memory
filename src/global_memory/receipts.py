@@ -56,7 +56,7 @@ class ReceiptService:
         path, metadata, body = self._find(receipt_id)
         captured = CaptureService(self.repository).capture_text(
             body,
-            comment=f"session receipt from {metadata['agent']} for {metadata['project']}",
+            comment=f"session receipt {receipt_id} from {metadata['agent']} for {metadata['project']}",
             title=f"Session receipt: {metadata['title']}",
         )
         bundle = BundleCompiler(self.repository).compile(captured.source_id)

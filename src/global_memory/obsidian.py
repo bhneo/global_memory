@@ -40,7 +40,7 @@ class ObsidianViewService:
             "> Generated navigation view. Rebuild with `gm obsidian build`; do not treat it as a truth source.\n\n"
         )
 
-    def build(self) -> dict[str, Any]:
+    def render(self) -> dict[str, str]:
         documents = self._documents()
         by_type: dict[str, list[tuple[Path, dict[str, Any]]]] = defaultdict(list)
         partial: list[tuple[Path, dict[str, Any]]] = []
@@ -52,19 +52,13 @@ class ObsidianViewService:
             if metadata.get("status") in {"contested", "superseded", "archived"} or metadata.get("stale_reason"):
                 stale.append((path, metadata))
 
-        views = self.repository.root / "vault" / "views"
-        views.mkdir(parents=True, exist_ok=True)
-        written: list[str] = []
-
         catalog_lines = [self._generated_header("Knowledge Catalog")]
         for object_type in sorted(by_type):
             catalog_lines.append(f"## {object_type}\n\n")
             for path, metadata in by_type[object_type]:
                 catalog_lines.append(f"- {self._link(path, metadata)} — `{metadata.get('status', 'unknown')}`\n")
             catalog_lines.append("\n")
-        catalog = views / "Knowledge Catalog.md"
-        atomic_write_text(catalog, "".join(catalog_lines))
-        written.append(self.repository.rel(catalog))
+        catalog_text = "".join(catalog_lines)
 
         pending = []
         for path in self.repository.proposal_documents():
@@ -79,11 +73,8 @@ class ObsidianViewService:
         review_lines.extend(f"- {self._link(path, metadata)}\n" for path, metadata in partial)
         review_lines.append(f"\n## Stale or historical ({len(stale)})\n\n")
         review_lines.extend(f"- {self._link(path, metadata)}\n" for path, metadata in stale)
-        review = views / "Review Queues.md"
-        atomic_write_text(review, "".join(review_lines))
-        written.append(self.repository.rel(review))
+        review_text = "".join(review_lines)
 
-        home = self.repository.root / "vault" / "INDEX.md"
         home_text = self._generated_header("Global Memory") + (
             "## Start here\n\n"
             "- [[views/Knowledge Catalog|Knowledge Catalog]]\n"
@@ -95,6 +86,30 @@ class ObsidianViewService:
             "3. Treat raw as immutable and generated views as disposable.\n"
             "4. Submit new memory through a receipt/proposal; never bypass the canonical gate.\n"
         )
-        atomic_write_text(home, home_text)
-        written.append(self.repository.rel(home))
-        return {"ok": True, "documents": len(documents), "written": written}
+        return {
+            "vault/views/Knowledge Catalog.md": catalog_text,
+            "vault/views/Review Queues.md": review_text,
+            "vault/INDEX.md": home_text,
+        }
+
+    def status(self) -> dict[str, Any]:
+        rendered = self.render()
+        missing = []
+        stale = []
+        for relative, expected in rendered.items():
+            path = self.repository.root / relative
+            if not path.exists():
+                missing.append(relative)
+            elif path.read_text(encoding="utf-8") != expected:
+                stale.append(relative)
+        return {"current": not missing and not stale, "missing": missing, "stale": stale}
+
+    def build(self) -> dict[str, Any]:
+        rendered = self.render()
+        for relative, content in rendered.items():
+            atomic_write_text(self.repository.root / relative, content)
+        return {
+            "ok": True,
+            "documents": len(self._documents()),
+            "written": list(rendered),
+        }

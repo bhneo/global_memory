@@ -80,6 +80,8 @@ Claim candidate 的 `evidence[]` 区分 quote、paraphrase、translation、table
 
 `gm doctor` 侧重 source version、raw hash、索引和 recovery journal；`gm lint` 扩展检查对象引用、claim provenance、wikilink、proposal candidate/base/target/hash 和 revision lineage。Lint 不重建索引、不改变对象；断链和哈希不一致是 error，孤立 canonical 页面与未引用的审阅快照是 warning。
 
+`gm maintain` 是维护入口而不是新的真相层。默认模式只组合 doctor、lint、raw integrity，并汇总 inbox、proposal、receipt、follow-up、弱证据、历史对象、建议动作和 Obsidian 视图新鲜度，不写任何文件。只有显式 `--rebuild-derived` 才重建 SQLite 与 Obsidian 导航；该模式仍不得修改 raw、proposal 或 canonical。
+
 `gm audit contradictions` 是另一条只读治理路径：它扫描 canonical claim 的结构化 evidence 与 typed relation，报告内部 supports/contradicts 并存和跨 claim 的显式 `contradicts` 边。冲突本身是可保留的认知状态，不是自动修复项；audit 不写入 Markdown 或派生索引。
 
 `gm synthesize` 是受治理的写入前阶段：它把多个 canonical claim 的显式材料整理为 `synthesis` candidate，并记录每个输入 claim 的完整 hash。它不推断新事实或裁决冲突；approval 之前重验输入 hash，随后仍通过普通 candidate/recovery gate 写入 canonical synthesis。当前没有自动调度。

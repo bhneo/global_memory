@@ -6,6 +6,7 @@
 - `receipt` is an immutable agent handoff under `vault/receipts/`. Required fields are `id`, `type`, `status`, `title`, timestamps, `agent`, `project`, `task`, `receipt_version`, and `content_sha256`.
 - Receipt agents are currently `codex`, `cursor`, and `claude`. A receipt is not canonical knowledge; `gm receipt propose` captures it as a source and routes it through the normal proposal gate.
 - `vault/INDEX.md` and `vault/views/*.md` are generated Obsidian navigation notes. They are not indexed truth objects and may be rebuilt from canonical/proposal state.
+- `gm maintain` emits a derived JSON report with integrity, inventory, view freshness, recommended actions and optional rebuild results. The default mode is read-only and the report is not a knowledge object.
 
 ## M6 knowledge graph extensions
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.19.1] - 2026-07-16
+
+### Added
+
+- Added `gm maintain`, a read-only aggregate of doctor/lint/raw integrity, inbox and proposal backlog, receipt routing, follow-ups, weak evidence, historical objects, recommended actions, and Obsidian view freshness.
+- Added explicit `gm maintain --rebuild-derived` for rebuilding SQLite and Obsidian views without modifying canonical knowledge.
+
+### Changed
+
+- Reconciled ROADMAP and PROJECT_STATE with live repository counts and removed completed/obsolete follow-up tasks and duplicate M5 entries.
+- Receipt source annotations now include the receipt ID for clearer audit tracing.
+
 ## [0.19.0] - 2026-07-16
 
 ### Added

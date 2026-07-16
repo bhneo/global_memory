@@ -13,3 +13,5 @@ This repository is the shared, local-first Global Memory. Before working here:
    Then route it to review with `gm receipt propose <receipt-id>`. This creates a normal proposal; it does not approve it.
 
 Receipts should contain only durable decisions, verified facts, unresolved questions, changed assumptions, and source references. Exclude chat transcript filler and secrets.
+
+Use `gm maintain` to inspect maintenance state without writes. `gm maintain --rebuild-derived` may refresh SQLite and Obsidian views only; it never authorizes canonical changes.
