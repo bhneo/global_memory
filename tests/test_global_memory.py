@@ -16,6 +16,7 @@ from global_memory.bundle import BundleCompiler, BundleRecoveryManager, BundleRe
 from global_memory.atomicity import AtomicClaimInspector
 from global_memory.cli import build_parser, contradiction_audit, doctor, lint
 from global_memory.context import ContextPackService
+from global_memory.distillation import CorpusDistillationService
 from global_memory.errors import ImmutableContentError, ValidationError
 from global_memory.extraction import ExtractionService
 from global_memory.followups import FollowupService
@@ -749,6 +750,62 @@ def test_context_never_confuses_pending_bundle_with_canonical(repo: Repository) 
     proposal_item = next(item for item in explicit["items"] if item["id"] == bundle.proposal_id)
     assert proposal_item["type"] == "proposal"
     assert proposal_item["knowledge_status"] == "pending"
+    candidates = ContextPackService(repo).build(
+        "proposal boundary token", 2000, include_proposals=True,
+        object_types={"claim"}, statuses={"proposal"},
+    ).as_dict()
+    claim_item = next(item for item in candidates["items"] if item["type"] == "claim")
+    assert claim_item["truth_layer"] == "proposal"
+    assert claim_item["proposal_id"] == bundle.proposal_id
+    assert claim_item["knowledge_status"] == "proposal"
+
+
+def test_m6_corpus_distillation_is_idempotent_and_keeps_canonical_untouched(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Epiplexity evidence " + ("reusable bounded structure " * 12),
+        title="Epiplexity source",
+    )
+    timestamp = "2026-07-16T00:00:00+08:00"
+    candidate_id = "claim_wechat_epiplexity_definition_20260715"
+    candidate_path = repo.root / "vault/proposals" / "candidate-model-epiplexity.md"
+    candidate = {
+        "id": candidate_id, "type": "claim", "status": "proposal",
+        "title": "Epiplexity describes reusable bounded structure",
+        "created_at": timestamp, "updated_at": timestamp, "aliases": [],
+        "tags": ["epiplexity"], "domains": ["information-theory"],
+        "confidence": "medium", "source_ids": [captured.source_id],
+        "relations": [{"type": "derived_from", "target_id": captured.source_id, "reason": "test evidence"}],
+        "evidence": [{"original_text": "reusable bounded structure", "verification_status": "verified"}],
+    }
+    candidate_path.write_text(render_document(candidate, "# Epiplexity\n\nCandidate body.\n"), encoding="utf-8")
+    old_proposal_path = repo.root / "vault/proposals" / "proposal-model-epiplexity.md"
+    old_proposal = {
+        "id": "proposal_model_epiplexity", "type": "proposal", "status": "pending",
+        "title": "Model Epiplexity candidate", "created_at": timestamp, "updated_at": timestamp,
+        "aliases": [], "tags": [], "domains": [], "confidence": "medium",
+        "source_ids": [captured.source_id], "relations": [], "proposal_kind": "model_candidate",
+        "candidate_path": repo.rel(candidate_path),
+    }
+    old_proposal_path.write_text(render_document(old_proposal, "# Model proposal\n"), encoding="utf-8")
+
+    service = CorpusDistillationService(repo)
+    dry_run = service.plan()
+    assert dry_run.dry_run is True
+    assert not any((repo.root / "vault/knowledge").rglob(f"{candidate_id}*.md"))
+    first = service.apply()
+    second = service.apply()
+
+    assert first.proposal_id == second.proposal_id
+    corpus = []
+    for path in repo.proposal_documents():
+        metadata, _ = read_document(path)
+        if metadata.get("proposal_kind") == "corpus_distillation":
+            corpus.append(metadata)
+    assert len(corpus) == 1
+    old_after, _ = read_document(old_proposal_path)
+    assert old_after["status"] == "superseded"
+    assert old_after["superseded_by"] == first.proposal_id
+    assert not any((repo.root / "vault/knowledge").rglob(f"{candidate_id}*.md"))
 
 
 def test_search_filters_weighted_metadata_and_bounded_traversal(repo: Repository) -> None:

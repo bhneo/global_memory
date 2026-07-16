@@ -48,6 +48,8 @@ class SourceLifecycleService:
         for path in self.repository.proposal_documents():
             metadata, _ = read_document(path)
             if source_id in metadata.get("source_ids", []) and metadata.get("proposal_kind", "knowledge_compile") in processing_kinds:
+                if source_id in metadata.get("source_only_source_ids", []):
+                    metadata = {**metadata, "status": "source_only"}
                 found.append(metadata)
         return found
 
@@ -65,7 +67,7 @@ class SourceLifecycleService:
         content_quality = quality.content_quality if quality else "unknown"
         proposals = self._proposals(source_id)
         active = [p for p in proposals if p.get("status") in {"pending", "deferred"}]
-        terminal = [p for p in proposals if p.get("status") in {"approved", "published", "rejected", "superseded"}]
+        terminal = [p for p in proposals if p.get("status") in {"approved", "published", "rejected", "superseded", "source_only"}]
         reasons: list[str] = []
         if quality and not quality.compile_allowed:
             state = "failed"

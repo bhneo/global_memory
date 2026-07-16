@@ -464,6 +464,8 @@ class BundleReviewService:
         if proposal.get("status") not in REVIEWABLE_PROPOSAL_STATUSES:
             raise ValidationError(f"bundle proposal 状态不可审批: {proposal.get('status')}")
         selected = self._selected(proposal, item_ids)
+        selected_targets = {str(item["target_id"]) for item in selected}
+        bundle_targets = {str(item["target_id"]) for item in proposal.get("bundle_items", [])}
         targets: list[dict[str, Any]] = []
         timestamp = now_iso()
         for item in selected:
@@ -473,6 +475,15 @@ class BundleReviewService:
                 raise ValidationError(f"bundle candidate hash 不匹配: {item['item_id']}")
             candidate, candidate_body = read_document(candidate_path)
             self.repository._validate_metadata(candidate, candidate_path)
+            for relation in candidate.get("relations", []):
+                target_id = str(relation.get("target_id", ""))
+                if target_id in bundle_targets and target_id not in selected_targets:
+                    try:
+                        self.repository.find_document(target_id)
+                    except NotFoundError as exc:
+                        raise ValidationError(
+                            f"bundle item {item['item_id']} 依赖未选择的 item target: {target_id}"
+                        ) from exc
             if candidate.get("type") == "claim":
                 if candidate.get("atomicity_status") == "compound":
                     raise ValidationError(f"compound claim 必须先拆分: {item['item_id']}")
@@ -570,6 +581,13 @@ class BundleReviewService:
         selected["candidate_path"] = self.repository.rel(revision_path)
         selected["candidate_sha256"] = digest
         selected["review_reason"] = reason.strip()
+        selected["atomicity_status"] = candidate.get("atomicity_status")
+        selected["evidence_coverage"] = candidate.get("evidence_coverage")
+        if candidate.get("type") == "claim" and (
+            candidate.get("atomicity_status") == "compound"
+            or candidate.get("evidence_coverage") in {"partial", "missing"}
+        ):
+            selected["review_tier"] = "low"
         proposal["updated_at"] = now_iso()
         diff = "".join(difflib.unified_diff(
             old_text.splitlines(keepends=True), candidate_text.splitlines(keepends=True),

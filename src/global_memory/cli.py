@@ -11,6 +11,7 @@ from .backups import RawBackupService
 from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from .capture import CaptureService
 from .context import ContextPackService
+from .distillation import CorpusDistillationService
 from .errors import GlobalMemoryError
 from .extraction import ExtractionService
 from .followups import FollowupService
@@ -104,6 +105,10 @@ def build_parser() -> argparse.ArgumentParser:
     discover.add_argument("seed_id")
     related_content = commands.add_parser("related-content", help="生成可解释的 related-content 候选；不声称真正 serendipity")
     related_content.add_argument("seed_id")
+    distill = commands.add_parser("distill", help="对现有正式 proposals 做受控知识蒸馏")
+    distill_commands = distill.add_subparsers(dest="distill_command", required=True)
+    distill_corpus = distill_commands.add_parser("corpus")
+    distill_corpus.add_argument("--dry-run", action="store_true")
     update_parser = commands.add_parser(
         "propose-update", help="从 UTF-8 Markdown candidate 创建 canonical update proposal"
     )
@@ -423,6 +428,16 @@ def lint(repository: Repository) -> dict[str, object]:
         str(metadata["id"]) for _, metadata, _ in archived if metadata.get("type") != "proposal"
     )
     known_ids = sources | proposal_ids | object_ids
+    for _, metadata, _, role in records:
+        if role != "document" or metadata.get("type") != "proposal":
+            continue
+        items = metadata.get("bundle_items", [])
+        if isinstance(items, list):
+            known_ids.update(
+                str(item["target_id"])
+                for item in items
+                if isinstance(item, dict) and item.get("target_id")
+            )
     relation_targets: dict[str, int] = {object_id: 0 for object_id in known_ids}
     referenced_candidates: set[Path] = set()
     referenced_bases: set[Path] = set()
@@ -501,7 +516,7 @@ def lint(repository: Repository) -> dict[str, object]:
                 if proposal.get(key) not in sources:
                     errors.append(f"source refresh 引用不存在: {repository.rel(path)} -> {key}")
             continue
-        if proposal_kind == "compile_bundle":
+        if proposal_kind in {"compile_bundle", "source_bundle", "corpus_distillation"}:
             items = proposal.get("bundle_items")
             if not isinstance(items, list) or not items:
                 errors.append(f"compile bundle 缺少 bundle_items: {repository.rel(path)}")
@@ -789,6 +804,9 @@ def run(args: argparse.Namespace) -> int:
         _print(proposals.synthesize(args.claim_ids).__dict__)
     elif args.command in {"discover", "related-content"}:
         _print(proposals.discover(args.seed_id).__dict__)
+    elif args.command == "distill":
+        service = CorpusDistillationService(repository)
+        _print((service.plan() if args.dry_run else service.apply()).__dict__)
     elif args.command == "propose-update":
         _print(
             proposals.propose_update(
@@ -836,7 +854,7 @@ def run(args: argparse.Namespace) -> int:
             _print(proposals.show(args.proposal_id))
         elif args.proposal_command == "approve":
             _, proposal_metadata, _ = repository.find_document(args.proposal_id)
-            if proposal_metadata.get("proposal_kind") == "compile_bundle":
+            if proposal_metadata.get("proposal_kind") in {"compile_bundle", "source_bundle", "corpus_distillation"}:
                 item_ids = args.items.split(",") if args.items else None
                 _print(BundleReviewService(repository).approve(args.proposal_id, item_ids))
             else:
@@ -847,7 +865,7 @@ def run(args: argparse.Namespace) -> int:
             _print({"published": args.proposal_id, "target_path": proposals.publish(args.proposal_id)})
         elif args.proposal_command == "reject":
             _, proposal_metadata, _ = repository.find_document(args.proposal_id)
-            if proposal_metadata.get("proposal_kind") == "compile_bundle":
+            if proposal_metadata.get("proposal_kind") in {"compile_bundle", "source_bundle", "corpus_distillation"}:
                 item_ids = args.items.split(",") if args.items else None
                 _print(BundleReviewService(repository).reject(args.proposal_id, item_ids, args.reason))
             else:
@@ -858,7 +876,7 @@ def run(args: argparse.Namespace) -> int:
             _print({"deferred": args.proposal_id, "proposal_path": proposals.defer(args.proposal_id, args.reason)})
         else:
             _, proposal_metadata, _ = repository.find_document(args.proposal_id)
-            if proposal_metadata.get("proposal_kind") == "compile_bundle":
+            if proposal_metadata.get("proposal_kind") in {"compile_bundle", "source_bundle", "corpus_distillation"}:
                 if not args.item:
                     raise GlobalMemoryError("compile bundle revise 必须指定 --item")
                 _print(BundleReviewService(repository).revise_item(
@@ -983,6 +1001,12 @@ def run(args: argparse.Namespace) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # Windows commonly inherits a GBK console; vault content may contain symbols
+    # such as non-breaking spaces that GBK cannot encode. CLI JSON is UTF-8.
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8")
     parser = build_parser()
     try:
         return run(parser.parse_args(argv))

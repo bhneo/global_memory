@@ -30,7 +30,10 @@ class AtomicClaimInspector:
             coverage = "missing"
         else:
             covered = [any(clause in evidence or evidence in clause for evidence in evidence_texts) for clause in (clauses or [text])]
-            coverage = "full" if all(covered) else ("partial" if any(covered) else "missing")
+            # String containment can prove full coverage, but absence of containment does
+            # not prove no semantic support. Existing evidence is therefore partial until
+            # a human/model entailment review explicitly upgrades it.
+            coverage = "full" if all(covered) else "partial"
         return AtomicityResult(
             status="compound" if compound else "atomic", clauses=clauses or [text],
             evidence_coverage=coverage,

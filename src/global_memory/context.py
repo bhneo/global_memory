@@ -8,6 +8,7 @@ from .errors import ValidationError
 from .extraction import ExtractionService
 from .markdown import read_document
 from .repository import Repository, sha256_bytes
+from .quality import SourceQualityService
 
 
 MIN_TOKEN_BUDGET = 128
@@ -20,8 +21,8 @@ PROFILE_PRIORITIES = {
         "tension": 68, "claim": 55, "source": 30,
     },
     "research": {
-        "claim": 95, "concept": 90, "source": 88, "work": 84,
-        "question": 80, "tension": 78, "synthesis": 75, "hypothesis": 70,
+        "concept": 100, "claim": 95, "synthesis": 90, "question": 86,
+        "tension": 84, "hypothesis": 78, "work": 72, "source": 60,
     },
     "exploration": {
         "intuition": 100, "tension": 95, "analogy": 92, "anomaly": 90,
@@ -138,8 +139,122 @@ class ContextPackService:
                 "source_id": item.get("source_id"), "stance": item.get("stance"),
                 "page": item.get("page"), "section": item.get("section"),
                 "text": str(text)[:240], "verification_status": item.get("verification_status"),
+                "quote_verification": metadata.get("quote_verification"),
+                "extraction_quality": metadata.get("extraction_quality"),
+                "evidence_entailment": metadata.get("evidence_entailment"),
             })
         return view
+
+    def _source_authority(self, metadata: dict[str, Any]) -> str:
+        if metadata.get("type") != "source":
+            explicit = metadata.get("source_authority") or metadata.get("epistemic_source_authority")
+            if explicit:
+                return str(explicit)
+            authorities: set[str] = set()
+            for source_id in metadata.get("source_ids", []):
+                try:
+                    assessment = SourceQualityService(self.repository).load(str(source_id))
+                    if assessment is None:
+                        assessment = SourceQualityService(self.repository).assess(str(source_id), persist=False)
+                    authorities.add(assessment.source_authority)
+                except Exception:
+                    continue
+            if len(authorities) == 1:
+                return authorities.pop()
+            if authorities:
+                return "mixed:" + ",".join(sorted(authorities))
+            return "unknown"
+        try:
+            assessment = SourceQualityService(self.repository).load(str(metadata["id"]))
+            if assessment is None:
+                assessment = SourceQualityService(self.repository).assess(str(metadata["id"]), persist=False)
+            return assessment.source_authority
+        except Exception:
+            return "unknown"
+
+    def _proposal_candidates(
+        self, query: str, *, profiles: list[str], allowed_types: set[str],
+        statuses: set[str] | None, domains: set[str] | None,
+    ) -> list[tuple[int, int, dict[str, Any]]]:
+        """Return bounded bundle candidates only when proposal visibility is explicit."""
+        terms = [term.casefold() for term in re.findall(r"[\w\u3400-\u9fff-]+", query) if term]
+        if not terms:
+            return []
+        ranked: list[tuple[int, int, dict[str, Any]]] = []
+        seen: set[str] = set()
+        proposal_rank = 0
+        for proposal_path in sorted(self.repository.proposal_documents()):
+            proposal, _ = read_document(proposal_path)
+            if proposal.get("status") not in {"pending", "deferred"}:
+                continue
+            if statuses and proposal.get("status") not in statuses and "proposal" not in statuses:
+                continue
+            for bundle_item in proposal.get("bundle_items", []):
+                if not isinstance(bundle_item, dict) or bundle_item.get("decision") not in {"pending", "deferred"}:
+                    continue
+                candidate_path_value = bundle_item.get("candidate_path")
+                if not candidate_path_value:
+                    continue
+                candidate_path = self.repository.resolve_inside(str(candidate_path_value))
+                if not candidate_path.exists():
+                    continue
+                candidate, body = read_document(candidate_path)
+                candidate_id = str(candidate.get("id", ""))
+                object_type = str(candidate.get("type", bundle_item.get("object_type", "")))
+                if not candidate_id or candidate_id in seen or object_type not in allowed_types:
+                    continue
+                candidate_domains = {str(item) for item in candidate.get("domains", [])}
+                if domains and not (domains & candidate_domains):
+                    continue
+                haystack = " ".join([
+                    str(candidate.get("title", "")), body,
+                    *map(str, candidate.get("aliases", [])),
+                    *map(str, candidate.get("tags", [])),
+                    *map(str, candidate.get("domains", [])),
+                ]).casefold()
+                matched_terms = [term for term in terms if term in haystack]
+                if not matched_terms:
+                    continue
+                seen.add(candidate_id)
+                proposal_rank += 1
+                source_ids = [str(item) for item in candidate.get("source_ids", proposal.get("source_ids", []))]
+                item = {
+                    "id": candidate_id,
+                    "type": object_type,
+                    "knowledge_status": "proposal",
+                    "truth_layer": "proposal",
+                    "proposal_id": str(proposal["id"]),
+                    "title": str(candidate.get("title", candidate_id)),
+                    "path": self.repository.rel(candidate_path),
+                    "document_sha256": sha256_bytes(candidate_path.read_bytes()),
+                    "source_ids": source_ids,
+                    "raw_content_sha256": None,
+                    "source_version": None,
+                    "source_authority": self._source_authority(candidate),
+                    "verification": {
+                        "quote_verification": candidate.get("quote_verification", "not_applicable"),
+                        "extraction_quality": candidate.get("extraction_quality", "unknown"),
+                        "evidence_entailment": candidate.get("evidence_entailment", "unknown"),
+                        "claim_confidence": candidate.get("claim_confidence", candidate.get("confidence", "unknown")),
+                        "publication_gate": candidate.get("publication_gate", "needs_review"),
+                        "atomicity_status": candidate.get("atomicity_status"),
+                        "evidence_coverage": candidate.get("evidence_coverage"),
+                    },
+                    "evidence": self._evidence_view(candidate) if object_type == "claim" else [],
+                    "match_reason": f"proposal candidate text: {', '.join(matched_terms[:3])}",
+                    "content": body.strip(),
+                    "selection_reason": (
+                        f"显式 include_proposals；候选类型={object_type}；proposal={proposal['id']}；"
+                        f"命中={','.join(matched_terms[:3])}；未提升为 canonical。"
+                    ),
+                }
+                priority = self._type_priority(object_type, profiles, "pending")
+                # A typed knowledge candidate is more useful than the enclosing
+                # proposal document or a duplicate source summary.
+                ranked.append((-(1_200 + priority), proposal_rank, item))
+                if len(ranked) >= SEARCH_LIMIT:
+                    return ranked
+        return ranked
 
     @staticmethod
     def _type_priority(object_type: str, profiles: list[str], status: str) -> int:
@@ -241,6 +356,12 @@ class ContextPackService:
                     "reason": "canonical 对象已归档；Context Pack 默认排除非活动知识",
                 })
                 continue
+            if object_type == "proposal" and not statuses and metadata.get("status") not in {"pending", "deferred"}:
+                omitted.append({
+                    "id": str(metadata["id"]),
+                    "reason": "历史 proposal 默认排除；可用 status filter 显式请求",
+                })
+                continue
             if object_type == "source" and str(metadata["id"]) not in latest_source_ids:
                 omitted.append({
                     "id": str(metadata["id"]),
@@ -266,12 +387,28 @@ class ContextPackService:
                     "id": str(metadata["id"]),
                     "type": object_type,
                     "knowledge_status": str(metadata.get("status")),
+                    "truth_layer": (
+                        "source_capture" if object_type == "source"
+                        else "proposal" if object_type == "proposal"
+                        else "canonical"
+                    ),
+                    "proposal_id": str(metadata["id"]) if object_type == "proposal" else None,
                     "title": str(metadata["title"]),
                     "path": self.repository.rel(path),
                     "document_sha256": sha256_bytes(path.read_bytes()),
                     "source_ids": source_ids,
                     "raw_content_sha256": metadata.get("content_sha256") if object_type == "source" else None,
                     "source_version": int(metadata.get("version_number", 1)) if object_type == "source" else None,
+                    "source_authority": self._source_authority(metadata),
+                    "verification": {
+                        "quote_verification": metadata.get("quote_verification", "not_applicable"),
+                        "extraction_quality": metadata.get("extraction_quality", "unknown"),
+                        "evidence_entailment": metadata.get("evidence_entailment", "unknown"),
+                        "claim_confidence": metadata.get("claim_confidence", metadata.get("confidence", "unknown")),
+                        "publication_gate": metadata.get("publication_gate"),
+                        "atomicity_status": metadata.get("atomicity_status"),
+                        "evidence_coverage": metadata.get("evidence_coverage"),
+                    },
                     "evidence": self._evidence_view(metadata) if object_type == "claim" else [],
                     "match_reason": result.match_reason,
                     "content": content,
@@ -282,6 +419,11 @@ class ContextPackService:
                     ),
                 },
             ))
+        if include_proposals:
+            ranked.extend(self._proposal_candidates(
+                query, profiles=profiles, allowed_types=allowed_types,
+                statuses=statuses, domains=domains,
+            ))
         ranked.sort(key=lambda item: (item[0], item[1], item[2]["id"]))
 
         available = token_budget - 48  # reserve room for outer query and policy metadata
@@ -290,7 +432,8 @@ class ContextPackService:
         for _, _, item in ranked:
             metadata_text = " ".join(
                 [item["id"], item["title"], item["path"], *item["source_ids"],
-                 item["selection_reason"], str(item["evidence"])]
+                 item["truth_layer"], item["source_authority"],
+                 item["selection_reason"], str(item["verification"]), str(item["evidence"])]
             )
             metadata_tokens = self._estimate_tokens(metadata_text)
             remaining = available - used - metadata_tokens
