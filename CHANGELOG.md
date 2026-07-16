@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.18.6] - 2026-07-16
+
+### Added
+
+- 捕获 arXiv:2601.03220 的 abstract 与 65 页 primary PDF，生成 ready/no-warning extraction、work proposal，并关闭对应 Epiplexity follow-up。
+
+### Changed
+
+- 将 Epiplexity claim 从二手文章的“可复用、可泛化结构信息总量”纠正为论文 Definition 8 的计算受限 MDL 定义：`S_T(X)=|P*|`，即最优两段式编码中程序部分的长度。
+- 同时绑定论文的明确反外推边界：Epiplexity 是信息量度，不保证对特定下游任务的 OOD 泛化。该 claim 已有两段 primary quote，仍保持 pending proposal。
+- 当前 44 sources、4 个 open follow-ups、68 个 active bundle items、29 个 atomic claims（9 full、20 partial），canonical writes 仍为 0。
+
 ## [0.18.5] - 2026-07-16
 
 ### Changed

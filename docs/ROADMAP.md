@@ -1,5 +1,7 @@
 # Roadmap
 
+M6.1 latest: Epiplexity primary verification is complete and its overbroad generalization wording is corrected. Continue with the remaining 4 follow-ups (two arXiv papers and two Xbotics GitHub repositories), prioritizing claims with the largest evidence-boundary risk.
+
 M6.1 current: parameter-space-symmetry compound splitting is complete (2 superseded parents -> 4 primary-verified atomic children). Next, continue primary verification of the remaining partial-entailment claims and close the remaining 5 follow-ups before any batch approval.
 
 ## M6 — Knowledge Distillation and Graph Formation（已完成工程与首轮受控蒸馏）
