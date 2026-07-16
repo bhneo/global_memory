@@ -50,20 +50,28 @@ class DeterministicCompilerProvider:
         self, source: dict[str, Any], extraction: dict[str, Any], text: str,
         existing_context: list[dict[str, Any]], schema: dict[str, Any],
     ) -> list[dict[str, Any]]:
-        items: list[dict[str, Any]] = []
-        for line in text.splitlines():
+        markers: list[tuple[int, int, str, str]] = []
+        offset = 0
+        for line in text.splitlines(keepends=True):
             stripped = line.strip().lstrip("#*- ").strip()
             for object_type, pattern in self.MARKERS.items():
                 match = pattern.match(stripped)
                 if match:
                     statement = match.group(1).strip()
-                    items.append({
-                        "object_type": object_type, "title": statement[:160],
-                        "body": statement, "span_start": text.find(statement),
-                        "explicit_marker": True,
-                    })
+                    markers.append((offset, offset + len(line), object_type, statement))
                     break
-        if items:
+            offset += len(line)
+        if markers:
+            items: list[dict[str, Any]] = []
+            for index, (line_start, line_end, object_type, statement) in enumerate(markers):
+                block_end = markers[index + 1][0] if index + 1 < len(markers) else len(text)
+                tail = text[line_end:block_end].strip()
+                body = statement + (f"\n\n{tail}" if tail else "")
+                items.append({
+                    "object_type": object_type, "title": statement[:160],
+                    "body": body, "span_start": line_start + text[line_start:line_end].find(statement),
+                    "explicit_marker": True,
+                })
             return items
         paragraphs = [part.strip() for part in re.split(r"\n\s*\n", text) if part.strip() and not part.startswith("<!-- page:")]
         if not paragraphs:
@@ -425,7 +433,7 @@ class BundleCompiler:
             f"# {proposal['title']}\n\n## 编译边界\n\n"
             f"- Provider：`{self.provider.name}`\n- Extraction：`{extraction['extraction_id']}`\n"
             f"- 编译前召回已有对象：{len(existing_context)}\n"
-            "- deterministic fallback 只识别显式类型标记或保留第一段逐字材料，不补齐无意义对象。\n\n"
+            "- deterministic fallback 只识别显式类型块或保留第一段逐字材料；显式块完整保留到下一个类型标记，不补齐无意义对象。\n\n"
             "## Items and diffs\n\n" + "\n".join(diff_sections)
         )
         self.repository.immutable_write(proposal_path, render_document(proposal, body).encode("utf-8"))

@@ -14,6 +14,7 @@ Current handoff (2026-07-16): M6.1 primary follow-up closure and the M7 lightwei
 ## M7 — Agent Use and Maintenance（进行中）
 
 - Codex/Cursor/Claude 轻量入口、Context Pack v1、receipt → proposal、Obsidian 可重建视图。（完成）
+- Receipt 显式类型块无损编译，避免首句截断与强制人工 revision。（完成）
 - 统一维护报告：完整性、积压、receipt、弱证据、陈旧对象和派生视图状态。（当前切片）
 - 三个 Agent 各完成一次真实 read → task → receipt → proposal 验收。（Codex、Cursor 已完成；Claude 待真实使用）
 - 新资料对已有 concept/claim 的 update/refine/support/contradict 候选，以及项目决策反馈和长期 contradiction 演化。（待实现）

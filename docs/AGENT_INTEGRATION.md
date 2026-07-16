@@ -36,6 +36,8 @@ gm receipt propose <receipt-id>
 
 A receipt is not memory merely because an agent wrote it. It records a candidate handoff and cannot bypass evidence checks or approval. Keep durable decisions, validated observations, changed assumptions, unresolved questions, and source references; omit conversation filler and secrets.
 
+Begin each candidate section with an explicit marker such as `Experiment:`, `Decision:`, `Failure:`, `Question:`, or `Claim:`. The deterministic compiler preserves the complete section until the next marker and creates one pending item per section. It does not infer a type from unmarked prose and never approves the result.
+
 ## Obsidian
 
 Open the repository's `vault/` directory as an Obsidian vault. Run `gm obsidian build` to generate:

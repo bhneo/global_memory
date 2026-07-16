@@ -2526,7 +2526,32 @@ def test_receipt_is_immutable_idempotent_and_proposes_without_canonical_write(
     result = service.propose(first["receipt_id"])
     assert result["proposal_id"]
     assert (repo.root / result["proposal_path"]).exists()
+    proposal, _ = read_document(repo.root / result["proposal_path"])
+    candidate_path = repo.root / proposal["bundle_items"][0]["candidate_path"]
+    _, candidate_body = read_document(candidate_path)
+    assert "Source: local acceptance observation." in candidate_body
     assert list(repo.canonical_documents()) == []
+
+
+def test_explicit_marker_preserves_full_block_until_next_marker(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Experiment: Agent acceptance completed.\n\n"
+        "## Observations\n\nThe bounded read succeeded and no canonical write occurred.\n\n"
+        "Decision: Keep the result pending for human review.\n\n"
+        "The decision remains reversible.",
+        title="Typed block fixture",
+    )
+    result = BundleCompiler(repo).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / result.proposal_path)
+    assert [item["object_type"] for item in proposal["bundle_items"]] == ["experiment", "decision"]
+    experiment_path = repo.root / proposal["bundle_items"][0]["candidate_path"]
+    decision_path = repo.root / proposal["bundle_items"][1]["candidate_path"]
+    _, experiment_body = read_document(experiment_path)
+    _, decision_body = read_document(decision_path)
+    assert "## Observations" in experiment_body
+    assert "no canonical write occurred" in experiment_body
+    assert "Keep the result pending" not in experiment_body
+    assert "The decision remains reversible" in decision_body
 
 
 def test_receipt_rejects_unknown_agent(repo: Repository, workspace: Path) -> None:

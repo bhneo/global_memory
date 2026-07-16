@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.19.4] - 2026-07-16
+
+### Fixed
+
+- Deterministic compilation no longer reduces an explicit `Experiment:`, `Decision:`, `Claim:`, or other typed block to its first line. It preserves the complete block through the next explicit type marker, so receipt proposals retain their observations, evidence boundaries, issues, and decisions without mandatory manual revision.
+- Multiple explicit markers still produce separate proposal items; no type is inferred when the receipt does not state one.
+
 ## [0.19.3] - 2026-07-16
 
 ### Fixed

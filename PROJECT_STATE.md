@@ -1,5 +1,7 @@
 # Current State
 
+> M7 receipt preservation fix (2026-07-16): the repeated Codex/Cursor friction where deterministic receipt compilation retained only the first sentence is resolved. Explicit typed blocks now preserve their full text until the next marker while remaining pending proposals; no automatic type inference or canonical approval was added.
+
 > M7 Cursor acceptance (2026-07-16): Cursor completed the real read → task → receipt → proposal path without canonical writes. It exposed source-only exact-query capture by prior receipts and the Windows `gm`/`Get-Member` alias collision. Retrieval now expands source-only sets, ranks canonical first and its explicit source chain second. Claude acceptance remains.
 
 > M7 Codex acceptance (2026-07-16): the first real Codex read → task → receipt → proposal run completed. It exposed and repaired empty natural-language fallback retrieval and incorrect Markdown status rendering. The resulting acceptance experiment remains pending for human review; canonical writes remain unchanged. Cursor and Claude acceptance are next.
