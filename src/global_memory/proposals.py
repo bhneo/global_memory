@@ -940,17 +940,14 @@ class ProposalService:
         return proposals
 
     def inbox(self) -> list[dict[str, str]]:
-        compiled_sources = {
-            source_id
-            for proposal in self.list()
-            if proposal.get("proposal_kind", "knowledge_compile") in {"knowledge_compile", "compile_bundle"}
-            for source_id in proposal.get("source_ids", [])
-        }
+        from .lifecycle import SourceLifecycleService
+        lifecycle = SourceLifecycleService(self.repository)
         result = []
         for path in self.repository.source_documents():
             metadata, _ = read_document(path)
-            if metadata["id"] not in compiled_sources:
-                result.append({"id": metadata["id"], "title": metadata["title"], "path": self.repository.rel(path)})
+            state = lifecycle.status(str(metadata["id"]), assess=False)
+            if state.state in {"captured", "extracted", "quality_checked", "compile_pending"}:
+                result.append({"id": metadata["id"], "title": metadata["title"], "path": self.repository.rel(path), "processing_state": state.state})
         return sorted(result, key=lambda item: item["id"])
 
     def show(self, proposal_id: str) -> str:

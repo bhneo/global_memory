@@ -13,10 +13,15 @@ from .capture import CaptureService
 from .context import ContextPackService
 from .errors import GlobalMemoryError
 from .extraction import ExtractionService
+from .followups import FollowupService
+from .lifecycle import SourceAnnotationService, SourceLifecycleService
 from .markdown import read_document
 from .proposals import ProposalService
 from .recovery import ApprovalRecoveryManager
 from .raw_store import RawStoreService
+from .quality import SourceQualityService
+from .review import SourceBundleReviewService
+from .runs import BatchArtifactMigrator, RunArtifactService
 from .repository import Repository, sha256_bytes
 from .works import WorkService
 
@@ -64,7 +69,19 @@ def build_parser() -> argparse.ArgumentParser:
     capture_text.add_argument("--text")
     capture_text.add_argument("--title", default="人工输入")
     capture_text.add_argument("--comment", default="")
-    commands.add_parser("inbox", help="列出尚未 compile 的来源")
+    commands.add_parser("inbox", help="列出 derived processing state 中待 compile 的来源")
+    source = commands.add_parser("source", help="查看 source 处理状态或补充用户注意力信号")
+    source_commands = source.add_subparsers(dest="source_command", required=True)
+    source_status = source_commands.add_parser("status")
+    source_status.add_argument("source_id")
+    source_history = source_commands.add_parser("history")
+    source_history.add_argument("source_id")
+    source_annotate = source_commands.add_parser("annotate")
+    source_annotate.add_argument("source_id")
+    source_annotate.add_argument("--why-saved")
+    source_annotate.add_argument("--salience", choices=["low", "medium", "high", "unknown"])
+    quality = commands.add_parser("quality", help="运行 source availability/content quality gate")
+    quality.add_argument("source_id")
     extract = commands.add_parser("extract", help="从 immutable raw 创建可重建的 derived extraction")
     extract.add_argument("source_id")
     extract.add_argument("--rebuild", action="store_true")
@@ -108,6 +125,35 @@ def build_parser() -> argparse.ArgumentParser:
     proposals.add_argument(
         "--status", choices=["pending", "deferred", "superseded", "published", "approved", "rejected"]
     )
+    review = commands.add_parser("review", help="以 Source Bundle 为主要审阅单位")
+    review_commands = review.add_subparsers(dest="review_command", required=True)
+    review_commands.add_parser("queue")
+    review_source = review_commands.add_parser("source")
+    review_source.add_argument("source_id")
+    review_bundle = review_commands.add_parser("bundle")
+    review_bundle.add_argument("bundle_id")
+    review_bundle.add_argument("--details", action="store_true")
+    review_approve = review_commands.add_parser("approve")
+    review_approve.add_argument("bundle_id")
+    review_approve.add_argument("--high-confidence", action="store_true")
+    review_approve.add_argument("--items")
+    review_source_only = review_commands.add_parser("source-only")
+    review_source_only.add_argument("bundle_id")
+    review_source_only.add_argument("--reason", default="")
+    review_defer = review_commands.add_parser("defer")
+    review_defer.add_argument("bundle_id")
+    review_defer.add_argument("--reason", default="")
+    followups = commands.add_parser("followups", help="列出 primary-source 与 recovery follow-ups")
+    followups.add_argument("--status")
+    followup = commands.add_parser("followup", help="检测、查看或解决 follow-up")
+    followup_commands = followup.add_subparsers(dest="followup_command", required=True)
+    followup_detect = followup_commands.add_parser("detect")
+    followup_detect.add_argument("source_id")
+    followup_show = followup_commands.add_parser("show")
+    followup_show.add_argument("followup_id")
+    followup_resolve = followup_commands.add_parser("resolve")
+    followup_resolve.add_argument("followup_id")
+    followup_resolve.add_argument("--captured-source")
 
     proposal = commands.add_parser("proposal", help="审阅 proposal")
     proposal_commands = proposal.add_subparsers(dest="proposal_command", required=True)
@@ -166,7 +212,8 @@ def build_parser() -> argparse.ArgumentParser:
     related.add_argument("object_id")
     commands.add_parser("status", help="显示仓库统计")
     commands.add_parser("rebuild-index", help="从 Markdown 与 raw source 重建 SQLite 索引")
-    commands.add_parser("doctor", help="检查 schema、原始内容哈希和索引")
+    doctor_parser = commands.add_parser("doctor", help="检查 schema、状态、批处理、关系和索引")
+    doctor_parser.add_argument("--check-state", action="store_true")
     commands.add_parser("lint", help="只读检查链接、来源、raw 与 proposal 完整性")
     backup = commands.add_parser("backup", help="生成、校验或增量复制 vault/raw 备份")
     backup_commands = backup.add_subparsers(dest="backup_command", required=True)
@@ -188,6 +235,16 @@ def build_parser() -> argparse.ArgumentParser:
     raw_store_mode = raw_store_migration.add_mutually_exclusive_group()
     raw_store_mode.add_argument("--dry-run", action="store_true")
     raw_store_mode.add_argument("--verify", action="store_true")
+    batch_migration = migrate_commands.add_parser("batch-artifacts")
+    batch_migration.add_argument("--dry-run", action="store_true")
+    runs = commands.add_parser("runs", help="查看或清理可重建的 system/runs")
+    runs_commands = runs.add_subparsers(dest="runs_command", required=True)
+    runs_commands.add_parser("list")
+    runs_show = runs_commands.add_parser("show")
+    runs_show.add_argument("run_id")
+    runs_cleanup = runs_commands.add_parser("cleanup")
+    runs_cleanup.add_argument("run_id")
+    runs_cleanup.add_argument("--apply", action="store_true")
     audit = commands.add_parser("audit", help="只读生成知识治理审计报告")
     audit_commands = audit.add_subparsers(dest="audit_command", required=True)
     audit_commands.add_parser("contradictions", help="报告 evidence 与 relation 中的显式冲突")
@@ -197,6 +254,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def doctor(repository: Repository) -> dict[str, object]:
     issues: list[str] = []
+    warnings: list[str] = []
     sources: dict[str, dict[str, object]] = {}
     document_count = 0
     source_count = 0
@@ -244,12 +302,47 @@ def doctor(repository: Repository) -> dict[str, object]:
     recovery_journals = [*ApprovalRecoveryManager(repository).pending(), *BundleRecoveryManager(repository).pending()]
     for journal in recovery_journals:
         issues.append(f"存在未完成 approval recovery journal: {repository.rel(journal)}")
+    lifecycle = SourceLifecycleService(repository).check()
+    issues.extend(f"source state inconsistency: {item}" for item in lifecycle["issues"])
+    proposal_ids: dict[str, list[str]] = {}
+    for path in repository.proposal_documents():
+        try:
+            proposal, _ = read_document(path)
+            proposal_ids.setdefault(str(proposal.get("id")), []).append(repository.rel(path))
+        except Exception:
+            continue
+    for proposal_id, paths in proposal_ids.items():
+        if proposal_id and len(paths) > 1:
+            issues.append(f"proposal 存在多个正式副本: {proposal_id} -> {paths}")
+    for path in repository.canonical_documents():
+        try:
+            metadata, _ = read_document(path)
+        except Exception:
+            continue
+        if metadata.get("type") == "claim":
+            if metadata.get("atomicity_status") == "compound":
+                issues.append(f"canonical compound claim: {repository.rel(path)}")
+            if metadata.get("evidence_coverage") == "partial" and metadata.get("status") == "confirmed":
+                issues.append(f"confirmed claim 只有部分 evidence coverage: {repository.rel(path)}")
+            if metadata.get("extraction_quality") == "degraded" and metadata.get("status") == "confirmed":
+                issues.append(f"degraded extraction 被确认为 canonical: {repository.rel(path)}")
+        if metadata.get("relations") == [] and not metadata.get("source_ids"):
+            warnings.append(f"孤立 canonical: {repository.rel(path)}")
+    temporary = [path for path in repository.root.iterdir() if path.is_dir() and path.name.startswith(".tmp-")]
+    for path in temporary:
+        issues.append(f"临时 batch 目录仍位于仓库根目录: {repository.rel(path)}")
+    for item in FollowupService(repository).list():
+        if item.get("status") in {"missing", "inaccessible", "not_identified"}:
+            warnings.append(f"未关闭 follow-up: {item['id']} ({item['status']})")
     return {
         "ok": not issues,
         "documents": document_count,
         "sources": source_count,
         "indexed_documents": indexed_count,
         "pending_recovery_journals": len(recovery_journals),
+        "source_state_consistent": lifecycle["ok"],
+        "proposal_unique": not any(len(paths) > 1 for paths in proposal_ids.values()),
+        "warnings": warnings,
         "issues": issues,
     }
 
@@ -391,6 +484,10 @@ def lint(repository: Repository) -> dict[str, object]:
             has_relations = bool(metadata.get("relations")) or relation_targets.get(str(metadata["id"]), 0) > 0
             if not metadata.get("source_ids") and not has_relations:
                 warnings.append(f"孤立 canonical 页面: {repository.rel(path)}")
+            if metadata.get("type") == "claim" and metadata.get("atomicity_status") == "compound":
+                errors.append(f"canonical claim 仍为 compound: {repository.rel(path)}")
+            if metadata.get("type") == "claim" and metadata.get("evidence_coverage") == "partial" and metadata.get("status") == "confirmed":
+                errors.append(f"confirmed claim evidence coverage 仅为 partial: {repository.rel(path)}")
 
     for path, proposal, _, _ in records:
         if proposal.get("type") != "proposal":
@@ -647,6 +744,10 @@ def run(args: argparse.Namespace) -> int:
     raw_store = RawStoreService(repository)
     extraction_service = ExtractionService(repository)
     works = WorkService(repository)
+    lifecycle = SourceLifecycleService(repository)
+    quality_service = SourceQualityService(repository)
+    followup_service = FollowupService(repository)
+    run_service = RunArtifactService(repository)
     if args.command == "capture":
         _print(captures.capture(args.target, args.comment, refresh=args.refresh).__dict__)
     elif args.command == "capture-wechat":
@@ -656,6 +757,15 @@ def run(args: argparse.Namespace) -> int:
         _print(captures.capture_text(text, args.comment, args.title).__dict__)
     elif args.command == "inbox":
         _print(proposals.inbox())
+    elif args.command == "source":
+        if args.source_command == "status":
+            _print(lifecycle.status(args.source_id, assess=True).as_dict())
+        elif args.source_command == "history":
+            _print(lifecycle.history(args.source_id))
+        else:
+            _print({"path": SourceAnnotationService(repository).annotate(args.source_id, why_saved=args.why_saved, salience=args.salience)})
+    elif args.command == "quality":
+        _print(quality_service.assess(args.source_id, persist=True).as_dict())
     elif args.command == "extract":
         result = extraction_service.extract(args.source_id, rebuild=args.rebuild)
         _print(result.__dict__)
@@ -694,6 +804,33 @@ def run(args: argparse.Namespace) -> int:
         )
     elif args.command == "proposals":
         _print(proposals.list(args.status))
+    elif args.command == "review":
+        service = SourceBundleReviewService(repository)
+        if args.review_command == "queue":
+            _print(service.queue())
+        elif args.review_command == "source":
+            _print([item for item in service.queue() if args.source_id in item["source_ids"]])
+        elif args.review_command == "bundle":
+            _print(service.show(args.bundle_id, details=args.details))
+        elif args.review_command == "approve":
+            if args.high_confidence:
+                _print(service.approve_high_confidence(args.bundle_id))
+            else:
+                _print(BundleReviewService(repository).approve(args.bundle_id, args.items.split(",") if args.items else None))
+        elif args.review_command == "source-only":
+            _print(service.source_only(args.bundle_id, args.reason))
+        else:
+            _print({"deferred": args.bundle_id, "proposal_path": proposals.defer(args.bundle_id, args.reason)})
+    elif args.command == "followups":
+        items = followup_service.list()
+        _print([item for item in items if not args.status or item.get("status") == args.status])
+    elif args.command == "followup":
+        if args.followup_command == "detect":
+            _print(followup_service.detect(args.source_id))
+        elif args.followup_command == "show":
+            _print(followup_service.show(args.followup_id))
+        else:
+            _print({"path": followup_service.resolve(args.followup_id, args.captured_source)})
     elif args.command == "proposal":
         if args.proposal_command in {"show", "diff"}:
             _print(proposals.show(args.proposal_id))
@@ -767,6 +904,9 @@ def run(args: argparse.Namespace) -> int:
     elif args.command == "related":
         _print(repository.related(args.object_id))
     elif args.command == "status":
+        state_counts: dict[str, int] = {}
+        for state in lifecycle.all():
+            state_counts[state["state"]] = state_counts.get(state["state"], 0) + 1
         _print({
             "root": str(repository.root), "objects_by_type": repository.count_by_type(),
             "inbox": len(proposals.inbox()), "proposals_by_status": {
@@ -774,6 +914,7 @@ def run(args: argparse.Namespace) -> int:
                 for state in ("pending", "deferred", "superseded", "published", "approved", "rejected")
             },
             "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()) + len(BundleRecoveryManager(repository).pending()),
+            "source_processing_states": state_counts,
         })
     elif args.command == "rebuild-index":
         _print({"indexed_documents": repository.rebuild_index(), "index": repository.rel(repository.index_path)})
@@ -805,6 +946,11 @@ def run(args: argparse.Namespace) -> int:
         _print(result)
         return 0 if result["ok"] else 1
     elif args.command == "migrate":
+        if args.migrate_command == "batch-artifacts":
+            migration = BatchArtifactMigrator(repository)
+            result = migration.plan() if args.dry_run else migration.migrate()
+            _print(result.__dict__)
+            return 0 if not result.errors else 1
         if args.verify:
             result = raw_store.verify()
             _print(result)
@@ -812,6 +958,13 @@ def run(args: argparse.Namespace) -> int:
         result = raw_store.plan() if args.dry_run else raw_store.migrate()
         _print(result.__dict__)
         return 0 if not result.errors else 1
+    elif args.command == "runs":
+        if args.runs_command == "list":
+            _print(run_service.list())
+        elif args.runs_command == "show":
+            _print(run_service.show(args.run_id))
+        else:
+            _print(run_service.cleanup(args.run_id, apply=args.apply))
     elif args.command == "audit":
         if args.audit_command == "contradictions":
             result = contradiction_audit(repository)

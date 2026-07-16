@@ -9,9 +9,12 @@ from pathlib import Path
 from typing import Any, Protocol
 
 from .errors import NotFoundError, ValidationError
+from .atomicity import AtomicClaimInspector
 from .extraction import ExtractionService
+from .followups import FollowupService
 from .markdown import atomic_write_text, read_document, render_document
 from .proposals import CANONICAL_DIRECTORIES, REVIEWABLE_PROPOSAL_STATUSES
+from .quality import SourceQualityService
 from .repository import Repository, now_iso, sha256_bytes, slugify
 
 
@@ -98,10 +101,12 @@ class JsonBundleProvider:
 
 @dataclass(frozen=True)
 class BundleResult:
-    proposal_id: str
-    proposal_path: str
+    proposal_id: str | None
+    proposal_path: str | None
     item_count: int
     item_ids: list[str]
+    compile_disposition: str = "knowledge_proposed"
+    quality: dict[str, Any] | None = None
 
 
 class BundleRecoveryManager:
@@ -199,14 +204,37 @@ class BundleCompiler:
         source_path, source, _ = self.repository.find_document(source_id)
         if source.get("type") != "source":
             raise ValidationError(f"compile 只接受 source: {source_id}")
+        quality = SourceQualityService(self.repository).assess(source_id, persist=True)
+        if not quality.compile_allowed:
+            FollowupService(self.repository).create(
+                source_id, str(source.get("canonical_locator") or "") or None,
+                reason=f"source unavailable or invalid: {quality.availability_status}/{quality.content_quality}",
+                kind="source_recovery",
+            )
+            return BundleResult(None, None, 0, [], "invalid_content", quality.as_dict())
         extraction_path, extraction, text = ExtractionService(self.repository).latest_for_source(source_id, create=True)
         existing_context = self._existing_context(source, text)
         specs = self.provider.compile(
             source, extraction, text, existing_context,
             {"object_types": sorted(CANONICAL_DIRECTORIES), "evidence_kinds": ["quote", "paraphrase", "translation", "table_value", "figure", "calculation"]},
         )
-        if not isinstance(specs, list) or not specs:
-            raise ValidationError("compiler 没有产生有意义的 bundle item")
+        if not isinstance(specs, list):
+            raise ValidationError("compiler provider 必须返回 bundle item 列表")
+        if not specs:
+            return BundleResult(None, None, 0, [], "source_only", quality.as_dict())
+        expanded_specs: list[dict[str, Any]] = []
+        for spec in specs:
+            if not isinstance(spec, dict):
+                raise ValidationError("compiler provider item 必须是对象")
+            expanded_specs.extend(AtomicClaimInspector.split_spec(spec, text))
+        specs = []
+        seen_specs: set[tuple[str, str]] = set()
+        for spec in expanded_specs:
+            key = (str(spec.get("object_type")), self._semantic_key(str(spec.get("title", ""))))
+            if key in seen_specs:
+                continue
+            seen_specs.add(key)
+            specs.append(spec)
         timestamp = now_iso()
         prepared: list[dict[str, Any]] = []
         for index, spec in enumerate(specs, start=1):
@@ -243,11 +271,19 @@ class BundleCompiler:
                 base_bytes = b""
                 source_ids = [source_id]
                 created_at = timestamp
-                relations = [{"type": "derived_from", "target_id": source_id, "reason": "由 compile bundle 从该来源提出"}]
+                relations = [{
+                    "type": "derived_from", "target_id": source_id,
+                    "reason": "由 compile bundle 从该来源提出", "confidence": "high",
+                    "created_by": self.provider.name, "status": "proposal",
+                }]
                 canonical_body = f"# {title}\n\n{body_text}\n"
             contradiction = re.search(r"\[contradicts:([\w_-]+)\]", body_text, re.I)
             if contradiction:
-                relations.append({"type": "contradicts", "target_id": contradiction.group(1), "reason": "来源显式标注为与既有主张冲突"})
+                relations.append({
+                    "type": "contradicts", "target_id": contradiction.group(1),
+                    "reason": "来源显式标注为与既有主张冲突", "confidence": "medium",
+                    "created_by": self.provider.name, "status": "proposal",
+                })
             candidate: dict[str, Any] = {
                 "id": target_id, "type": object_type, "status": "proposal", "title": title,
                 "created_at": created_at, "updated_at": timestamp,
@@ -283,6 +319,20 @@ class BundleCompiler:
                 candidate.update({
                     "evidence": [evidence], "applicability": [],
                     "uncertainty": "确定性 fallback 能力有限；该原文尚未经过语义事实核验。",
+                    "atomicity_status": spec.get("atomicity_status", "atomic"),
+                    "evidence_coverage": spec.get("evidence_coverage", "full" if start >= 0 else "missing"),
+                    "split_from": spec.get("split_from"), "split_reason": spec.get("split_reason"),
+                    "quote_verification": "exact" if start >= 0 else "failed",
+                    "extraction_quality": quality.extraction_quality,
+                    "epistemic_source_authority": (
+                        "primary" if quality.source_authority in {"primary", "official", "peer_reviewed", "preprint"}
+                        else "secondary" if quality.source_authority == "secondary_analysis"
+                        else "commentary" if quality.source_authority in {"industry_commentary", "marketing", "social_post"}
+                        else "anecdotal" if quality.source_authority == "anecdotal" else "unknown"
+                    ),
+                    "evidence_entailment": str(spec.get("evidence_entailment", "none")),
+                    "claim_confidence": str(spec.get("claim_confidence", "low")),
+                    "publication_gate": "needs_review",
                 })
             candidate_text = render_document(candidate, canonical_body)
             self.repository._validate_metadata(candidate, target_path)
@@ -295,6 +345,16 @@ class BundleCompiler:
                 "base_bytes": base_bytes, "candidate_text": candidate_text,
                 "candidate_sha256": candidate_sha, "decision": "pending",
                 "potential_conflicts": [relation for relation in relations if relation["type"] == "contradicts"],
+                "atomicity_status": candidate.get("atomicity_status"),
+                "evidence_coverage": candidate.get("evidence_coverage"),
+                "review_tier": "high" if (
+                    object_type != "claim" or (
+                        candidate.get("atomicity_status") == "atomic"
+                        and candidate.get("evidence_coverage") == "full"
+                        and candidate.get("evidence_entailment") == "full"
+                        and quality.extraction_quality == "good"
+                    )
+                ) and quality.source_authority in {"primary", "official", "peer_reviewed", "preprint"} else "low",
             })
         bundle_digest = hashlib.sha256(
             (source_id + "\n" + "\n".join(item["candidate_sha256"] for item in prepared)).encode("utf-8")
@@ -303,7 +363,7 @@ class BundleCompiler:
         proposal_path = self.repository.root / "vault/proposals" / f"proposal-{proposal_id}.md"
         if proposal_path.exists():
             old, _ = read_document(proposal_path)
-            return BundleResult(proposal_id, self.repository.rel(proposal_path), len(old["bundle_items"]), [item["item_id"] for item in old["bundle_items"]])
+            return BundleResult(proposal_id, self.repository.rel(proposal_path), len(old["bundle_items"]), [item["item_id"] for item in old["bundle_items"]], old.get("compile_disposition", "knowledge_proposed"), quality.as_dict())
         bundle_items: list[dict[str, Any]] = []
         diff_sections: list[str] = []
         for item in prepared:
@@ -326,17 +386,39 @@ class BundleCompiler:
                 "base_path": self.repository.rel(base_path) if item["base_bytes"] else None,
             })
             diff_sections.append(f"### {item['item_id']} ({item['action']} {item['object_type']})\n\n```diff\n{diff.rstrip()}\n```\n")
+        followups = FollowupService(self.repository).detect(source_id)
+        new_count = sum(item["action"] == "create" for item in bundle_items)
+        update_count = sum(item["action"] == "update" for item in bundle_items)
         proposal = {
             "id": proposal_id, "type": "proposal", "status": "pending",
             "title": f"Compile bundle：{source['title']}", "created_at": timestamp,
             "updated_at": timestamp, "aliases": [], "tags": [], "domains": [],
             "confidence": "low", "source_ids": [source_id], "relations": [],
             "proposal_kind": "compile_bundle", "processor": self.provider.name,
+            "review_unit": "source_bundle", "compile_disposition": "knowledge_proposed",
+            "source_summary": str(source.get("title", source_id)),
+            "source_authority": quality.source_authority,
+            "availability_status": quality.availability_status,
+            "content_quality": quality.content_quality,
+            "extraction_quality": quality.extraction_quality,
             "extraction_id": extraction["extraction_id"], "input_sha256": extraction["input_sha256"],
             "bundle_items": bundle_items, "existing_context": existing_context,
             "contradiction_candidates": [conflict for item in bundle_items for conflict in item["potential_conflicts"]],
             "unresolved_items": [] if specs else ["provider 未产生候选"],
             "provenance_validation": {"ok": True, "items": len(bundle_items), "source_id": source_id},
+            "primary_source_followups": [item["id"] for item in followups],
+            "duplicate_findings": [], "low_value_items_not_proposed": [],
+            "bundle_metrics": {
+                "novelty_score": round(new_count / max(1, len(bundle_items)), 2),
+                "importance_score": "requires_human_judgment",
+                "source_authority": quality.source_authority,
+                "evidence_quality": quality.extraction_quality,
+                "knowledge_reuse_count": update_count,
+                "new_object_count": new_count, "updated_object_count": update_count,
+                "duplicate_count": len(expanded_specs) - len(specs),
+                "unresolved_count": 0, "review_cost_estimate": len(bundle_items),
+                "scoring_basis": "deterministic counts and quality labels; not a calibrated probability",
+            },
             "reviewed_at": None, "review_reason": None,
         }
         body = (
@@ -347,7 +429,7 @@ class BundleCompiler:
             "## Items and diffs\n\n" + "\n".join(diff_sections)
         )
         self.repository.immutable_write(proposal_path, render_document(proposal, body).encode("utf-8"))
-        return BundleResult(proposal_id, self.repository.rel(proposal_path), len(bundle_items), [item["item_id"] for item in bundle_items])
+        return BundleResult(proposal_id, self.repository.rel(proposal_path), len(bundle_items), [item["item_id"] for item in bundle_items], "knowledge_proposed", quality.as_dict())
 
     @staticmethod
     def _page_for_span(text: str, start: int) -> int | None:
@@ -362,7 +444,7 @@ class BundleReviewService:
 
     def _load(self, proposal_id: str) -> tuple[Path, dict[str, Any], str]:
         path, metadata, body = self.repository.find_document(proposal_id)
-        if metadata.get("proposal_kind") != "compile_bundle":
+        if metadata.get("proposal_kind") not in {"compile_bundle", "source_bundle", "corpus_distillation"}:
             raise ValidationError(f"不是 compile bundle: {proposal_id}")
         return path, metadata, body
 
@@ -391,6 +473,11 @@ class BundleReviewService:
                 raise ValidationError(f"bundle candidate hash 不匹配: {item['item_id']}")
             candidate, candidate_body = read_document(candidate_path)
             self.repository._validate_metadata(candidate, candidate_path)
+            if candidate.get("type") == "claim":
+                if candidate.get("atomicity_status") == "compound":
+                    raise ValidationError(f"compound claim 必须先拆分: {item['item_id']}")
+                if candidate.get("evidence_coverage") in {"partial", "missing"}:
+                    raise ValidationError(f"claim evidence coverage 不完整: {item['item_id']}")
             target_path = self.repository.resolve_inside(item["target_path"])
             before_sha = sha256_bytes(target_path.read_bytes()) if target_path.exists() else None
             if before_sha != item.get("base_sha256"):

@@ -1,6 +1,8 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.tmp-*/
+tmp/
 .venv/
 dist/
 build/
@@ -20,6 +22,8 @@ data/backups/*
 system/logs/*.jsonl
 system/reports/generated-*
 system/test-tmp*/
+system/runs/*
+!system/runs/.gitkeep
 system/recovery/*
 !system/recovery/.gitkeep
 

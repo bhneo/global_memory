@@ -13,14 +13,20 @@ import pytest
 from global_memory.capture import CaptureService, canonicalize_url
 from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
 from global_memory.bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
+from global_memory.atomicity import AtomicClaimInspector
 from global_memory.cli import build_parser, contradiction_audit, doctor, lint
 from global_memory.context import ContextPackService
 from global_memory.errors import ImmutableContentError, ValidationError
 from global_memory.extraction import ExtractionService
+from global_memory.followups import FollowupService
+from global_memory.lifecycle import SourceAnnotationService, SourceLifecycleService
 from global_memory.markdown import read_document, render_document
 from global_memory.proposals import ProposalService
 from global_memory.recovery import ApprovalRecoveryManager
 from global_memory.raw_store import RawStoreService
+from global_memory.quality import SourceQualityService
+from global_memory.review import SourceBundleReviewService
+from global_memory.runs import BatchArtifactMigrator, RunArtifactService
 from global_memory.repository import Repository, sha256_bytes
 from global_memory.works import WorkService
 
@@ -71,6 +77,122 @@ def create_approved_claim(repo: Repository, text: str = "Original canonical clai
     proposal = service.compile(captured.source_id)
     target = service.approve(proposal.proposal_id)
     return captured, repo.root / target
+
+
+@pytest.mark.parametrize(
+    ("content", "availability", "quality"),
+    [
+        ("该内容已被发布者删除", "deleted", "boilerplate_only"),
+        ("请先登录，扫码登录后继续", "login_required", "boilerplate_only"),
+        ("访问过于频繁，请完成安全验证", "anti_bot", "boilerplate_only"),
+        ("", "available", "too_short"),
+        ("过短正文", "available", "too_short"),
+    ],
+)
+def test_m6_quality_gate_blocks_invalid_web_sources(
+    repo: Repository, content: str, availability: str, quality: str,
+) -> None:
+    captured = capture_web_bytes(repo, f"https://example.com/{uuid.uuid4().hex}", content.encode("utf-8"))
+    result = SourceQualityService(repo).assess(captured.source_id)
+    assert result.availability_status == availability
+    assert result.content_quality == quality
+    assert result.compile_allowed is False
+    compiled = BundleCompiler(repo).compile(captured.source_id)
+    assert compiled.compile_disposition == "invalid_content"
+    assert compiled.proposal_id is None
+    assert FollowupService(repo).list()
+
+
+def test_m6_quality_gate_accepts_normal_article_and_reports_degraded(repo: Repository) -> None:
+    text = "正常文章正文。" * 100
+    captured = capture_web_bytes(repo, "https://example.com/normal", text.encode("utf-8"))
+    service = SourceQualityService(repo)
+    valid = service.assess(captured.source_id)
+    assert valid.content_quality == "valid" and valid.compile_allowed
+    extraction_path, extraction, body = ExtractionService(repo).latest_for_source(captured.source_id)
+    extraction["warnings"] = ["formula may be incomplete"]
+    extraction_path.write_text(render_document(extraction, body), encoding="utf-8")
+    degraded = service.assess(captured.source_id)
+    assert degraded.content_quality == "degraded"
+    assert degraded.extraction_quality == "degraded"
+    assert degraded.compile_allowed
+
+
+def test_m6_atomic_claim_split_and_partial_coverage_gate(repo: Repository) -> None:
+    statement = "模型使用双编码器，并且训练数据包含三类任务，同时评测报告提升百分之十"
+    inspected = AtomicClaimInspector.inspect(statement, ["模型使用双编码器"])
+    assert inspected.status == "compound"
+    assert inspected.evidence_coverage == "partial"
+    split = AtomicClaimInspector.split_spec(
+        {"object_type": "claim", "title": statement, "body": statement}, statement,
+    )
+    assert len(split) == 3
+    assert all(item["atomicity_status"] == "atomic" for item in split)
+
+
+def test_m6_lifecycle_derives_review_state_without_mutating_source(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Claim: lifecycle proposal evidence that is long enough")
+    source_path, before, _ = repo.find_document(captured.source_id)
+    original = source_path.read_bytes()
+    BundleCompiler(repo).compile(captured.source_id)
+    state = SourceLifecycleService(repo).status(captured.source_id)
+    assert state.state == "awaiting_review"
+    assert source_path.read_bytes() == original
+    assert SourceLifecycleService(repo).check()["ok"]
+    annotation = SourceAnnotationService(repo).annotate(captured.source_id, why_saved="用于验证生命周期", salience="high")
+    assert (repo.root / annotation).exists()
+    assert source_path.read_bytes() == original
+
+
+def test_m6_batch_artifact_migration_has_backup_and_one_formal_truth(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("migration candidate")
+    proposal = ProposalService(repo).compile(captured.source_id)
+    formal = repo.root / proposal.candidate_path
+    temporary = repo.root / ".tmp-batch-import"
+    temporary.mkdir()
+    shutil.copy2(formal, temporary / "candidate-copy.md")
+    (temporary / "one-off.py").write_text("print('old batch')\n", encoding="utf-8")
+    service = BatchArtifactMigrator(repo)
+    dry = service.plan()
+    assert dry.dry_run and dry.candidates_matched_to_formal_proposals == 1
+    assert temporary.exists()
+    applied = service.migrate()
+    assert not temporary.exists() and formal.exists()
+    assert applied.backup_path and (repo.root / applied.backup_path).exists()
+    run = RunArtifactService(repo).show(str(applied.run_id))
+    assert {item["name"] for item in run["files"]} == {
+        "manifest.json", "source-summary.md", "compiler-output.json",
+        "validation-report.md", "errors.jsonl", "metrics.json",
+    }
+
+
+def test_m6_primary_followup_and_source_bundle_review(repo: Repository) -> None:
+    text = ("论文解读引用 https://arxiv.org/abs/2607.11119 ，需要回到原论文核验。" * 10)
+    captured = CaptureService(repo)._write_source(
+        kind="wechat", original_locator="https://mp.weixin.qq.com/s/test-primary",
+        canonical_locator="https://mp.weixin.qq.com/s/test-primary", content=text.encode("utf-8"),
+        title="论文解读", comment="", import_method="test", content_type="text/plain; charset=utf-8",
+    )
+    detected = FollowupService(repo).detect(captured.source_id)
+    assert len(detected) == 1 and detected[0]["status"] == "missing"
+    bundle = BundleCompiler(repo, JsonBundleProvider(
+        _write_json_bundle(repo, [{
+            "object_type": "question", "title": "原论文是否支持二手解读？",
+            "body": "原论文是否支持二手解读？",
+        }])
+    )).compile(captured.source_id)
+    queue = SourceBundleReviewService(repo).queue()
+    assert any(item["bundle_id"] == bundle.proposal_id for item in queue)
+    shown = SourceBundleReviewService(repo).show(str(bundle.proposal_id))
+    assert shown["source_authority"] == "secondary_analysis"
+    assert shown["primary_source_followups"]
+
+
+def _write_json_bundle(repo: Repository, items: list[dict[str, object]]) -> Path:
+    path = repo.root / "data/derived/m6-bundle.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"items": items}, ensure_ascii=False), encoding="utf-8")
+    return path
 
 
 def write_canonical_fixture(

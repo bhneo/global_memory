@@ -20,11 +20,12 @@ from .markdown import atomic_write_text, read_document, render_document
 OBJECT_TYPES = {
     "source", "intuition", "entity", "concept", "claim", "question",
     "tension", "analogy", "anomaly", "hypothesis", "project", "goal", "architecture", "decision",
-    "experiment", "failure", "opportunity", "synthesis", "work", "proposal",
+    "experiment", "failure", "opportunity", "synthesis", "work", "proposal", "followup",
 }
 RELATION_TYPES = {
     "supports", "contradicts", "refines", "analogous_to", "derived_from",
-    "applied_in", "raises", "supersedes", "related_to",
+    "applied_in", "raises", "supersedes", "related_to", "limits", "defines",
+    "instantiates", "answers", "tested_by", "failed_in", "depends_on", "part_of",
 }
 CONFIDENCE_LEVELS = {"unknown", "low", "medium", "high"}
 EVIDENCE_STANCES = {"supports", "contradicts", "context"}
@@ -89,8 +90,8 @@ class Repository:
             "vault/action/failures", "vault/action/opportunities", "vault/proposals",
             "vault/archive", "data/imports", "data/derived", "data/indexes", "data/backups",
             "system/logs", "system/reports", "system/error-book",
-            "system/recovery",
-            "data/derived/extractions",
+            "system/recovery", "system/runs", "vault/followups", "vault/annotations",
+            "data/derived/extractions", "data/derived/quality",
         ]
         for directory in directories:
             (self.root / directory).mkdir(parents=True, exist_ok=True)
@@ -150,6 +151,11 @@ class Repository:
         path = self.root / "vault" / "proposals"
         if path.exists():
             yield from path.glob("proposal-*.md")
+
+    def followup_documents(self) -> Iterable[Path]:
+        path = self.root / "vault" / "followups"
+        if path.exists():
+            yield from path.glob("followup-*.md")
 
     def all_indexed_documents(self) -> Iterable[Path]:
         yield from self.source_documents()
@@ -218,7 +224,23 @@ class Repository:
                 raise ValidationError(f"{self.rel(path)} 使用非法关系类型: {relation_type}")
             if not relation.get("target_id") or not relation.get("reason"):
                 raise ValidationError(f"{self.rel(path)} 的关系缺少 target_id 或 reason")
+            governance = {"confidence", "created_by", "status"}
+            if governance & set(relation) and not governance <= set(relation):
+                raise ValidationError(f"{self.rel(path)} 的 M6 relation 缺少 confidence/created_by/status")
         if metadata["type"] == "claim":
+            if metadata.get("atomicity_status") not in {None, "atomic", "compound", "uncertain"}:
+                raise ValidationError(f"{self.rel(path)} 的 atomicity_status 非法")
+            if metadata.get("evidence_coverage") not in {None, "full", "partial", "missing"}:
+                raise ValidationError(f"{self.rel(path)} 的 evidence_coverage 非法")
+            for key, allowed in {
+                "quote_verification": {"exact", "normalized_match", "failed", "not_applicable"},
+                "extraction_quality": {"good", "degraded", "failed"},
+                "epistemic_source_authority": {"primary", "secondary", "commentary", "anecdotal", "unknown"},
+                "evidence_entailment": {"full", "partial", "indirect", "conflicting", "none"},
+                "claim_confidence": {"high", "medium", "low", "unknown"},
+            }.items():
+                if metadata.get(key) not in {None, *allowed}:
+                    raise ValidationError(f"{self.rel(path)} 的 {key} 非法")
             if "applicability" in metadata:
                 applicability = metadata["applicability"]
                 if not isinstance(applicability, list) or not all(
@@ -512,6 +534,7 @@ class Repository:
             + list(self.proposal_documents())
         )
         candidates += list((self.root / "vault" / "proposals").glob("candidate-*.md"))
+        candidates += list(self.followup_documents())
         for path in candidates:
             metadata, body = read_document(path)
             if metadata.get("id") == object_id:
