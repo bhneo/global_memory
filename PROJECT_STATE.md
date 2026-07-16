@@ -1,5 +1,7 @@
 # Current State
 
+> M6.1 update (2026-07-16): the two parameter-space-symmetry compound claims have been split into four primary-verified atomic proposal claims. The active bundle now contains 68 items and 29 atomic claims (8 full evidence, 21 partial evidence), with 5 primary-source follow-ups still open and no canonical write.
+
 ## M6 current milestone — completed 2026-07-16
 
 M6 Knowledge Distillation and Graph Formation 已完成工程实现与 33-source 受控重编译。临时 batch 双重真相源已迁移并清理；source lifecycle、quality gate、atomic claim gate、knowledge classification、bundle review、authority/follow-up、epistemic dimensions、typed relations 与 proposal-aware Context Pack 已落地。

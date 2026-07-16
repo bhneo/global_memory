@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.18.5] - 2026-07-16
+
+### Changed
+
+- 将参数空间对称性的两个 compound claims 拆为四个可独立核验的 atomic children：损失不变变换群、对称轨道的等损失性质、梯度流守恒量，以及小型两层网络中的相关性观察。
+- 四个 children 均已绑定 arXiv:2506.13018 primary PDF 的逐字 quote 与页码，证据覆盖提升为 full，但仍保持 pending proposal；原 compound items 保留为 superseded。
+- 删除二手文章中“守恒量普遍决定隐式偏置与泛化”的过强因果外推；论文仅报告限定场景相关性，并明确指出一般关系仍未充分理解。
+- 当前 active bundle 为 68 items、29 atomic claims，其中 8 full、21 partial；open primary-source follow-ups 仍为 5，canonical writes 仍为 0。
+
 ## [0.18.4] - 2026-07-16
 
 ### Added
