@@ -1,10 +1,10 @@
 ---
 id: "proposal_f6ce19d1ae979962cfac4008"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称「扩大的黑洞」为静态图错觉，大脑将中央暗区解读为正在进入黑暗环境而非像素变化"
 created_at: "2026-07-16T01:40:40+08:00"
-updated_at: "2026-07-16T01:40:40+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "6673228338e9aba0e58ad3c7d406cab4ac4c60f2ecc0ee948c664a72f4609
 change_reason: "导入 claim_wechat_expanding_hole_perceived_darkness_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_38756ea977001ddb8594f144", "input_sha256": "fc2140ce2cdf4019533f67bd6801061bc341a47afcaddc77797e79535e96cb86", "uncertainty": "知觉科普；n=50 与瞳孔 mm 数据需回 Frontiers 2022 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称「扩大的黑洞」为静态图错觉，大脑将中央暗区解读为正在进入黑暗环境而非像素变化

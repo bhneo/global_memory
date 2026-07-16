@@ -1,10 +1,10 @@
 ---
 id: "proposal_b09f4c1e153af33653a51224"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称当前深度学习本质是 X→Y 映射，缺乏 System 2 式思考，在新环境下适应有限"
 created_at: "2026-07-16T01:31:07+08:00"
-updated_at: "2026-07-16T01:31:07+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "2085390dd2683d4a30e810b842ea76b38007ce4b4ac9e306948d74329e039
 change_reason: "导入 claim_wechat_wangjun_dl_x_to_y_limit_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_68161c78067d7b4add05ba1a", "input_sha256": "9e993068d54477c4444841a6b3d7b5b93d8671d448d7bbb30da4e3a515e51c45", "uncertainty": "2023 演讲整理；IIT/意识主张为理论观点，非共识事实。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称当前深度学习本质是 X→Y 映射，缺乏 System 2 式思考，在新环境下适应有限

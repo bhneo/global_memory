@@ -1,10 +1,10 @@
 ---
 id: "proposal_7b56048c8bc7be200b8b6e91"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 PPO/AWR 等原生高斯策略 RL 难以适配扩散/流匹配 VLA，离线长时序场景中弱于 SFT；两套方案（离线优势 BC vs EXPO-FT）不可混用"
 created_at: "2026-07-16T11:04:29+08:00"
-updated_at: "2026-07-16T11:04:29+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "28eca49f370c295996bcb81268de1bf749440b529b875ae91de7978120cb4
 change_reason: "导入 claim_wechat_diffusion_rl_baseline_limits_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_8b41a014bee47c4239a2fa81", "input_sha256": "15201becf4f645da31cfd5c6c3c5bc10dec18547711dedd2c5fa9bf99fcdf1b6", "uncertainty": "Finn/Dong 研讨会转述；实验数字与算法细节需回 EXPO/EXPO-FT 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 PPO/AWR 等原生高斯策略 RL 难以适配扩散/流匹配 VLA，离线长时序场景中弱于 SFT；两套方案（离线优势 BC vs EXPO-FT）不可混用

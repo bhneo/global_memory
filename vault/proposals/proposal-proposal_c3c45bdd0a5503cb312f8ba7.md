@@ -1,10 +1,10 @@
 ---
 id: "proposal_c3c45bdd0a5503cb312f8ba7"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文模拟 10 万人 200 轮硬币博弈：100% 全押几乎全灭，37.5% 凯利下注多数人稳健增值"
 created_at: "2026-07-16T00:35:53+08:00"
-updated_at: "2026-07-16T00:35:53+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "70a49ad309b041bf3c59bc6184c7ed9dd6d3acff359d1f13952e36a217052
 change_reason: "导入 claim_wechat_kelly_simulation_survival_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9d39636775b188c87d6a001f", "input_sha256": "0fe84716255d0f351c82744980c66aa1eeff10d2d08ed2c770ccbe7d6ece9f33", "uncertainty": "概率/决策科普；模拟与 37.5% 需独立验算；Thorp 原文未 capture。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文模拟 10 万人 200 轮硬币博弈：100% 全押几乎全灭，37.5% 凯利下注多数人稳健增值

@@ -1,10 +1,10 @@
 ---
 id: "proposal_7a71fdd26336fbccb2bed491"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称莱布尼茨级数项次足够多时可逼近 π，但收敛很慢，约 500,000 项才到第五位小数"
 created_at: "2026-07-15T19:24:29+08:00"
-updated_at: "2026-07-15T19:24:29+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "995b2ddb91a6dade9f097cda6a3958269f45178bd676c0d868e7bb46d26fb
 change_reason: "导入 claim_wechat_pi_leibniz_convergence_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_a86d60369a021d93d1e863aa", "input_sha256": "9143ea8d31cc8d7534db5de546450b2be5f4dd4d90eb7b8c94b337e8cf7c3295", "uncertainty": "科普文章；超算纪录与历史断言需独立核对；部分为经典数学结论。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称莱布尼茨级数项次足够多时可逼近 π，但收敛很慢，约 500,000 项才到第五位小数

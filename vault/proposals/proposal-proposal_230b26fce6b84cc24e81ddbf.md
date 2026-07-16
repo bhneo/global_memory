@@ -1,10 +1,10 @@
 ---
 id: "proposal_230b26fce6b84cc24e81ddbf"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文引述量子场论：粒子是全空间量子场的离散量子激发，相互作用由场论精确计算"
 created_at: "2026-07-16T10:52:31+08:00"
-updated_at: "2026-07-16T10:52:31+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "ebb1b62574164a18f45a0e1d8833806f5c2aac680601c9e762e848bcfdfb5
 change_reason: "导入 claim_wechat_particle_field_quantum_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9bcee8e0abc8386cbba43b87", "input_sha256": "e9b06f9a56bacf6be394e58b75466386a638f10c397f0ab5b702160f9dc45a7a", "uncertainty": "Quanta/Wolchover 2020 综述转述；前沿理论部分为开放研究非定论。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文引述量子场论：粒子是全空间量子场的离散量子激发，相互作用由场论精确计算

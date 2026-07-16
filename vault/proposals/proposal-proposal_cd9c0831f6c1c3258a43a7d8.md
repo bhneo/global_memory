@@ -1,10 +1,10 @@
 ---
 id: "proposal_cd9c0831f6c1c3258a43a7d8"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文列举 Symbiosis 模块：多模态感知产出结构化世界状态；安全规划校检物理可行性；空间记忆以 3D Scene Graph 维护物体关系"
 created_at: "2026-07-16T11:12:50+08:00"
-updated_at: "2026-07-16T11:12:50+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "46daae0edfef15aa04ca871b39871446d1b25c8ce188e76c1e18aa044a680
 change_reason: "导入 claim_wechat_jiuwen_modules_spatial_memory_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_6ada1b3b0033883b83a3bf40", "input_sha256": "d7c637ec507a962632eee3ea0ecf37746317b5f051cfd986b1d6a3ed14d18567", "uncertainty": "量子位/openJiuwen 软文；产品能力与 benchmark 需独立验证，confidence 偏低。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文列举 Symbiosis 模块：多模态感知产出结构化世界状态；安全规划校检物理可行性；空间记忆以 3D Scene Graph 维护物体关系

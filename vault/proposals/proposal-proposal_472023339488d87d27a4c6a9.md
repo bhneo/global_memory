@@ -1,10 +1,10 @@
 ---
 id: "proposal_472023339488d87d27a4c6a9"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文主张机器人瓶颈不只是数据量，而是把数据转化为能力的结构与 recipe"
 created_at: "2026-07-16T01:19:59+08:00"
-updated_at: "2026-07-16T01:19:59+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "0d43a8e6ce8899b8044cc45d6ca0d17d94df631fd5ab4413baaa1bc311a94
 change_reason: "导入 claim_wechat_embodied_data_structure_not_volume_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_0a113baae7ce4d1ab78da1a3", "input_sha256": "5a002d5dff7b4a4ff65cc54dc1c4aee2bf4b78acc3af4defde572c2d1ee8fe0c", "uncertainty": "观点/分析文；Re-Mix/RT-2 等数字需回论文；含融资叙事批判。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文主张机器人瓶颈不只是数据量，而是把数据转化为能力的结构与 recipe

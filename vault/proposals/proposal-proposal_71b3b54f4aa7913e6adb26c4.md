@@ -1,10 +1,10 @@
 ---
 id: "proposal_71b3b54f4aa7913e6adb26c4"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文介绍 SkillEvolver 四步循环：K=4 策略探索→对比轨迹补丁→独立 Auditor 门控；Auditor 含 silent-bypass 等检查技能是否被下游 Agent 实际调用"
 created_at: "2026-07-16T11:16:49+08:00"
-updated_at: "2026-07-16T11:16:49+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "c6e07c40bc4ef80a6011efe57ecb7a5f543b12a8eca34039db5504aee147d
 change_reason: "导入 claim_wechat_skillevolver_meta_audit_loop_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_d01f40e4896de2e186cbbe8a", "input_sha256": "f12b772ae8623dddca24343cc8b500e4ab99ff37a61e232605764cf6d0dbf3b0", "uncertainty": "博客转述 2605.10332/2605.10500；benchmark 数字需回 arXiv 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文介绍 SkillEvolver 四步循环：K=4 策略探索→对比轨迹补丁→独立 Auditor 门控；Auditor 含 silent-bypass 等检查技能是否被下游 Agent 实际调用

@@ -1,10 +1,10 @@
 ---
 id: "proposal_bec2c7cabfabb2a909c9dad3"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文报告 SkillEvolver R=2 在 SkillsBench 验证集 avg@5 达 56.87%，超 human-curated 43.6%；R=1→R=2 增 8.7pp，下游 token/turns/wall-clock 约降 15–24%"
 created_at: "2026-07-16T11:16:49+08:00"
-updated_at: "2026-07-16T11:16:49+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "889105bd14f77959796458a8a959ce5b0542f57668267b4702564b88c1c98
 change_reason: "导入 claim_wechat_skillevolver_skillsbench_results_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_d01f40e4896de2e186cbbe8a", "input_sha256": "f12b772ae8623dddca24343cc8b500e4ab99ff37a61e232605764cf6d0dbf3b0", "uncertainty": "博客转述 2605.10332/2605.10500；benchmark 数字需回 arXiv 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文报告 SkillEvolver R=2 在 SkillsBench 验证集 avg@5 达 56.87%，超 human-curated 43.6%；R=1→R=2 增 8.7pp，下游 token/turns/wall-clock 约降 15–24%

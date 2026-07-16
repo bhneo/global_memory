@@ -1,10 +1,10 @@
 ---
 id: "proposal_a6ec12f7f7cea1f585bbd5dc"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文引述 Anthropic 研究称多语言输入激活相同核心概念模式，而非独立「语言大脑」"
 created_at: "2026-07-16T00:29:35+08:00"
-updated_at: "2026-07-16T00:29:35+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "5d8764dfa6e39f0b2c20e491a04604666cbb776f0b94817211f34159eec06
 change_reason: "导入 claim_wechat_multilingual_shared_concept_space_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_f35b44d4bd383fb26ca49165", "input_sha256": "0c7ad8b6aa226a022258100bc5d81f8d10bb3f87dc9d80b24e6736efb381f1d0", "uncertainty": "观点性科普；多处哲学推断；vec2vec/Anthropic/PRH 原文未 capture，需回引文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文引述 Anthropic 研究称多语言输入激活相同核心概念模式，而非独立「语言大脑」

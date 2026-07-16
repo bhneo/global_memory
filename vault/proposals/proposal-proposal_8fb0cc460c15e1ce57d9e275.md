@@ -1,10 +1,10 @@
 ---
 id: "proposal_8fb0cc460c15e1ce57d9e275"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 replica trick 计算霍金辐射精确熵时需考虑连通「拷贝虫洞」构型，与岛屿公式及幺正性恢复相关"
 created_at: "2026-07-15T21:48:24+08:00"
-updated_at: "2026-07-15T21:48:24+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "18a3a779291b5f28942368771979b1e9c757fab84466c86901d6ce1b509f3
 change_reason: "导入 claim_wechat_replica_wormhole_island_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_647ffb9287507f806c354670", "input_sha256": "ae36edff481f91a4e7698232656f71484625ab9e8f3415a95f9f1c65da358ab0", "uncertainty": "理论物理科普；ER=EPR 为猜想；经典论文未 capture，需回原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 replica trick 计算霍金辐射精确熵时需考虑连通「拷贝虫洞」构型，与岛屿公式及幺正性恢复相关

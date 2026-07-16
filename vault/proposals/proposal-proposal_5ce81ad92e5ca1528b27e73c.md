@@ -1,10 +1,10 @@
 ---
 id: "proposal_5ce81ad92e5ca1528b27e73c"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称具身 VLA 迭代速度常被真机评估流程而非训练本身卡住"
 created_at: "2026-07-15T18:11:29+08:00"
-updated_at: "2026-07-15T18:11:29+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "7b419f9b5692e164a8517895eb9ed50882bf9dd3ea00f96f2d57343c62d1c
 change_reason: "导入 claim_wechat_embodied_eval_bottleneck_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_2d4f3a7d3525782c8ff503ee", "input_sha256": "2eb0a83af431f3e7da3ab65e43a3ea289ca86fac3c0cd82065b933a36047834e", "uncertainty": "公众号评论文章；多处为对第三方论文/访谈的二次转述，需回原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称具身 VLA 迭代速度常被真机评估流程而非训练本身卡住

@@ -1,10 +1,10 @@
 ---
 id: "proposal_dc8dbb8aadae399d26d0da5e"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称全球约有 60 台托克马克与 10 台仿星器运行，且两者在保温与稳定性上各有优劣"
 created_at: "2026-07-15T20:52:19+08:00"
-updated_at: "2026-07-15T20:52:19+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "744c1a31591dfe15135e3c8e98ad484c175418908da40935439b92c578214
 change_reason: "导入 claim_wechat_stellarator_vs_tokamak_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9bd3bdfb9a5b1a728c3adf25", "input_sha256": "acdb10c5d1a22a783c661c333c5a59a2e896d8cd917f92fec72a922a03cfe669", "uncertainty": "科普文章；装置数量与 ITER 状态有时效性；聚变温度等为数量级表述。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称全球约有 60 台托克马克与 10 台仿星器运行，且两者在保温与稳定性上各有优劣

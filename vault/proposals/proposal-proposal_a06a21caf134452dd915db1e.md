@@ -1,10 +1,10 @@
 ---
 id: "proposal_a06a21caf134452dd915db1e"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文以光流与隧道/洞穴类比解释错觉：大脑预测环境将变暗并提前扩大瞳孔作为补偿"
 created_at: "2026-07-16T01:40:40+08:00"
-updated_at: "2026-07-16T01:40:40+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "a20b90350ea38328fdd325f74d992374995ed654d2dfde93501d0a32ec064
 change_reason: "导入 claim_wechat_expanding_hole_optic_flow_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_38756ea977001ddb8594f144", "input_sha256": "fc2140ce2cdf4019533f67bd6801061bc341a47afcaddc77797e79535e96cb86", "uncertainty": "知觉科普；n=50 与瞳孔 mm 数据需回 Frontiers 2022 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文以光流与隧道/洞穴类比解释错觉：大脑预测环境将变暗并提前扩大瞳孔作为补偿

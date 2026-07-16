@@ -1,10 +1,10 @@
 ---
 id: "proposal_b558a6bf737511df19381621"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文批评当前 VLA「2.0」阶段：缺组合泛化、长程任务分解与异常回退、端到端黑盒难定位故障、成功率与稳定性不足"
 created_at: "2026-07-16T11:12:50+08:00"
-updated_at: "2026-07-16T11:12:50+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "ba42c0c0eee2dfa957a4db0a22a7d8279fac4904719ffc0e2c7845a97f889
 change_reason: "导入 claim_wechat_jiuwen_vla_limitations_critique_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_6ada1b3b0033883b83a3bf40", "input_sha256": "d7c637ec507a962632eee3ea0ecf37746317b5f051cfd986b1d6a3ed14d18567", "uncertainty": "量子位/openJiuwen 软文；产品能力与 benchmark 需独立验证，confidence 偏低。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文批评当前 VLA「2.0」阶段：缺组合泛化、长程任务分解与异常回退、端到端黑盒难定位故障、成功率与稳定性不足

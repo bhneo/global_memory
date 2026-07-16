@@ -1,10 +1,10 @@
 ---
 id: "proposal_bf3e32b99ca9d572db69861e"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称等离子体为物质第四态，且在宇宙可见物质中占比超过 99.9%"
 created_at: "2026-07-15T20:52:19+08:00"
-updated_at: "2026-07-15T20:52:19+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "a0bf3bd7cecee53fb6d0a9b649434477c9bd1bda1254a581553e0c88db96c
 change_reason: "导入 claim_wechat_plasma_universe_fraction_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9bd3bdfb9a5b1a728c3adf25", "input_sha256": "acdb10c5d1a22a783c661c333c5a59a2e896d8cd917f92fec72a922a03cfe669", "uncertainty": "科普文章；装置数量与 ITER 状态有时效性；聚变温度等为数量级表述。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称等离子体为物质第四态，且在宇宙可见物质中占比超过 99.9%

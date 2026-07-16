@@ -1,10 +1,10 @@
 ---
 id: "proposal_540ddd12975cb5974084e048"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 VLA 需同时处理离散语言 token 与连续实时控制；PI π0 以 VLM 理解 + 独立流匹配动作专家为行业主流之一"
 created_at: "2026-07-16T11:07:21+08:00"
-updated_at: "2026-07-16T11:07:21+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "798289fb58ab98ff5977f7ec3b5e4d05b5de81773151b495e06938f0bc985
 change_reason: "导入 claim_wechat_g05_vla_language_action_tension_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_e6608d8f849ad472bbd95143", "input_sha256": "4a76f134b708400ebaa540062a88f5117c24495a2b0cea717e0250955d280228", "uncertainty": "自媒体解读 Galaxea G0.5；benchmark 数字 confidence 低，需回技术报告核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 VLA 需同时处理离散语言 token 与连续实时控制；PI π0 以 VLM 理解 + 独立流匹配动作专家为行业主流之一

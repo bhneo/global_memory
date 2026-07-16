@@ -1,10 +1,10 @@
 ---
 id: "proposal_bb7541069b039b5c066c223b"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文介绍离线框架：MC 回归估计任务剩余时长作进度代理，二值化优势条件 BC 迭代微调 VLA；意式咖啡成功率 40%→90%+、连续运行 13 小时"
 created_at: "2026-07-16T11:04:29+08:00"
-updated_at: "2026-07-16T11:04:29+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "fb40e7fb3a2d5448687476c0048cbdd7d5bc99045bc6ea20c917f2cec7dc3
 change_reason: "导入 claim_wechat_offline_rl_advantage_bc_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_8b41a014bee47c4239a2fa81", "input_sha256": "15201becf4f645da31cfd5c6c3c5bc10dec18547711dedd2c5fa9bf99fcdf1b6", "uncertainty": "Finn/Dong 研讨会转述；实验数字与算法细节需回 EXPO/EXPO-FT 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文介绍离线框架：MC 回归估计任务剩余时长作进度代理，二值化优势条件 BC 迭代微调 VLA；意式咖啡成功率 40%→90%+、连续运行 13 小时

@@ -1,10 +1,10 @@
 ---
 id: "proposal_e441340f7945523893ebfc05"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称标准模型是规范理论，其规范群为李群"
 created_at: "2026-07-15T21:10:42+08:00"
-updated_at: "2026-07-15T21:10:42+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "7315aea5afb36488bc83fc44dbfa2519c6729ce5f59faf5588fce82066085
 change_reason: "导入 claim_wechat_sm_gauge_lie_group_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_941321d95232028c233c9433", "input_sha256": "8ca515527b4c45ba7d9cbf931b4ab5dabc90b09436d73da21ad290ce9ea15d11", "uncertainty": "数学/粒子物理科普；公式符号在 extraction 中有损；非严格证明。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称标准模型是规范理论，其规范群为李群

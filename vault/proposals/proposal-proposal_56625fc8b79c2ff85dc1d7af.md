@@ -1,10 +1,10 @@
 ---
 id: "proposal_56625fc8b79c2ff85dc1d7af"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文引 No free lunch 称神经网络虽具通用近似能力，但并非适合所有任务，泛化至未见环境是关键"
 created_at: "2026-07-16T01:31:08+08:00"
-updated_at: "2026-07-16T01:31:08+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "b048c0ecbdaa57b1c008e33424af7f9eb2cd05d7c97ffe4657ad598b21ef8
 change_reason: "导入 claim_wechat_wangjun_no_free_lunch_generalization_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_68161c78067d7b4add05ba1a", "input_sha256": "9e993068d54477c4444841a6b3d7b5b93d8671d448d7bbb30da4e3a515e51c45", "uncertainty": "2023 演讲整理；IIT/意识主张为理论观点，非共识事实。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文引 No free lunch 称神经网络虽具通用近似能力，但并非适合所有任务，泛化至未见环境是关键

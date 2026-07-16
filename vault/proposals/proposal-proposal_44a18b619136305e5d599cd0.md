@@ -1,10 +1,10 @@
 ---
 id: "proposal_44a18b619136305e5d599cd0"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称经典 RL 虽常被视为仅处理外在奖励，但 Barto 等框架可将奖励生成机制置于「内部环境」，内在与外在奖励可统一建模"
 created_at: "2026-07-16T10:41:31+08:00"
-updated_at: "2026-07-16T10:41:31+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "9b8d71d7373ad769cab507d38f6fc604123baebd6f622ae9fb9ecd9a1cad5
 change_reason: "导入 claim_wechat_im_rl_framework_internal_rewards_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_91199da18f239c48bbcdd49f", "input_sha256": "0a6a4a4981b16af3d9e9decc20cb50cdc254ce7a2383bcf0381497839eb903b3", "uncertainty": "Synced 2020 综述转述多篇 RL/机器人论文；实验数据需回原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称经典 RL 虽常被视为仅处理外在奖励，但 Barto 等框架可将奖励生成机制置于「内部环境」，内在与外在奖励可统一建模

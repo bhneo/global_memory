@@ -1,10 +1,10 @@
 ---
 id: "proposal_7774948d25d0e3304ea582b5"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称双环错觉在边缘重叠时运动知觉会改变，但实际旋转方式未变"
 created_at: "2026-07-15T21:30:14+08:00"
-updated_at: "2026-07-15T21:30:14+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "268572747000ffec563482be24eade747480c98c24faee018991d019f8974
 change_reason: "导入 claim_wechat_double_ring_illusion_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_046487376d500224386ff628", "input_sha256": "591e25dfb5ae1789e1db3c5056e1b4a939173d007b0c39e7cacc3a63d7fd89b7", "uncertainty": "科普文章；获奖与实验细节需回 Best Illusion 官方或原论文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称双环错觉在边缘重叠时运动知觉会改变，但实际旋转方式未变

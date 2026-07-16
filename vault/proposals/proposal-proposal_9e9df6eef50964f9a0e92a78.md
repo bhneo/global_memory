@@ -1,10 +1,10 @@
 ---
 id: "proposal_9e9df6eef50964f9a0e92a78"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文报告 EmbodiSkill 在 ALFWorld 上达 93.28% 成功率（冻结 Qwen3.5-27B executor + GPT-5.2 演化 skill），消融显示 skill-aware 归因由 78.36% 提至 93.28%"
 created_at: "2026-07-16T11:16:48+08:00"
-updated_at: "2026-07-16T11:16:48+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "57b2e788c131a0b90122f99031c93dcba367c4d5fa2070976773a8e3d2b1e
 change_reason: "导入 claim_wechat_embodiskill_alfworld_results_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_d01f40e4896de2e186cbbe8a", "input_sha256": "f12b772ae8623dddca24343cc8b500e4ab99ff37a61e232605764cf6d0dbf3b0", "uncertainty": "博客转述 2605.10332/2605.10500；benchmark 数字需回 arXiv 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文报告 EmbodiSkill 在 ALFWorld 上达 93.28% 成功率（冻结 Qwen3.5-27B executor + GPT-5.2 演化 skill），消融显示 skill-aware 归因由 78.36% 提至 93.28%

@@ -1,10 +1,10 @@
 ---
 id: "proposal_d6188ff46b91945213ec1823"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文概述可通过让虫洞出口相对入口高速运动并再汇合，利用钟慢效应构造简化版时间机器"
 created_at: "2026-07-15T21:48:24+08:00"
-updated_at: "2026-07-15T21:48:24+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "798c86cfc22847787ff823277bc4e44a1e43120ab8803b4331cefa534ea51
 change_reason: "导入 claim_wechat_wormhole_time_machine_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_647ffb9287507f806c354670", "input_sha256": "ae36edff481f91a4e7698232656f71484625ab9e8f3415a95f9f1c65da358ab0", "uncertainty": "理论物理科普；ER=EPR 为猜想；经典论文未 capture，需回原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文概述可通过让虫洞出口相对入口高速运动并再汇合，利用钟慢效应构造简化版时间机器

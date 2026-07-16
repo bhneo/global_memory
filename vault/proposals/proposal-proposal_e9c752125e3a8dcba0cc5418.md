@@ -1,10 +1,10 @@
 ---
 id: "proposal_e9c752125e3a8dcba0cc5418"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称每场景平均 15+ 可操作物体，借助 Physx-Omni 赋予密度/铰接/流形等属性并可导入仿真引擎"
 created_at: "2026-07-16T00:59:30+08:00"
-updated_at: "2026-07-16T00:59:30+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "eb9502decbf76783d9d7d317eb5e95ab160eb973f52e83ca5ce12643bb960
 change_reason: "导入 claim_wechat_kairos_interactive_objects_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_a20c5fb22d91216503d413e1", "input_sha256": "10e43892aa54422eea042c9a487dddbfe1225fcc01652c5b0b63b1419a257fd8", "uncertainty": "厂商发布稿；规模/效果宣称需回 kairos-homeworld.github.io 与论文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称每场景平均 15+ 可操作物体，借助 Physx-Omni 赋予密度/铰接/流形等属性并可导入仿真引擎

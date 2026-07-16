@@ -1,10 +1,10 @@
 ---
 id: "proposal_5172af061fedb7539fc7129d"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文转述 2015 年实验：志愿者互相直视 10 分钟后报告「前所未有的强烈感受」"
 created_at: "2026-07-15T18:28:51+08:00"
-updated_at: "2026-07-15T18:28:51+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "1cd42e0ab0f9bc3839d5dc13bf33e844ba5d45de779737b64d79070931b01
 change_reason: "导入 claim_wechat_mutual_gaze_2015_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_12432807660136b2471717f1", "input_sha256": "05d0d9d390f1e06b5e61c33375a572d5f6117c540f719604d3c2980bb31e443b", "uncertainty": "利维坦转载科普译文；多处为 YouTube/Research Digest 二次转述，非原始研究。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文转述 2015 年实验：志愿者互相直视 10 分钟后报告「前所未有的强烈感受」

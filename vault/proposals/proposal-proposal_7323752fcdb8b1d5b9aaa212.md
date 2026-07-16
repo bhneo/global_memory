@@ -1,10 +1,10 @@
 ---
 id: "proposal_7323752fcdb8b1d5b9aaa212"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：Robo-ValueRL 项目页称使用约 240 小时离线演示与 3000+ 在线 rollout，并报告 chip/block 离线预训练增益 +26% / +34%"
 created_at: "2026-07-15T17:34:06+08:00"
-updated_at: "2026-07-15T17:34:06+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "b19a75cec3f21689c209844b9fc8ad2a8cdbbabb562eade7042f4e568c55b
 change_reason: "导入 claim_robo_valuerl_data_scale_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_7b278ba348f2a8bb94cce1fc", "input_sha256": "1c85061a186c9d21533adeddde7b4d4e21711d64175311fb46b20b1595d281a9", "uncertainty": "项目页数字与协议未完整披露；非 peer-reviewed 正文。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：Robo-ValueRL 项目页称使用约 240 小时离线演示与 3000+ 在线 rollout，并报告 chip/block 离线预训练增益 +26% / +34%

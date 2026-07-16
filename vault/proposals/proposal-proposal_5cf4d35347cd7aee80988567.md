@@ -1,10 +1,10 @@
 ---
 id: "proposal_5cf4d35347cd7aee80988567"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文认为世界模型做评估因「错得起」可能比直接生成动作更易先落地"
 created_at: "2026-07-15T18:11:29+08:00"
-updated_at: "2026-07-15T18:11:29+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "f6c885b8738d32d58bf76fbad99652dd833455a8a7b34273d4e3283701241
 change_reason: "导入 claim_wechat_eval_vs_action_tradeoff_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_2d4f3a7d3525782c8ff503ee", "input_sha256": "2eb0a83af431f3e7da3ab65e43a3ea289ca86fac3c0cd82065b933a36047834e", "uncertainty": "公众号评论文章；多处为对第三方论文/访谈的二次转述，需回原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文认为世界模型做评估因「错得起」可能比直接生成动作更易先落地

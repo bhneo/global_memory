@@ -1,0 +1,19 @@
+---
+id: "synthesis_embodied_data_bottleneck_m6"
+type: "synthesis"
+status: "proposal"
+title: "具身智能中的数据瓶颈：规模、结构、闭环与评价"
+created_at: "2026-07-16T16:30:21+08:00"
+updated_at: "2026-07-16T16:30:21+08:00"
+aliases: []
+tags: ["m6-distillation"]
+domains: []
+confidence: "unknown"
+source_ids: ["source_0a113baae7ce4d1ab78da1a3", "source_cda5a1b9e036598aff53e5be", "source_2d4f3a7d3525782c8ff503ee", "source_a20c5fb22d91216503d413e1"]
+relations: [{"type": "derived_from", "target_id": "source_0a113baae7ce4d1ab78da1a3", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "proposal"}, {"type": "derived_from", "target_id": "source_cda5a1b9e036598aff53e5be", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "proposal"}, {"type": "derived_from", "target_id": "source_2d4f3a7d3525782c8ff503ee", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "proposal"}, {"type": "derived_from", "target_id": "source_a20c5fb22d91216503d413e1", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "proposal"}, {"type": "related_to", "target_id": "concept_embodied_data_loop", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "proposal"}, {"type": "related_to", "target_id": "concept_world_model_evaluation", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "proposal"}, {"type": "related_to", "target_id": "tension_embodied_data_scale_structure", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "proposal"}]
+change_reason: "M6 controlled corpus distillation; requires human review"
+---
+
+# 具身智能中的数据瓶颈：规模、结构、闭环与评价
+
+当前语料共同指向四个相互制约的维度：数据规模扩大覆盖，结构化 recipe 影响学习效率，部署闭环决定能否持续修正，评价决定优化方向。语料主要是二手解读，因此该综合保留规模与结构的 tension，并把原论文核验和部署实验列为下一步。

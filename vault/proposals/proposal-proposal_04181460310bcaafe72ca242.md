@@ -1,10 +1,10 @@
 ---
 id: "proposal_04181460310bcaafe72ca242"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称阿里开放 Chat2Robot 浏览器评测平台（当前仅 RobotManip、RoboTwin-Clean 50 任务训练），并提及 Qwen-RobotClaw 长程任务与开放世界卫生间搜索 demo"
 created_at: "2026-07-16T11:19:49+08:00"
-updated_at: "2026-07-16T11:19:49+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "a9d41862471538a6803ec82d5b4f5c8a0195164246a4d5bebd009e32c503c
 change_reason: "导入 claim_wechat_qwen_chat2robot_platform_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_11bc6c51fa038191e33bc9a7", "input_sha256": "ee8016cabd1c0eaccb570735f1d909141dfcab8a05da10364adb722f13aa88b6", "uncertainty": "机器人前瞻 vendor 通稿；SOTA/benchmark 数字 confidence 低，需回阿里官方材料核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称阿里开放 Chat2Robot 浏览器评测平台（当前仅 RobotManip、RoboTwin-Clean 50 任务训练），并提及 Qwen-RobotClaw 长程任务与开放世界卫生间搜索 demo

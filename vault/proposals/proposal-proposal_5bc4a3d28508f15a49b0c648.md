@@ -1,10 +1,10 @@
 ---
 id: "proposal_5bc4a3d28508f15a49b0c648"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文报告 50 名被试凝视「黑洞」图时瞳孔随时间扩大（约 4.1mm→4.9mm），86% 主观感到扩张"
 created_at: "2026-07-16T01:40:40+08:00"
-updated_at: "2026-07-16T01:40:40+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "ba8cf0d85c20197e2aaa8bb1e76e09817effde5f8a597810775e7a38af5e4
 change_reason: "导入 claim_wechat_expanding_hole_pupil_dilation_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_38756ea977001ddb8594f144", "input_sha256": "fc2140ce2cdf4019533f67bd6801061bc341a47afcaddc77797e79535e96cb86", "uncertainty": "知觉科普；n=50 与瞳孔 mm 数据需回 Frontiers 2022 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文报告 50 名被试凝视「黑洞」图时瞳孔随时间扩大（约 4.1mm→4.9mm），86% 主观感到扩张

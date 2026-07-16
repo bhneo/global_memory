@@ -1,10 +1,10 @@
 ---
 id: "proposal_1f3255603ca1d9d22edbd524"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 G0.5 在同一自回归序列中原生生成 subtask/BBox/trace/action hint 四类推理，ViT 每 4 层插时空注意力记 5 秒历史，预训练 VQA:机器人数据=1:4"
 created_at: "2026-07-16T11:07:21+08:00"
-updated_at: "2026-07-16T11:07:21+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "c3eced54e6483a5e4bfcd3429cbc8109ebee91cc34b7f8cf7fb87f2ac9e36
 change_reason: "导入 claim_wechat_g05_native_cot_memory_mixture_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_e6608d8f849ad472bbd95143", "input_sha256": "4a76f134b708400ebaa540062a88f5117c24495a2b0cea717e0250955d280228", "uncertainty": "自媒体解读 Galaxea G0.5；benchmark 数字 confidence 低，需回技术报告核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 G0.5 在同一自回归序列中原生生成 subtask/BBox/trace/action hint 四类推理，ViT 每 4 层插时空注意力记 5 秒历史，预训练 VQA:机器人数据=1:4

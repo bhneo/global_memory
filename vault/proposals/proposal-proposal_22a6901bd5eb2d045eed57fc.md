@@ -1,10 +1,10 @@
 ---
 id: "proposal_22a6901bd5eb2d045eed57fc"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称该数据集专为中国家庭户型设计，覆盖封闭式厨房、生活阳台、玄关等本土特征，区别于欧美开源室内数据"
 created_at: "2026-07-16T00:59:30+08:00"
-updated_at: "2026-07-16T00:59:30+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "2bb7730eaad40207d8972e4e011ce7c50efcaf9301c6e8892c7e429c857ad
 change_reason: "导入 claim_wechat_kairos_china_specific_layout_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_a20c5fb22d91216503d413e1", "input_sha256": "10e43892aa54422eea042c9a487dddbfe1225fcc01652c5b0b63b1419a257fd8", "uncertainty": "厂商发布稿；规模/效果宣称需回 kairos-homeworld.github.io 与论文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称该数据集专为中国家庭户型设计，覆盖封闭式厨房、生活阳台、玄关等本土特征，区别于欧美开源室内数据

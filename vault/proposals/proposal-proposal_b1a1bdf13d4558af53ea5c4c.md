@@ -1,10 +1,10 @@
 ---
 id: "proposal_b1a1bdf13d4558af53ea5c4c"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文列举 Ego 第一人称视频采集优势为低成本可扩展，但缺乏力触觉/精确关节轨迹且需对齐与清洗"
 created_at: "2026-07-16T01:11:55+08:00"
-updated_at: "2026-07-16T01:11:55+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "ea9a253d867b5980c33dd60993708d1eb584eb090d2f16223c6a2a397525b
 change_reason: "导入 claim_wechat_ego_collection_limitations_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_cda5a1b9e036598aff53e5be", "input_sha256": "4fb3166e9d3eca8b3c582dfeb6313482c29134b47423321cdc6c76c407611aa5", "uncertainty": "行业软文/厂商宣传；特斯拉/OpenAI/数据堂数据需回原始来源核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文列举 Ego 第一人称视频采集优势为低成本可扩展，但缺乏力触觉/精确关节轨迹且需对齐与清洗

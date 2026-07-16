@@ -1,10 +1,10 @@
 ---
 id: "proposal_5c9700513e8a69e5520b393d"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称等离子体温度跨度很大：低温等离子体可仅几十摄氏度，聚变点火温度可达上亿度"
 created_at: "2026-07-15T20:52:19+08:00"
-updated_at: "2026-07-15T20:52:19+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "f21f6be99f1c4aed6fc82acd8c4fbbac6c6a51440e78e8134cf2d2723b5ce
 change_reason: "导入 claim_wechat_plasma_temperature_range_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9bd3bdfb9a5b1a728c3adf25", "input_sha256": "acdb10c5d1a22a783c661c333c5a59a2e896d8cd917f92fec72a922a03cfe669", "uncertainty": "科普文章；装置数量与 ITER 状态有时效性；聚变温度等为数量级表述。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称等离子体温度跨度很大：低温等离子体可仅几十摄氏度，聚变点火温度可达上亿度

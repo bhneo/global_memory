@@ -1,10 +1,10 @@
 ---
 id: "proposal_0aa86dc6117efd96f6378197"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称连续对称性将孤立极小值拉伸为平坦极小值流形，平坦方向未必反映更好泛化"
 created_at: "2026-07-16T00:06:31+08:00"
-updated_at: "2026-07-16T00:06:31+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "5f70a10dc2e2949e9b40aca84160eab5b2416f0d3e102f0bc15d52a24c112
 change_reason: "导入 claim_wechat_param_symmetry_flat_minima_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_6ae6c4bef52010f96ddb3dbf", "input_sha256": "1f67ffbd82de0a35e47bc93a507a2c05176ac8bb8262a07cefad2db996b0684e", "uncertainty": "DL 理论科普；原综述 arXiv:2506.13018 未 capture，需回原文核验定理与实验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称连续对称性将孤立极小值拉伸为平坦极小值流形，平坦方向未必反映更好泛化

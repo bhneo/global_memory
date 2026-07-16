@@ -1,10 +1,10 @@
 ---
 id: "proposal_1d44e0e2946b9ac0720b2746"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文介绍 G0.5 用 RVQ ActionCodec 与 27 维虚拟骨架（左/右臂、夹爪、底盘）统一跨本体动作 token，并按需只为激活部件生成 token"
 created_at: "2026-07-16T11:07:21+08:00"
-updated_at: "2026-07-16T11:07:21+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "895b484b5265007dfd79767f7d1ae4f9d78c38a682690df66cb5fde18fa19
 change_reason: "导入 claim_wechat_g05_actioncodec_rvq_skeleton_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_e6608d8f849ad472bbd95143", "input_sha256": "4a76f134b708400ebaa540062a88f5117c24495a2b0cea717e0250955d280228", "uncertainty": "自媒体解读 Galaxea G0.5；benchmark 数字 confidence 低，需回技术报告核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文介绍 G0.5 用 RVQ ActionCodec 与 27 维虚拟骨架（左/右臂、夹爪、底盘）统一跨本体动作 token，并按需只为激活部件生成 token

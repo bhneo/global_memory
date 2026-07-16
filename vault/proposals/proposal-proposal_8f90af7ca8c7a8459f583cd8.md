@@ -1,10 +1,10 @@
 ---
 id: "proposal_8f90af7ca8c7a8459f583cd8"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文将粒子表述为观测后坍缩的波函数，并指出测量为何选出特定结果近一个世纪仍无共识答案"
 created_at: "2026-07-16T10:52:31+08:00"
-updated_at: "2026-07-16T10:52:31+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "605125e3e512cdc4b55585b8a21d5e3e15dfae6e90930f5ab229476e61095
 change_reason: "导入 claim_wechat_particle_collapsed_wavefunction_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9bcee8e0abc8386cbba43b87", "input_sha256": "e9b06f9a56bacf6be394e58b75466386a638f10c397f0ab5b702160f9dc45a7a", "uncertainty": "Quanta/Wolchover 2020 综述转述；前沿理论部分为开放研究非定论。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文将粒子表述为观测后坍缩的波函数，并指出测量为何选出特定结果近一个世纪仍无共识答案

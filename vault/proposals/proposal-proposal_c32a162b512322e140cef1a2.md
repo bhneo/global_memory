@@ -1,10 +1,10 @@
 ---
 id: "proposal_c32a162b512322e140cef1a2"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 Qwen-RobotNav 在宇树 Go2 上单相机零样本部署（Jetson Thor 推理 196ms），训练含 1560 万条样本；NAVSIM 闭环 PDMS 91.4"
 created_at: "2026-07-16T11:19:48+08:00"
-updated_at: "2026-07-16T11:19:48+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "fe5ca2b3d163530bd69e360f50ece079091197c667358266d8a73885472bb
 change_reason: "导入 claim_wechat_qwen_robotnav_go2_deployment_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_11bc6c51fa038191e33bc9a7", "input_sha256": "ee8016cabd1c0eaccb570735f1d909141dfcab8a05da10364adb722f13aa88b6", "uncertainty": "机器人前瞻 vendor 通稿；SOTA/benchmark 数字 confidence 低，需回阿里官方材料核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 Qwen-RobotNav 在宇树 Go2 上单相机零样本部署（Jetson Thor 推理 196ms），训练含 1560 万条样本；NAVSIM 闭环 PDMS 91.4

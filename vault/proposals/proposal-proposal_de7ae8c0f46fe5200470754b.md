@@ -1,10 +1,10 @@
 ---
 id: "proposal_de7ae8c0f46fe5200470754b"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 ReLU/BatchNorm、线性层/注意力、Softmax 等常见架构具有连续对称性，Transformer 对称性为组件组合"
 created_at: "2026-07-16T00:06:31+08:00"
-updated_at: "2026-07-16T00:06:31+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "3aaa010039f8fa8553a12b35d56bade8cf4a022b1f68ad5a73b1fae6280f9
 change_reason: "导入 claim_wechat_param_symmetry_architectures_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_6ae6c4bef52010f96ddb3dbf", "input_sha256": "1f67ffbd82de0a35e47bc93a507a2c05176ac8bb8262a07cefad2db996b0684e", "uncertainty": "DL 理论科普；原综述 arXiv:2506.13018 未 capture，需回原文核验定理与实验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 ReLU/BatchNorm、线性层/注意力、Softmax 等常见架构具有连续对称性，Transformer 对称性为组件组合

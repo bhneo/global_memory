@@ -1,10 +1,10 @@
 ---
 id: "proposal_e8a1499b5853fe28c1ea1485"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称荣格在一战后前混乱期从「癫狂」经验中获得毕生研究的「首要物质」"
 created_at: "2026-07-15T18:37:56+08:00"
-updated_at: "2026-07-15T18:37:56+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "4da933ed81e5c2bd67cee3593cf401ffbcb7827061af262dfcf480b22825b
 change_reason: "导入 claim_wechat_jung_primo_materia_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_3413634e4482813fa28da48e", "input_sha256": "f5fb1a70caddd9fb2df74a41980d639e096f0723369fd67429571aa6074ccfa7", "uncertainty": "哲学/精神病学文化评论；非临床建议；多处为 Laing/Jung 著作二次转述。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称荣格在一战后前混乱期从「癫狂」经验中获得毕生研究的「首要物质」

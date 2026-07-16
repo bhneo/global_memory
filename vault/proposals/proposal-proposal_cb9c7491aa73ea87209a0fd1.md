@@ -1,10 +1,10 @@
 ---
 id: "proposal_cb9c7491aa73ea87209a0fd1"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 vec2vec 可在无配对训练数据下跨架构翻译嵌入，报告约 0.92 余弦相似度与 >99% 打乱嵌入匹配"
 created_at: "2026-07-16T00:29:35+08:00"
-updated_at: "2026-07-16T00:29:35+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "47451ea4d9a47c64cb0e7c453c6429e1dbbd7cf521c1d689d90ecd7d12a2a
 change_reason: "导入 claim_wechat_vec2vec_embedding_translation_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_f35b44d4bd383fb26ca49165", "input_sha256": "0c7ad8b6aa226a022258100bc5d81f8d10bb3f87dc9d80b24e6736efb381f1d0", "uncertainty": "观点性科普；多处哲学推断；vec2vec/Anthropic/PRH 原文未 capture，需回引文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 vec2vec 可在无配对训练数据下跨架构翻译嵌入，报告约 0.92 余弦相似度与 >99% 打乱嵌入匹配

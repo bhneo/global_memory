@@ -1,10 +1,10 @@
 ---
 id: "proposal_264478dfd12ed55986311e6d"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 EmbodiSkill 与 SkillEvolver 代表技能自进化两条分叉：前者区分技能缺陷 vs 执行偏差归因，后者把技能写作变成可审计的 meta-skill 在线学习"
 created_at: "2026-07-16T11:16:48+08:00"
-updated_at: "2026-07-16T11:16:48+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "cae1fdcaa28aeac4cf2bb721b66ad9f27b36c6c85de4956e4cc219b0a96bc
 change_reason: "导入 claim_wechat_embodiskill_skillevolver_fork_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_d01f40e4896de2e186cbbe8a", "input_sha256": "f12b772ae8623dddca24343cc8b500e4ab99ff37a61e232605764cf6d0dbf3b0", "uncertainty": "博客转述 2605.10332/2605.10500；benchmark 数字需回 arXiv 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 EmbodiSkill 与 SkillEvolver 代表技能自进化两条分叉：前者区分技能缺陷 vs 执行偏差归因，后者把技能写作变成可审计的 meta-skill 在线学习

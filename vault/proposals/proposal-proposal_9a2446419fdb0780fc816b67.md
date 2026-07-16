@@ -1,10 +1,10 @@
 ---
 id: "proposal_9a2446419fdb0780fc816b67"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文引 Re-Mix 称学习到的 domain weight 比均匀混合高 38%，说明数据混合/recipe 比总量更关键"
 created_at: "2026-07-16T01:20:00+08:00"
-updated_at: "2026-07-16T01:20:00+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "494cad2c8dda98cfdd8ccb727e591d3f18a087f989a03507f86fc3b8a54d7
 change_reason: "导入 claim_wechat_remix_domain_weighting_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_0a113baae7ce4d1ab78da1a3", "input_sha256": "5a002d5dff7b4a4ff65cc54dc1c4aee2bf4b78acc3af4defde572c2d1ee8fe0c", "uncertainty": "观点/分析文；Re-Mix/RT-2 等数字需回论文；含融资叙事批判。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文引 Re-Mix 称学习到的 domain weight 比均匀混合高 38%，说明数据混合/recipe 比总量更关键

@@ -1,10 +1,10 @@
 ---
 id: "proposal_2bb6bb64b38a86a24375d750"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文区分精神病症与超智识：二者皆被主流视为越界，但后者被描述为解放而非痛不欲生"
 created_at: "2026-07-15T18:37:56+08:00"
-updated_at: "2026-07-15T18:37:56+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "96cd77cf60ab6c38db7685edce35cfc5b67207f91af0eb4aaad5b59a004a4
 change_reason: "导入 claim_wechat_psychosis_hypersanity_contrast_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_3413634e4482813fa28da48e", "input_sha256": "f5fb1a70caddd9fb2df74a41980d639e096f0723369fd67429571aa6074ccfa7", "uncertainty": "哲学/精神病学文化评论；非临床建议；多处为 Laing/Jung 著作二次转述。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文区分精神病症与超智识：二者皆被主流视为越界，但后者被描述为解放而非痛不欲生

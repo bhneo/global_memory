@@ -1,10 +1,10 @@
 ---
 id: "proposal_f626c07609a9ec52e6700046"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 Morris-Thorne 可穿越虫洞需要违反类光能量条件的奇异负能物质"
 created_at: "2026-07-15T21:48:24+08:00"
-updated_at: "2026-07-15T21:48:24+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "871538a3930bd7cb15fd6aa3b6de898fa1d5608c36bb4c41b0ced941d04fc
 change_reason: "导入 claim_wechat_traversable_wormhole_exotic_matter_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_647ffb9287507f806c354670", "input_sha256": "ae36edff481f91a4e7698232656f71484625ab9e8f3415a95f9f1c65da358ab0", "uncertainty": "理论物理科普；ER=EPR 为猜想；经典论文未 capture，需回原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 Morris-Thorne 可穿越虫洞需要违反类光能量条件的奇异负能物质

@@ -1,10 +1,10 @@
 ---
 id: "proposal_09ed11057d7adf2144b90fa9"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称基本粒子常被视为无内部结构、无物理体积的点，但其电荷与质量等性质难以用零维点承载"
 created_at: "2026-07-16T10:52:30+08:00"
-updated_at: "2026-07-16T10:52:30+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "670cab5a2f9788c5dba73ef943b3d674bdc1db79729d0d248888c80fc9e94
 change_reason: "导入 claim_wechat_particle_point_paradox_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9bcee8e0abc8386cbba43b87", "input_sha256": "e9b06f9a56bacf6be394e58b75466386a638f10c397f0ab5b702160f9dc45a7a", "uncertainty": "Quanta/Wolchover 2020 综述转述；前沿理论部分为开放研究非定论。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称基本粒子常被视为无内部结构、无物理体积的点，但其电荷与质量等性质难以用零维点承载

@@ -1,10 +1,10 @@
 ---
 id: "proposal_0dcbb63797499d43dbbd9457"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文介绍 EmbodiSkill 将 skill 拆为 S_body 与 S_app：Discovery/Optimization/SkillDefect 可改正文，ExecutionLapse 仅更新附录强调执行遵守"
 created_at: "2026-07-16T11:16:48+08:00"
-updated_at: "2026-07-16T11:16:48+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "14f6e1dc53017a179d80dd3d5ebc0611266034d1ede8227ad812e8c5fe8dd
 change_reason: "导入 claim_wechat_embodiskill_body_appendix_attribution_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_d01f40e4896de2e186cbbe8a", "input_sha256": "f12b772ae8623dddca24343cc8b500e4ab99ff37a61e232605764cf6d0dbf3b0", "uncertainty": "博客转述 2605.10332/2605.10500；benchmark 数字需回 arXiv 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文介绍 EmbodiSkill 将 skill 拆为 S_body 与 S_app：Discovery/Optimization/SkillDefect 可改正文，ExecutionLapse 仅更新附录强调执行遵守

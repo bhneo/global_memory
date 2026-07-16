@@ -1,10 +1,10 @@
 ---
 id: "proposal_f74f4249f46023b183556af7"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 epiplexity（认知复杂度）指在算力约束下观察者能从数据中提取的可复用、可泛化结构信息总量"
 created_at: "2026-07-15T23:49:56+08:00"
-updated_at: "2026-07-15T23:49:56+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "9f33dd97d2ce7ab3bbefa436a560390b74e4acd6faaabfcc544ebe87c83e6
 change_reason: "导入 claim_wechat_epiplexity_definition_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_494ab02c17c5f495f1ed29d0", "input_sha256": "40dcd2356d0295f225991b186dd407fc56fdc0c0a81555ee276cdb2b2f3f472d", "uncertainty": "信息论/AI 科普；原论文 arXiv:2601.03220 未 capture，需回原文核验定理与公式。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 epiplexity（认知复杂度）指在算力约束下观察者能从数据中提取的可复用、可泛化结构信息总量

@@ -1,10 +1,10 @@
 ---
 id: "proposal_b3058b215f825eb358e1bde7"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称瞳孔调节可能依据大脑对光的感知而非实际照度，主观扩张感与瞳孔幅度正相关"
 created_at: "2026-07-16T01:40:40+08:00"
-updated_at: "2026-07-16T01:40:40+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "c4ae13753f6c6c33e52785c1771479b28144d5e9674c6496a794c8b0be9f4
 change_reason: "导入 claim_wechat_expanding_hole_pupil_perception_not_luminance_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_38756ea977001ddb8594f144", "input_sha256": "fc2140ce2cdf4019533f67bd6801061bc341a47afcaddc77797e79535e96cb86", "uncertainty": "知觉科普；n=50 与瞳孔 mm 数据需回 Frontiers 2022 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称瞳孔调节可能依据大脑对光的感知而非实际照度，主观扩张感与瞳孔幅度正相关

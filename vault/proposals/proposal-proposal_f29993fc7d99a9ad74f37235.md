@@ -1,10 +1,10 @@
 ---
 id: "proposal_f29993fc7d99a9ad74f37235"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称乘法型过程中几何平均（长期增长率）低于算术平均，个体长期表现系统性低于群体平均"
 created_at: "2026-07-16T00:35:52+08:00"
-updated_at: "2026-07-16T00:35:52+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "822911c8fc99154edb1296e3def61d4efc0f33a069a0647c410f5ad05b1d3
 change_reason: "导入 claim_wechat_multiplicative_jensen_gap_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9d39636775b188c87d6a001f", "input_sha256": "0fe84716255d0f351c82744980c66aa1eeff10d2d08ed2c770ccbe7d6ece9f33", "uncertainty": "概率/决策科普；模拟与 37.5% 需独立验算；Thorp 原文未 capture。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称乘法型过程中几何平均（长期增长率）低于算术平均，个体长期表现系统性低于群体平均

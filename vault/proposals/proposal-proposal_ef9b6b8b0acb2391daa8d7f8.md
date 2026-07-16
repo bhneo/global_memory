@@ -1,10 +1,10 @@
 ---
 id: "proposal_ef9b6b8b0acb2391daa8d7f8"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称祖冲之在公元 462 年给出 355/113 作为 π 近似值，并在近 800 年内为最高精度"
 created_at: "2026-07-15T19:24:29+08:00"
-updated_at: "2026-07-15T19:24:29+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "85066bae30bc9b0e0f7390fa45653f0368f15443a78b37a8c7d336a73b2c3
 change_reason: "导入 claim_wechat_zu_chongzhi_355_113_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_a86d60369a021d93d1e863aa", "input_sha256": "9143ea8d31cc8d7534db5de546450b2be5f4dd4d90eb7b8c94b337e8cf7c3295", "uncertainty": "科普文章；超算纪录与历史断言需独立核对；部分为经典数学结论。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称祖冲之在公元 462 年给出 355/113 作为 π 近似值，并在近 800 年内为最高精度

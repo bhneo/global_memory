@@ -1,10 +1,10 @@
 ---
 id: "proposal_db4a4c001be4e95d19c443da"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：Robo-ValueRL 项目页报告真实机器人毫米级芯片插入任务最终成功率 86%"
 created_at: "2026-07-15T17:34:06+08:00"
-updated_at: "2026-07-15T17:34:06+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "29a357ad641995b1b23a6cb53c6fb3bb47f8cb68d81a87fd58053f1a5eb60
 change_reason: "导入 claim_robo_valuerl_chip_insertion_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_7b278ba348f2a8bb94cce1fc", "input_sha256": "1c85061a186c9d21533adeddde7b4d4e21711d64175311fb46b20b1595d281a9", "uncertainty": "项目页数字与协议未完整披露；非 peer-reviewed 正文。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：Robo-ValueRL 项目页报告真实机器人毫米级芯片插入任务最终成功率 86%

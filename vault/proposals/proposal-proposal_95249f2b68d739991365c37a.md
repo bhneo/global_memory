@@ -1,10 +1,10 @@
 ---
 id: "proposal_95249f2b68d739991365c37a"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：天南具身公园文称近月四篇世界模型相关工作收敛于「拿世界模型去做评估」"
 created_at: "2026-07-15T18:11:29+08:00"
-updated_at: "2026-07-15T18:11:29+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "9b659e23066e2a63fab34e3bf15943fc40ef355da24cb2ba0b352c91bc9c9
 change_reason: "导入 claim_wechat_wam_eval_convergence_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_2d4f3a7d3525782c8ff503ee", "input_sha256": "2eb0a83af431f3e7da3ab65e43a3ea289ca86fac3c0cd82065b933a36047834e", "uncertainty": "公众号评论文章；多处为对第三方论文/访谈的二次转述，需回原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：天南具身公园文称近月四篇世界模型相关工作收敛于「拿世界模型去做评估」

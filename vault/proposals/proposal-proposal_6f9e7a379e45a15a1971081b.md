@@ -1,10 +1,10 @@
 ---
 id: "proposal_6f9e7a379e45a15a1971081b"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：Robo-ValueRL 项目页称该方法把价值估计、质量条件策略学习与残差在线适应串联为 offline-to-online 流水线"
 created_at: "2026-07-15T17:34:06+08:00"
-updated_at: "2026-07-15T17:34:06+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "2aa3e5ac6be498a70eecd176b7b9eec531e12ffd71cd343ac654fbfae7352
 change_reason: "导入 claim_robo_valuerl_pipeline_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_7b278ba348f2a8bb94cce1fc", "input_sha256": "1c85061a186c9d21533adeddde7b4d4e21711d64175311fb46b20b1595d281a9", "uncertainty": "项目页数字与协议未完整披露；非 peer-reviewed 正文。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：Robo-ValueRL 项目页称该方法把价值估计、质量条件策略学习与残差在线适应串联为 offline-to-online 流水线

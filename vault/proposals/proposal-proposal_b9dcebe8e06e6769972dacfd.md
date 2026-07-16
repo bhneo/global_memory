@@ -1,10 +1,10 @@
 ---
 id: "proposal_b9dcebe8e06e6769972dacfd"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称阿里发布 Qwen-Robot 系列三模型：RobotNav（VLN 移动）、RobotManip（VLA 操作）、RobotWorld（世界模型），均以语言优先接口连接 VLM 与物理行动"
 created_at: "2026-07-16T11:19:48+08:00"
-updated_at: "2026-07-16T11:19:48+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "ada867bcef7ba0e40b82938fa942b32193ec0c63b14b2ac26e101b925f88e
 change_reason: "导入 claim_wechat_qwen_robot_three_model_suite_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_11bc6c51fa038191e33bc9a7", "input_sha256": "ee8016cabd1c0eaccb570735f1d909141dfcab8a05da10364adb722f13aa88b6", "uncertainty": "机器人前瞻 vendor 通稿；SOTA/benchmark 数字 confidence 低，需回阿里官方材料核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称阿里发布 Qwen-Robot 系列三模型：RobotNav（VLN 移动）、RobotManip（VLA 操作）、RobotWorld（世界模型），均以语言优先接口连接 VLM 与物理行动

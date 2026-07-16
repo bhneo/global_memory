@@ -1,10 +1,10 @@
 ---
 id: "proposal_e89b000500b4bb2a4002a93b"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文介绍多智能体「社会影响」内在奖励：用反事实行动评估对同伴行为的因果影响，据称在 Cleanup/Harvest 中优于基线"
 created_at: "2026-07-16T10:41:32+08:00"
-updated_at: "2026-07-16T10:41:32+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "d14e34607640aaf937a27b1373c6bf8a6baf44af77647526c617615744d5a
 change_reason: "导入 claim_wechat_im_rl_social_influence_marl_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_91199da18f239c48bbcdd49f", "input_sha256": "0a6a4a4981b16af3d9e9decc20cb50cdc254ce7a2383bcf0381497839eb903b3", "uncertainty": "Synced 2020 综述转述多篇 RL/机器人论文；实验数据需回原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文介绍多智能体「社会影响」内在奖励：用反事实行动评估对同伴行为的因果影响，据称在 Cleanup/Harvest 中优于基线

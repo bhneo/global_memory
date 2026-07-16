@@ -1,10 +1,10 @@
 ---
 id: "proposal_5559748b9e8d0de26272d887"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称遍历性指时间平均与群体平均等价；现实生活常非遍历，个体可能因一次失败出局"
 created_at: "2026-07-16T00:35:52+08:00"
-updated_at: "2026-07-16T00:35:52+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "7e4d4d0e89251b72be5a9657d17980e1812894adbb4c02fcb7de187ef1d45
 change_reason: "导入 claim_wechat_ergodicity_time_vs_ensemble_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9d39636775b188c87d6a001f", "input_sha256": "0fe84716255d0f351c82744980c66aa1eeff10d2d08ed2c770ccbe7d6ece9f33", "uncertainty": "概率/决策科普；模拟与 37.5% 需独立验算；Thorp 原文未 capture。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称遍历性指时间平均与群体平均等价；现实生活常非遍历，个体可能因一次失败出局

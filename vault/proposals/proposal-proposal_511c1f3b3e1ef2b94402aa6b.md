@@ -1,10 +1,10 @@
 ---
 id: "proposal_511c1f3b3e1ef2b94402aa6b"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称甘兹菲尔德效应下，大脑会在均匀感官剥夺场中放大神经元噪音以补偿缺失视觉信号"
 created_at: "2026-07-15T18:28:51+08:00"
-updated_at: "2026-07-15T18:28:51+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "bd829e26b27f2702ae1a637d13db41cbfad19e90bc7afde2516687d2ead31
 change_reason: "导入 claim_wechat_ganzfeld_mechanism_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_12432807660136b2471717f1", "input_sha256": "05d0d9d390f1e06b5e61c33375a572d5f6117c540f719604d3c2980bb31e443b", "uncertainty": "利维坦转载科普译文；多处为 YouTube/Research Digest 二次转述，非原始研究。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称甘兹菲尔德效应下，大脑会在均匀感官剥夺场中放大神经元噪音以补偿缺失视觉信号

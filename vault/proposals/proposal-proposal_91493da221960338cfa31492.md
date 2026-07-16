@@ -1,10 +1,10 @@
 ---
 id: "proposal_91493da221960338cfa31492"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 Jiuwen Symbiosis 以「态势感知环」显式暴露 Agent 内部状态：认知层与执行层经共享 Workspace 协作，强调可观察、可调试"
 created_at: "2026-07-16T11:12:50+08:00"
-updated_at: "2026-07-16T11:12:50+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "597fe3598e054412d825aa22c610ce02e635da9f709d543201ac6efdaae1d
 change_reason: "导入 claim_wechat_jiuwen_situation_awareness_loop_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_6ada1b3b0033883b83a3bf40", "input_sha256": "d7c637ec507a962632eee3ea0ecf37746317b5f051cfd986b1d6a3ed14d18567", "uncertainty": "量子位/openJiuwen 软文；产品能力与 benchmark 需独立验证，confidence 偏低。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 Jiuwen Symbiosis 以「态势感知环」显式暴露 Agent 内部状态：认知层与执行层经共享 Workspace 协作，强调可观察、可调试

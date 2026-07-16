@@ -1,10 +1,10 @@
 ---
 id: "proposal_3da31aa93e0a1483305f3084"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 Φ-SO 对阻尼谐振子、爱因斯坦能量与万有引力等经典公式实验均 100% 还原且各方法缺一不可"
 created_at: "2026-07-15T18:45:42+08:00"
-updated_at: "2026-07-15T18:45:42+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "a271189ddbc0ac8501e1071044e887c6b0bed7fb29177b26bc2e53cf58f39
 change_reason: "导入 claim_wechat_physo_classic_recovery_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_ef99e322cc662cffb7eb5c8f", "input_sha256": "fb4eb39bc16a2dd15c6be6bb31fd72c68e487060c4ac35e0af4ff8fab180fc58", "uncertainty": "科技媒体报道；实验数字与 100% 结论需回 arXiv:2303.03192 核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 Φ-SO 对阻尼谐振子、爱因斯坦能量与万有引力等经典公式实验均 100% 还原且各方法缺一不可

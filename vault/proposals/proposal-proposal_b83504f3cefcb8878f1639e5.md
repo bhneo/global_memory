@@ -1,10 +1,10 @@
 ---
 id: "proposal_b83504f3cefcb8878f1639e5"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称反色「白洞」图使被试瞳孔由扩大转为缩小，大脑或解读为走向明亮环境"
 created_at: "2026-07-16T01:40:40+08:00"
-updated_at: "2026-07-16T01:40:40+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "4abb3ebead30eb4b98cacb53a5e21a9d8bccb9637632436b312d409dc5aae
 change_reason: "导入 claim_wechat_expanding_hole_white_hole_constriction_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_38756ea977001ddb8594f144", "input_sha256": "fc2140ce2cdf4019533f67bd6801061bc341a47afcaddc77797e79535e96cb86", "uncertainty": "知觉科普；n=50 与瞳孔 mm 数据需回 Frontiers 2022 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称反色「白洞」图使被试瞳孔由扩大转为缩小，大脑或解读为走向明亮环境

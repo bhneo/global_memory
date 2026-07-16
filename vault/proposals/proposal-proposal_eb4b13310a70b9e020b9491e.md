@@ -1,10 +1,10 @@
 ---
 id: "proposal_eb4b13310a70b9e020b9491e"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称对上述硬币游戏凯利公式建议每次下注总资金的 37.5%，以平衡增长与避免爆仓"
 created_at: "2026-07-16T00:35:53+08:00"
-updated_at: "2026-07-16T00:35:53+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "ab7a508b16d5b03d967039d11aa21be245a8b06d8190197815d1e2b4a7c1f
 change_reason: "导入 claim_wechat_kelly_bet_fraction_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_9d39636775b188c87d6a001f", "input_sha256": "0fe84716255d0f351c82744980c66aa1eeff10d2d08ed2c770ccbe7d6ece9f33", "uncertainty": "概率/决策科普；模拟与 37.5% 需独立验算；Thorp 原文未 capture。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称对上述硬币游戏凯利公式建议每次下注总资金的 37.5%，以平衡增长与避免爆仓

@@ -1,10 +1,10 @@
 ---
 id: "proposal_9ef0adb3dd18b6961c646018"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称文本模型与视觉模型随能力增强也呈现更强表征一致性，并以颜色表征与人类感知一致为例"
 created_at: "2026-07-16T00:29:35+08:00"
-updated_at: "2026-07-16T00:29:35+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "9f2fcb7aa6fbf5718e2d149925148c8ca45c5744bb2e6e5492b251cb5980c
 change_reason: "导入 claim_wechat_cross_modal_representation_alignment_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_f35b44d4bd383fb26ca49165", "input_sha256": "0c7ad8b6aa226a022258100bc5d81f8d10bb3f87dc9d80b24e6736efb381f1d0", "uncertainty": "观点性科普；多处哲学推断；vec2vec/Anthropic/PRH 原文未 capture，需回引文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称文本模型与视觉模型随能力增强也呈现更强表征一致性，并以颜色表征与人类感知一致为例

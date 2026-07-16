@@ -1,10 +1,10 @@
 ---
 id: "proposal_04101797862b2571c0fbdc45"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称 EXPO 对扩散/流匹配 VLA 采用双策略：预训练流策略仅用监督损失，轻量高斯修正策略优化 Q，避免长降噪链价值梯度反传"
 created_at: "2026-07-16T11:04:29+08:00"
-updated_at: "2026-07-16T11:04:29+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "9a6ef206e763f0bd5f89c6dbbd510482dcc5f8339968b2f068081cd8adccf
 change_reason: "导入 claim_wechat_expo_dual_policy_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_8b41a014bee47c4239a2fa81", "input_sha256": "15201becf4f645da31cfd5c6c3c5bc10dec18547711dedd2c5fa9bf99fcdf1b6", "uncertainty": "Finn/Dong 研讨会转述；实验数字与算法细节需回 EXPO/EXPO-FT 原文核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称 EXPO 对扩散/流匹配 VLA 采用双策略：预训练流策略仅用监督损失，轻量高斯修正策略优化 Q，避免长降噪链价值梯度反传

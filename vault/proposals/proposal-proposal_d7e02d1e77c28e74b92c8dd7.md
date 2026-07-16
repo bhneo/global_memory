@@ -1,10 +1,10 @@
 ---
 id: "proposal_d7e02d1e77c28e74b92c8dd7"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：Robo-ValueRL 项目页报告真实机器人可泛化方块拆解任务最终成功率 84%"
 created_at: "2026-07-15T17:34:06+08:00"
-updated_at: "2026-07-15T17:34:06+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "98ce0b009df6d3e554224426a1f9f3efd4119fada50e87f05e406683a5ec3
 change_reason: "导入 claim_robo_valuerl_block_disassembly_20260715"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_7b278ba348f2a8bb94cce1fc", "input_sha256": "1c85061a186c9d21533adeddde7b4d4e21711d64175311fb46b20b1595d281a9", "uncertainty": "项目页数字与协议未完整披露；非 peer-reviewed 正文。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：Robo-ValueRL 项目页报告真实机器人可泛化方块拆解任务最终成功率 84%

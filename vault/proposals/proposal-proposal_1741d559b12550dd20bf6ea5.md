@@ -1,10 +1,10 @@
 ---
 id: "proposal_1741d559b12550dd20bf6ea5"
 type: "proposal"
-status: "pending"
+status: "superseded"
 title: "模型提议：该文称不完全性定理使希尔伯特计划的相容性与完全性目标均无法实现"
 created_at: "2026-07-16T00:47:32+08:00"
-updated_at: "2026-07-16T00:47:32+08:00"
+updated_at: "2026-07-16T16:46:32+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,7 +23,8 @@ candidate_sha256: "8d91b8a66a2ff59938a2716c0fd6b3e4fa0160401416c766c03420f45a752
 change_reason: "导入 claim_wechat_hilbert_program_limits_20260716"
 model_run: {"provider": "cursor", "model": "composer-2.5", "prompt_version": "knowledge-import-v2", "prompt_sha256": null, "input_source_id": "source_aff280ea206f7233b98afc6a", "input_sha256": "c4575ab201d9c39112ec6245ab3b56aaa66637b5c0ef3db241f7aaac816400f7", "uncertainty": "数理逻辑科普；定理条件在文中被简化，需回 Gödel 1931 与标准教科书核验。"}
 reviewed_at: null
-review_reason: null
+review_reason: "由当前唯一 M6 corpus bundle 接替；修复旧幂等性运行指针"
+superseded_by: "proposal_corpus_m6_6078ce0966734a116581"
 ---
 
 # 模型提议：该文称不完全性定理使希尔伯特计划的相容性与完全性目标均无法实现
