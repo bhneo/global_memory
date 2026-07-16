@@ -8,6 +8,7 @@ from pathlib import Path
 from global_memory.atomicity import AtomicClaimInspector
 from global_memory.cli import doctor, lint
 from global_memory.context import ContextPackService
+from global_memory.followups import FollowupService
 from global_memory.markdown import read_document
 from global_memory.quality import SourceQualityService
 from global_memory.repository import Repository, sha256_bytes
@@ -61,7 +62,12 @@ def main() -> int:
     require(len({candidate["id"] for candidate in concept_candidates}) == len(concept_candidates), "duplicate concept ids")
     require(any(len(candidate.get("source_ids", [])) >= 2 for candidate in concept_candidates), "no multi-source concept reuse")
     require(counts["tension"] >= 1 and counts["question"] >= 1, "tension/question missing")
-    require(len(bundle.get("primary_source_followups", [])) >= 1, "primary-source follow-up missing")
+    followups = {item["id"]: item for item in FollowupService(repo).list()}
+    open_followups = [
+        followups[item_id] for item_id in bundle.get("primary_source_followups", [])
+        if item_id in followups and followups[item_id].get("status") not in {"resolved", "captured", "not_required"}
+    ]
+    require(open_followups, "primary-source follow-up missing")
     require(counts["analogy"] >= 3 and counts["synthesis"] >= 2, "graph distillation targets missing")
     require(all(candidate.get("status") == "proposal" for _, candidate, _ in candidates), "candidate escaped proposal layer")
     canonical_ids = set()
@@ -97,7 +103,7 @@ def main() -> int:
             "compound_split_children": len(compound),
             "concept_reuse": len(concept_candidates),
             "tensions": counts["tension"],
-            "primary_followups": len(bundle.get("primary_source_followups", [])),
+            "primary_followups_open": len(open_followups),
             "bundle_items": len(candidates),
             "graph_node_counts": dict(sorted(counts.items())),
             "context_types": sorted(selected_types),

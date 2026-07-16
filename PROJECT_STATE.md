@@ -6,7 +6,7 @@ M6 Knowledge Distillation and Graph Formation 已完成工程实现与 33-source
 
 真实语料结果：143 个 input model proposals（其中 134 个待审）被保留并 supersede 到唯一 pending corpus bundle；当前活动 bundle 含 65 items：14 concept、26 atomic claim（全部 evidence coverage 为 partial）、6 question、4 tension、5 hypothesis、4 analogy、2 synthesis、2 experiment、1 project、1 opportunity。另保留 3 个已拆分 compound item 为 superseded 历史。11 个 source-only、1 个 invalid source、10 个 open primary-source follow-up；canonical writes = 0。
 
-当前 source processing state：22 awaiting_review、10 completed、1 failed、0 inbox。未完成边界：65 个活动 items 仍需人工 bundle review；26 个 atomic claims 必须做 entailment/primary-source 核验后才能批准；10 个 follow-up 尚未关闭。M6.1 已完成 locator 规范化，并把 3 个 compound claims 拆成 6 个证据各自绑定的 atomic children；原 item 与未被当前证据支持的附加措辞保留在 superseded 历史中；未改 canonical。
+当前 source processing state：22 awaiting_review、10 completed、1 failed、2 个新 primary captures 尚待 bundle processing。未完成边界：65 个活动 items 仍需人工 bundle review；其中 SkillEvolver 的 2 个 atomic claims 已由 primary PDF 逐字回验为 full evidence，其余 24 个 claims 仍需 entailment/primary-source 核验；9 个 follow-up 尚未关闭。M6.1 已完成 locator 规范化、compound 拆分，并捕获 SkillEvolver arXiv abstract/PDF、创建 work enrichment proposal、关闭对应 follow-up；未改 canonical。
 
 ## Current milestone
 

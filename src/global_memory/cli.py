@@ -192,6 +192,15 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_split.add_argument("--item", required=True, help="要拆分的 compound item ID")
     proposal_split.add_argument("--from-files", required=True, help="逗号分隔的 atomic candidate 文件")
     proposal_split.add_argument("--reason", required=True)
+    proposal_verify = proposal_commands.add_parser("verify-item-quote")
+    proposal_verify.add_argument("proposal_id")
+    proposal_verify.add_argument("--item", required=True)
+    proposal_verify.add_argument("--source", required=True)
+    proposal_verify.add_argument("--extraction", required=True)
+    proposal_verify.add_argument("--span-start", type=int, required=True)
+    proposal_verify.add_argument("--quote", required=True)
+    proposal_verify.add_argument("--section", required=True)
+    proposal_verify.add_argument("--reason", required=True)
 
     promote = commands.add_parser("promote", help="将 provisional canonical knowledge 显式晋升为 confirmed")
     promote.add_argument("target_id")
@@ -886,6 +895,11 @@ def run(args: argparse.Namespace) -> int:
         elif args.proposal_command == "split-item":
             _print(BundleReviewService(repository).split_item(
                 args.proposal_id, args.item, args.from_files.split(","), args.reason
+            ))
+        elif args.proposal_command == "verify-item-quote":
+            _print(BundleReviewService(repository).verify_item_quote(
+                args.proposal_id, args.item, args.source, args.extraction,
+                args.span_start, args.quote, args.section, args.reason,
             ))
         else:
             _, proposal_metadata, _ = repository.find_document(args.proposal_id)

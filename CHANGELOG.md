@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.18.1] - 2026-07-16
+
+### Added
+
+- 新增 `gm proposal verify-item-quote`，以 source/extraction/span 的逐字匹配把 primary quote 写成不可变 bundle item revision；quote 唯一时可安全自动定位。
+- 捕获 SkillEvolver arXiv abstract 与 20 页 PDF，生成无 warning 的 HTML/PDF extraction，并创建同一 work 的 enrichment proposal。
+
+### Changed
+
+- SkillEvolver 的 K=4 与 silent-bypass 两个 atomic claims 已由 primary PDF 第 5/15 页核验为 full evidence，仍保持 pending；对应 follow-up 已关闭，活动 follow-up 为 9。
+
 ## [0.18.0] - 2026-07-16
 
 ### Added

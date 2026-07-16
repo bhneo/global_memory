@@ -811,6 +811,32 @@ def test_bundle_compound_item_split_preserves_parent_and_adds_atomic_children(re
     assert lint_result["ok"] is True, lint_result["errors"]
 
 
+def test_bundle_atomic_item_primary_quote_verification_is_span_checked(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Claim: primary assertion")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / str(bundle.proposal_path))
+    item = proposal["bundle_items"][0]
+    _, extraction, text = ExtractionService(repo).latest_for_source(captured.source_id)
+    quote = "primary assertion"
+    start = text.index(quote)
+    service = BundleReviewService(repo)
+    with pytest.raises(ValidationError):
+        service.verify_item_quote(
+            str(bundle.proposal_id), item["item_id"], captured.source_id,
+            extraction["extraction_id"], start, "wrong quote", "fixture", "primary verification",
+        )
+    result = service.verify_item_quote(
+        str(bundle.proposal_id), item["item_id"], captured.source_id,
+        extraction["extraction_id"], start, quote, "fixture", "primary verification",
+    )
+    candidate, _ = read_document(repo.root / result["candidate_path"])
+    assert candidate["evidence_coverage"] == "full"
+    assert candidate["epistemic_source_authority"] == "primary"
+    assert candidate["evidence"][-1]["original_text"] == quote
+    approved = service.approve(str(bundle.proposal_id), [item["item_id"]])
+    assert approved["approved_items"] == [item["item_id"]]
+
+
 def test_context_profiles_select_expected_layers_and_relation_expansion(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("M5 shared context source evidence", title="Shared source")
     source_ids = [captured.source_id]

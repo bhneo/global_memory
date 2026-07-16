@@ -55,6 +55,7 @@ gm proposal approve <bundle-proposal-id> --items claim-1,concept-2
 gm proposal reject <bundle-proposal-id> --items question-3 --reason "暂不保留"
 gm proposal revise <bundle-proposal-id> --item claim-1 --from-file revised.md --reason "人工修订"
 gm proposal split-item <bundle-proposal-id> --item claim-1 --from-files child-1.md,child-2.md --reason "拆成可独立核验的断言"
+gm proposal verify-item-quote <bundle-proposal-id> --item claim-1 --source <primary-source-id> --extraction <id> --span-start -1 --quote "原文" --section "p.5" --reason "原始论文核验"
 gm search "query" --types claim,concept --statuses confirmed,provisional --relation-depth 1
 gm context --profile execution,research --project project_id --question "当前问题" --token-budget 20000
 gm model-propose <source-id> --candidate model-candidate.md --provider local --model my-model --prompt-version v1 --prompt-file prompt.md --uncertainty "待人工核验" --reason "导入模型结果"
@@ -109,6 +110,7 @@ gm doctor
 - `gm proposal show|approve|defer|reject <proposal-id>`：查看 diff、明确审批或暂缓处理。
 - `gm proposal revise <id> --from-file <candidate.md> --reason "..."`：用新的不可变 candidate 替代待审 proposal。
 - `gm proposal split-item <id> --item <item-id> --from-files <a.md,b.md> --reason "..."`：将 pending compound claim 替换为至少两个 atomic child；原 item 保留为 superseded，子项仍独立等待审阅。
+- `gm proposal verify-item-quote <id> ...`：把逐字匹配 primary extraction 的 quote 写成新的不可变 item revision；`--span-start -1` 仅在 quote 唯一出现时自动定位。核验不会自动 approve。
 - `gm propose-update <id> --from-file <candidate.md> --reason "..."`：创建受并发保护的 canonical update proposal。
 - `gm search "<query>"`：搜索 source 与 canonical knowledge，结果携带 `source_ids`。
 - `gm show <id>` / `gm related <id>`：读取对象与 typed relations。

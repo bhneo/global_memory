@@ -5,9 +5,9 @@
 - P0：batch runs/formal proposal 分离、quality gate、derived source lifecycle。（完成）
 - P1：atomic claim、typed object/source-only、bundle review、authority/follow-up、epistemic dimensions、typed relations。（完成）
 - P2：33-source corpus distillation，当前 65-item 活动 proposal graph，canonical writes 0。（完成）
-- 验收：112 tests、doctor/lint/raw integrity、migration dry-run、M6 nine-scenario demo。（以本轮最终实测为准）
+- 验收：113 tests、doctor/lint/raw integrity、migration dry-run、M6 nine-scenario demo。（以本轮最终实测为准）
 - M6.1：follow-up locator 规范化与 superseded lineage（活动任务 11 → 10）；3 个 compound claims 拆成 6 个 atomic children，原 item 保留为 superseded。（完成）
-- 后续：核验 26 个 partial-entailment atomic claims；关闭 10 个 primary follow-ups；分批批准高价值 concept/question/tension/synthesis。
+- 后续：核验剩余 24 个 partial-entailment atomic claims；关闭剩余 9 个 primary follow-ups；分批批准高价值 concept/question/tension/synthesis。
 
 M7 候选只聚焦知识使用效果：新资料对已有 concept/claim 的真正 update/refine、项目决策反馈、长期 contradiction 演化。暂不引入 embedding、图数据库、复杂前端或自动 canonical 写入。
 

@@ -677,3 +677,84 @@ class BundleReviewService:
         })
         return {"proposal_id": proposal_id, "superseded_item": item_id,
                 "child_items": [child["item_id"] for child in children]}
+
+    def verify_item_quote(
+        self, proposal_id: str, item_id: str, source_id: str, extraction_id: str,
+        span_start: int, original_text: str, section: str, reason: str,
+    ) -> dict[str, Any]:
+        """Attach a byte-checked primary quote to a pending atomic claim revision."""
+        proposal_path, proposal, body = self._load(proposal_id)
+        selected = self._selected(proposal, [item_id])[0]
+        candidate_path = self.repository.resolve_inside(str(selected["candidate_path"]))
+        candidate, candidate_body = read_document(candidate_path)
+        if candidate.get("type") != "claim" or candidate.get("atomicity_status") != "atomic":
+            raise ValidationError("primary quote verification 只适用于 atomic claim")
+        _, source, _ = self.repository.find_document(source_id)
+        _, extraction, extraction_text = ExtractionService(self.repository).find(extraction_id)
+        if extraction.get("source_id") != source_id:
+            raise ValidationError("extraction 与 primary source 不匹配")
+        if span_start < 0:
+            if extraction_text.count(original_text) != 1:
+                raise ValidationError("primary quote 无法唯一定位，必须提供 span_start")
+            span_start = extraction_text.index(original_text)
+        span_end = span_start + len(original_text)
+        if extraction_text[span_start:span_end] != original_text:
+            raise ValidationError("primary quote 与 extraction span 不逐字匹配")
+        timestamp = now_iso()
+        evidence_id = "ev_primary_" + hashlib.sha256(
+            f"{source_id}\n{extraction_id}\n{span_start}\n{original_text}".encode()
+        ).hexdigest()[:12]
+        evidence = list(candidate.get("evidence", []))
+        evidence.append({
+            "evidence_id": evidence_id, "evidence_kind": "quote", "source_id": source_id,
+            "content_id": source.get("content_id"), "extraction_id": extraction_id,
+            "input_sha256": extraction.get("input_sha256"), "span_start": span_start,
+            "span_end": span_end, "original_text": original_text, "section": section,
+            "stance": "supports", "verification_status": "verified", "reason": reason.strip(),
+        })
+        candidate["evidence"] = evidence
+        candidate["source_ids"] = list(dict.fromkeys([*candidate.get("source_ids", []), source_id]))
+        relations = list(candidate.get("relations", []))
+        existing_relation = next((
+            relation for relation in relations
+            if relation.get("type") == "derived_from" and relation.get("target_id") == source_id
+        ), None)
+        if existing_relation is None:
+            relations.append({
+                "type": "derived_from", "target_id": source_id, "reason": reason.strip(),
+                "confidence": "high", "created_by": "primary-quote-verification-v1", "status": "proposal",
+            })
+        candidate["relations"] = relations
+        candidate["evidence_coverage"] = "full"
+        candidate["evidence_entailment"] = "full"
+        candidate["epistemic_source_authority"] = "primary"
+        candidate["claim_confidence"] = "high"
+        candidate["publication_gate"] = "needs_review"
+        candidate["uncertainty"] = "已逐字回验 primary PDF；仍需用户审批后才能进入 canonical。"
+        candidate["updated_at"] = timestamp
+        candidate_text = render_document(candidate, candidate_body)
+        digest = sha256_bytes(candidate_text.encode("utf-8"))
+        revision_path = self.repository.root / "vault/proposals" / f"candidate-{proposal_id}-{item_id}-primary-{digest[:12]}.md"
+        self.repository.immutable_write(revision_path, candidate_text.encode("utf-8"))
+        selected.setdefault("revision_history", []).append({
+            "candidate_path": selected["candidate_path"], "candidate_sha256": selected["candidate_sha256"],
+            "reason": reason.strip(), "revised_at": timestamp,
+        })
+        selected["candidate_path"] = self.repository.rel(revision_path)
+        selected["candidate_sha256"] = digest
+        selected["evidence_coverage"] = "full"
+        selected["review_reason"] = reason.strip()
+        proposal["updated_at"] = timestamp
+        body = body.rstrip() + (
+            f"\n\n## Primary quote verification: {item_id}\n\n"
+            f"- Source: `{source_id}`\n- Extraction: `{extraction_id}`\n"
+            f"- Span: `{span_start}:{span_end}`\n- Reason: {reason.strip()}\n"
+        )
+        atomic_write_text(proposal_path, render_document(proposal, body))
+        self.repository.append_event("proposal-events", {
+            "event": "bundle-item-primary-quote-verified", "proposal_id": proposal_id,
+            "item_id": item_id, "source_id": source_id, "extraction_id": extraction_id,
+            "evidence_id": evidence_id,
+        })
+        return {"proposal_id": proposal_id, "item_id": item_id,
+                "candidate_path": self.repository.rel(revision_path), "evidence_id": evidence_id}
