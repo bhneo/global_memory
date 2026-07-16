@@ -4,9 +4,9 @@
 
 M6 Knowledge Distillation and Graph Formation 已完成工程实现与 33-source 受控重编译。临时 batch 双重真相源已迁移并清理；source lifecycle、quality gate、atomic claim gate、knowledge classification、bundle review、authority/follow-up、epistemic dimensions、typed relations 与 proposal-aware Context Pack 已落地。
 
-真实语料结果：143 个 input model proposals（其中 134 个待审）被保留并 supersede 到唯一 pending corpus bundle；当前活动 bundle 含 66 items：14 concept、27 atomic claim（4 full、23 partial）、6 question、4 tension、5 hypotheses、4 analogies、2 syntheses、2 experiments、1 project、1 opportunity。另保留 4 个已拆分 compound item 为 superseded 历史。11 个 source-only、1 个 invalid source、6 个 open primary-source follow-up；canonical writes = 0。
+真实语料结果：143 个 input model proposals（其中 134 个待审）被保留并 supersede 到唯一 pending corpus bundle；当前活动 bundle 含 66 items：14 concept、27 claim（25 atomic、2 compound；4 full、23 partial）、6 question、4 tension、5 hypotheses、4 analogies、2 syntheses、2 experiments、1 project、1 opportunity。另保留 4 个已拆分 compound item 为 superseded 历史。11 个 source-only、1 个 invalid source、5 个 open primary-source follow-up；canonical writes = 0。
 
-当前 source processing state：22 awaiting_review、10 completed、1 failed、7 个新 primary captures 处于 inbox/extracted（作为核验材料，不自动编译知识）。未完成边界：66 个活动 items 仍需人工 bundle review；SkillEvolver 与 PhySO 共 4 个 atomic claims 已由 primary PDF 逐字回验为 full evidence，其余 23 个 claims 仍需核验；6 个 follow-up 尚未关闭。PhySO 原 compound 已拆成 RNN/RL 方法和单位约束两个 children，旧 item 保留为 superseded；未改 canonical。
+当前 source processing state：22 awaiting_review、10 completed、1 failed、9 个新 primary captures 处于 inbox/extracted（作为核验材料，不自动编译知识）。未完成边界：66 个活动 items 仍需人工 bundle review；SkillEvolver 与 PhySO 共 4 个 atomic claims 已由 primary PDF 逐字回验为 full evidence。参数空间对称性综述的两个候选经 primary review 发现 compound，已恢复 needs-split；其余 claims 仍需核验。5 个 follow-up 尚未关闭。当前已捕获 42 个 sources、建立 4 个 primary-paper work proposals；未改 canonical。
 
 ## Current milestone
 

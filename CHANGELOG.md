@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.18.4] - 2026-07-16
+
+### Added
+
+- 捕获 arXiv:2506.13018 的 abstract 与 32 页 PDF，生成 ready/no-warning extraction，创建参数空间对称性综述 work proposal，并关闭对应 follow-up。
+
+### Changed
+
+- Primary review 发现两个参数空间对称性 candidates 均混合独立断言：定义/等价轨道，以及守恒量/隐式偏置/收敛与泛化。两项已恢复 compound/needs-split，未将综述中的开放关系升级为事实。
+- 当前 42 sources、5 个开放 follow-ups；66 个活动 bundle items 中有 25 atomic claims 与 2 个待拆 compound claims。
+
 ## [0.18.3] - 2026-07-16
 
 ### Changed
