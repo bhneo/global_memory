@@ -2582,6 +2582,9 @@ def test_obsidian_views_are_rebuildable_and_do_not_change_canonical(repo: Reposi
     captured = CaptureService(repo).capture_text("Obsidian source", title="Obsidian source")
     before = (repo.root / captured.source_path).read_bytes()
     service = ObsidianViewService(repo)
+    graph_config = repo.root / "vault/.obsidian/graph.json"
+    graph_config.parent.mkdir(parents=True, exist_ok=True)
+    graph_config.write_text('{"sentinel": true}\n', encoding="utf-8")
 
     first = service.build()
     first_bytes = {
@@ -2594,6 +2597,7 @@ def test_obsidian_views_are_rebuildable_and_do_not_change_canonical(repo: Reposi
         relative: (repo.root / relative).read_bytes() for relative in second["written"]
     }
     assert (repo.root / captured.source_path).read_bytes() == before
+    assert graph_config.read_text(encoding="utf-8") == '{"sentinel": true}\n'
     home = (repo.root / "vault/INDEX.md").read_text(encoding="utf-8")
     reader = repo.root / "vault" / "views" / "readers" / f"{captured.source_id}.md"
     assert "超级大脑" in home
@@ -2601,6 +2605,21 @@ def test_obsidian_views_are_rebuildable_and_do_not_change_canonical(repo: Reposi
     assert reader.exists()
     assert "Obsidian source" in reader.read_text(encoding="utf-8")
     assert service.status()["current"] is True
+
+
+def test_repository_obsidian_graph_is_semantically_grouped_and_hides_navigation_hubs() -> None:
+    graph_path = Path(__file__).parents[1] / "vault/.obsidian/graph.json"
+    config = json.loads(graph_path.read_text(encoding="utf-8"))
+
+    assert "-path:views" in config["search"]
+    assert "-path:INDEX" in config["search"] and "-path:README" in config["search"]
+    assert config["hideUnresolved"] is True and config["showOrphans"] is False
+    queries = {item["query"] for item in config["colorGroups"]}
+    assert any('memory/claim' in query for query in queries)
+    assert any('memory/concept' in query for query in queries)
+    assert any('memory/question' in query for query in queries)
+    assert any('knowledge' in query for query in queries)
+    assert config["textFadeMultiplier"] > 0 and config["lineSizeMultiplier"] < 1
 
 
 def test_obsidian_views_use_explicit_topics_and_remove_only_stale_generated_readers(repo: Repository) -> None:

@@ -1,22 +1,47 @@
 {
   "collapse-filter": true,
-  "search": "-path:raw -path:proposals -path:receipts -path:archive -path:followups -path:annotations -path:views/readers",
+  "search": "-path:raw -path:proposals -path:receipts -path:archive -path:followups -path:annotations -path:exceptions -path:views -path:INDEX -path:README",
   "showTags": false,
   "showAttachments": false,
-  "hideUnresolved": false,
+  "hideUnresolved": true,
   "showOrphans": false,
   "collapse-color-groups": true,
-  "colorGroups": [],
+  "colorGroups": [
+    {
+      "query": "path:\"memory/claim\"",
+      "color": {"a": 1, "rgb": 5011711}
+    },
+    {
+      "query": "path:\"memory/concept\" OR path:\"memory/work\"",
+      "color": {"a": 1, "rgb": 2142890}
+    },
+    {
+      "query": "path:\"memory/question\" OR path:\"memory/tension\"",
+      "color": {"a": 1, "rgb": 16096779}
+    },
+    {
+      "query": "path:\"memory/hypothesis\" OR path:\"memory/analogy\"",
+      "color": {"a": 1, "rgb": 10182117}
+    },
+    {
+      "query": "path:\"memory/project\" OR path:\"memory/experiment\" OR path:\"memory/opportunity\"",
+      "color": {"a": 1, "rgb": 3126084}
+    },
+    {
+      "query": "path:\"knowledge\" OR path:\"frontier\" OR path:\"action\"",
+      "color": {"a": 1, "rgb": 14964566}
+    }
+  ],
   "collapse-display": true,
   "showArrow": false,
-  "textFadeMultiplier": 0,
-  "nodeSizeMultiplier": 1,
-  "lineSizeMultiplier": 1,
+  "textFadeMultiplier": 0.65,
+  "nodeSizeMultiplier": 0.9,
+  "lineSizeMultiplier": 0.55,
   "collapse-forces": true,
-  "centerStrength": 0.518713248970312,
-  "repelStrength": 10,
-  "linkStrength": 1,
-  "linkDistance": 250,
-  "scale": 1.4019828977760953,
+  "centerStrength": 0.35,
+  "repelStrength": 14,
+  "linkStrength": 0.65,
+  "linkDistance": 130,
+  "scale": 0.8,
   "close": false
 }
