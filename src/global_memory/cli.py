@@ -20,7 +20,7 @@ from .lifecycle import SourceAnnotationService, SourceLifecycleService
 from .maintenance import MaintenanceService
 from .memory import ExceptionService, WorkingMemoryService
 from .metrics import ProjectMetricsService
-from .migration import EpistemicStatusMigration, TrustPolicyRequalificationMigration
+from .migration import EpistemicStatusMigration, TrustPolicyRequalificationMigration, TrustRequalificationRepairMigration
 from .evolution import KnowledgeEvolutionService
 from .mcp_server import add_mcp_arguments, run_mcp
 from .obsidian import ObsidianViewService
@@ -234,6 +234,8 @@ def build_parser() -> argparse.ArgumentParser:
     trust_commands = trust.add_subparsers(dest="trust_command", required=True)
     trust_explain = trust_commands.add_parser("explain")
     trust_explain.add_argument("target_id")
+    trust_requalify = trust_commands.add_parser("requalify", help="qualify existing Trusted memory under the current policy")
+    trust_requalify.add_argument("target_id")
     history = commands.add_parser("history", help="显示对象的晋升历史")
     history.add_argument("target_id")
     rollback = commands.add_parser("rollback", help="回滚最近一次 trusted 晋升")
@@ -366,7 +368,11 @@ def build_parser() -> argparse.ArgumentParser:
     epistemic_mode.add_argument("--dry-run", action="store_true")
     epistemic_mode.add_argument("--verify", action="store_true")
     trust_requalification = migrate_commands.add_parser("trust-requalification")
-    trust_requalification.add_argument("--dry-run", action="store_true")
+    trust_requalification_mode = trust_requalification.add_mutually_exclusive_group()
+    trust_requalification_mode.add_argument("--dry-run", action="store_true")
+    trust_requalification_mode.add_argument("--verify", action="store_true")
+    repair_requalification = migrate_commands.add_parser("repair-trust-requalification")
+    repair_requalification.add_argument("--dry-run", action="store_true")
     runs = commands.add_parser("runs", help="查看或清理可重建的 system/runs")
     runs_commands = runs.add_subparsers(dest="runs_command", required=True)
     runs_commands.add_parser("list")
@@ -1069,7 +1075,11 @@ def run(args: argparse.Namespace) -> int:
     elif args.command == "demote":
         _print(PromotionService(repository).demote_working(args.target_id, args.reason))
     elif args.command == "trust":
-        _print(PromotionService(repository).explain(args.target_id))
+        service = PromotionService(repository)
+        if args.trust_command == "requalify":
+            _print(service.requalify_trusted(args.target_id))
+        else:
+            _print(service.explain(args.target_id))
     elif args.command == "history":
         _, metadata, _ = repository.find_document(args.target_id)
         _print({"object_id": args.target_id, "promotion_history": metadata.get("promotion_history", [])})
@@ -1295,6 +1305,11 @@ def run(args: argparse.Namespace) -> int:
     elif args.command == "migrate":
         if args.migrate_command == "trust-requalification":
             migration = TrustPolicyRequalificationMigration(repository)
+            result = migration.verify() if args.verify else migration.plan() if args.dry_run else migration.apply()
+            _print(result)
+            return 0 if not args.verify or result["ok"] else 1
+        if args.migrate_command == "repair-trust-requalification":
+            migration = TrustRequalificationRepairMigration(repository)
             _print(migration.plan() if args.dry_run else migration.apply())
             return 0
         if args.migrate_command == "epistemic-status":

@@ -2,7 +2,7 @@
 
 ## Current milestone
 
-M8 — Trustworthy Consolidation and Incremental Knowledge Evolution is implemented and locally accepted. Working may evolve automatically; Trusted changes are versioned and receipt-backed; Canonical remains an explicit user decision.
+M8.1.1 — Correctness Recovery is implemented and locally accepted. Legacy Trusted state is preserved during policy upgrades, Receipt v2 is bound to the complete current environment, governed writes use a recoverable state machine, and Canonical remains an explicit proposal/approval decision.
 
 ## Current architecture
 
@@ -12,27 +12,29 @@ Memory Tier (`working`, `trusted`, `canonical`, `historical`) is independent fro
 
 ## Current metrics
 
-Generated from the real vault on 2026-07-17:
+Generated from the real vault after the M8.1.1 recovery pass on 2026-07-17:
 
 - 53 sources and 114 governed knowledge objects.
 - 83 Working, 30 Trusted and 1 Canonical.
-- 113 consolidation receipts: 105 complete and 8 explicitly failed.
+- 28 Trusted are Policy v3-qualified; 2 remain Trusted while awaiting requalification because they do not yet have two independent `work_id` values.
+- 302 historical consolidation receipts: 113 v1 and 189 v2; 105 governed objects have a current valid v2, while 24 historical attempts are explicitly failed (including repeated recovery-pass evidence rather than overwritten files).
 - 0 promotion candidates, 0 Working Revisions and 0 contested objects at this snapshot.
-- 2 open Exceptions and 2 medium semantic-drift warnings; 0 high-severity drift.
+- 10 open Exceptions: 2 pre-existing synthesis drift reviews and 8 explicit legacy consolidation failures; 2 medium semantic-drift warnings and 0 high-severity drift.
+- 0 pending recovery journals after `gm recover`.
 - Latest weekly considered 113 objects, produced 0 Trusted promotions, 0 demotions and 0 Canonical writes.
 
 Run `.\scripts\gm.ps1 metrics` or `.\scripts\gm.ps1 status --machine-readable` for current counts; these numbers are a dated acceptance snapshot, not a hand-maintained source of truth.
 
 ## CI status
 
-GitHub Actions CI #7 for M8 commit `928404f` passed all six jobs: Ubuntu/Windows × Python 3.11/3.12/3.13. Each job ran pytest, doctor, schema/state/raw checks, migrations, historical/current/M8 governance acceptance, promotion, weekly, A→B→C evolution, drift and three-profile Context validation.
+GitHub Actions CI #7 for the prior M8 commit `928404f` passed all six jobs: Ubuntu/Windows × Python 3.11/3.12/3.13. M8.1.1 is fully green locally; its six-job remote matrix remains unverified until the user performs the planned unified push.
 
 ## What is working
 
-- M8.1 Trust Hardening（本地待推送）：Receipt v2 fingerprint、weekly high-drift exception、显式增量 change classification、provider-driven A→B→C、strict execution context、Trusted promotion recovery journal。
+- M8.1.1 correctness recovery: test-boundary repair, exact Trusted restoration, v1→v2 receipt regeneration, explicit Trusted requalification, five-phase recovery, transactional Trusted support, Canonical evolution gate, real Receipt findings and provider `target_id` updates.
 
 - Immutable raw capture, source/extraction validation and rebuildable SQLite/Obsidian views.
-- Real Consolidation Receipts bound to the current object and source hashes.
+- Real Consolidation Receipts bound to object/source/raw/extraction/work/relation/policy state, with non-empty per-check Findings.
 - Explicit support/refine/limit/contradict/supersede/metadata-only evolution semantics.
 - Narrow Claim/Concept Trusted promotion; exploratory types are paused by default.
 - Safe Trusted revisions, conflict Exceptions, explicit demotion records and Canonical protection.
@@ -42,7 +44,8 @@ GitHub Actions CI #7 for M8 commit `928404f` passed all six jobs: Ubuntu/Windows
 
 ## Known defects
 
-- Eight legacy Agentic-VLA claims lack an explicit `evidence_entailment` value. Their receipts correctly fail and promotion remains blocked until the evidence is rechecked.
+- Eight legacy Agentic-VLA/Play2Perfect claims lack an explicit `evidence_entailment` value. Their v2 attempts and Exceptions correctly remain failed until evidence is rechecked.
+- Two restored Concepts remain Trusted but awaiting Policy v3 requalification because their captures have not yet been linked to two independent logical works. They are excluded from strict execution and Canonical promotion.
 - Two M6 synthesis objects do not yet carry source-level evidence links in the expected structure. Drift audit reports them as medium-severity human-review items and does not rewrite them.
 - PowerShell may resolve bare `gm` as `Get-Member`; use `.\scripts\gm.ps1`.
 - `ci_status` is unavailable from an offline local metrics run; GitHub Actions is the authoritative portable CI result.
@@ -53,7 +56,7 @@ Two open synthesis-drift Exceptions from the real weekly pass. Estimated review 
 
 ## Next concrete task
 
-Review the eight failed legacy receipts as evidence is actually reused, then resolve the two synthesis evidence-link warnings. Do not bulk-upgrade them merely to improve metrics.
+Link the two awaiting Concepts to genuinely independent logical works only when evidence supports that identity, then re-run `gm trust requalify <id>`. Review the eight failed legacy receipts and two synthesis evidence-link warnings without bulk-upgrading them merely to improve metrics.
 
 ## Do not do yet
 

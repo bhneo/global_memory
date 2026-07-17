@@ -44,6 +44,8 @@ jobs:
           python -m global_memory.cli --root .ci-vault migrate batch-artifacts --dry-run > artifacts/migration-batch.json
           python -m global_memory.cli --root .ci-vault migrate proposal-gate-to-promotion --dry-run > artifacts/migration-promotion-gate.json
           python -m global_memory.cli --root .ci-vault migrate epistemic-status --dry-run > artifacts/migration-epistemic-status.json
+          python -m global_memory.cli --root .ci-vault migrate trust-requalification --dry-run > artifacts/migration-trust-requalification.json
+          python -m global_memory.cli --root .ci-vault migrate repair-trust-requalification --dry-run > artifacts/migration-requalification-repair.json
       - name: Historical fixture acceptance
         if: always()
         run: python -m pytest tests/test_global_memory.py -k "m6_ or m61_" --junitxml=artifacts/historical-fixtures.xml
@@ -56,6 +58,9 @@ jobs:
       - name: M8 governance acceptance
         if: always()
         run: python -m pytest tests/test_global_memory.py -k "m8_" --junitxml=artifacts/m8-governance.xml
+      - name: M8.1.1 correctness recovery acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "receipt_v1 or receipt_v2 or requalification or governed_recovery or canonical_evolution or external_provider_update" --junitxml=artifacts/m811-correctness-recovery.xml
       - name: Promotion policy validation
         if: always()
         run: python scripts/ci_acceptance.py promotion --root .ci-vault --output artifacts/promotion.json

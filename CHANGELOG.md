@@ -1,6 +1,24 @@
 # Changelog
 
-## [Unreleased] — M8
+## [Unreleased] — M8.1.1 Correctness Recovery
+
+### Fixed
+
+- Repaired the misplaced M8 receipt/recovery test bodies and added an AST regression guard.
+- Corrected the unsafe Trusted requalification migration: 30 provably unchanged objects were restored as Trusted, 0 conflicts were force-restored, and no false Demotion Event was created.
+- Receipt v1 remains historical; only a complete, exact-current Receipt v2 is reusable. Failed retries receive distinct immutable attempt IDs.
+- Completed Policy v3 requalification without tier churn and excluded awaiting objects from strict execution and Canonical promotion.
+- Expanded governed writes to `prepared -> staged -> receipt_completed -> event_logged -> finalized`, including Trusted support and crash recovery.
+- Routed every Canonical evolution type through update Proposal/Exception instead of direct mutation.
+- Replaced empty Receipt check details with evidence-backed Findings and expanded fingerprints across source records, Raw, extraction/work identity, relations and policy versions.
+- Added provider `action=update` plus stable `target_id`; title similarity is no longer accepted as external-provider identity.
+
+### Changed
+
+- Metrics distinguish Trusted total, v3-qualified, awaiting requalification and contested, plus Receipt v1/v2 and pending recovery journals.
+- CI now runs M8.1.1 correctness-recovery acceptance and both requalification migration dry-runs in all six matrix jobs.
+
+## [Unreleased M8 baseline]
 
 ### Added
 

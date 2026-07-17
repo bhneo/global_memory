@@ -9,6 +9,8 @@ from .epistemics import default_epistemic_status, infer_epistemic_status, infer_
 from .markdown import atomic_write_text, read_document, render_document
 from .memory import ExceptionService
 from .repository import Repository, now_iso, sha256_bytes
+from .governance import TrustedPromotionRecoveryManager
+from .proposals import CANONICAL_STATUSES, ProposalService
 
 
 CHANGE_TYPES = {"support", "refine", "limit", "contradict", "supersede", "metadata_only"}
@@ -21,6 +23,7 @@ class KnowledgeEvolutionService:
         self.repository = repository
         self.exceptions = ExceptionService(repository)
         self.receipts = ConsolidationReceiptService(repository)
+        self.recovery = TrustedPromotionRecoveryManager(repository)
 
     def _snapshot(self, path: Path, object_id: str) -> str:
         content = path.read_bytes()
@@ -28,6 +31,68 @@ class KnowledgeEvolutionService:
         target = self.repository.root / "vault" / "archive" / "versions" / object_id / f"{digest}.md"
         self.repository.immutable_write(target, content)
         return self.repository.rel(target)
+
+    def _propose_canonical_evolution(
+        self, path: Path, current: dict[str, Any], current_body: str,
+        incoming: dict[str, Any], body: str, *, change_type: str,
+        reason: str, trigger_source: str | None,
+    ) -> dict[str, Any]:
+        object_id = str(current["id"])
+        incoming_sources = [str(item) for item in incoming.get("source_ids", [])]
+        if trigger_source and trigger_source not in incoming_sources:
+            incoming_sources.append(trigger_source)
+        candidate = dict(current)
+        candidate_body = current_body
+        changed_fields: list[str] = []
+        if change_type in {"support", "metadata_only", "contradict"}:
+            candidate["source_ids"] = list(dict.fromkeys([*current.get("source_ids", []), *incoming_sources]))
+            existing_evidence = [item for item in current.get("evidence", []) if isinstance(item, dict)]
+            incoming_evidence = [item for item in incoming.get("evidence", []) if isinstance(item, dict)]
+            known = {item.get("evidence_id") for item in existing_evidence}
+            candidate["evidence"] = [*existing_evidence, *[item for item in incoming_evidence if item.get("evidence_id") not in known]]
+            changed_fields = ["source_ids", "evidence"]
+            if change_type == "contradict":
+                candidate["epistemic_status"] = "contested"
+                candidate["unresolved_contradictions"] = list(dict.fromkeys([
+                    *[str(item) for item in current.get("unresolved_contradictions", [])],
+                    *incoming_sources,
+                ]))
+                changed_fields.extend(["epistemic_status", "unresolved_contradictions"])
+        else:
+            candidate.update(incoming)
+            candidate["id"] = object_id
+            candidate["type"] = current["type"]
+            candidate["created_at"] = current["created_at"]
+            candidate_body = body
+            changed_fields = ["body"]
+        record = self._record(change_type, current_body, candidate_body, reason, trigger_source, [], changed_fields)
+        candidate["change_history"] = [*current.get("change_history", []), record]
+        candidate["status"] = "proposal"
+        proposed_status = "contested" if change_type == "contradict" else str(current.get("status", "confirmed"))
+        candidate["proposed_status"] = proposed_status if proposed_status in CANONICAL_STATUSES else "confirmed"
+        candidate["updated_at"] = now_iso()
+        candidate["updated_by"] = "knowledge-evolution-proposal-v1"
+        candidate_text = render_document(candidate, candidate_body)
+        digest = sha256_bytes(candidate_text.encode("utf-8"))
+        temporary = self.repository.root / "system" / "tmp" / f"canonical-evolution-{object_id}-{digest[:16]}.md"
+        atomic_write_text(temporary, candidate_text)
+        try:
+            proposal = ProposalService(self.repository).propose_update(object_id, temporary, reason)
+        finally:
+            temporary.unlink(missing_ok=True)
+        exception_id = None
+        if change_type == "contradict":
+            exception_id = self.exceptions.create(
+                "canonical-conflict", f"Contradiction: {current.get('title', object_id)}",
+                [reason.strip()], object_id=object_id, source_ids=incoming_sources,
+                severity="must_confirm", context={"change": record, "proposal_id": proposal.proposal_id},
+            )
+        return {
+            "action": "canonical_proposal", "object_id": object_id, "memory_tier": "canonical",
+            "proposal_id": proposal.proposal_id, "proposal_path": proposal.proposal_path,
+            "exception_id": exception_id, "change": record,
+            "updated_object_count": 0, "knowledge_reuse_count": 1,
+        }
 
     @staticmethod
     def _record(
@@ -69,7 +134,14 @@ class KnowledgeEvolutionService:
             if not contradiction_evidence:
                 raise ValueError("contradict requires source-linked contradictory evidence with excerpt and reason")
 
-        if tier in {"trusted", "canonical"} and change_type in {"refine", "limit", "supersede"}:
+        if tier == "canonical":
+            return self._propose_canonical_evolution(
+                path, current, current_body, incoming, body,
+                change_type=change_type, reason=reason,
+                trigger_source=trigger_source,
+            )
+
+        if tier == "trusted" and change_type in {"refine", "limit", "supersede"}:
             previous_version = self._snapshot(path, object_id)
             stable = f"{object_id}:{change_type}:{sha256_bytes(body.encode('utf-8'))}:{trigger_source or ''}"
             revision_id = "revision_" + hashlib.sha256(stable.encode("utf-8")).hexdigest()[:24]
@@ -171,23 +243,48 @@ class KnowledgeEvolutionService:
             new_body = body
             result = {"refine": "refined", "limit": "limited", "supersede": "superseded"}[change_type]
         before_bytes = path.read_bytes()
-        atomic_write_text(path, render_document(updated, new_body))
-        self.repository.rebuild_index()
-        receipt = self.receipts.consolidate(
-            object_id, result=result, changes=[record], change_summary=reason,
-            exceptions_created=[exception_id] if exception_id else [],
-        )
-        # Trusted objects are only allowed to retain a support/conflict mutation
-        # when the accompanying v2 receipt completed successfully.  A failed
-        # receipt is preserved as audit evidence, while the object is restored.
-        if tier == "trusted" and not self.receipts.complete(receipt):
-            path.write_bytes(before_bytes)
-            self.repository.rebuild_index()
-            raise ValueError("trusted evolution rolled back because consolidation receipt failed")
-        self.repository.append_event("memory-events", {
+        staged_text = render_document(updated, new_body)
+        event = {
             "event": f"knowledge-{change_type}", "object_id": object_id,
             "memory_tier": tier, "exception_id": exception_id,
-        })
+        }
+        evolution_id = "evolution_" + hashlib.sha256(
+            f"{object_id}:{change_type}:{sha256_bytes(staged_text.encode('utf-8'))}".encode("utf-8")
+        ).hexdigest()[:24]
+        journal = None
+        if tier == "trusted":
+            journal = self.recovery.prepare(
+                evolution_id, path, before_bytes, staged_text,
+                operation=f"trusted_{change_type}", event=event,
+            )
+        try:
+            atomic_write_text(path, staged_text)
+            if journal:
+                self.recovery.checkpoint(journal, "staged")
+            self.repository.rebuild_index()
+            receipt = self.receipts.consolidate(
+                object_id, result=result, changes=[record], change_summary=reason,
+                exceptions_created=[exception_id] if exception_id else [],
+            )
+            if tier == "trusted" and not self.receipts.complete(receipt):
+                raise ValueError("trusted evolution rolled back because consolidation receipt failed")
+            if journal:
+                self.recovery.checkpoint(journal, "receipt_completed", receipt["consolidation_id"])
+        except Exception:
+            path.write_bytes(before_bytes)
+            self.repository.rebuild_index()
+            if journal:
+                journal.unlink(missing_ok=True)
+            raise
+        event_with_recovery = {
+            **event, "recovery_operation_id": evolution_id,
+            "receipt_id": receipt["consolidation_id"],
+        }
+        self.repository.append_event("memory-events", event_with_recovery)
+        if journal:
+            self.recovery.checkpoint(journal, "event_logged")
+            self.recovery.checkpoint(journal, "finalized")
+            journal.unlink(missing_ok=True)
         return {
             "action": change_type, "object_id": object_id, "memory_tier": tier,
             "epistemic_status": updated.get("epistemic_status"),

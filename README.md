@@ -2,7 +2,7 @@
 
 Global Memory 是本地优先、用户拥有、模型无关的长期记忆系统。Markdown、不可变 Raw 与治理记录是真相层；SQLite、Context Pack 和 Obsidian 页面都是可删除、可重建的派生层。
 
-当前里程碑是 **M8 — Trustworthy Consolidation and Incremental Knowledge Evolution**：Working 可以低成本自动演化；Trusted 的变化必须可验证、可解释、可回滚；Canonical 只允许用户明确批准。
+当前里程碑是 **M8.1.1 — Correctness Recovery**：Working 可以低成本演化；Trusted 保留历史接受状态并单独显示当前策略资格，所有 Trusted 变化必须有 Receipt v2 与恢复日志；Canonical 只允许 Proposal/Exception + 用户明确批准。
 
 ## 当前工作流
 
@@ -36,6 +36,7 @@ python -m pip install -e ".[test,pdf]"
 .\scripts\gm.ps1 triage <source-id> --compile-selected
 .\scripts\gm.ps1 consolidate object <object-id>
 .\scripts\gm.ps1 trust explain <object-id>
+.\scripts\gm.ps1 trust requalify <trusted-object-id>
 ```
 
 显式知识演化：
@@ -56,7 +57,10 @@ python -m pip install -e ".[test,pdf]"
 .\scripts\gm.ps1 exceptions
 .\scripts\gm.ps1 promotions
 .\scripts\gm.ps1 promotion approve <promotion-id> --lock
+.\scripts\gm.ps1 recover
 ```
+
+外部 provider 更新既有对象时必须返回 `action: "update"`、稳定 `target_id` 和明确 `change_type`。标题只用于展示，不再作为更新身份。Canonical 的 `support`、`metadata_only`、`refine`、`limit`、`contradict`、`supersede` 全部只生成 update Proposal；不会原地修改 Canonical。
 
 `consolidation_count += 1` 不构成有效复核。Promotion 只承认检查完整、与当前对象 SHA-256 相符的 Consolidation Receipt。Question、Tension、Hypothesis、Analogy、Anomaly、Intuition 和 Synthesis 默认暂停自动 Trusted 晋升。
 

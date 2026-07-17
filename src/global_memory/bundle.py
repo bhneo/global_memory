@@ -208,6 +208,20 @@ class BundleCompiler:
                 return path, metadata, body
         return None
 
+    def _find_target(self, target_id: str, object_type: str) -> tuple[Path, dict[str, Any], str]:
+        try:
+            path, metadata, body = self.repository.find_document(target_id)
+        except Exception as exc:
+            raise ValidationError(f"provider update target_id does not exist: {target_id}") from exc
+        relative = self.repository.rel(path)
+        if not relative.startswith(("vault/memory/", "vault/knowledge/", "vault/frontier/", "vault/action/")):
+            raise ValidationError(f"provider update target_id is not governed knowledge: {target_id}")
+        if metadata.get("type") != object_type:
+            raise ValidationError(
+                f"provider update target_id type mismatch: expected {object_type}, got {metadata.get('type')}"
+            )
+        return path, metadata, body
+
     def compile(self, source_id: str) -> BundleResult:
         source_path, source, _ = self.repository.find_document(source_id)
         if source.get("type") != "source":
@@ -236,9 +250,12 @@ class BundleCompiler:
                 raise ValidationError("compiler provider item 必须是对象")
             expanded_specs.extend(AtomicClaimInspector.split_spec(spec, text))
         specs = []
-        seen_specs: set[tuple[str, str]] = set()
+        seen_specs: set[tuple[str, str, str, str]] = set()
         for spec in expanded_specs:
-            key = (str(spec.get("object_type")), self._semantic_key(str(spec.get("title", ""))))
+            key = (
+                str(spec.get("object_type")), str(spec.get("action", "")),
+                str(spec.get("target_id", "")), self._semantic_key(str(spec.get("title", ""))),
+            )
             if key in seen_specs:
                 continue
             seen_specs.add(key)
@@ -253,7 +270,17 @@ class BundleCompiler:
             body_text = str(spec.get("body", "")).strip()
             if not title or not body_text:
                 raise ValidationError("compiler provider item 缺少 title/body")
-            same = self._find_same_object(object_type, title)
+            requested_action = str(spec.get("action", "")).strip().lower()
+            requested_target_id = str(spec.get("target_id", "")).strip()
+            if requested_action and requested_action not in {"create", "update"}:
+                raise ValidationError(f"compiler provider item has unsupported action: {requested_action}")
+            if requested_action == "update" and not requested_target_id:
+                raise ValidationError("provider update requires stable target_id")
+            same = (
+                self._find_target(requested_target_id, object_type)
+                if requested_target_id and requested_action != "create"
+                else self._find_same_object(object_type, title) if not requested_action else None
+            )
             if same:
                 target_path, target, old_body = same
                 action = "update"
@@ -269,7 +296,14 @@ class BundleCompiler:
                 supplied_metadata = spec.get("metadata", {})
                 if supplied_metadata is not None and not isinstance(supplied_metadata, dict):
                     raise ValidationError("compiler provider item.metadata 必须是对象")
-                explicit_id = str((supplied_metadata or {}).get("id", ""))
+                explicit_id = requested_target_id or str((supplied_metadata or {}).get("id", ""))
+                if requested_action == "create" and requested_target_id:
+                    try:
+                        self.repository.find_document(requested_target_id)
+                    except Exception:
+                        pass
+                    else:
+                        raise ValidationError(f"provider create target_id already exists: {requested_target_id}")
                 if object_type == "work" and not explicit_id:
                     raise ValidationError("bundle work enrichment 必须提供 metadata.id 稳定身份")
                 digest = hashlib.sha256(f"{object_type}\n{self._semantic_key(title)}".encode("utf-8")).hexdigest()

@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, TypedDict
 
 from .bundle import BundleCompiler
-from .governance import PromotionService
+from .governance import POLICY_VERSION, PromotionService
 from .markdown import atomic_write_text, read_document, render_document
 from .memory import ExceptionService, WorkingMemoryService
 from .proposals import ProposalService
@@ -110,13 +110,38 @@ class ConsolidationReceiptService:
     def _digest(value: Any) -> str:
         return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest()
 
+    def _source_records(self, source_ids: list[str]) -> list[dict[str, Any]]:
+        records = []
+        for source_id in source_ids:
+            try:
+                source_path, source, _ = self.repository.find_document(source_id)
+                raw_path = self.repository.resolve_inside(str(source["raw_content_path"])) if source.get("raw_content_path") else None
+                work_id = source.get("work_id")
+                work_sha = None
+                if work_id:
+                    try:
+                        work_path, _, _ = self.repository.find_document(str(work_id))
+                        work_sha = sha256_bytes(work_path.read_bytes())
+                    except Exception:
+                        work_sha = None
+                records.append({
+                    "source_id": source_id,
+                    "source_record_sha256": sha256_bytes(source_path.read_bytes()),
+                    "raw_content_sha256": sha256_bytes(raw_path.read_bytes()) if raw_path and raw_path.exists() else None,
+                    "work_id": work_id,
+                    "work_document_sha256": work_sha,
+                })
+            except Exception:
+                records.append({"source_id": source_id, "missing": True})
+        return records
+
     def fingerprint(self, object_id: str, *, metadata: dict[str, Any] | None = None, body: str | None = None) -> dict[str, Any]:
         """Hash every governed input that can invalidate a consolidation."""
         path, current, current_body = self.repository.find_document(object_id)
         metadata = metadata or current
         body = current_body if body is None else body
         source_ids = [str(item) for item in metadata.get("source_ids", [])]
-        source_hashes, _, _ = self._source_state(source_ids)
+        source_records = self._source_records(source_ids)
         evidence = [item for item in metadata.get("evidence", []) if isinstance(item, dict)]
         relations = [item for item in metadata.get("relations", []) if isinstance(item, dict)]
         try:
@@ -125,16 +150,25 @@ class ConsolidationReceiptService:
             neighborhood = []
         return {
             "object_sha256": sha256_bytes(render_document(metadata, body).encode("utf-8")),
-            "source_state_sha256": self._digest(list(zip(source_ids, source_hashes))),
-            "raw_state_sha256": self._digest(source_hashes),
+            "source_state_sha256": self._digest(source_records),
+            "source_record_sha256s": {item["source_id"]: item.get("source_record_sha256") for item in source_records},
+            "raw_state_sha256": self._digest([item.get("raw_content_sha256") for item in source_records]),
             "evidence_sha256": self._digest(evidence),
-            "extraction_state_sha256": self._digest([metadata.get("extraction_id"), metadata.get("extraction_quality")]),
-            "work_identity_sha256": self._digest(metadata.get("reuse_work_ids", metadata.get("work_id", []))),
+            "extraction_state_sha256": self._digest([{
+                "evidence_id": item.get("evidence_id"), "extraction_id": item.get("extraction_id"),
+                "input_sha256": item.get("input_sha256"), "extractor_version": item.get("extractor_version"),
+            } for item in evidence]),
+            "work_identity_sha256": self._digest([{
+                "source_id": item["source_id"], "work_id": item.get("work_id"),
+                "work_document_sha256": item.get("work_document_sha256"),
+            } for item in source_records]),
             "relation_neighborhood_sha256": self._digest([relations, neighborhood]),
             "contradictions_sha256": self._digest(metadata.get("unresolved_contradictions", [])),
-            "schema_version": metadata.get("memory_schema_version", 1),
+            "receipt_schema_version": RECEIPT_SCHEMA_VERSION,
+            "memory_schema_version": metadata.get("memory_schema_version", 1),
             "consolidator_version": CONSOLIDATOR_VERSION,
-            "policy_version": DRIFT_POLICY_VERSION,
+            "drift_policy_version": DRIFT_POLICY_VERSION,
+            "promotion_policy_version": POLICY_VERSION,
         }
 
     def counts(self) -> dict[str, int]:
@@ -172,30 +206,53 @@ class ConsolidationReceiptService:
                 warnings.append(f"source unavailable: {source_id}")
         return hashes, available, warnings
 
-    def _search_checks(self, metadata: dict[str, Any]) -> tuple[dict[str, bool], list[str]]:
+    def _search_checks(
+        self, metadata: dict[str, Any],
+    ) -> tuple[dict[str, bool], list[str], dict[str, list[str]]]:
         checks = {
             "duplicate_search_completed": False,
             "related_object_search_completed": False,
             "contradiction_search_completed": False,
         }
         warnings: list[str] = []
+        findings: dict[str, list[str]] = {
+            "duplicate_search_completed": [],
+            "related_object_search_completed": [],
+            "contradiction_search_completed": [],
+        }
         try:
-            self.repository.search(str(metadata.get("title", metadata["id"])), 20)
+            results = self.repository.search(str(metadata.get("title", metadata["id"])), 20)
             checks["duplicate_search_completed"] = True
+            findings["duplicate_search_completed"] = [
+                f"searched title; {len(results)} candidates inspected",
+                *[f"candidate:{item.id}" for item in results[:5]],
+            ]
         except Exception as exc:
             warnings.append(f"duplicate search failed: {exc}")
         try:
-            self.repository.related(str(metadata["id"]))
+            related = self.repository.related(str(metadata["id"]))
             checks["related_object_search_completed"] = True
+            findings["related_object_search_completed"] = [
+                f"relation index inspected; {len(related)} related objects found",
+                *[f"related:{item.get('id', item.get('target_id', 'unknown'))}" for item in related[:5]],
+            ]
             # A completed search can legitimately find zero contradictions.
             _ = [
                 relation for relation in metadata.get("relations", [])
                 if isinstance(relation, dict) and relation.get("type") == "contradicts"
             ]
             checks["contradiction_search_completed"] = True
+            contradictions = [
+                str(relation.get("target_id")) for relation in metadata.get("relations", [])
+                if isinstance(relation, dict) and relation.get("type") == "contradicts"
+            ]
+            findings["contradiction_search_completed"] = [
+                f"contradiction relations inspected; {len(contradictions)} found",
+                *[f"contradicts:{target_id}" for target_id in contradictions],
+            ]
         except Exception as exc:
             warnings.append(f"relation search failed: {exc}")
-        return checks, warnings
+        return checks, warnings, findings
 
     def consolidate(
         self, object_id: str, *, result: str | None = None,
@@ -203,20 +260,19 @@ class ConsolidationReceiptService:
         exceptions_created: list[str] | None = None,
         consolidator: str = "deterministic", model_provider: str = "none",
         model_version: str = "none", rebuild_index: bool = True,
-    ) -> DriftReport:
+    ) -> dict[str, Any]:
         path, metadata, body = self.repository.find_document(object_id)
         if not self.repository.rel(path).startswith(("vault/memory/", "vault/knowledge/", "vault/frontier/", "vault/action/")):
             raise ValueError("only governed knowledge objects can be consolidated")
-        existing = self._current_for(object_id)
-        if existing and result is None and not changes:
-            latest = sorted(existing, key=lambda item: str(item.get("completed_at", "")))[-1]
-            return {**latest, "reused": True}
+        valid = self.valid_for(object_id)
+        if valid is not None and result is None and not changes and not metadata.get("needs_policy_requalification"):
+            return {**valid, "reused": True}
         started = now_iso()
         before_bytes = path.read_bytes()
         before_sha = hashlib.sha256(before_bytes).hexdigest()
         source_ids = [str(item) for item in metadata.get("source_ids", [])]
         source_hashes, raw_available, warnings = self._source_state(source_ids)
-        search_checks, search_warnings = self._search_checks(metadata)
+        search_checks, search_warnings, search_findings = self._search_checks(metadata)
         warnings.extend(search_warnings)
         object_type = str(metadata.get("type"))
         evidence = [item for item in metadata.get("evidence", []) if isinstance(item, dict)]
@@ -252,8 +308,18 @@ class ConsolidationReceiptService:
         resolved_result = result or ("unchanged" if receipt_complete else "failed")
         if resolved_result == "promotion_candidate" and not receipt_complete:
             resolved_result = "failed"
+        environment_fingerprint = self.fingerprint(object_id, metadata=metadata, body=body)
+        failed_attempt_index = sum(
+            1 for receipt_path in self.documents()
+            for receipt_metadata, _ in [read_document(receipt_path)]
+            if receipt_metadata.get("object_id") == object_id
+            and not self.complete(receipt_metadata)
+        ) if not receipt_complete or resolved_result in {"failed", "needs_review"} else None
         stable = json.dumps(
-            [object_id, before_sha, source_hashes, evidence_ids, checks, resolved_result, changes or [], exceptions_created or []],
+            [
+                object_id, before_sha, environment_fingerprint, evidence_ids, checks,
+                resolved_result, changes or [], exceptions_created or [], failed_attempt_index,
+            ],
             ensure_ascii=False, sort_keys=True,
         )
         consolidation_id = "consolidation_" + hashlib.sha256(stable.encode("utf-8")).hexdigest()[:24]
@@ -269,8 +335,46 @@ class ConsolidationReceiptService:
         after_text = render_document(updated, body)
         after_sha = sha256_bytes(after_text.encode("utf-8")) if receipt_complete else before_sha
         fingerprint = self.fingerprint(object_id, metadata=updated if receipt_complete else metadata, body=body)
+        source_records = self._source_records(source_ids)
+        work_ids = sorted({str(item.get("work_id")) for item in source_records if item.get("work_id")})
+        detail_findings: dict[str, list[str]] = {
+            "schema_validated": [f"validated:{self.repository.rel(path)}"] if schema_validated else [],
+            "raw_available": [
+                f"source:{item['source_id']} raw_sha256:{item.get('raw_content_sha256') or 'missing'}"
+                for item in source_records
+            ],
+            "provenance_revalidated": [
+                f"source:{item['source_id']} record_sha256:{item['source_record_sha256']}"
+                for item in source_records
+            ],
+            "evidence_revalidated": [
+                f"evidence:{item.get('evidence_id') or item.get('source_id') or 'inline'}"
+                for item in evidence
+            ] or (["not applicable for non-claim object"] if object_type != "claim" else []),
+            "evidence_entailment_rechecked": [
+                f"evidence_entailment:{metadata.get('evidence_entailment')}"
+            ] if object_type == "claim" else ["not applicable for non-claim object"],
+            "freshness_checked": [
+                f"object_updated_at:{metadata.get('updated_at')}",
+                *[f"source:{item['source_id']} work_sha256:{item.get('work_document_sha256') or 'none'}" for item in source_records],
+            ],
+            "source_independence_checked": [
+                f"distinct_source_ids:{len(set(source_ids))}", f"distinct_work_ids:{len(work_ids)}",
+                *[f"work_id:{item}" for item in work_ids],
+            ],
+            "drift_checked": [
+                f"drift_reports:{len(drift)}",
+                *[f"{item['drift_report_id']}:{item['severity']}:{item['drift_type']}" for item in drift],
+            ],
+            **search_findings,
+        }
         check_details = {
-            key: {"status": "passed" if value else "failed", "findings": [], "warnings": []}
+            key: {
+                "status": "passed" if value else "failed",
+                "findings": detail_findings.get(key, []),
+                "warnings": [] if value else [warning for warning in warnings if key.split("_")[0] in warning]
+                    or [f"{key} did not pass"],
+            }
             for key, value in checks.items()
         }
         receipt = {
@@ -290,6 +394,7 @@ class ConsolidationReceiptService:
             "object_sha256_after": after_sha,
             "source_ids": source_ids,
             "source_sha256s": source_hashes,
+            "source_records": source_records,
             "evidence_ids": evidence_ids,
             "started_at": started,
             "completed_at": completed,
@@ -467,6 +572,20 @@ class ConsolidationService:
                     source_ids=[str(item) for item in metadata.get("source_ids", [])],
                 )
         self.repository.rebuild_index()
+        requalified, requalification_blocked = [], []
+        for path in list(self.repository.memory_documents()):
+            metadata, _ = read_document(path)
+            if metadata.get("status") != "trusted" or not metadata.get("needs_policy_requalification"):
+                continue
+            result = self.promotions.requalify_trusted(str(metadata["id"]), rebuild_index=False)
+            if result.get("requalified"):
+                requalified.append(str(metadata["id"]))
+            else:
+                requalification_blocked.append({
+                    "object_id": str(metadata["id"]),
+                    "failed_conditions": result.get("evaluation", {}).get("failed_conditions", []),
+                })
+        self.repository.rebuild_index()
         promoted, retained = [], []
         for path in list(self.repository.memory_documents()):
             metadata, _ = read_document(path)
@@ -491,7 +610,11 @@ class ConsolidationService:
         canonical_candidates = []
         for path in self.repository.memory_documents():
             metadata, _ = read_document(path)
-            if metadata.get("status") == "trusted" and metadata.get("type") in {"decision", "architecture", "goal", "project", "synthesis"}:
+            if (
+                metadata.get("status") == "trusted"
+                and not metadata.get("needs_policy_requalification")
+                and metadata.get("type") in {"decision", "architecture", "goal", "project", "synthesis"}
+            ):
                 canonical_candidates.append(self.promotions.recommend_canonical(str(metadata["id"]), "high-impact trusted memory"))
         exceptions = self.exceptions.list({"open", "deferred"})
         raw_count = len(list(self.repository.source_documents()))
@@ -524,10 +647,14 @@ class ConsolidationService:
                 for item in receipts
             ), "working_count": working_count,
             "trusted_promotions": len(promoted), "trusted_count": trusted_count,
+            "trusted_requalified": len(requalified),
+            "trusted_requalification_blocked": len(requalification_blocked),
             "exceptions": len(exceptions), "canonical_candidates": len(canonical_candidates),
             "estimated_human_review_minutes": review_items * 3,
             "compression_ratio": round(1 - review_items / original_review, 4),
             "promoted_ids": promoted, "retained_working_count": len(retained),
+            "requalified_ids": requalified,
+            "requalification_blocked": requalification_blocked,
             "retained_working": retained[:20],
             "retained_working_omitted": max(0, len(retained) - 20),
             "retention_reason_counts": dict(retention_reasons.most_common()),

@@ -19,7 +19,7 @@ AUTO_TRUSTED_TYPES = {"claim", "concept"}
 
 
 class TrustedPromotionRecoveryManager:
-    """Crash-safe rollback journal for the staged Trusted promotion boundary."""
+    """Crash-safe journal for governed object write -> Receipt -> event boundaries."""
 
     def __init__(self, repository: Repository):
         self.repository = repository
@@ -28,23 +28,47 @@ class TrustedPromotionRecoveryManager:
     def pending(self) -> list[Path]:
         return sorted(self.directory.glob("trusted-promotion-*.json")) if self.directory.exists() else []
 
-    def prepare(self, promotion_id: str, target: Path, before: bytes, staged_text: str) -> Path:
+    def prepare(
+        self, promotion_id: str, target: Path, before: bytes, staged_text: str, *,
+        operation: str = "trusted_promotion", event: dict[str, Any] | None = None,
+    ) -> Path:
         self.directory.mkdir(parents=True, exist_ok=True)
         path = self.directory / f"trusted-promotion-{promotion_id}.json"
         record = {
-            "journal_version": 1, "operation": "trusted_promotion", "promotion_id": promotion_id,
+            "journal_version": 2, "operation": operation, "promotion_id": promotion_id,
+            "operation_id": promotion_id,
             "phase": "prepared", "target_path": self.repository.rel(target),
             "before_sha256": sha256_bytes(before), "before_text": before.decode("utf-8"),
             "staged_sha256": sha256_bytes(staged_text.encode("utf-8")), "receipt_id": None,
+            "event": event,
         }
         atomic_write_text(path, json.dumps(record, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
         return path
 
     def checkpoint(self, path: Path, phase: str, receipt_id: str | None = None) -> None:
         record = json.loads(path.read_text(encoding="utf-8"))
+        transitions = {
+            "prepared": {"staged"},
+            "staged": {"receipt_completed"},
+            "receipt_completed": {"event_logged"},
+            "event_logged": {"finalized"},
+        }
+        current = str(record.get("phase"))
+        if phase not in transitions.get(current, set()):
+            raise ValidationError(f"invalid recovery phase transition: {current} -> {phase}")
         record["phase"] = phase
         record["receipt_id"] = receipt_id or record.get("receipt_id")
+        if phase == "receipt_completed":
+            target = self.repository.resolve_inside(str(record["target_path"]))
+            record["staged_sha256"] = sha256_bytes(target.read_bytes())
         atomic_write_text(path, json.dumps(record, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+
+    def _event_already_logged(self, operation_id: str) -> bool:
+        log_path = self.repository.root / "system" / "logs" / "memory-events.jsonl"
+        if not log_path.exists():
+            return False
+        marker = f'"recovery_operation_id": "{operation_id}"'
+        return marker in log_path.read_text(encoding="utf-8")
 
     def recover_all(self) -> dict[str, list[dict[str, str]]]:
         recovered, blocked = [], []
@@ -53,9 +77,26 @@ class TrustedPromotionRecoveryManager:
                 record = json.loads(journal.read_text(encoding="utf-8"))
                 target = self.repository.resolve_inside(str(record["target_path"]))
                 current = sha256_bytes(target.read_bytes()) if target.exists() else None
-                if record.get("phase") == "receipt_completed":
+                phase = record.get("phase")
+                if phase == "finalized":
                     journal.unlink()
-                    recovered.append({"journal": self.repository.rel(journal), "status": "completed"})
+                    recovered.append({"journal": self.repository.rel(journal), "status": "finalized"})
+                elif phase == "event_logged":
+                    self.checkpoint(journal, "finalized")
+                    journal.unlink()
+                    recovered.append({"journal": self.repository.rel(journal), "status": "finalized"})
+                elif phase == "receipt_completed" and current == record.get("staged_sha256"):
+                    event = record.get("event")
+                    operation_id = str(record.get("operation_id") or record.get("promotion_id"))
+                    if isinstance(event, dict) and not self._event_already_logged(operation_id):
+                        self.repository.append_event("memory-events", {**event, "recovery_operation_id": operation_id})
+                    self.checkpoint(journal, "event_logged")
+                    self.checkpoint(journal, "finalized")
+                    journal.unlink()
+                    recovered.append({"journal": self.repository.rel(journal), "status": "finalized"})
+                elif phase == "prepared" and current == record.get("before_sha256"):
+                    journal.unlink()
+                    recovered.append({"journal": self.repository.rel(journal), "status": "not_started"})
                 elif current == record.get("staged_sha256"):
                     target.write_text(str(record["before_text"]), encoding="utf-8", newline="\n")
                     journal.unlink()
@@ -90,7 +131,7 @@ class PromotionService:
         self.exceptions = ExceptionService(repository)
         self.recovery = TrustedPromotionRecoveryManager(repository)
 
-    def evaluate(self, object_id: str) -> PromotionEvaluation:
+    def evaluate(self, object_id: str, *, for_requalification: bool = False) -> PromotionEvaluation:
         path, metadata, body = self.repository.find_document(object_id)
         if not self.repository.rel(path).startswith("vault/memory/"):
             raise ValidationError("trusted promotion only evaluates working memory")
@@ -101,7 +142,7 @@ class PromotionService:
             if relation.get("type") == "contradicts" and relation.get("status") not in {"rejected", "superseded"}
         ]
         object_type = str(metadata.get("type"))
-        if object_type not in AUTO_TRUSTED_TYPES:
+        if object_type not in AUTO_TRUSTED_TYPES and not for_requalification:
             failed.append(f"automatic trusted promotion is paused for {object_type}")
         if metadata.get("user_locked") and metadata.get("status") != "trusted":
             failed.append("user_locked object cannot be automatically changed")
@@ -159,6 +200,111 @@ class PromotionService:
             [str(item) for item in metadata.get("source_ids", [])], contradictions,
         )
 
+    def requalify_trusted(self, object_id: str, *, rebuild_index: bool = True) -> dict[str, Any]:
+        """Qualify an existing Trusted object under the current policy without demoting it."""
+        path, metadata, body = self.repository.find_document(object_id)
+        if metadata.get("status") != "trusted" or metadata.get("memory_tier") != "trusted":
+            raise ValidationError("policy requalification only applies to Trusted memory")
+        if not metadata.get("needs_policy_requalification"):
+            return {"requalified": False, "reason": "object is already policy-qualified"}
+
+        from .consolidation import ConsolidationReceiptService
+        receipts = ConsolidationReceiptService(self.repository)
+        preliminary = receipts.valid_for(object_id) or receipts.consolidate(
+            object_id,
+            result="requalification_candidate",
+            change_summary="Trusted memory checked under the current Receipt v2 boundary",
+        )
+        evaluation = self.evaluate(object_id, for_requalification=True)
+        if not evaluation.eligible:
+            return {
+                "requalified": False,
+                "receipt_id": preliminary["consolidation_id"],
+                "evaluation": evaluation.as_dict(),
+            }
+
+        # The qualification fields change the governed bytes, so complete a second
+        # Receipt against the final state. The recovery journal makes that boundary
+        # restart-safe and never invents a demotion event.
+        _, metadata, body = self.repository.find_document(object_id)
+        before = path.read_bytes()
+        timestamp = now_iso()
+        qualification_id = "requalification_" + hashlib.sha256(
+            f"{object_id}:{timestamp}:{POLICY_VERSION}".encode("utf-8")
+        ).hexdigest()[:24]
+        metadata.update({
+            "needs_policy_requalification": False,
+            "trust_policy_version": POLICY_VERSION,
+            "last_policy_qualified_at": timestamp,
+            "last_valid_receipt_id": None,
+            "policy_requalification_failed_conditions": [],
+            "trust_score": evaluation.trust_score,
+            "trust_reasons": evaluation.reasons,
+            "updated_at": timestamp,
+            "updated_by": POLICY_VERSION,
+        })
+        staged_text = render_document(metadata, body)
+        event = {
+            "event": "trusted-policy-requalified", "requalification_id": qualification_id,
+            "object_id": object_id, "policy_version": POLICY_VERSION,
+        }
+        journal = self.recovery.prepare(
+            qualification_id, path, before, staged_text,
+            operation="trusted_requalification", event=event,
+        )
+        try:
+            atomic_write_text(path, staged_text)
+            self.recovery.checkpoint(journal, "staged")
+            self.repository.rebuild_index()
+            final_receipt = receipts.consolidate(
+                object_id,
+                result="requalified",
+                change_summary=f"Trusted memory qualified under {POLICY_VERSION}",
+                rebuild_index=False,
+            )
+            if not receipts.complete(final_receipt) or receipts.valid_for(object_id) is None:
+                raise ValidationError("Trusted requalification receipt v2 did not complete")
+            self.recovery.checkpoint(journal, "receipt_completed", final_receipt["consolidation_id"])
+        except Exception:
+            path.write_bytes(before)
+            self.repository.rebuild_index()
+            journal.unlink(missing_ok=True)
+            raise
+        # last_valid_receipt_id is intentionally not written back into the governed
+        # object: doing so would change its hash and immediately stale the receipt.
+        if rebuild_index:
+            self.repository.rebuild_index()
+        self.repository.append_event("memory-events", {
+            **event, "receipt_id": final_receipt["consolidation_id"],
+            "recovery_operation_id": qualification_id,
+        })
+        self.recovery.checkpoint(journal, "event_logged")
+        self.recovery.checkpoint(journal, "finalized")
+        journal.unlink(missing_ok=True)
+        return {
+            "requalified": True,
+            "requalification_id": qualification_id,
+            "receipt_id": final_receipt["consolidation_id"],
+            "evaluation": evaluation.as_dict(),
+            "path": self.repository.rel(path),
+        }
+
+    def _assert_canonical_gate(self, object_id: str, metadata: dict[str, Any]) -> None:
+        from .consolidation import ConsolidationReceiptService
+        failures: list[str] = []
+        if metadata.get("needs_policy_requalification"):
+            failures.append("Trusted object still awaits current-policy requalification")
+        if metadata.get("trust_policy_version") != POLICY_VERSION:
+            failures.append(f"Trusted object is not qualified under {POLICY_VERSION}")
+        if ConsolidationReceiptService(self.repository).valid_for(object_id) is None:
+            failures.append("Trusted object has no current Receipt v2")
+        if metadata.get("high_risk_drift"):
+            failures.append("Trusted object has high-risk drift")
+        if metadata.get("unresolved_contradictions"):
+            failures.append("Trusted object has unresolved contradictions")
+        if failures:
+            raise ValidationError("canonical gate failed: " + "; ".join(failures))
+
     def promote_trusted(
         self, object_id: str, *, automatic: bool = True, reason: str = "",
         rebuild_index: bool = True,
@@ -191,12 +337,19 @@ class PromotionService:
             "epistemic_status": epistemic_status,
             "updated_by": "promotion-policy", "trust_score": evaluation.trust_score,
             "trust_reasons": evaluation.reasons, "promotion_history": history,
+            "needs_policy_requalification": False,
+            "trust_policy_version": POLICY_VERSION,
+            "last_policy_qualified_at": timestamp,
         })
         # Stage the promotion, verify it under its *new* bytes, and roll back
         # atomically if Receipt v2 cannot be completed.
         before = path.read_bytes()
         staged_text = render_document(metadata, body)
-        journal = self.recovery.prepare(promotion_id, path, before, staged_text)
+        event = {"event": "promoted-trusted", "promotion_id": promotion_id, "object_id": object_id}
+        journal = self.recovery.prepare(
+            promotion_id, path, before, staged_text,
+            operation="trusted_promotion", event=event,
+        )
         try:
             atomic_write_text(path, staged_text)
             self.recovery.checkpoint(journal, "staged")
@@ -216,7 +369,9 @@ class PromotionService:
             raise
         if rebuild_index:
             self.repository.rebuild_index()
-        self.repository.append_event("memory-events", {"event": "promoted-trusted", "promotion_id": promotion_id, "object_id": object_id})
+        self.repository.append_event("memory-events", {**event, "recovery_operation_id": promotion_id})
+        self.recovery.checkpoint(journal, "event_logged")
+        self.recovery.checkpoint(journal, "finalized")
         journal.unlink(missing_ok=True)
         return {"promoted": True, "promotion_id": promotion_id, "receipt_id": receipt["consolidation_id"], "evaluation": evaluation.as_dict(), "path": self.repository.rel(path)}
 
@@ -224,6 +379,7 @@ class PromotionService:
         path, metadata, object_body = self.repository.find_document(object_id)
         if metadata.get("status") != "trusted":
             raise ValidationError("canonical candidates must first be trusted")
+        self._assert_canonical_gate(object_id, metadata)
         stable = f"canonical:{object_id}:{hashlib.sha256(object_body.encode('utf-8')).hexdigest()}"
         promotion_id = "promotion_" + hashlib.sha256(stable.encode()).hexdigest()[:24]
         card_path = self.directory / f"promotion-{promotion_id}.md"
@@ -254,6 +410,7 @@ class PromotionService:
         memory_path, metadata, body = self.repository.find_document(str(card["object_id"]))
         if metadata.get("status") != "trusted":
             raise ValidationError("promotion target is no longer trusted")
+        self._assert_canonical_gate(str(card["object_id"]), metadata)
         object_type = str(metadata["type"])
         target_dir = CANONICAL_DIRECTORIES.get(object_type)
         if not target_dir:

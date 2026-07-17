@@ -74,7 +74,8 @@ def incremental_report(repo: Repository) -> dict[str, Any]:
     claim_before, claim_body_before = read_document(claim_path)
     provider_file = repo.root / "data" / "imports" / "ci-provider-b.json"
     provider_file.write_text(json.dumps({"items": [{
-        "object_type": "claim", "title": claim_before["title"], "body": "portable fixture",
+        "action": "update", "target_id": claim_before["id"],
+        "object_type": "claim", "title": "Fixture B uses stable identity", "body": "portable fixture",
         "change_type": "support", "metadata": {"evidence": [{
             "source_id": source.source_id, "stance": "supports", "location": "body",
             "excerpt": "portable fixture", "reason": "fixture B supplies explicit support",
@@ -93,7 +94,8 @@ def incremental_report(repo: Repository) -> dict[str, Any]:
     claim, _ = read_document(claim_path)
     provider_file_c = repo.root / "data" / "imports" / "ci-provider-c.json"
     provider_file_c.write_text(json.dumps({"items": [{
-        "object_type": "claim", "title": claim["title"], "body": "does not preserve raw evidence",
+        "action": "update", "target_id": claim["id"],
+        "object_type": "claim", "title": "Fixture C title intentionally differs", "body": "does not preserve raw evidence",
         "change_type": "contradict", "metadata": {"evidence": [{
             "source_id": source_c.source_id, "stance": "contradicts", "location": "body",
             "excerpt": "does not preserve raw evidence", "reason": "fixture C explicitly limits fixture A",
@@ -115,6 +117,15 @@ def incremental_report(repo: Repository) -> dict[str, Any]:
         "silent_trusted_demotions": 0,
         "canonical_writes": 0,
         "source_order": ["A", "B", "C"],
+        "stable_target_id": claim_before["id"],
+        "provider_target_ids": [
+            proposal["bundle_items"][0]["target_id"],
+            proposal_c["bundle_items"][0]["target_id"],
+        ],
+        "duplicate_claim_count": sum(
+            read_document(path)[0].get("id") == claim_before["id"]
+            for path in repo.memory_documents()
+        ),
         "contradiction_exception_id": contradiction_item.get("exception_id"),
     }
     return {

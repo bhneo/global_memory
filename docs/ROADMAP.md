@@ -2,9 +2,14 @@
 
 ## M8 — Trustworthy Consolidation and Incremental Knowledge Evolution
 
+- M8.1.1 correctness recovery: implemented locally. The wrong bulk demotion was repaired from immutable backup; 28/30 restored Trusted objects currently satisfy Policy v3 and 2 remain explicitly awaiting independent-work evidence.
+- Receipt v1/v2 reuse, five-phase governed recovery, Trusted support transactions, Canonical evolve gating, real Findings and provider `target_id`: implemented and covered by local acceptance.
+- Six-platform remote CI for M8.1.1: pending the user's planned unified push; the last public six-job green result applies to the preceding M8 baseline.
+- Still requires real calibration: the 8 failed legacy claims, 2 awaiting Concepts and 2 synthesis drift warnings must be resolved from evidence, not by weakening policy.
+
 - P0 six-platform CI, independent diagnostics and artifacts: implemented and publicly green.
 - Orthogonal Memory Tier / Epistemic Status, explicit Context mapping and migration: implemented and verified on the real vault.
-- Receipt v2 full fingerprint, strict execution reads and recoverable Trusted promotion: implemented locally; requalification remains dry-run until user approves the real-vault batch.
+- Receipt v2 full fingerprint, strict execution reads and recoverable Trusted promotion: implemented; the approved real-vault correction restored 30 Trusted objects without Canonical writes.
 - Trusted support, Working Revision, conflict/Exception and explicit Demotion Event: implemented.
 - Sequential A→B→C support/contradict acceptance and semantic drift interface: implemented in deterministic fixtures.
 - Weekly report and generated metrics: implemented; final real-vault counts are generated, not hand-maintained.

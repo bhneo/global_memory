@@ -436,9 +436,13 @@ class ContextPackService:
                 if not visible:
                     omitted.append({"id": str(metadata["id"]), "reason": "profile trust policy excluded this memory tier"})
                     continue
-            if strict_execution and "execution" in profiles and object_type != "source" and tier in {"trusted", "canonical"} and current_receipt is None:
-                omitted.append({"id": str(metadata["id"]), "reason": "strict execution requires current Receipt v2"})
-                continue
+            if strict_execution and "execution" in profiles and object_type != "source" and tier in {"trusted", "canonical"}:
+                if metadata.get("needs_policy_requalification"):
+                    omitted.append({"id": str(metadata["id"]), "reason": "strict execution excludes Trusted memory awaiting policy requalification"})
+                    continue
+                if current_receipt is None:
+                    omitted.append({"id": str(metadata["id"]), "reason": "strict execution requires current Receipt v2"})
+                    continue
             if updated_since and str(metadata.get("updated_at", "")) < updated_since:
                 omitted.append({"id": str(metadata["id"]), "reason": "早于 updated_since filter"})
                 continue

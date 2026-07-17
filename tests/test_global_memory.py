@@ -25,10 +25,10 @@ from global_memory.markdown import read_document, render_document
 from global_memory.maintenance import MaintenanceService
 from global_memory.memory import ExceptionService, WorkingMemoryService
 from global_memory.governance import PromotionService, TrustedPromotionRecoveryManager
-from global_memory.consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration
+from global_memory.consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration, REQUIRED_RECEIPT_CHECKS
 from global_memory.epistemics import truth_layer
 from global_memory.evolution import KnowledgeEvolutionService
-from global_memory.migration import EpistemicStatusMigration
+from global_memory.migration import EpistemicStatusMigration, TrustPolicyRequalificationMigration, TrustRequalificationRepairMigration
 from global_memory.metrics import ProjectMetricsService
 from global_memory.mcp_server import MCPApplication, ReadOnlyMemoryTools, serve_http
 from global_memory.obsidian import ObsidianViewService
@@ -791,6 +791,39 @@ def test_external_json_bundle_adapter_never_writes_without_proposal(
     proposal, _ = read_document(repo.root / result.proposal_path)
     assert proposal["processor"] == "cursor-json-v1"
     assert not (repo.root / proposal["bundle_items"][0]["target_path"]).exists()
+
+
+def test_external_provider_update_uses_stable_target_id_not_title(
+    repo: Repository, workspace: Path,
+) -> None:
+    target_path, _ = write_m8_claim(repo, "claim_provider_stable_target")
+    original = target_path.read_bytes()
+    captured = CaptureService(repo).capture_text("Updated bounded evidence from a new source.")
+    bundle_file = workspace / "target-update.json"
+    bundle_file.write_text(json.dumps({"items": [{
+        "action": "update", "target_id": "claim_provider_stable_target",
+        "object_type": "claim", "title": "A deliberately different title",
+        "body": "Updated bounded evidence from a new source.", "change_type": "support",
+    }]}), encoding="utf-8")
+
+    result = BundleCompiler(repo, JsonBundleProvider(bundle_file)).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / result.proposal_path)
+    item = proposal["bundle_items"][0]
+
+    assert item["action"] == "update" and item["target_id"] == "claim_provider_stable_target"
+    assert target_path.read_bytes() == original
+
+
+def test_external_provider_update_rejects_missing_target_id(repo: Repository, workspace: Path) -> None:
+    captured = CaptureService(repo).capture_text("Provider update without identity.")
+    bundle_file = workspace / "missing-target-update.json"
+    bundle_file.write_text(json.dumps({"items": [{
+        "action": "update", "object_type": "question", "title": "Same title is not identity",
+        "body": "Provider update without identity.",
+    }]}), encoding="utf-8")
+
+    with pytest.raises(ValidationError, match="requires stable target_id"):
+        BundleCompiler(repo, JsonBundleProvider(bundle_file)).compile(captured.source_id)
 
 
 def test_external_bundle_can_propose_work_enrichment(repo: Repository, workspace: Path) -> None:
@@ -2919,10 +2952,10 @@ def test_m7_incremental_compile_reuses_working_identity(repo: Repository) -> Non
     assert second_proposal["bundle_items"][0]["action"] == "update"
     second_result = WorkingMemoryService(repo).ingest_bundle(str(second_bundle.proposal_id))
 
-    assert second_result.updated == [repo.rel(first_path)]
+    assert second_result.updated == [] and second_result.exceptions
     merged, _ = read_document(first_path)
     assert merged["id"] == first_id
-    assert set(merged["source_ids"]) == {first.source_id, second.source_id}
+    assert set(merged["source_ids"]) == {first.source_id}
     assert len(list(repo.memory_documents())) == 1
 
 
@@ -3019,6 +3052,9 @@ def test_m8_consolidation_receipt_is_real_and_hash_bound(repo: Repository) -> No
     assert receipt["receipt_schema_version"] == 2
     assert receipt["status"] == "complete"
     assert all(receipt["checks"].values())
+    assert all(receipt["check_details"][key]["findings"] for key in receipt["checks"])
+    assert any("record_sha256" in item for item in receipt["check_details"]["provenance_revalidated"]["findings"])
+    assert any("drift_reports:" in item for item in receipt["check_details"]["drift_checked"]["findings"])
     assert receipt["object_sha256_after"] == sha256_bytes(path.read_bytes())
     assert receipt["consolidation_fingerprint"] == ConsolidationReceiptService(repo).fingerprint(object_id)
     assert ConsolidationReceiptService(repo).valid_for(object_id)["consolidation_id"] == receipt["consolidation_id"]
@@ -3027,6 +3063,48 @@ def test_m8_consolidation_receipt_is_real_and_hash_bound(repo: Repository) -> No
     path.write_text(render_document(metadata, body), encoding="utf-8")
     repo.rebuild_index()
     assert ConsolidationReceiptService(repo).valid_for(object_id) is None
+
+
+def test_receipt_v1_is_retained_but_regenerated_as_v2(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_receipt_v1_upgrade")
+    service = ConsolidationReceiptService(repo)
+    timestamp = "2026-07-17T10:00:00+08:00"
+    legacy = {
+        "id": "consolidation_legacy_v1", "type": "consolidation_receipt", "status": "complete",
+        "title": "Legacy receipt", "created_at": timestamp, "updated_at": timestamp,
+        "consolidation_id": "consolidation_legacy_v1", "object_id": "claim_receipt_v1_upgrade",
+        "object_sha256_after": sha256_bytes(path.read_bytes()), "completed_at": timestamp,
+        "checks": {key: True for key in REQUIRED_RECEIPT_CHECKS}, "result": "unchanged",
+    }
+    legacy_path = service.directory / "consolidation-consolidation_legacy_v1.md"
+    repo.immutable_write(legacy_path, render_document(legacy, "# Legacy Receipt\n").encode("utf-8"))
+
+    receipt = service.consolidate("claim_receipt_v1_upgrade")
+
+    assert receipt["reused"] is False and receipt["receipt_schema_version"] == 2
+    assert receipt["consolidation_id"] != legacy["consolidation_id"]
+    assert legacy_path.exists() and service.valid_for("claim_receipt_v1_upgrade")["consolidation_id"] == receipt["consolidation_id"]
+
+
+def test_receipt_v2_reuse_requires_full_current_fingerprint(repo: Repository, monkeypatch: pytest.MonkeyPatch) -> None:
+    path, source_id = write_m8_claim(repo, "claim_receipt_fingerprint")
+    service = ConsolidationReceiptService(repo)
+    first = service.consolidate("claim_receipt_fingerprint")
+    reused = service.consolidate("claim_receipt_fingerprint")
+    assert reused["reused"] is True and reused["consolidation_id"] == first["consolidation_id"]
+
+    source_path, source, source_body = repo.find_document(source_id)
+    source["comment"] = "source metadata changed"
+    source_path.write_text(render_document(source, source_body), encoding="utf-8")
+    repo.rebuild_index()
+    assert service.valid_for("claim_receipt_fingerprint") is None
+    source_changed = service.consolidate("claim_receipt_fingerprint")
+    assert source_changed["reused"] is False and source_changed["consolidation_id"] != first["consolidation_id"]
+
+    monkeypatch.setattr("global_memory.consolidation.POLICY_VERSION", "trusted-promotion-v3-test-change")
+    assert service.valid_for("claim_receipt_fingerprint") is None
+    policy_changed = service.consolidate("claim_receipt_fingerprint")
+    assert policy_changed["reused"] is False and policy_changed["consolidation_id"] != source_changed["consolidation_id"]
 
 
 def test_context_strict_execution_reports_receipt_policy(repo: Repository) -> None:
@@ -3057,6 +3135,31 @@ def test_trusted_promotion_recovery_rolls_back_staged_object(repo: Repository) -
     assert result["blocked"] == []
     assert result["recovered"][0]["status"] == "rolled_back"
     assert path.read_bytes() == before
+
+
+def test_governed_recovery_finalizes_receipt_completed_event_once(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_m81_recovery_finalize")
+    before = path.read_bytes()
+    metadata, body = read_document(path)
+    metadata["comment"] = "durable staged mutation"
+    staged = render_document(metadata, body)
+    operation_id = "evolution_m81_finalize"
+    event = {"event": "knowledge-support", "object_id": "claim_m81_recovery_finalize"}
+    recovery = TrustedPromotionRecoveryManager(repo)
+    journal = recovery.prepare(
+        operation_id, path, before, staged, operation="trusted_support", event=event,
+    )
+    path.write_bytes(staged.encode("utf-8"))
+    recovery.checkpoint(journal, "staged")
+    recovery.checkpoint(journal, "receipt_completed", "consolidation_fixture")
+
+    result = recovery.recover_all()
+
+    assert result["blocked"] == [] and result["recovered"][0]["status"] == "finalized"
+    assert path.read_bytes() == staged.encode("utf-8")
+    events = (repo.root / "system/logs/memory-events.jsonl").read_text(encoding="utf-8")
+    assert events.count(f'"recovery_operation_id": "{operation_id}"') == 1
+    assert recovery.pending() == []
 
 
 def test_m81_test_functions_do_not_reference_object_id_before_assignment() -> None:
@@ -3095,8 +3198,8 @@ def test_m8_incomplete_receipt_and_failed_search_block_promotion(repo: Repositor
     failed = ConsolidationReceiptService(repo).consolidate("claim_m8_failed")
     assert failed["status"] == "failed"
     repeated = ConsolidationReceiptService(repo).consolidate("claim_m8_failed")
-    assert repeated["reused"] is True
-    assert repeated["consolidation_id"] == failed["consolidation_id"]
+    assert repeated["reused"] is False
+    assert repeated["consolidation_id"] != failed["consolidation_id"]
     assert PromotionService(repo).evaluate("claim_m8_failed").eligible is False
 
     path2, _ = write_m8_claim(repo, "claim_m8_search")
@@ -3183,6 +3286,39 @@ def test_m8_trusted_support_revision_conflict_and_demotion_are_explicit(repo: Re
     assert demotion["demotion_id"] and (repo.root / demotion["event_path"]).exists()
 
 
+@pytest.mark.parametrize("change_type", ["support", "metadata_only", "refine", "limit", "contradict", "supersede"])
+def test_canonical_evolution_always_creates_proposal_without_direct_write(
+    repo: Repository, change_type: str,
+) -> None:
+    object_id = f"claim_canonical_gate_{change_type}"
+    memory_path, source_id = write_m8_claim(repo, object_id)
+    metadata, current_body = read_document(memory_path)
+    metadata.update({"status": "confirmed", "memory_tier": "canonical", "epistemic_status": "supported"})
+    canonical_path = repo.root / "vault/knowledge/claims" / memory_path.name
+    canonical_path.parent.mkdir(parents=True, exist_ok=True)
+    canonical_path.write_text(render_document(metadata, current_body), encoding="utf-8")
+    memory_path.unlink()
+    repo.rebuild_index()
+    before = canonical_path.read_bytes()
+    incoming = {"source_ids": [source_id]}
+    if change_type == "contradict":
+        incoming["evidence"] = [{
+            "source_id": source_id, "stance": "contradicts", "location": "body",
+            "excerpt": "bounded contradictory evidence", "reason": "fixture conflict",
+        }]
+
+    result = KnowledgeEvolutionService(repo).apply(
+        object_id, incoming, "Candidate body changed.", change_type=change_type,
+        reason=f"canonical {change_type} must be reviewed", trigger_source=source_id,
+    )
+
+    assert result["action"] == "canonical_proposal" and result["proposal_id"]
+    assert canonical_path.read_bytes() == before
+    proposal_path, proposal, _ = repo.find_document(result["proposal_id"])
+    assert proposal["action"] == "update" and proposal["target_id"] == object_id
+    assert proposal_path.exists()
+
+
 def test_m8_incremental_a_b_c_and_execution_context(repo: Repository) -> None:
     path, source_a = write_m8_claim(repo, "claim_m8_abc")
     receipt_a = ConsolidationReceiptService(repo).consolidate("claim_m8_abc")
@@ -3235,3 +3371,118 @@ def test_m8_drift_migration_and_metrics(repo: Repository) -> None:
     assert migration.apply()["idempotent_noop"] is True
     metrics = ProjectMetricsService(repo).collect()
     assert metrics["working"] == 1 and metrics["contested"] == 1
+
+
+def test_trust_requalification_marks_legacy_trusted_without_demotion(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_requal_mark")
+    metadata, body = read_document(path)
+    metadata.update({
+        "status": "trusted", "memory_tier": "trusted", "legacy_status": "trusted",
+        "trust_score": 88, "trust_reasons": ["legacy qualified"],
+        "promotion_history": [{
+            "promotion_id": "promotion_legacy", "from_status": "working", "to_status": "trusted",
+            "policy_version": "trusted-promotion-v1", "promoted_at": "2026-07-16T12:00:00+08:00",
+        }],
+    })
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    migration = TrustPolicyRequalificationMigration(repo)
+    result = migration.apply()
+    current, current_body = read_document(path)
+
+    assert result["documents_changed"] == 1 and result["canonical_content_writes"] == 0
+    assert current_body == body
+    assert current["memory_tier"] == "trusted" and current["status"] == "trusted"
+    assert current["needs_policy_requalification"] is True
+    assert current["trust_policy_version"] == "trusted-promotion-v1"
+    assert current["trust_score"] == 88 and current["trust_reasons"] == ["legacy qualified"]
+    assert migration.apply()["idempotent_noop"] is True
+    assert migration.verify()["ok"] is True
+
+
+def test_trusted_requalification_completes_without_demotion_or_new_promotion(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_requal_complete")
+    metadata, body = read_document(path)
+    legacy_history = [{
+        "promotion_id": "promotion_legacy_complete", "from_status": "working", "to_status": "trusted",
+        "policy_version": "trusted-promotion-v1", "promoted_at": "2026-07-16T12:00:00+08:00",
+    }]
+    metadata.update({
+        "status": "trusted", "memory_tier": "trusted",
+        "needs_policy_requalification": True,
+        "trust_policy_version": "trusted-promotion-v1",
+        "promotion_history": legacy_history,
+    })
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    result = PromotionService(repo).requalify_trusted("claim_requal_complete")
+    current, _ = read_document(path)
+
+    assert result["requalified"] is True
+    assert current["status"] == "trusted" and current["memory_tier"] == "trusted"
+    assert current["needs_policy_requalification"] is False
+    assert current["trust_policy_version"] == "trusted-promotion-v3-receipt-v2"
+    assert current["promotion_history"] == legacy_history
+    assert ConsolidationReceiptService(repo).valid_for("claim_requal_complete")["consolidation_id"] == result["receipt_id"]
+    assert not (repo.root / "vault/receipts/demotions").exists()
+    metrics = ProjectMetricsService(repo).collect()
+    assert metrics["trusted_v3_qualified"] == 1
+    assert metrics["trusted_awaiting_requalification"] == 0
+    assert metrics["receipt_versions"]["v2"] >= 1 and metrics["recovery_journals"] == 0
+
+
+def test_strict_execution_and_canonical_gate_exclude_awaiting_requalification(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_requal_gate")
+    metadata, body = read_document(path)
+    metadata.update({
+        "status": "trusted", "memory_tier": "trusted",
+        "epistemic_status": "supported", "needs_policy_requalification": True,
+        "trust_policy_version": "trusted-promotion-v1",
+    })
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+    ConsolidationReceiptService(repo).consolidate("claim_requal_gate")
+
+    pack = ContextPackService(repo).build(
+        "Bounded evidence", 1200, profiles=["execution"], strict_execution=True,
+    ).as_dict()
+    assert "claim_requal_gate" not in {item["id"] for item in pack["items"]}
+    with pytest.raises(ValidationError, match="awaits current-policy requalification"):
+        PromotionService(repo).recommend_canonical("claim_requal_gate")
+
+
+def test_repair_faulty_trust_requalification_restores_only_proven_state(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_requal_repair")
+    metadata, body = read_document(path)
+    metadata.update({
+        "status": "trusted", "memory_tier": "trusted", "legacy_status": "trusted",
+        "trust_score": 91, "trust_reasons": ["legacy evidence"],
+        "promotion_history": [{
+            "promotion_id": "promotion_repair", "from_status": "working", "to_status": "trusted",
+            "policy_version": "trusted-promotion-v1", "promoted_at": "2026-07-16T13:00:00+08:00",
+        }],
+    })
+    original = render_document(metadata, body)
+    path.write_text(original, encoding="utf-8")
+    backup_path = repo.root / "data/backups/trust-requalification-2026-07-17T17-04-22+08-00" / repo.rel(path)
+    backup_path.parent.mkdir(parents=True, exist_ok=True)
+    backup_path.write_text(original, encoding="utf-8")
+    metadata.update({
+        "status": "working", "memory_tier": "working", "needs_revalidation": True,
+        "updated_by": "trusted-promotion-v3-receipt-v2", "updated_at": "2026-07-17T17:04:22+08:00",
+    })
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    repair = TrustRequalificationRepairMigration(repo)
+    assert len(repair.plan()["restorable"]) == 1
+    result = repair.apply()
+    restored, restored_body = read_document(path)
+
+    assert result["restored"] == 1 and result["conflict_count"] == 0
+    assert restored_body == body and restored["memory_tier"] == "trusted"
+    assert restored["needs_policy_requalification"] is True
+    assert restored["trust_policy_version"] == "trusted-promotion-v1"
+    assert restored["trust_score"] == 91 and not (repo.root / "vault/receipts/demotions").exists()
