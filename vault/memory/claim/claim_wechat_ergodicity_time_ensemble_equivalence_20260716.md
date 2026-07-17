@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "该文将遍历性描述为个体时间平均与群体平均相等的条件"
 created_at: "2026-07-16T00:36:00+08:00"
-updated_at: "2026-07-17T15:23:51+08:00"
+updated_at: "2026-07-17T18:35:43+08:00"
 aliases: []
 tags: ["ergodicity", "time-average", "ensemble-average"]
 domains: ["statistical-physics", "decision-theory"]
@@ -26,12 +26,12 @@ split_from: "claim_wechat_ergodicity_time_vs_ensemble_20260716"
 split_reason: "将定义性断言与现实路径风险断言分开核验"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:51+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:43+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -45,7 +45,7 @@ origin_candidate_sha256: "89a91246b91d4543c1fc7e253c83596f1cc0d3ebf3af3c12587256
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_1b65d92f48debca047ca6065"
+last_consolidation_id: "consolidation_c33a28697cc412012c528e59"
 ---
 
 该文将遍历性描述为个体时间平均与群体平均相等的条件。

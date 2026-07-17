@@ -1,10 +1,10 @@
 ---
 id: "claim_physo_rnn_reinforcement_learning_method_20260716"
 type: "claim"
-status: "working"
+status: "trusted"
 title: "Φ-SO 使用深度强化学习训练 RNN 生成符号表达式"
 created_at: "2026-07-15T18:45:00+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:37:21+08:00"
 aliases: []
 tags: ["PhySO", "symbolic-regression", "reinforcement-learning", "rnn"]
 domains: ["machine-learning", "physics"]
@@ -24,17 +24,17 @@ claim_confidence: "high"
 publication_gate: "needs_review"
 split_from: "claim_wechat_physo_method_20260715"
 split_reason: "将 RNN/RL 生成方法与单位约束作用分开核验"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:45+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T18:37:21+08:00"
 last_verified_at: null
 trust_score: 100
-trust_reasons: ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"]
+trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
 promotion_history: [{"promotion_id": "promotion_5717e51045bf3f2bc96e0e26", "object_id": "claim_physo_rnn_reinforcement_learning_method_20260716", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"], "failed_conditions": [], "supporting_sources": ["source_ef99e322cc662cffb7eb5c8f", "source_b85c7e35189fedbd359efa94"], "contradictions": [], "promoted_at": "2026-07-17T12:02:24+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -45,8 +45,12 @@ origin_candidate_sha256: "02a8b5565a847f329f026166d1151e5bdcd7d92047cff276ca0d9a
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_96707e4d66df87f827f27e34"
-needs_revalidation: true
+last_consolidation_id: "consolidation_9fe9386a210cd253c2549596"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:37:14+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 Φ-SO 使用深度强化学习训练 RNN 生成符号表达式。

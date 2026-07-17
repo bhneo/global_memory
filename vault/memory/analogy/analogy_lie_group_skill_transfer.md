@@ -1,10 +1,10 @@
 ---
 id: "analogy_lie_group_skill_transfer"
 type: "analogy"
-status: "working"
+status: "trusted"
 title: "李群与不变量 ↔ 技能组合和形态迁移"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:36:43+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,17 +16,17 @@ source_domain: "geometry and symmetry"
 target_domain: "robot skill transfer"
 shared_structure: "变换下的不变量与组合"
 where_it_breaks: "实际技能空间可能不闭合也不光滑"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:33+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-17T18:36:43+08:00"
 last_verified_at: null
-trust_score: 66
-trust_reasons: ["completed consolidation review", "analogy records shared structure and break boundary"]
+trust_score: 58
+trust_reasons: ["valid consolidation receipt matches current object"]
 promotion_history: [{"promotion_id": "promotion_7b6d2c13c81e14bee16c4f9b", "object_id": "analogy_lie_group_skill_transfer", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "analogy records shared structure and break boundary"], "failed_conditions": [], "supporting_sources": ["source_941321d95232028c233c9433"], "contradictions": [], "promoted_at": "2026-07-17T12:01:49+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -37,8 +37,12 @@ origin_candidate_sha256: "4f6261005fc6aed685c375ee2806e73cb41eddd9a12d7e72211451
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "exploratory_analogy"
-last_consolidation_id: "consolidation_0c82ea8d31a650ef651c7544"
-needs_revalidation: true
+last_consolidation_id: "consolidation_5001954b2afb2c2ec0faed50"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:36:37+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 # 李群与不变量 ↔ 技能组合和形态迁移

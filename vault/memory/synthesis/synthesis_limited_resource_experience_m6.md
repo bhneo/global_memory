@@ -4,7 +4,7 @@ type: "synthesis"
 status: "working"
 title: "智能系统如何在有限资源下压缩和沉淀经验"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:13+08:00"
+updated_at: "2026-07-17T18:36:12+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_494ab02c17c5f495f1ed29
 change_reason: "M6 controlled corpus distillation; requires human review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:24:13+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:36:12+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "78f7da1f96263cbf2c7282bcf2d75af690c1701ecfd96c76087395
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_86c1bd8a1ff093a838b53de8"
+last_consolidation_id: "consolidation_c242563399fdfc39b6ab7ba5"
 ---
 
 # 智能系统如何在有限资源下压缩和沉淀经验

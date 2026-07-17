@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "表征收敛"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:02+08:00"
+updated_at: "2026-07-17T18:35:58+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_f35b44d4bd383fb26ca491
 change_reason: "M6 controlled corpus distillation; requires human review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:24:02+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:58+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "bb7e85973c33a684893658e151e0e2760e1a59dd674e2d3d5ed582
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_5068ce9191ec908fe655ea17"
+last_consolidation_id: "consolidation_cd273c5f947636a848eb80bb"
 ---
 
 # 表征收敛

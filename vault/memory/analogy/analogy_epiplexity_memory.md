@@ -1,10 +1,10 @@
 ---
 id: "analogy_epiplexity_memory"
 type: "analogy"
-status: "working"
+status: "trusted"
 title: "Epiplexity ↔ 有限上下文记忆压缩"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:36:30+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,17 +16,17 @@ source_domain: "information theory"
 target_domain: "agent memory"
 shared_structure: "有限预算下提取可复用结构"
 where_it_breaks: "正式量化对象与任务效用不同"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:32+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-17T18:36:30+08:00"
 last_verified_at: null
-trust_score: 66
-trust_reasons: ["completed consolidation review", "analogy records shared structure and break boundary"]
+trust_score: 58
+trust_reasons: ["valid consolidation receipt matches current object"]
 promotion_history: [{"promotion_id": "promotion_ba15dd51338cd9aff4f19881", "object_id": "analogy_epiplexity_memory", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "analogy records shared structure and break boundary"], "failed_conditions": [], "supporting_sources": ["source_494ab02c17c5f495f1ed29d0"], "contradictions": [], "promoted_at": "2026-07-17T12:01:28+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -37,8 +37,12 @@ origin_candidate_sha256: "b02bc55c367f31b513bf12f309fca8f999d8bd6a8767692f6f97dd
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "exploratory_analogy"
-last_consolidation_id: "consolidation_ac078bd51059ec8e53dd4797"
-needs_revalidation: true
+last_consolidation_id: "consolidation_ac193ced323ad3ff48131797"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:36:25+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 # Epiplexity ↔ 有限上下文记忆压缩

@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "机器意识的信息整合问题"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:01+08:00"
+updated_at: "2026-07-17T18:35:56+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_68161c78067d7b4add05ba
 change_reason: "M6 controlled corpus distillation; requires human review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:24:01+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:56+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "93c841603e9219cd2544a3789a3a8563991c8f30ec552a1b7241e4
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_e187ceceef341c6672d27170"
+last_consolidation_id: "consolidation_4c40bb084644024a990eab4e"
 ---
 
 # 机器意识的信息整合问题

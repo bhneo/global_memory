@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_1527", "evidence_kind": "quote", "source_id": "so
 type: "claim"
 status: "working"
 created_at: "2026-07-16T00:48:00+08:00"
-updated_at: "2026-07-17T15:23:52+08:00"
+updated_at: "2026-07-17T18:35:45+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -27,12 +27,12 @@ claim_confidence: "medium"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:52+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:45+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "9ade0a5057dd9307b71e090d811d84e5f9cadcf7ab92680e5e6eb4
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_c84093368dfc652e74accfd5"
+last_consolidation_id: "consolidation_cb307d1848b21177548390b2"
 ---
 
 # 第一不完全性定理

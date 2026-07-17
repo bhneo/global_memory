@@ -6,28 +6,28 @@
 
 ## analogy
 
-- [[memory/analogy/analogy_epiplexity_memory|Epiplexity ↔ 有限上下文记忆压缩]] · `working`
-- [[memory/analogy/analogy_kelly_project_portfolio|Kelly Criterion ↔ 创新项目组合与资源下注]] · `working`
-- [[memory/analogy/analogy_lie_group_skill_transfer|李群与不变量 ↔ 技能组合和形态迁移]] · `working`
-- [[memory/analogy/analogy_ergodicity_dataset_coverage|遍历性 ↔ 离线数据对部署轨迹的覆盖]] · `working`
+- [[memory/analogy/analogy_epiplexity_memory|Epiplexity ↔ 有限上下文记忆压缩]] · `trusted`
+- [[memory/analogy/analogy_kelly_project_portfolio|Kelly Criterion ↔ 创新项目组合与资源下注]] · `trusted`
+- [[memory/analogy/analogy_lie_group_skill_transfer|李群与不变量 ↔ 技能组合和形态迁移]] · `trusted`
+- [[memory/analogy/analogy_ergodicity_dataset_coverage|遍历性 ↔ 离线数据对部署轨迹的覆盖]] · `trusted`
 
 ## claim
 
 - [[memory/claim/claim_e2f86d4a5a367ae1dc8a5e1f|2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z]] · `working`
-- [[memory/claim/claim_parameter_symmetry_orbit_level_set_20260716|A symmetry-group orbit consists of transformed parameters and lies within one loss level set]] · `working`
+- [[memory/claim/claim_parameter_symmetry_orbit_level_set_20260716|A symmetry-group orbit consists of transformed parameters and lies within one loss level set]] · `trusted`
 - [[memory/claim/claim_54cac5c21565eb6d274a5383|Accepted October 06, 2023) S]] · `working`
 - [[memory/claim/claim_agentic_vla_one_shot_20260715|Agentic-VLA 在 LIBERO one-shot 设定下平均成功率 70.5%，相对 OpenVLA-OFT SFT 基线提升 26.9 个百分点]] · `working`
 - [[memory/claim/claim_agentic_vla_libero_main_20260715|Agentic-VLA 在 LIBERO 上报告平均成功率 97.8%，Long 套件相对 SFT 基线提升 12.3 个百分点]] · `working`
 - [[memory/claim/claim_agentic_vla_training_efficiency_20260715|Agentic-VLA 在 LIBERO-Long 上以 700 次迭代达到 90% 成功率，论文报告其相对 EVOLVE-VLA 收敛快 2.4×]] · `working`
 - [[memory/claim/claim_agentic_vla_cross_task_20260715|Agentic-VLA 在 LIBERO-Long 训练后无 Object 演示的跨任务适应达 31.2% 成功率，Direct SFT 迁移为 0%]] · `working`
 - [[memory/claim/claim_b035b6de75ccf5819d0e89fa|Draft version October 10, 2023 Typeset using LATEX twocolumn style in AASTeX63 Deep symbolic regression for physics guided by units constraints: toward the auto]] · `working`
-- [[memory/claim/claim_wechat_epiplexity_definition_20260715|Epiplexity is the program length in the compute-bounded minimum two-part description of a random variable]] · `working`
+- [[memory/claim/claim_wechat_epiplexity_definition_20260715|Epiplexity is the program length in the compute-bounded minimum two-part description of a random variable]] · `trusted`
 - [[memory/claim/claim_ea6b984ae4bdd1dfdf5288a1|Evolving Intrinsic Motivations for Altruistic Behavior Jane X. Wang, Edward Hughes, Chrisantha Fernando, Wojciech M. Czarnecki, Edgar A. Duéñez-Guzmán, & Joel Z]] · `working`
 - [[memory/claim/claim_a78ba4a2ebc88876f4393ad0|Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensin]] · `working`
 - [[memory/claim/claim_ad8c28d32a7d55ab2806574d|From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence Marc Finzi∗1 Shikai Qiu∗2 Yiding Jiang∗1 Pavel Izmailov2 J. Zico Kol]] · `working`
-- [[memory/claim/claim_conserved_quantity_small_network_correlations_20260716|In small two-layer networks, conserved quantities were observed to correlate with convergence and minima sharpness]] · `working`
-- [[memory/claim/claim_parameter_symmetry_loss_invariant_group_20260716|Loss-invariant bijective parameter transformations form a group under composition]] · `working`
-- [[memory/claim/claim_parameter_symmetry_conserved_gradient_flow_20260716|Parameter-space symmetry implies conserved quantities in gradient flow]] · `working`
+- [[memory/claim/claim_conserved_quantity_small_network_correlations_20260716|In small two-layer networks, conserved quantities were observed to correlate with convergence and minima sharpness]] · `trusted`
+- [[memory/claim/claim_parameter_symmetry_loss_invariant_group_20260716|Loss-invariant bijective parameter transformations form a group under composition]] · `trusted`
+- [[memory/claim/claim_parameter_symmetry_conserved_gradient_flow_20260716|Parameter-space symmetry implies conserved quantities in gradient flow]] · `trusted`
 - [[memory/claim/claim_play2perfect_realworld_tight_insertion_20260715|Play2Perfect 仿真微调策略可零样本迁移到真实世界紧配合插入，0.5 mm 间隙成功率 6/10]] · `working`
 - [[memory/claim/claim_play2perfect_sample_efficiency_20260715|Play2Perfect 在简化 Fixtured Tight-Insertion 中约 4 小时达到 dense-reward scratch 超过 100 小时才达到的成功率]] · `working`
 - [[memory/claim/claim_play2perfect_inhand_pretraining_20260715|Play2Perfect 表明 play 预训练向装配迁移的关键是迫使手指 in-hand 操控而非固定抓握下的手臂运动]] · `working`
@@ -40,8 +40,8 @@
 - [[memory/claim/claim_92804ba3893e52d0c5696e45|humans are able to overcome t]] · `working`
 - [[memory/claim/claim_080bdc5349e0e08fa8882e97|then consumed unchanged, with no mechanism to improve from real use. We proposeSkillEvolver, a lightweight, plug-and-play solution foronline skill learning, in]] · `working`
 - [[memory/claim/claim_c7f06719c78cc576410dded2|useful information be constructed from merely applying deterministic transformations to existing data? Can the learnable content in data be evaluated without co]] · `working`
-- [[memory/claim/claim_physo_rnn_reinforcement_learning_method_20260716|Φ-SO 使用深度强化学习训练 RNN 生成符号表达式]] · `working`
-- [[memory/claim/claim_physo_units_constraints_reduce_search_20260716|Φ-SO 在生成过程中施加物理单位约束以排除不一致表达式并缩小搜索空间]] · `working`
+- [[memory/claim/claim_physo_rnn_reinforcement_learning_method_20260716|Φ-SO 使用深度强化学习训练 RNN 生成符号表达式]] · `trusted`
+- [[memory/claim/claim_physo_units_constraints_reduce_search_20260716|Φ-SO 在生成过程中施加物理单位约束以排除不一致表达式并缩小搜索空间]] · `trusted`
 - [[memory/claim/claim_a13acc3bcafaf6b69954a0c9|来源原文：GitHub - WassimTenachi/PhySO: Physical Symbolic Optimization · GitHub]] · `working`
 - [[memory/claim/claim_e65d29cd493432e151cd8b45|来源原文：GitHub - Xbotics-Embodied-AI-club/Xbotics-Embodied-AI-Job: Xbotics具身智能社区全网工作汇总 ·]] · `working`
 - [[memory/claim/claim_a1bf006b4174d98d1d8108c5|来源原文：GitHub - Xbotics-Embodied-AI-club/Xbotics-Embodied-Guide: Xbotics 社区具身智能学习指南：我们把]] · `working`
@@ -63,8 +63,8 @@ Symmetry in Neu]] · `working`
 - [[memory/claim/claim_wechat_ergodicity_time_ensemble_equivalence_20260716|该文将遍历性描述为个体时间平均与群体平均相等的条件]] · `working`
 - [[memory/claim/claim_wechat_wangjun_global_workspace_integration_20260716|该文称 Global neuronal workspace 通过全局工作空间整合各模块信息，是有意识决策的建模方向之一]] · `working`
 - [[memory/claim/claim_wechat_kairos_sim2real_training_20260716|该文称 Kairos-HomeWorld 已用于大晓机器人训练，支持跨房间导航与全屋整理等长程任务并缩短 sim-to-real 迁移周期]] · `working`
-- [[memory/claim/claim_wechat_skillevolver_k4_strategy_exploration_20260716|该文称 SkillEvolver 每轮显式生成 K=4 个覆盖不同高层决策轴的策略]] · `working`
-- [[memory/claim/claim_wechat_skillevolver_silent_bypass_audit_20260716|该文称 SkillEvolver 的 silent-bypass 审计检查下游 Agent 是否实际调用技能脚本]] · `working`
+- [[memory/claim/claim_wechat_skillevolver_k4_strategy_exploration_20260716|该文称 SkillEvolver 每轮显式生成 K=4 个覆盖不同高层决策轴的策略]] · `trusted`
+- [[memory/claim/claim_wechat_skillevolver_silent_bypass_audit_20260716|该文称 SkillEvolver 的 silent-bypass 审计检查下游 Agent 是否实际调用技能脚本]] · `trusted`
 - [[memory/claim/claim_wechat_magnetic_bottle_constraint_20260715|该文称不均匀「磁瓶/磁镜」磁场可通过磁矩近似守恒约束带电粒子纵向与横向运动]] · `working`
 - [[memory/claim/claim_wechat_embodied_eval_bottleneck_20260715|该文称具身 VLA 迭代速度常被真机评估流程而非训练本身卡住]] · `working`
 - [[memory/claim/claim_wechat_embodied_data_quality_cost_tradeoff_20260716|该文称具身数据采集存在质量与成本难以兼得的矛盾，并以特斯拉重资产遥操对比 OpenAI 低成本众包路线]] · `working`
@@ -85,10 +85,10 @@ Symmetry in Neu]] · `working`
 - [[memory/concept/concept_kelly_criterion|Kelly Criterion]] · `working`
 - [[memory/concept/concept_sim_to_real_scene_infrastructure|Sim-to-Real 场景基础设施]] · `working`
 - [[memory/concept/concept_world_model_evaluation|世界模型评价]] · `working`
-- [[memory/concept/concept_embodied_data_loop|具身数据闭环]] · `working`
+- [[memory/concept/concept_embodied_data_loop|具身数据闭环]] · `trusted`
 - [[memory/concept/concept_intrinsic_motivation_rl|内在动机强化学习]] · `working`
 - [[memory/concept/concept_parameter_symmetry|参数空间对称性]] · `working`
-- [[memory/concept/concept_perceptual_prediction_bias|感知预测偏差]] · `working`
+- [[memory/concept/concept_perceptual_prediction_bias|感知预测偏差]] · `trusted`
 - [[memory/concept/concept_skill_evolution|技能演化与技能下沉]] · `working`
 - [[memory/concept/concept_machine_consciousness_integration|机器意识的信息整合问题]] · `working`
 - [[memory/concept/concept_lie_group|李群与连续对称性]] · `working`
@@ -105,11 +105,11 @@ Symmetry in Neu]] · `working`
 
 ## hypothesis
 
-- [[memory/hypothesis/hypothesis_epiplexity_memory_compaction|Epiplexity 可能帮助评价有限上下文中的记忆压缩]] · `working`
-- [[memory/hypothesis/hypothesis_kelly_project_portfolio|Kelly 式约束可能改善创新项目组合的长期存续]] · `working`
-- [[memory/hypothesis/hypothesis_invariants_skill_transfer|显式不变量可能提高技能跨形态迁移]] · `working`
-- [[memory/hypothesis/hypothesis_illusion_world_model_probe|视觉错觉可作为世界模型预测偏差探针]] · `working`
-- [[memory/hypothesis/hypothesis_ergodicity_offline_coverage|遍历性指标可能预测离线数据对部署轨迹的覆盖]] · `working`
+- [[memory/hypothesis/hypothesis_epiplexity_memory_compaction|Epiplexity 可能帮助评价有限上下文中的记忆压缩]] · `trusted`
+- [[memory/hypothesis/hypothesis_kelly_project_portfolio|Kelly 式约束可能改善创新项目组合的长期存续]] · `trusted`
+- [[memory/hypothesis/hypothesis_invariants_skill_transfer|显式不变量可能提高技能跨形态迁移]] · `trusted`
+- [[memory/hypothesis/hypothesis_illusion_world_model_probe|视觉错觉可作为世界模型预测偏差探针]] · `trusted`
+- [[memory/hypothesis/hypothesis_ergodicity_offline_coverage|遍历性指标可能预测离线数据对部署轨迹的覆盖]] · `trusted`
 
 ## opportunity
 
@@ -121,13 +121,13 @@ Symmetry in Neu]] · `working`
 
 ## question
 
-- [[memory/question/question_skill_compilation_boundary|Agent 何时应将显式推理固化为技能？]] · `working`
+- [[memory/question/question_skill_compilation_boundary|Agent 何时应将显式推理固化为技能？]] · `trusted`
 - [[memory/question/question_1e0121d4bdc2f58cea1ca426|“How would j’s action change if I had acted]] · `working`
-- [[memory/question/question_world_model_action_value|世界模型评价如何预测动作价值？]] · `working`
-- [[memory/question/question_data_quality_to_capability|数据质量如何转化为可执行能力？]] · `working`
-- [[memory/question/question_machine_consciousness_falsifiability|机器意识理论如何形成可证伪实验？]] · `working`
-- [[memory/question/question_offline_coverage_deployment|离线数据能否代表真实部署轨迹？]] · `working`
-- [[memory/question/question_representation_equivalence|表征相似在什么条件下意味着机制等价？]] · `working`
+- [[memory/question/question_world_model_action_value|世界模型评价如何预测动作价值？]] · `trusted`
+- [[memory/question/question_data_quality_to_capability|数据质量如何转化为可执行能力？]] · `trusted`
+- [[memory/question/question_machine_consciousness_falsifiability|机器意识理论如何形成可证伪实验？]] · `trusted`
+- [[memory/question/question_offline_coverage_deployment|离线数据能否代表真实部署轨迹？]] · `trusted`
+- [[memory/question/question_representation_equivalence|表征相似在什么条件下意味着机制等价？]] · `trusted`
 
 ## synthesis
 
@@ -136,10 +136,10 @@ Symmetry in Neu]] · `working`
 
 ## tension
 
-- [[memory/tension/tension_embodied_data_scale_structure|具身数据规模 vs 数据结构与闭环]] · `working`
-- [[memory/tension/tension_world_model_eval_action|更好的世界模型评价 vs 直接优化动作结果]] · `working`
-- [[memory/tension/tension_internal_reasoning_external_skills|模型内部推理 vs 外部可审计技能]] · `working`
-- [[memory/tension/tension_language_prior_action_control|语言先验复用 vs 实时动作专用表示]] · `working`
+- [[memory/tension/tension_embodied_data_scale_structure|具身数据规模 vs 数据结构与闭环]] · `trusted`
+- [[memory/tension/tension_world_model_eval_action|更好的世界模型评价 vs 直接优化动作结果]] · `trusted`
+- [[memory/tension/tension_internal_reasoning_external_skills|模型内部推理 vs 外部可审计技能]] · `trusted`
+- [[memory/tension/tension_language_prior_action_control|语言先验复用 vs 实时动作专用表示]] · `trusted`
 
 ## work
 

@@ -1,10 +1,10 @@
 ---
 id: "tension_internal_reasoning_external_skills"
 type: "tension"
-status: "working"
+status: "trusted"
 title: "模型内部推理 vs 外部可审计技能"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:40:33+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,17 +16,17 @@ left_view: "依赖模型内部推理"
 right_view: "沉淀外部可审计技能"
 unresolved: "何时下沉及如何失效"
 validation_method: "按复用次数和环境漂移比较成功率与维护成本"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:24:14+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T18:40:33+08:00"
 last_verified_at: null
-trust_score: 66
-trust_reasons: ["completed consolidation review", "tension is durable and source-linked"]
+trust_score: 58
+trust_reasons: ["valid consolidation receipt matches current object"]
 promotion_history: [{"promotion_id": "promotion_11b032e537e3e10ba090024b", "object_id": "tension_internal_reasoning_external_skills", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "tension is durable and source-linked"], "failed_conditions": [], "supporting_sources": ["source_d01f40e4896de2e186cbbe8a"], "contradictions": [], "promoted_at": "2026-07-17T12:04:50+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -37,8 +37,12 @@ origin_candidate_sha256: "577f4e4b9020165f8dc4ddcc2aef2c00584304042886e89ffe8533
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_1f0127f1fe40f0cec2228e3e"
-needs_revalidation: true
+last_consolidation_id: "consolidation_26eccb5b6a56f3a803ba0cdd"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:40:26+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 # 模型内部推理 vs 外部可审计技能

@@ -4,7 +4,7 @@ type: "experiment"
 status: "working"
 title: "用视觉错觉刺激测试世界模型预测偏差"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:06+08:00"
+updated_at: "2026-07-17T18:36:02+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_38756ea977001ddb8594f1
 change_reason: "M6 controlled corpus distillation; requires human review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:24:06+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:36:02+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "f8bdff3a6d3731b7a578efd24b368b1add166e22ed33242099e498
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_b58bb135c967f242ce4f20f5"
+last_consolidation_id: "consolidation_47086030731ab0340749f6bb"
 ---
 
 # 用视觉错觉刺激测试世界模型预测偏差

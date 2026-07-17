@@ -1,10 +1,10 @@
 ---
 id: "tension_language_prior_action_control"
 type: "tension"
-status: "working"
+status: "trusted"
 title: "语言先验复用 vs 实时动作专用表示"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:40:47+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,17 +16,17 @@ left_view: "复用语言/视觉预训练先验"
 right_view: "使用动作专用连续表示"
 unresolved: "接口和训练信号如何分工"
 validation_method: "延迟、泛化、稳定性联合消融"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:24:15+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T18:40:47+08:00"
 last_verified_at: null
-trust_score: 66
-trust_reasons: ["completed consolidation review", "tension is durable and source-linked"]
+trust_score: 58
+trust_reasons: ["valid consolidation receipt matches current object"]
 promotion_history: [{"promotion_id": "promotion_85a481f26d392326fc196204", "object_id": "tension_language_prior_action_control", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "tension is durable and source-linked"], "failed_conditions": [], "supporting_sources": ["source_f35b44d4bd383fb26ca49165"], "contradictions": [], "promoted_at": "2026-07-17T12:04:58+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -37,8 +37,12 @@ origin_candidate_sha256: "3d675784ddc650eb43906213a83d0a415731b19651dbb13b2756ef
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_77f6ea65028e0438a3c9df5d"
-needs_revalidation: true
+last_consolidation_id: "consolidation_ed3d3a1d764c580c3d747ecc"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:40:41+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 # 语言先验复用 vs 实时动作专用表示

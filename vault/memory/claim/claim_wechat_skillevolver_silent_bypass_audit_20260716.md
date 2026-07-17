@@ -1,10 +1,10 @@
 ---
 id: "claim_wechat_skillevolver_silent_bypass_audit_20260716"
 type: "claim"
-status: "working"
+status: "trusted"
 title: "该文称 SkillEvolver 的 silent-bypass 审计检查下游 Agent 是否实际调用技能脚本"
 created_at: "2026-07-16T11:16:00+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:38:31+08:00"
 aliases: []
 tags: ["SkillEvolver", "auditor", "silent-bypass"]
 domains: ["agent-systems", "software-engineering"]
@@ -24,17 +24,17 @@ claim_confidence: "high"
 publication_gate: "needs_review"
 split_from: "claim_wechat_skillevolver_meta_audit_loop_20260716"
 split_reason: "将 Auditor 行为检查与策略探索设置分开核验"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:57+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T18:38:31+08:00"
 last_verified_at: null
 trust_score: 100
-trust_reasons: ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"]
+trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
 promotion_history: [{"promotion_id": "promotion_e6136711acf3cde5498ae262", "object_id": "claim_wechat_skillevolver_silent_bypass_audit_20260716", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"], "failed_conditions": [], "supporting_sources": ["source_d01f40e4896de2e186cbbe8a", "source_ca1f80f2bf2e7d410ab2459e"], "contradictions": [], "promoted_at": "2026-07-17T12:02:58+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -45,8 +45,12 @@ origin_candidate_sha256: "f5cf0a8d70d8c7d7fa874cde4b7814c986300c8724003f88534530
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_73193a4a5dbf2e78d523ebd6"
-needs_revalidation: true
+last_consolidation_id: "consolidation_5882e2c6da5154cd9481ac87"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:38:24+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 该文称 SkillEvolver 的 silent-bypass 审计检查下游 Agent 是否实际调用技能脚本。

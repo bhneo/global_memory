@@ -1,10 +1,10 @@
 ---
 id: "hypothesis_illusion_world_model_probe"
 type: "hypothesis"
-status: "working"
+status: "trusted"
 title: "视觉错觉可作为世界模型预测偏差探针"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:38:58+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -12,17 +12,17 @@ confidence: "low"
 source_ids: ["source_38756ea977001ddb8594f144"]
 relations: [{"type": "derived_from", "target_id": "source_38756ea977001ddb8594f144", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "depends_on", "target_id": "concept_perceptual_prediction_bias", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "depends_on", "target_id": "concept_world_model_evaluation", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}]
 change_reason: "M6 controlled corpus distillation; requires human review"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:24:07+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T18:38:58+08:00"
 last_verified_at: null
-trust_score: 66
-trust_reasons: ["completed consolidation review", "hypothesis is durable and source-linked"]
+trust_score: 58
+trust_reasons: ["valid consolidation receipt matches current object"]
 promotion_history: [{"promotion_id": "promotion_068c9931c3e6ecbf231eb245", "object_id": "hypothesis_illusion_world_model_probe", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "hypothesis is durable and source-linked"], "failed_conditions": [], "supporting_sources": ["source_38756ea977001ddb8594f144"], "contradictions": [], "promoted_at": "2026-07-17T12:03:35+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -33,8 +33,12 @@ origin_candidate_sha256: "953ff28f0c4d9778e2c31a6144b44495e316d10612e6bf7d8528d3
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "hypothetical"
-last_consolidation_id: "consolidation_af0d3adce03e81a2b767401e"
-needs_revalidation: true
+last_consolidation_id: "consolidation_bc940290a2e83190e01c117a"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:38:50+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 # 视觉错觉可作为世界模型预测偏差探针

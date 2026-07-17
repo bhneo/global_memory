@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_2945", "evidence_kind": "quote", "source_id": "so
 type: "claim"
 status: "working"
 created_at: "2026-07-15T21:40:00+08:00"
-updated_at: "2026-07-17T15:23:48+08:00"
+updated_at: "2026-07-17T18:35:41+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:48+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:41+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "86ccc7c23cd881d2b6288f68b0287a9c1e7a4e872167b6fa6ed136
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_e73bf2ec23d51facb091000f"
+last_consolidation_id: "consolidation_c78a4dc2236b4fee70bf276d"
 ---
 
 # double trace 可穿越虫洞

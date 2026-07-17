@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "Kelly Criterion"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:00+08:00"
+updated_at: "2026-07-17T18:35:55+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_9d39636775b188c87d6a00
 change_reason: "M6 controlled corpus distillation; requires human review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:24:00+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:55+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "422b38ba99702e33c72e84e483133c49608429d6f6ea58d8f81ab9
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_de8d0b7a98f9c3ffd842b006"
+last_consolidation_id: "consolidation_04eb7f5a6c4c5660baa088d8"
 ---
 
 # Kelly Criterion

@@ -1,10 +1,10 @@
 ---
 id: "tension_world_model_eval_action"
 type: "tension"
-status: "working"
+status: "trusted"
 title: "更好的世界模型评价 vs 直接优化动作结果"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:41:02+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,17 +16,17 @@ left_view: "改进世界模型评价"
 right_view: "直接优化真实动作结果"
 unresolved: "评价与动作收益的稳定相关性"
 validation_method: "跨任务前瞻相关性与干预实验"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:24:15+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T18:41:02+08:00"
 last_verified_at: null
-trust_score: 66
-trust_reasons: ["completed consolidation review", "tension is durable and source-linked"]
+trust_score: 58
+trust_reasons: ["valid consolidation receipt matches current object"]
 promotion_history: [{"promotion_id": "promotion_6e5021a695be419135d4f1e6", "object_id": "tension_world_model_eval_action", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "tension is durable and source-linked"], "failed_conditions": [], "supporting_sources": ["source_2d4f3a7d3525782c8ff503ee"], "contradictions": [], "promoted_at": "2026-07-17T12:05:07+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -37,8 +37,12 @@ origin_candidate_sha256: "f9842dd588e05f7d45a20033b0c7d7c5359a41f2d0c4a117918327
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_4a2737a4d8153e9fc7c5860e"
-needs_revalidation: true
+last_consolidation_id: "consolidation_390a341f7fe47e7211efbca1"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:40:55+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 # 更好的世界模型评价 vs 直接优化动作结果

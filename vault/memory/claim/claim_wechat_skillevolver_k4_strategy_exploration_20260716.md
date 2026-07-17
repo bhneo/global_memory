@@ -1,10 +1,10 @@
 ---
 id: "claim_wechat_skillevolver_k4_strategy_exploration_20260716"
 type: "claim"
-status: "working"
+status: "trusted"
 title: "该文称 SkillEvolver 每轮显式生成 K=4 个覆盖不同高层决策轴的策略"
 created_at: "2026-07-16T11:16:00+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:38:23+08:00"
 aliases: []
 tags: ["SkillEvolver", "strategy-exploration", "CLI-agent"]
 domains: ["agent-systems", "software-engineering"]
@@ -24,17 +24,17 @@ claim_confidence: "high"
 publication_gate: "needs_review"
 split_from: "claim_wechat_skillevolver_meta_audit_loop_20260716"
 split_reason: "将策略探索设置与 Auditor 行为检查分开核验"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:56+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T18:38:23+08:00"
 last_verified_at: null
 trust_score: 100
-trust_reasons: ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"]
+trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
 promotion_history: [{"promotion_id": "promotion_1365b7d46f9547bc75553f73", "object_id": "claim_wechat_skillevolver_k4_strategy_exploration_20260716", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"], "failed_conditions": [], "supporting_sources": ["source_d01f40e4896de2e186cbbe8a", "source_ca1f80f2bf2e7d410ab2459e"], "contradictions": [], "promoted_at": "2026-07-17T12:02:50+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -45,8 +45,12 @@ origin_candidate_sha256: "c84c1a8da4795812496769b1baafba62ca5b2ea1b45742cf6b7d9c
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_a5d393aa0a17f96c50d81396"
-needs_revalidation: true
+last_consolidation_id: "consolidation_df224f19f67dcdc1b0ee25d0"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:38:15+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 该文称 SkillEvolver 每轮显式生成 K=4 个覆盖不同高层决策轴的策略。

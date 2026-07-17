@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "来源原文：[1811.05931] Evolving intrinsic motivations for altruistic behavior"
 created_at: "2026-07-17T12:10:21+08:00"
-updated_at: "2026-07-17T15:23:42+08:00"
+updated_at: "2026-07-17T18:35:31+08:00"
 aliases: []
 tags: []
 domains: []
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T15:23:42+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T18:35:31+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "9cce48284fc4537c14dd961e1f2170bea693684d67fbcaaf749e24
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_c353e9b56f1a720498531d86"
+last_consolidation_id: "consolidation_6a24c8c6be1c6abaaaf5b0b0"
 ---
 
 # 来源原文：[1811.05931] Evolving intrinsic motivations for altruistic behavior

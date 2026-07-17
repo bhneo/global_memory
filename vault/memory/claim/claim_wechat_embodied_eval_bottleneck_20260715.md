@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_597", "evidence_kind": "quote", "source_id": "sou
 type: "claim"
 status: "working"
 created_at: "2026-07-15T18:12:00+08:00"
-updated_at: "2026-07-17T15:23:50+08:00"
+updated_at: "2026-07-17T18:35:42+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -27,12 +27,12 @@ claim_confidence: "medium"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:50+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:42+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "858705a479c17f917d0201a933aa80915a26b20bdf5dda2ba6de47
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_c210c9a99ee1fa73163c9a6d"
+last_consolidation_id: "consolidation_1b354e57057e3430ebb2e459"
 ---
 
 # 评估瓶颈

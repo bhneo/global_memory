@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "来源原文：嘉宾｜李弘扬，香港大学助理教授、香港大学计算与数据科学学院助理院长、上海创智学院全时导师、OpenDriveLab创始人兼负责人、源策智能创始人\n访谈｜东寰、刘"
 created_at: "2026-07-16T23:14:16+08:00"
-updated_at: "2026-07-17T15:23:34+08:00"
+updated_at: "2026-07-17T18:35:22+08:00"
 aliases: []
 tags: []
 domains: []
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:34+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:22+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "4f46751b523278812885c65300e89450f33b9b8b46fa8effc3de36
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_8449d18b80e0f3f0df08979f"
+last_consolidation_id: "consolidation_f938540fd50d50974d359487"
 ---
 
 # 来源原文：嘉宾｜李弘扬，香港大学助理教授、香港大学计算与数据科学学院助理院长、上海创智学院全时导师、OpenDriveLab创始人兼负责人、源策智能创始人

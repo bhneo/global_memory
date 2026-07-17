@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "Evolving Intrinsic Motivations for Altruistic Behavior Jane X. Wang, Edward Hughes, Chrisantha Fernando, Wojciech M. Czarnecki, Edgar A. Duéñez-Guzmán, & Joel Z"
 created_at: "2026-07-17T12:17:04+08:00"
-updated_at: "2026-07-17T15:23:43+08:00"
+updated_at: "2026-07-17T18:35:33+08:00"
 aliases: []
 tags: []
 domains: []
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T15:23:43+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T18:35:33+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "3a4af1526b6ef8325e7e390ee1908051c08e8e106358bbf0dcdcd5
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_e6b443eb8e80813e85e27165"
+last_consolidation_id: "consolidation_7e20534ba2b68bcc67fd66b2"
 ---
 
 # Evolving Intrinsic Motivations for Altruistic Behavior Jane X. Wang, Edward Hughes, Chrisantha Fernando, Wojciech M. Czarnecki, Edgar A. Duéñez-Guzmán, & Joel Z

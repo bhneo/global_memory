@@ -1,10 +1,10 @@
 ---
 id: "claim_parameter_symmetry_orbit_level_set_20260716"
 type: "claim"
-status: "working"
+status: "trusted"
 title: "A symmetry-group orbit consists of transformed parameters and lies within one loss level set"
 created_at: "2026-07-16T19:30:00+08:00"
-updated_at: "2026-07-17T17:04:22+08:00"
+updated_at: "2026-07-17T18:37:58+08:00"
 confidence: "medium"
 source_ids: ["source_6ae6c4bef52010f96ddb3dbf", "source_dbfef5ee180346812d6d9a99"]
 relations: [{"type": "derived_from", "target_id": "source_dbfef5ee180346812d6d9a99", "reason": "Primary survey states that a symmetry orbit lies in one loss level set", "confidence": "high", "created_by": "primary-quote-verification-v1", "status": "working"}]
@@ -21,17 +21,17 @@ claim_confidence: "high"
 publication_gate: "needs_review"
 split_from: "claim_wechat_param_symmetry_definition_20260716"
 split_reason: "Separate orbit geometry from loss-invariant group structure"
-memory_tier: "working"
+memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trusted-promotion-v3-receipt-v2"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:45+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T18:37:58+08:00"
 last_verified_at: null
 trust_score: 100
-trust_reasons: ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"]
+trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
 promotion_history: [{"promotion_id": "promotion_c9c8f617f391c5e159841099", "object_id": "claim_parameter_symmetry_orbit_level_set_20260716", "from_status": "working", "to_status": "trusted", "policy_version": "trusted-promotion-v1", "promotion_mode": "automatic", "reasons": ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"], "failed_conditions": [], "supporting_sources": ["source_6ae6c4bef52010f96ddb3dbf", "source_dbfef5ee180346812d6d9a99"], "contradictions": [], "promoted_at": "2026-07-17T12:02:18+08:00", "promoted_by": "promotion-policy"}]
 user_authored: false
 user_locked: false
@@ -42,8 +42,12 @@ origin_candidate_sha256: "2e021b8ae58b74ce0329029d16eaae38f00427c1ff630068f8ff19
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_4a1a0597edb88bc774616000"
-needs_revalidation: true
+last_consolidation_id: "consolidation_5142eb42828503c355b1e505"
+needs_policy_requalification: false
+trust_policy_version: "trusted-promotion-v3-receipt-v2"
+last_policy_qualified_at: "2026-07-17T18:37:51+08:00"
+last_valid_receipt_id: null
+policy_requalification_failed_conditions: []
 ---
 
 A symmetry-group orbit consists of transformed parameters and lies within one loss level set.

@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "该文称非遍历情形中个体可能在经历全部路径前因一次失败出局"
 created_at: "2026-07-16T00:36:00+08:00"
-updated_at: "2026-07-17T15:23:55+08:00"
+updated_at: "2026-07-17T18:35:49+08:00"
 aliases: []
 tags: ["ergodicity", "path-dependence", "failure-risk"]
 domains: ["decision-theory"]
@@ -26,12 +26,12 @@ split_from: "claim_wechat_ergodicity_time_vs_ensemble_20260716"
 split_reason: "将现实路径风险与遍历性定义分开核验"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:55+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:49+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -45,7 +45,7 @@ origin_candidate_sha256: "1fee5192963d87032fc459df0d7ab1f66d0b78b7fa58ac29620108
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_0be4fc79bc9f7f59da42922b"
+last_consolidation_id: "consolidation_a44df63c5c8b72c97f284c9d"
 ---
 
 该文称非遍历情形中，资源有限的个体可能在经历全部路径前因一次失败出局。

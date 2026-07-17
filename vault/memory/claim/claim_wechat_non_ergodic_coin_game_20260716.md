@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_56", "evidence_kind": "quote", "source_id": "sour
 type: "claim"
 status: "working"
 created_at: "2026-07-16T00:36:00+08:00"
-updated_at: "2026-07-17T15:23:56+08:00"
+updated_at: "2026-07-17T18:35:49+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -27,12 +27,12 @@ claim_confidence: "medium"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T15:23:56+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-17T18:35:49+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "af8ada3ce9f8a63c1e83b26ccad0f4a8003492b8e1f6884fd7e18d
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_aae8083eb26de9cdf3b2ec93"
+last_consolidation_id: "consolidation_f29bf97b790eace9ccd4831b"
 ---
 
 # 非遍历硬币游戏
