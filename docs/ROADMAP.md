@@ -8,7 +8,7 @@
 - Trusted support, Working Revision, conflict/Exception and explicit Demotion Event: implemented.
 - Sequential A→B→C support/contradict acceptance and semantic drift interface: implemented in deterministic fixtures.
 - Weekly report and generated metrics: implemented; final real-vault counts are generated, not hand-maintained.
-- Milestone close gate: full local acceptance is complete; confirm the six CI jobs on the final commit.
+- Milestone closed: full local acceptance is complete and all six GitHub Actions jobs passed on M8 code commit `928404f` (CI #7).
 
 M8 deliberately does not add embeddings, vector/graph databases, new MCP tools, browser ingestion, Web UI or multi-Agent orchestration.
 

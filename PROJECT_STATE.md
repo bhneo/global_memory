@@ -25,7 +25,7 @@ Run `.\scripts\gm.ps1 metrics` or `.\scripts\gm.ps1 status --machine-readable` f
 
 ## CI status
 
-The portable six-job matrix (Ubuntu/Windows × Python 3.11/3.12/3.13) is green at the P0 baseline. The final M8 commit must pass the same matrix, including M8 governance, migration, sequential evolution, drift and three-profile Context acceptance.
+GitHub Actions CI #7 for M8 commit `928404f` passed all six jobs: Ubuntu/Windows × Python 3.11/3.12/3.13. Each job ran pytest, doctor, schema/state/raw checks, migrations, historical/current/M8 governance acceptance, promotion, weekly, A→B→C evolution, drift and three-profile Context validation.
 
 ## What is working
 
