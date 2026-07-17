@@ -4,7 +4,8 @@
 
 ```text
 immutable capture
-  -> derived extraction + quality assessment + lifecycle
+  -> bounded daily triage (derived extraction + quality assessment + lifecycle)
+  -> capture-only searchable source OR explicit compile selection
   -> existing-knowledge lookup + atomicity/classification
   -> source/source-collection bundle proposal
   -> item-level review + recovery journal
@@ -13,6 +14,8 @@ immutable capture
 secondary source -> formal follow-up -> primary capture/verification
 system/runs + SQLite + quality/lifecycle JSON = rebuildable derived layers
 ```
+
+Routine article capture stops after bounded incremental triage by default. A source does not need to become a proposal or canonical object to remain useful and searchable. Expensive semantic compilation and primary-source verification are triggered by value, repeated use, conflict, or promotion rather than by capture itself; see ADR 0030.
 
 M6 不引入 graph database：图仍由 Markdown typed relations 表达，SQLite 只做可重建检索/遍历。Corpus distillation 只生成候选图；它不得绕过 review gate。
 
@@ -114,6 +117,10 @@ Raw manifest 从 `vault/raw/` 的全部文件生成 SHA-256 清单，包含 sour
 Recovery journal 保存写前 hash 和确定的写后 payload。`gm recover` 只接受当前文件等于写前或写后 hash，并继续完成剩余阶段；第三种状态视为外部并发修改，保持 blocked。该机制不提供跨文件原子性，而是提供可检测、可续做、不会静默覆盖的最终一致性。
 
 ## 可插拔边界
+
+### Read-only MCP
+
+`gm mcp stdio|http` 把既有 Context Pack、搜索、对象读取、source extraction 与维护 inventory 暴露为五个 provider-neutral 只读工具。MCP 不新增真相层，不暴露 capture/compile/approve/rebuild/delete/canonical write。stdio 用于本地助手；Streamable HTTP 默认仅绑定 localhost，并校验 Origin、限制请求大小，非 loopback 必须提供 bearer token。远程 ChatGPT 接入仍需要 TLS、认证及可信 tunnel/deployment；详见 ADR 0031。
 
 第一版 processor 是 `deterministic-excerpt-v1`，只为验证治理闭环。`external-model-candidate-v1` 是 provider-neutral 导入边界：它接收用户明确提供的 candidate Markdown，而不在仓库内调用 SDK 或网络服务；输出仍是同一 proposal schema，并记录 provider、model、prompt version/hash、输入 source/content hash 和不确定性。未来实际模型适配器必须沿用该审计字段与 proposal gate，不得绕过审批或默认外传私有 raw。
 

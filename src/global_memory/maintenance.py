@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections import Counter
 from typing import Any
 
+from .lifecycle import SourceLifecycleService
 from .markdown import read_document
 from .proposals import ProposalService
 from .repository import Repository
@@ -90,6 +91,12 @@ class MaintenanceService:
             if metadata.get("status") not in {"resolved", "closed", "superseded"}
         ]
         inbox = ProposalService(self.repository).inbox()
+        lifecycle = SourceLifecycleService(self.repository)
+        unprepared_inbox = [
+            item for item in inbox
+            if lifecycle.status(str(item["id"])).state in {"captured", "extracted"}
+        ]
+        capture_only = [item for item in inbox if item not in unprepared_inbox]
 
         actions = []
         if uncaptured_receipts:
@@ -98,8 +105,8 @@ class MaintenanceService:
             actions.append(
                 f"review {proposal_counts['pending']} pending and {proposal_counts['deferred']} deferred proposal(s) selectively"
             )
-        if inbox:
-            actions.append(f"triage {len(inbox)} inbox source(s): compile, source-only, or defer")
+        if unprepared_inbox:
+            actions.append(f"triage {len(unprepared_inbox)} unprepared inbox source(s)")
         if weak_evidence:
             actions.append(f"review evidence boundaries for {len(weak_evidence)} canonical claim(s)")
         if weak_proposal_items:
@@ -116,6 +123,9 @@ class MaintenanceService:
             "proposals_by_status": dict(sorted(proposal_counts.items())),
             "inbox_count": len(inbox),
             "inbox_source_ids": [item["id"] for item in inbox],
+            "triage_backlog_count": len(unprepared_inbox),
+            "triage_backlog_source_ids": [item["id"] for item in unprepared_inbox],
+            "capture_only_count": len(capture_only),
             "receipt_count": len(receipts),
             "uncaptured_receipt_ids": uncaptured_receipts,
             "open_followup_ids": open_followups,

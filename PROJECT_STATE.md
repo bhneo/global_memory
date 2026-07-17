@@ -1,5 +1,15 @@
 # Current State
 
+> Human Obsidian views update (2026-07-17): `vault/INDEX.md` is now a human home backed by rebuildable recent-import, source-library, topic, canonical-knowledge, deep-review, and per-source reader views. Capture and daily/weekly CLI paths refresh them automatically. Reader pages reuse extraction text and provenance without adding summaries or promoting source claims; the default graph hides audit paths and orphan nodes.
+
+> Read-only MCP update (2026-07-17): Global Memory now exposes five provider-neutral bounded read tools over stdio and Streamable HTTP. Cursor and Claude-compatible local configs are included; real stdio and localhost HTTP calls succeeded against the live vault. No write/approval tool exists. Web ChatGPT deployment still requires a trusted remote tunnel/TLS/authentication layer and app configuration.
+
+> Daily/weekly loop update (2026-07-17): `gm weekly` now completes the explicit maintenance loop by composing bounded daily triage, integrity checks, contradiction audit, backlog inventory, derived-view rebuild, and synthesis eligibility reporting. It creates no synthesis proposal and performs zero canonical writes.
+
+> Real maintenance acceptance (2026-07-17): the imported WeChat source remains available/valid with ready extraction; daily correctly skipped it as already prepared. The first weekly pass quality-checked ten previously unassessed capture-only sources, and the second incremental pass selected zero sources with zero remaining unprepared. All 17 proposal-free sources are now explicitly reported as capture-only, not false triage backlog.
+
+> Progressive ingestion update (2026-07-16): routine article import now defaults to bounded `gm triage` / `gm daily`, which incrementally creates extraction and quality assessment without generating proposals. Compilation requires explicit `--compile-selected`; deep verification is deferred until value, use, conflict, or promotion justifies its cost. Existing canonical governance is unchanged.
+
 > M7 receipt preservation fix (2026-07-16): the repeated Codex/Cursor friction where deterministic receipt compilation retained only the first sentence is resolved. Explicit typed blocks now preserve their full text until the next marker while remaining pending proposals; no automatic type inference or canonical approval was added.
 
 > M7 Cursor acceptance (2026-07-16): Cursor completed the real read → task → receipt → proposal path without canonical writes. It exposed source-only exact-query capture by prior receipts and the Windows `gm`/`Get-Member` alias collision. Retrieval now expands source-only sets, ranks canonical first and its explicit source chain second. Claude acceptance remains.

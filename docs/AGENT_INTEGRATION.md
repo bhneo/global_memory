@@ -6,6 +6,8 @@ Codex, Cursor, and Claude share one Global Memory without copying the vault into
 
 ## Read path
 
+Local MCP-capable assistants may use the configured `global-memory` server instead of shelling out directly. Its five tools map to the same bounded read path and expose no write operation; see `docs/MCP_INTEGRATION.md` and ADR 0031.
+
 ```text
 AGENTS.md / CLAUDE.md / .cursor rule
   -> vault/INDEX.md
@@ -42,14 +44,20 @@ Begin each candidate section with an explicit marker such as `Experiment:`, `Dec
 
 Open the repository's `vault/` directory as an Obsidian vault. Run `gm obsidian build` to generate:
 
-- `vault/INDEX.md`: stable home and protocol;
-- `vault/views/Knowledge Catalog.md`: links grouped by knowledge-object type;
-- `vault/views/Review Queues.md`: proposals, weak evidence, and stale/historical items.
+- `vault/INDEX.md`: human home and current overview;
+- `vault/views/最近导入.md`, `资料库.md`, and `主题导航.md`: source-oriented browsing;
+- `vault/views/知识目录.md` and `待深挖.md`: canonical knowledge and governed work queues;
+- `vault/views/readers/`: one readable, provenance-linked page per source;
+- `vault/views/Knowledge Catalog.md` and `Review Queues.md`: stable technical compatibility entries.
 
-These files use ordinary Markdown, YAML frontmatter, and path-based wikilinks. They are generated navigation views, not a second database or a truth layer. Rebuild them whenever canonical/proposal state changes. Personal Obsidian workspace state and plugins are intentionally not required or committed.
+These files use ordinary Markdown and path-based wikilinks. They are generated views, not a second database or a truth layer. Reader pages reuse existing extraction text and never invent summaries or topics. CLI capture and daily/weekly maintenance refresh them automatically; `gm obsidian build` remains the manual repair command. The default graph hides audit paths and orphan nodes, but the filter can be cleared for an audit. No plugin is required.
 
 ## Maintenance
 
-Run `gm maintain` for the normal read-only health and backlog report. It also reports whether generated Obsidian views are missing or stale. Run `gm maintain --rebuild-derived` only when an explicit refresh is wanted; it rebuilds SQLite and the three Obsidian notes, but never raw, proposal, receipt, or canonical content.
+For routine article ingestion, run `gm triage [source-id ...] --limit 25`. Its default mode only creates or reuses extraction and quality assessment. It does not create a proposal. Use `--compile-selected` only after an explicit value decision; verification is normally deferred until use or promotion.
+
+Run `gm weekly` for the explicit weekly loop: bounded triage, integrity checks, contradiction audit, backlog inventory, derived-view rebuild, and synthesis eligibility. It reports candidates but never creates a synthesis proposal or canonical write automatically.
+
+Run `gm maintain` for the normal read-only health and backlog report. It also reports whether generated Obsidian views are missing or stale. Run `gm maintain --rebuild-derived` only when an explicit refresh is wanted; it rebuilds SQLite and all generated Obsidian views, but never raw, proposal, receipt, or canonical content.
 
 On Windows PowerShell, invoke the same commands through `.\\scripts\\gm.ps1` when the bare `gm` name resolves to the built-in `Get-Member` alias.

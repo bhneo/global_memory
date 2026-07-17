@@ -11,6 +11,9 @@
 - Obsidian opens `vault/`; rebuild its navigation with `gm obsidian build`. See `docs/AGENT_INTEGRATION.md` and ADR 0029.
 - Use `gm maintain` for a read-only maintenance check. `gm maintain --rebuild-derived` may refresh SQLite/Obsidian views only; neither mode authorizes canonical edits.
 - On Windows PowerShell use `.\\scripts\\gm.ps1`; the bare name `gm` may resolve to the built-in `Get-Member` alias.
+- Routine article import is capture-first: run `.\\scripts\\gm.ps1 triage <source-id>` for bounded extraction and quality checking. Do not compile every article or request per-article approval. Use `--compile-selected` only for material selected by value, current use, repeated retrieval, conflict, or promotion; capture-only sources remain valid and searchable.
+- Run `.\\scripts\\gm.ps1 weekly` for bounded triage, integrity, contradiction audit, backlog inventory, derived-view rebuild, and synthesis eligibility. Weekly never creates synthesis proposals or writes canonical automatically.
+- External assistants should use the read-only MCP tools documented in `docs/MCP_INTEGRATION.md`. MCP retrieval never grants capture, proposal, approval, rebuild, deletion, or canonical-write authority.
 
 ## M6 operating rules
 

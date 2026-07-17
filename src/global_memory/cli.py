@@ -17,6 +17,7 @@ from .extraction import ExtractionService
 from .followups import FollowupService
 from .lifecycle import SourceAnnotationService, SourceLifecycleService
 from .maintenance import MaintenanceService
+from .mcp_server import add_mcp_arguments, run_mcp
 from .obsidian import ObsidianViewService
 from .markdown import read_document
 from .proposals import ProposalService
@@ -27,6 +28,7 @@ from .review import SourceBundleReviewService
 from .runs import BatchArtifactMigrator, RunArtifactService
 from .repository import Repository, sha256_bytes
 from .receipts import ReceiptService
+from .triage import DailyTriageService
 from .works import WorkService
 
 
@@ -74,6 +76,11 @@ def build_parser() -> argparse.ArgumentParser:
     capture_text.add_argument("--title", default="人工输入")
     capture_text.add_argument("--comment", default="")
     commands.add_parser("inbox", help="列出 derived processing state 中待 compile 的来源")
+    triage = commands.add_parser("triage", aliases=["daily"], help="低成本批量准备 inbox；默认不生成 proposal")
+    triage.add_argument("source_ids", nargs="*")
+    triage.add_argument("--limit", type=int, default=25)
+    triage.add_argument("--compile-selected", action="store_true", help="仅对本次选中来源显式生成 pending proposal")
+    triage.add_argument("--recheck", action="store_true", help="重新运行已有质量检查")
     source = commands.add_parser("source", help="查看 source 处理状态或补充用户注意力信号")
     source_commands = source.add_subparsers(dest="source_command", required=True)
     source_status = source_commands.add_parser("status")
@@ -249,6 +256,12 @@ def build_parser() -> argparse.ArgumentParser:
     receipt_propose.add_argument("receipt_id")
     maintain = commands.add_parser("maintain", help="汇总只读维护状态；可显式重建派生层")
     maintain.add_argument("--rebuild-derived", action="store_true")
+    weekly = commands.add_parser("weekly", help="运行每周维护：daily triage、完整性、矛盾审计与派生视图")
+    weekly.add_argument("--triage-limit", type=int, default=100)
+    weekly.add_argument("--recheck", action="store_true", help="重新运行已有 source 质量检查")
+    weekly.add_argument("--no-rebuild-derived", action="store_true", help="不重建 SQLite/Obsidian 派生视图")
+    mcp = commands.add_parser("mcp", help="运行 provider-neutral 只读 MCP 服务")
+    add_mcp_arguments(mcp)
     show = commands.add_parser("show", help="按稳定 ID 显示对象")
     show.add_argument("object_id")
     related = commands.add_parser("related", help="显示 typed relations")
@@ -802,14 +815,27 @@ def run(args: argparse.Namespace) -> int:
     followup_service = FollowupService(repository)
     run_service = RunArtifactService(repository)
     if args.command == "capture":
-        _print(captures.capture(args.target, args.comment, refresh=args.refresh).__dict__)
+        result = captures.capture(args.target, args.comment, refresh=args.refresh).__dict__
+        result["obsidian"] = ObsidianViewService(repository).build()
+        _print(result)
     elif args.command == "capture-wechat":
-        _print(captures.capture_wechat_url(args.url, args.comment, refresh=args.refresh).__dict__)
+        result = captures.capture_wechat_url(args.url, args.comment, refresh=args.refresh).__dict__
+        result["obsidian"] = ObsidianViewService(repository).build()
+        _print(result)
     elif args.command == "capture-text":
         text = args.text if args.text is not None else sys.stdin.read()
-        _print(captures.capture_text(text, args.comment, args.title).__dict__)
+        result = captures.capture_text(text, args.comment, args.title).__dict__
+        result["obsidian"] = ObsidianViewService(repository).build()
+        _print(result)
     elif args.command == "inbox":
         _print(proposals.inbox())
+    elif args.command in {"triage", "daily"}:
+        result = DailyTriageService(repository).run(
+            args.source_ids, limit=args.limit,
+            compile_selected=args.compile_selected, recheck=args.recheck,
+        )
+        result["obsidian"] = ObsidianViewService(repository).build()
+        _print(result)
     elif args.command == "source":
         if args.source_command == "status":
             _print(lifecycle.status(args.source_id, assess=True).as_dict())
@@ -1002,6 +1028,55 @@ def run(args: argparse.Namespace) -> int:
         }
         _print(result)
         return 0 if result["ok"] else 1
+    elif args.command == "weekly":
+        triage_result = DailyTriageService(repository).run(
+            limit=args.triage_limit, recheck=args.recheck
+        )
+        rebuilt = None
+        if not args.no_rebuild_derived:
+            rebuilt = {
+                "indexed_documents": repository.rebuild_index(),
+                "obsidian": ObsidianViewService(repository).build(),
+            }
+        doctor_result = doctor(repository)
+        lint_result = lint(repository)
+        raw_result = raw_store.verify()
+        contradictions = contradiction_audit(repository)
+        claim_ids = []
+        for path in repository.canonical_documents():
+            metadata, _ = read_document(path)
+            if metadata.get("type") == "claim" and metadata.get("status") not in {"archived", "superseded"}:
+                claim_ids.append(str(metadata["id"]))
+        result = {
+            "ok": (
+                doctor_result["ok"] and lint_result["ok"]
+                and raw_result["ok"] and contradictions["ok"]
+            ),
+            "mode": "weekly-maintenance",
+            "triage": triage_result,
+            "integrity": {
+                "doctor": doctor_result,
+                "lint": lint_result,
+                "raw": raw_result,
+            },
+            "contradictions": contradictions,
+            "inventory": MaintenanceService(repository).inventory(),
+            "derived_views": ObsidianViewService(repository).status(),
+            "rebuilt": rebuilt,
+            "synthesis_eligibility": {
+                "eligible": len(claim_ids) >= 2,
+                "canonical_claim_count": len(claim_ids),
+                "claim_ids": sorted(claim_ids),
+                "proposal_created": False,
+                "note": "Weekly maintenance reports eligibility only; synthesis remains an explicit governed command.",
+            },
+            "canonical_writes": 0,
+        }
+        _print(result)
+        return 0 if result["ok"] else 1
+    elif args.command == "mcp":
+        run_mcp(repository, args)
+        return 0
     elif args.command == "show":
         path, metadata, body = repository.find_document(args.object_id)
         _print({"path": repository.rel(path), "metadata": metadata, "body": body})

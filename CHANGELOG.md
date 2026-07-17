@@ -1,5 +1,51 @@
 # Changelog
 
+## [0.22.0] - 2026-07-17
+
+### Added
+
+- Added a rebuildable human-facing Obsidian layer: home, recent imports, source library, explicit-topic navigation, canonical knowledge catalog, deep-review queue, and provenance-linked reader pages.
+- Added ADR 0032 and regression coverage for deterministic readers, explicit topic boundaries, raw isolation, and generated-only stale cleanup.
+
+### Changed
+
+- CLI capture, WeChat capture, text capture, and daily triage now refresh Obsidian views; weekly and explicit derived rebuilds continue to do so.
+- The default Obsidian graph hides raw/proposal/receipt/archive/follow-up/annotation/reader-detail paths and orphan nodes. Audit data remains available by clearing the graph filter.
+
+## [0.21.0] - 2026-07-17
+
+### Added
+
+- Added a provider-neutral read-only MCP server with stdio and Streamable HTTP transports.
+- Added five bounded tools: `memory_context`, `memory_search`, `memory_show`, `memory_source`, and `memory_status`, all annotated read-only/non-destructive/idempotent.
+- Added local Cursor and Claude-compatible MCP configuration, a clean stdio launcher, ADR 0031, and remote deployment guidance.
+
+### Security
+
+- MCP exposes no capture, compile, proposal, approval, rebuild, delete, or canonical-write tool. HTTP validates Origin, caps request size, binds to localhost by default, and rejects non-loopback startup without a bearer token.
+
+## [0.20.1] - 2026-07-17
+
+### Added
+
+- Added `gm weekly`, which composes bounded daily triage, doctor/lint/raw integrity, explicit contradiction audit, maintenance inventory, SQLite/Obsidian rebuild, and synthesis eligibility reporting.
+- Added regression coverage proving the weekly loop creates no proposal or canonical write.
+
+### Fixed
+
+- Prepared capture-only sources are no longer repeatedly selected as daily triage backlog. Maintenance now reports unprepared triage backlog separately from valid capture-only inventory.
+
+## [0.20.0] - 2026-07-16
+
+### Added
+
+- Added bounded, incremental `gm triage` / `gm daily` processing. The default path only extracts and quality-checks inbox sources; repeated runs skip prepared sources.
+- Added explicit `--compile-selected` for value-based proposal creation and ADR 0030 for progressive ingestion and verification-on-use.
+
+### Changed
+
+- Cursor, Claude, architecture, and operator guidance now treat capture-only searchable sources as a valid steady state. Per-article compilation, primary-source chasing, and approval are no longer the default import path.
+
 ## [0.19.4] - 2026-07-16
 
 ### Fixed

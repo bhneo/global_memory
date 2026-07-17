@@ -54,6 +54,11 @@ gm init
 gm capture-text --text "人的原始文字会原样保留" --comment "验证最小闭环"
 gm capture https://example.com/article --refresh --comment "显式检查网页是否更新"
 gm inbox
+gm triage --limit 25 # 默认仅 extraction + quality，不生成 proposal
+gm triage <source-id> --compile-selected # 明确选中后才生成 pending proposal
+gm weekly # daily triage + integrity + contradiction audit + derived views；不写 canonical
+gm mcp stdio # 本地助手只读 MCP
+gm mcp http --host 127.0.0.1 --port 18765 --allowed-origin https://chatgpt.com
 gm compile <source-id> # deterministic fallback，生成 Compile Bundle Proposal
 gm compile <source-id> --bundle-file cursor-output.json --provider-name cursor-json-v1
 gm proposal diff <bundle-proposal-id>
@@ -109,7 +114,11 @@ gm doctor
 - `gm capture <url-or-path> --comment "..."`：捕获 URL 或本地文件。
 - `gm capture <url> --refresh`：显式重新抓取；内容变化时追加 source version 和 review proposal。
 - `gm capture-text [--text "..."]`：捕获文本；未提供 `--text` 时读取 stdin。
-- `gm inbox`：列出尚未 compile 的 source。
+- `gm inbox`：列出尚未 compile 的 source；source 可以长期保持 capture-only 并继续被检索。
+- `gm triage [source-id ...] [--limit 25]`：每日低成本增量整理；默认只生成或复用 extraction 与 quality assessment，不生成 proposal。仅在明确选中高价值材料时使用 `--compile-selected`。
+- `gm weekly [--triage-limit 100]`：运行每周维护闭环，包括增量 triage、doctor/lint/raw integrity、显式矛盾审计、维护积压、SQLite/Obsidian 重建及 synthesis 资格报告。它不会自动生成 synthesis proposal、批准 proposal 或写 canonical；可用 `--no-rebuild-derived` 保持完全只读的派生视图模式。
+- `gm obsidian build`：重建人类可读首页、最近导入、资料库、主题导航、知识目录、待深挖队列及逐篇阅读页。CLI capture、daily 与 weekly 默认自动刷新；生成页不改变 raw/canonical，也不自动摘要或推断主题。
+- `gm mcp stdio|http`：运行 provider-neutral 只读 MCP，暴露 context/search/show/source/status 五个有界工具。HTTP 默认仅监听 localhost；非 loopback 必须通过 `GM_MCP_TOKEN` 提供 bearer token。详见 `docs/MCP_INTEGRATION.md`。
 - `gm compile <source-id>`：生成低置信度 proposal，不修改 canonical knowledge。
 - `gm model-propose <source-id> --candidate <Markdown> ...`：导入用户明确提供的外部模型 candidate；记录 provider/model/prompt version/输入哈希与不确定性，但命令自身不调用 provider。
 - `gm proposals [--status pending]`：列出 proposal。

@@ -14,3 +14,13 @@ alwaysApply: true
 - Do not include secrets, full chat transcripts, or unsupported inference in a receipt.
 - Use `gm maintain` for read-only health/backlog checks. `--rebuild-derived` refreshes disposable indexes/views only and does not permit canonical edits.
 - On Windows PowerShell, prefer `.\\scripts\\gm.ps1`; `gm` may resolve to the built-in `Get-Member` alias.
+
+# Article import policy
+
+- Default to cheap capture: capture the complete source, then run `.\\scripts\\gm.ps1 triage <source-id>`. This only creates/reuses extraction and quality assessment; it must not create a proposal or canonical knowledge.
+- Do not run `compile`, chase primary sources, or request per-article approval merely because an article was captured.
+- Use `source annotate --salience high` for an important source. Run `triage <source-id> --compile-selected` only when the user marks it important, it is needed for a current decision/output, it repeatedly appears in retrieval, or it conflicts with existing knowledge.
+- A source may remain searchable as capture-only indefinitely. Verification belongs at use/promotion time; `confirmed` and canonical writes retain the existing proposal/review gate.
+- For routine batches, run `triage --limit 25`; reserve cross-source synthesis, contradiction review, and expensive full-vault work for an explicit weekly maintenance session.
+- Use `.\\scripts\\gm.ps1 weekly` for that weekly session. Treat its synthesis section as an eligibility report only; never infer approval or canonical authority from it.
+- Prefer the configured `global-memory` MCP server for read-only context/search/show/source/status. MCP results retain the same truth-layer and approval boundaries; no MCP write tool exists.

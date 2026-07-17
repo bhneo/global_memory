@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "global-memory": {
+      "command": "powershell.exe",
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\bhneo\\Desktop\\project\\超级大脑\\global_memory\\scripts\\gm-mcp-stdio.ps1"]
+    }
+  }
+}

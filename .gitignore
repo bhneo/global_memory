@@ -18,6 +18,9 @@ data/derived/*
 data/backups/*
 !data/backups/.gitkeep
 
+# Rebuildable full-text Obsidian reader pages stay local.
+vault/views/readers/
+
 # Local operational logs
 system/logs/*.jsonl
 system/reports/generated-*
