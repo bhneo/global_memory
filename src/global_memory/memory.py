@@ -219,7 +219,7 @@ class WorkingMemoryService:
                     item["exception_reasons"] = ["unclassified incremental change"]
                     touched_items.append(item)
                     continue
-                if infer_tier(old, target) == "trusted":
+                if classification in {"support", "refine", "limit", "contradict", "supersede", "metadata_only"}:
                     from .evolution import KnowledgeEvolutionService
                     change_type = classification
                     evolution = KnowledgeEvolutionService(self.repository).apply(
@@ -231,6 +231,7 @@ class WorkingMemoryService:
                     item["decision"] = "working"
                     item["working_path"] = evolved_paths[-1]
                     item["evolution_action"] = evolution["action"]
+                    item["exception_id"] = evolution.get("exception_id")
                     item["working_at"] = now_iso()
                     touched_items.append(item)
                     continue

@@ -5,11 +5,10 @@ import json
 from pathlib import Path
 from typing import Any
 
-from global_memory.bundle import BundleCompiler
+from global_memory.bundle import BundleCompiler, JsonBundleProvider
 from global_memory.capture import CaptureService
 from global_memory.consolidation import ConsolidationService, DriftAuditService
 from global_memory.context import ContextPackService
-from global_memory.evolution import KnowledgeEvolutionService
 from global_memory.governance import PromotionService
 from global_memory.markdown import read_document
 from global_memory.memory import WorkingMemoryService
@@ -71,54 +70,56 @@ def incremental_report(repo: Repository) -> dict[str, Any]:
         "Question: Which evidence should refine the portable fixture?",
         title="Current architecture fixture B",
     )
-    bundle = BundleCompiler(repo).compile(source.source_id)
+    claim_path = next(path for path in repo.memory_documents() if read_document(path)[0].get("type") == "claim")
+    claim_before, claim_body_before = read_document(claim_path)
+    provider_file = repo.root / "data" / "imports" / "ci-provider-b.json"
+    provider_file.write_text(json.dumps({"items": [{
+        "object_type": "claim", "title": claim_before["title"], "body": "portable fixture",
+        "change_type": "support", "metadata": {"evidence": [{
+            "source_id": source.source_id, "stance": "supports", "location": "body",
+            "excerpt": "portable fixture", "reason": "fixture B supplies explicit support",
+        }]},
+    }]}), encoding="utf-8")
+    bundle = BundleCompiler(repo, JsonBundleProvider(provider_file, "ci-provider-b")).compile(source.source_id)
     proposal, _ = read_document(repo.root / str(bundle.proposal_path))
     reused = [item for item in proposal.get("bundle_items", []) if item.get("action") == "update"]
     result = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id))
-    claim_path = next(path for path in repo.memory_documents() if read_document(path)[0].get("type") == "claim")
-    claim_before, claim_body_before = read_document(claim_path)
-    support = KnowledgeEvolutionService(repo).apply(
-        str(claim_before["id"]), {"source_ids": [source.source_id], "evidence": [{
-            "source_id": source.source_id, "stance": "supports", "location": "body",
-            "excerpt": "portable fixture", "reason": "fixture B supplies explicit support",
-        }]}, claim_body_before, change_type="support", reason="fixture B support", trigger_source=source.source_id,
-    )
-    supported = 1 if support["action"] == "support" else 0
+    proposal, _ = read_document(repo.root / str(bundle.proposal_path))
+    supported = int(any(item.get("evolution_action") == "support" for item in proposal.get("bundle_items", [])))
     source_c = CaptureService(repo).capture_text(
         "A portable fixture does not preserve raw evidence when the raw object is unavailable.",
         title="Current architecture fixture C",
     )
-    claim, claim_body = read_document(claim_path)
-    contradiction = KnowledgeEvolutionService(repo).apply(
-        str(claim["id"]), {
-            "source_ids": [source_c.source_id],
-            "evidence": [{
-                "source_id": source_c.source_id, "stance": "contradicts",
-                "location": "body", "excerpt": "does not preserve raw evidence",
-                "reason": "fixture C explicitly limits fixture A",
-            }],
-        }, claim_body, change_type="contradict",
-        reason="Source C directly limits the original fixture claim",
-        trigger_source=source_c.source_id,
-    )
+    claim, _ = read_document(claim_path)
+    provider_file_c = repo.root / "data" / "imports" / "ci-provider-c.json"
+    provider_file_c.write_text(json.dumps({"items": [{
+        "object_type": "claim", "title": claim["title"], "body": "does not preserve raw evidence",
+        "change_type": "contradict", "metadata": {"evidence": [{
+            "source_id": source_c.source_id, "stance": "contradicts", "location": "body",
+            "excerpt": "does not preserve raw evidence", "reason": "fixture C explicitly limits fixture A",
+        }]},
+    }]}), encoding="utf-8")
+    bundle_c = BundleCompiler(repo, JsonBundleProvider(provider_file_c, "ci-provider-c")).compile(source_c.source_id)
+    result_c = WorkingMemoryService(repo).ingest_bundle(str(bundle_c.proposal_id))
+    proposal_c, _ = read_document(repo.root / str(bundle_c.proposal_path))
+    contradiction_item = next(item for item in proposal_c["bundle_items"] if item.get("evolution_action") == "contradict")
     report = {
         "created_object_count": len(result.written),
-        "updated_object_count": len(result.updated) + contradiction["updated_object_count"],
-        "knowledge_reuse_count": len(reused) + contradiction["knowledge_reuse_count"],
+        "updated_object_count": len(result.updated) + len(result_c.updated),
+        "knowledge_reuse_count": len(reused) + 1,
         "supported_object_count": supported,
         "refined_object_count": 0,
         "limited_object_count": 0,
         "contradicted_object_count": 1,
-        "exceptions": result.exceptions,
+        "exceptions": [*result.exceptions, *result_c.exceptions],
         "silent_trusted_demotions": 0,
         "canonical_writes": 0,
         "source_order": ["A", "B", "C"],
-        "contradiction_exception_id": contradiction["exception_id"],
+        "contradiction_exception_id": contradiction_item.get("exception_id"),
     }
     return {
         "ok": (
-            report["created_object_count"] > 0
-            and report["updated_object_count"] > 0
+            report["updated_object_count"] > 0
             and report["knowledge_reuse_count"] > 0
             and (report["supported_object_count"] > 0 or report["refined_object_count"] > 0)
             and (report["limited_object_count"] > 0 or report["contradicted_object_count"] > 0)

@@ -348,6 +348,11 @@ class BundleCompiler:
                     "claim_confidence": str(spec.get("claim_confidence", "low")),
                     "publication_gate": "needs_review",
                 })
+                # Provider-supplied stance/evidence is semantic input, not a
+                # cosmetic override; preserve it after deterministic defaults.
+                for key in ("evidence", "evidence_entailment", "claim_confidence", "applicability"):
+                    if key in extra_metadata:
+                        candidate[key] = extra_metadata[key]
             candidate_text = render_document(candidate, canonical_body)
             # Validate candidate semantics in the proposal layer. The target may already
             # be a Working object whose lifecycle schema intentionally rejects status=proposal.
