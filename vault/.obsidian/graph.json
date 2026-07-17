@@ -1,47 +1,29 @@
 {
   "collapse-filter": true,
-  "search": "-path:raw -path:proposals -path:receipts -path:archive -path:followups -path:annotations -path:exceptions -path:views -path:INDEX -path:README",
+  "search": "path:\"views/graph\"",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": true,
   "showOrphans": false,
   "collapse-color-groups": true,
   "colorGroups": [
-    {
-      "query": "path:\"memory/claim\"",
-      "color": {"a": 1, "rgb": 5011711}
-    },
-    {
-      "query": "path:\"memory/concept\" OR path:\"memory/work\"",
-      "color": {"a": 1, "rgb": 2142890}
-    },
-    {
-      "query": "path:\"memory/question\" OR path:\"memory/tension\"",
-      "color": {"a": 1, "rgb": 16096779}
-    },
-    {
-      "query": "path:\"memory/hypothesis\" OR path:\"memory/analogy\"",
-      "color": {"a": 1, "rgb": 10182117}
-    },
-    {
-      "query": "path:\"memory/project\" OR path:\"memory/experiment\" OR path:\"memory/opportunity\"",
-      "color": {"a": 1, "rgb": 3126084}
-    },
-    {
-      "query": "path:\"knowledge\" OR path:\"frontier\" OR path:\"action\"",
-      "color": {"a": 1, "rgb": 14964566}
-    }
+    {"query": "path:\"views/graph/claims\"", "color": {"a": 1, "rgb": 5011711}},
+    {"query": "path:\"views/graph/concepts\" OR path:\"views/graph/works\"", "color": {"a": 1, "rgb": 2142890}},
+    {"query": "path:\"views/graph/questions\" OR path:\"views/graph/tensions\"", "color": {"a": 1, "rgb": 16096779}},
+    {"query": "path:\"views/graph/hypotheses\" OR path:\"views/graph/analogies\"", "color": {"a": 1, "rgb": 10182117}},
+    {"query": "path:\"views/graph/projects\" OR path:\"views/graph/experiments\" OR path:\"views/graph/opportunities\"", "color": {"a": 1, "rgb": 3126084}},
+    {"query": "path:\"views/graph/sources\"", "color": {"a": 1, "rgb": 8421504}}
   ],
   "collapse-display": true,
   "showArrow": false,
-  "textFadeMultiplier": 0.65,
+  "textFadeMultiplier": 0.45,
   "nodeSizeMultiplier": 0.9,
-  "lineSizeMultiplier": 0.55,
+  "lineSizeMultiplier": 0.8,
   "collapse-forces": true,
-  "centerStrength": 0.35,
-  "repelStrength": 14,
-  "linkStrength": 0.65,
-  "linkDistance": 130,
+  "centerStrength": 0.4,
+  "repelStrength": 11,
+  "linkStrength": 0.8,
+  "linkDistance": 170,
   "scale": 0.8,
   "close": false
 }

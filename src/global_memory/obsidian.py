@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from pathlib import Path
+import re
 from typing import Any
 
 from .extraction import ExtractionService
@@ -64,6 +65,129 @@ class ObsidianViewService:
     def _reader_link(self, metadata: dict[str, Any]) -> str:
         return f"[[views/readers/{metadata['id']}|{self._title(metadata)}]]"
 
+    @staticmethod
+    def _graph_filename(title: str, fallback: str) -> str:
+        clean = re.sub(r'[<>:"/\\|?*\x00-\x1f]', " ", title)
+        clean = re.sub(r"\s+", " ", clean).strip(" .")
+        return (clean or fallback)[:72].rstrip(" .")
+
+    @staticmethod
+    def _graph_category(object_type: str) -> str:
+        return {
+            "claim": "claims", "concept": "concepts", "work": "works",
+            "question": "questions", "tension": "tensions",
+            "hypothesis": "hypotheses", "analogy": "analogies",
+            "project": "projects", "experiment": "experiments",
+            "opportunity": "opportunities",
+        }.get(object_type, "other")
+
+    def _semantic_graph(
+        self,
+        documents: list[tuple[Path, dict[str, Any]]],
+        sources: list[tuple[Path, dict[str, Any], str]],
+    ) -> dict[str, str]:
+        """Render a human-labelled graph mirror from structured relations/source_ids."""
+        rendered: dict[str, str] = {}
+        locations: dict[str, str] = {}
+        metadata_by_id: dict[str, dict[str, Any]] = {}
+        display_titles: dict[str, str] = {}
+        used: set[str] = set()
+
+        source_referrers: dict[str, list[dict[str, Any]]] = defaultdict(list)
+        for _, metadata in documents:
+            for source_id in metadata.get("source_ids", []):
+                source_referrers[str(source_id)].append(metadata)
+
+        def source_title(metadata: dict[str, Any]) -> str:
+            title = self._title(metadata)
+            # Capture tools sometimes only know the host name. In the graph, prefer
+            # the associated work/object title so humans do not see a wall of domains.
+            if re.fullmatch(r"[\w.-]+\.[A-Za-z]{2,}", title):
+                referrers = source_referrers.get(str(metadata["id"]), [])
+                preferred = next(
+                    (item for item in referrers if item.get("type") == "work"),
+                    referrers[0] if referrers else None,
+                )
+                if preferred:
+                    return f"{self._title(preferred)}（原始资料）"
+                original_filename = str(metadata.get("original_filename") or "")
+                if original_filename:
+                    return f"{Path(original_filename).stem}（原始资料）"
+            return title
+
+        def allocate(item_id: str, title: str, category: str) -> str:
+            filename = self._graph_filename(title, item_id)
+            key = f"{category}/{filename}".casefold()
+            duplicate = 2
+            while key in used:
+                suffix = f"（{duplicate}）"
+                filename = f"{filename[:72 - len(suffix)].rstrip()}{suffix}"
+                key = f"{category}/{filename}".casefold()
+                duplicate += 1
+            used.add(key)
+            return f"vault/views/graph/{category}/{filename}.md"
+
+        for _, metadata, _ in sources:
+            item_id = str(metadata["id"])
+            display_titles[item_id] = source_title(metadata)
+            locations[item_id] = allocate(item_id, display_titles[item_id], "sources")
+            metadata_by_id[item_id] = metadata
+        for _, metadata in documents:
+            item_id = str(metadata["id"])
+            category = self._graph_category(str(metadata.get("type", "other")))
+            display_titles[item_id] = self._title(metadata)
+            locations[item_id] = allocate(item_id, display_titles[item_id], category)
+            metadata_by_id[item_id] = metadata
+
+        incoming: dict[str, set[str]] = defaultdict(set)
+        for _, metadata in documents:
+            source_id = str(metadata["id"])
+            for target_id in [
+                *[str(item) for item in metadata.get("source_ids", [])],
+                *[
+                    str(relation.get("target_id"))
+                    for relation in metadata.get("relations", [])
+                    if isinstance(relation, dict) and relation.get("target_id")
+                ],
+            ]:
+                if target_id in locations and target_id != source_id:
+                    incoming[target_id].add(source_id)
+
+        for item_id, relative in locations.items():
+            metadata = metadata_by_id[item_id]
+            title = display_titles[item_id]
+            lines = [self._header(title, "人类可读的派生语义图节点；真实内容与治理状态仍以原对象为准。")]
+            original_path, _, _ = self.repository.find_document(item_id)
+            lines.append(f"- 原始对象：`{self.repository.rel(original_path)}`\n")
+            lines.append(f"- 类型：`{metadata.get('type', 'source')}`\n")
+            if metadata.get("memory_tier") or metadata.get("status"):
+                lines.append(f"- 状态：`{metadata.get('memory_tier') or metadata.get('status')}`\n")
+            links: list[tuple[str, str]] = []
+            for source_id in metadata.get("source_ids", []):
+                source_id = str(source_id)
+                if source_id in locations and source_id != item_id:
+                    links.append((source_id, "来源"))
+            for relation in metadata.get("relations", []):
+                if not isinstance(relation, dict):
+                    continue
+                target_id = str(relation.get("target_id") or "")
+                if target_id in locations and target_id != item_id:
+                    links.append((target_id, str(relation.get("type") or "关联")))
+            for child_id in sorted(incoming.get(item_id, set())):
+                links.append((child_id, "被引用"))
+            if links:
+                lines.append("\n## 语义连接\n\n")
+                seen_links: set[str] = set()
+                for target_id, relation_type in links:
+                    if target_id in seen_links:
+                        continue
+                    seen_links.add(target_id)
+                    target = locations[target_id].removeprefix("vault/").removesuffix(".md")
+                    target_title = display_titles[target_id]
+                    lines.append(f"- `{relation_type}` → [[{target}|{target_title}]]\n")
+            rendered[relative] = "".join(lines)
+        return rendered
+
     def _extraction(self, source_id: str) -> tuple[dict[str, Any] | None, str]:
         try:
             _, metadata, body = self.extractions.latest_for_source(source_id)
@@ -99,6 +223,7 @@ class ObsidianViewService:
         documents = self._documents()
         sources = self._sources()
         rendered: dict[str, str] = {}
+        rendered.update(self._semantic_graph(documents, sources))
 
         by_type: dict[str, list[tuple[Path, dict[str, Any]]]] = defaultdict(list)
         partial: list[tuple[Path, dict[str, Any]]] = []
@@ -291,6 +416,13 @@ class ObsidianViewService:
         if readers.exists():
             expected = {(self.repository.root / relative).resolve() for relative in rendered if "/readers/" in relative}
             for path in readers.glob("*.md"):
+                if path.resolve() not in expected and f"generated by {GENERATOR}" in path.read_text(encoding="utf-8")[:200]:
+                    removed.append(self.repository.rel(path))
+                    path.unlink()
+        graph = self.repository.root / "vault" / "views" / "graph"
+        if graph.exists():
+            expected = {(self.repository.root / relative).resolve() for relative in rendered if "/graph/" in relative}
+            for path in graph.rglob("*.md"):
                 if path.resolve() not in expected and f"generated by {GENERATOR}" in path.read_text(encoding="utf-8")[:200]:
                     removed.append(self.repository.rel(path))
                     path.unlink()

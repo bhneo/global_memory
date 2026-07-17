@@ -2604,21 +2604,42 @@ def test_obsidian_views_are_rebuildable_and_do_not_change_canonical(repo: Reposi
     assert "最近导入" in home
     assert reader.exists()
     assert "Obsidian source" in reader.read_text(encoding="utf-8")
+    semantic_source = repo.root / "vault/views/graph/sources/Obsidian source.md"
+    assert semantic_source.exists() and captured.source_id not in semantic_source.name
     assert service.status()["current"] is True
+
+
+def test_obsidian_semantic_graph_uses_readable_names_and_materializes_source_edges(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Evidence body", title="Readable Evidence")
+    write_m8_memory(
+        repo,
+        "claim_graph_internal_7f62757ed57fd38b",
+        "claim",
+        "Human Readable Claim",
+        "Bounded claim body.",
+        [captured.source_id],
+    )
+
+    ObsidianViewService(repo).build()
+
+    node = repo.root / "vault/views/graph/claims/Human Readable Claim.md"
+    assert node.exists()
+    assert "7f62757ed57fd38b" not in node.name
+    text = node.read_text(encoding="utf-8")
+    assert "[[views/graph/sources/Readable Evidence|Readable Evidence]]" in text
 
 
 def test_repository_obsidian_graph_is_semantically_grouped_and_hides_navigation_hubs() -> None:
     graph_path = Path(__file__).parents[1] / "vault/.obsidian/graph.json"
     config = json.loads(graph_path.read_text(encoding="utf-8"))
 
-    assert "-path:views" in config["search"]
-    assert "-path:INDEX" in config["search"] and "-path:README" in config["search"]
+    assert config["search"] == 'path:"views/graph"'
     assert config["hideUnresolved"] is True and config["showOrphans"] is False
     queries = {item["query"] for item in config["colorGroups"]}
-    assert any('memory/claim' in query for query in queries)
-    assert any('memory/concept' in query for query in queries)
-    assert any('memory/question' in query for query in queries)
-    assert any('knowledge' in query for query in queries)
+    assert any('views/graph/claims' in query for query in queries)
+    assert any('views/graph/concepts' in query for query in queries)
+    assert any('views/graph/questions' in query for query in queries)
+    assert any('views/graph/sources' in query for query in queries)
     assert config["textFadeMultiplier"] > 0 and config["lineSizeMultiplier"] < 1
 
 
