@@ -24,6 +24,9 @@ data/backups/*
 # Rebuildable full-text Obsidian reader pages stay local.
 vault/views/readers/
 
+# Per-user Obsidian window/layout state is not shared configuration.
+vault/.obsidian/workspace.json
+
 # Local operational logs
 system/logs/*.jsonl
 system/reports/generated-*

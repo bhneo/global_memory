@@ -60,6 +60,14 @@ class KnowledgeEvolutionService:
             incoming_sources.append(trigger_source)
         incoming_evidence = [item for item in incoming.get("evidence", []) if isinstance(item, dict)]
         evidence_ids = [str(item.get("evidence_id")) for item in incoming_evidence if item.get("evidence_id")]
+        if change_type == "contradict":
+            contradiction_evidence = [
+                item for item in incoming_evidence
+                if item.get("stance") == "contradicts" and item.get("source_id")
+                and item.get("excerpt") and item.get("reason")
+            ]
+            if not contradiction_evidence:
+                raise ValueError("contradict requires source-linked contradictory evidence with excerpt and reason")
 
         if tier in {"trusted", "canonical"} and change_type in {"refine", "limit", "supersede"}:
             previous_version = self._snapshot(path, object_id)
@@ -162,12 +170,20 @@ class KnowledgeEvolutionService:
             updated["updated_by"] = "knowledge-evolution-v1"
             new_body = body
             result = {"refine": "refined", "limit": "limited", "supersede": "superseded"}[change_type]
+        before_bytes = path.read_bytes()
         atomic_write_text(path, render_document(updated, new_body))
         self.repository.rebuild_index()
         receipt = self.receipts.consolidate(
             object_id, result=result, changes=[record], change_summary=reason,
             exceptions_created=[exception_id] if exception_id else [],
         )
+        # Trusted objects are only allowed to retain a support/conflict mutation
+        # when the accompanying v2 receipt completed successfully.  A failed
+        # receipt is preserved as audit evidence, while the object is restored.
+        if tier == "trusted" and not self.receipts.complete(receipt):
+            path.write_bytes(before_bytes)
+            self.repository.rebuild_index()
+            raise ValueError("trusted evolution rolled back because consolidation receipt failed")
         self.repository.append_event("memory-events", {
             "event": f"knowledge-{change_type}", "object_id": object_id,
             "memory_tier": tier, "exception_id": exception_id,

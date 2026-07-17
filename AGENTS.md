@@ -4,8 +4,8 @@
 
 - Treat `memory_tier` and `epistemic_status` as independent. A Trusted Question remains `open_question`; a Trusted Analogy remains `exploratory_analogy`; `contested` is never a synonym for Canonical.
 - Unknown legacy status is `working + unknown`. Never use an unknown-to-canonical fallback in retrieval, migration, rendering, or reasoning.
-- `consolidation_count` is diagnostic only. Trusted Promotion requires a complete Consolidation Receipt whose `object_sha256_after` still matches the current object.
-- New evidence must declare `support`, `refine`, `limit`, `contradict`, `supersede`, or `metadata_only`. Do not append an unlabeled `Working update`.
+- `consolidation_count` is diagnostic only. Trusted Promotion requires a complete Receipt v2 whose `object_sha256_after` and full `consolidation_fingerprint` still match the current object. Receipt v1 remains audit history only.
+- New evidence must declare `support`, `refine`, `limit`, `contradict`, `supersede`, or `metadata_only`. Unknown classification is `needs_review`, never implicit support. A contradiction needs source-linked contrary evidence, excerpt, and reason.
 - Supporting evidence may update Trusted without resetting trust. Semantic changes create a Working Revision and preserve the old version. Conflict marks the object contested, retains both evidence sides, and creates an Exception.
 - Every Trusted demotion requires a Demotion Event. Canonical never auto-demotes; create a Canonical Exception instead.
 - Execution Context excludes hypothetical, exploratory analogy, unknown, degraded evidence and unverified Working Claims unless explicitly requested. Research/Exploration may include them with labels intact.

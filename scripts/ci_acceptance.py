@@ -75,20 +75,18 @@ def incremental_report(repo: Repository) -> dict[str, Any]:
     proposal, _ = read_document(repo.root / str(bundle.proposal_path))
     reused = [item for item in proposal.get("bundle_items", []) if item.get("action") == "update"]
     result = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id))
-    supported = 0
-    for path_value in result.updated:
-        updated_metadata, _ = read_document(repo.root / path_value)
-        supported += int(any(
-            item.get("change_type") == "support"
-            for item in updated_metadata.get("change_history", []) if isinstance(item, dict)
-        ))
+    claim_path = next(path for path in repo.memory_documents() if read_document(path)[0].get("type") == "claim")
+    claim_before, claim_body_before = read_document(claim_path)
+    support = KnowledgeEvolutionService(repo).apply(
+        str(claim_before["id"]), {"source_ids": [source.source_id], "evidence": [{
+            "source_id": source.source_id, "stance": "supports", "location": "body",
+            "excerpt": "portable fixture", "reason": "fixture B supplies explicit support",
+        }]}, claim_body_before, change_type="support", reason="fixture B support", trigger_source=source.source_id,
+    )
+    supported = 1 if support["action"] == "support" else 0
     source_c = CaptureService(repo).capture_text(
         "A portable fixture does not preserve raw evidence when the raw object is unavailable.",
         title="Current architecture fixture C",
-    )
-    claim_path = next(
-        path for path in repo.memory_documents()
-        if read_document(path)[0].get("type") == "claim"
     )
     claim, claim_body = read_document(claim_path)
     contradiction = KnowledgeEvolutionService(repo).apply(

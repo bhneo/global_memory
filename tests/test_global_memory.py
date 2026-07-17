@@ -3047,6 +3047,20 @@ def test_m8_incomplete_receipt_and_failed_search_block_promotion(repo: Repositor
     assert failed_search["status"] == "failed"
 
 
+def test_weekly_high_drift_creates_exception_without_key_error(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_m81_high_drift")
+    metadata, body = read_document(path)
+    metadata["claim_confidence"] = "high"
+    metadata["evidence_entailment"] = "partial"
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    report = ConsolidationService(repo).weekly()
+
+    assert report["drift"]["high_severity"] >= 1
+    assert any(item["exception_kind"] == "memory-drift" for item in ExceptionService(repo).list())
+
+
 def test_m8_tier_and_epistemic_status_are_orthogonal(repo: Repository) -> None:
     source = CaptureService(repo).capture_text("durable exploration", title="durable exploration")
     cases = {
@@ -3091,7 +3105,10 @@ def test_m8_trusted_support_revision_conflict_and_demotion_are_explicit(repo: Re
     assert revision_metadata["memory_tier"] == "working" and revision_metadata["needs_revalidation"] is True
 
     conflict = KnowledgeEvolutionService(repo).apply(
-        "claim_m8_evolve", {"source_ids": [source_b.source_id]}, trusted_body,
+        "claim_m8_evolve", {"source_ids": [source_b.source_id], "evidence": [{
+            "source_id": source_b.source_id, "stance": "contradicts", "location": "body",
+            "excerpt": "Independent support conflicts with the previous scope", "reason": "primary evidence conflicts",
+        }]}, trusted_body,
         change_type="contradict", reason="primary evidence conflicts", trigger_source=source_b.source_id,
     )
     contested, _ = read_document(path)
@@ -3113,7 +3130,10 @@ def test_m8_incremental_a_b_c_and_execution_context(repo: Repository) -> None:
     )
     source_c = CaptureService(repo).capture_text("C contradicts A.", title="C")
     c = KnowledgeEvolutionService(repo).apply(
-        "claim_m8_abc", {"source_ids": [source_c.source_id]}, read_document(path)[1],
+        "claim_m8_abc", {"source_ids": [source_c.source_id], "evidence": [{
+            "source_id": source_c.source_id, "stance": "contradicts", "location": "body",
+            "excerpt": "C contradicts A", "reason": "C limitation",
+        }]}, read_document(path)[1],
         change_type="contradict", reason="C limitation", trigger_source=source_c.source_id,
     )
     current, _ = read_document(path)

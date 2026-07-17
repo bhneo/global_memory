@@ -20,7 +20,7 @@ from .lifecycle import SourceAnnotationService, SourceLifecycleService
 from .maintenance import MaintenanceService
 from .memory import ExceptionService, WorkingMemoryService
 from .metrics import ProjectMetricsService
-from .migration import EpistemicStatusMigration
+from .migration import EpistemicStatusMigration, TrustPolicyRequalificationMigration
 from .evolution import KnowledgeEvolutionService
 from .mcp_server import add_mcp_arguments, run_mcp
 from .obsidian import ObsidianViewService
@@ -364,6 +364,8 @@ def build_parser() -> argparse.ArgumentParser:
     epistemic_mode = epistemic_migration.add_mutually_exclusive_group()
     epistemic_mode.add_argument("--dry-run", action="store_true")
     epistemic_mode.add_argument("--verify", action="store_true")
+    trust_requalification = migrate_commands.add_parser("trust-requalification")
+    trust_requalification.add_argument("--dry-run", action="store_true")
     runs = commands.add_parser("runs", help="查看或清理可重建的 system/runs")
     runs_commands = runs.add_subparsers(dest="runs_command", required=True)
     runs_commands.add_parser("list")
@@ -1289,6 +1291,10 @@ def run(args: argparse.Namespace) -> int:
         _print(result)
         return 0 if result["ok"] else 1
     elif args.command == "migrate":
+        if args.migrate_command == "trust-requalification":
+            migration = TrustPolicyRequalificationMigration(repository)
+            _print(migration.plan() if args.dry_run else migration.apply())
+            return 0
         if args.migrate_command == "epistemic-status":
             migration = EpistemicStatusMigration(repository)
             result = migration.verify() if args.verify else migration.plan() if args.dry_run else migration.apply()

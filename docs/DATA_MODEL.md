@@ -9,7 +9,7 @@
 
 Examples: `trusted + open_question` is a durable unanswered question; `trusted + exploratory_analogy` is a retained heuristic, not factual equivalence; `trusted + contested` is important but conflicted. `status` remains a compatibility mirror of tier after migration; `legacy_status` preserves the prior value.
 
-| M8 record | Location | Identity / validity |
+| M8.1 receipt v2 | `vault/receipts/consolidation/` | `execution_status`, `validation_outcome`, typed check details and a full consolidation fingerprint; v1 is retained only as audit history. |
 |---|---|---|
 | Consolidation Receipt | `vault/receipts/consolidation/` | object before/after hashes + source/evidence hashes + checks |
 | Working Revision | `vault/memory/revisions/` | immutable revision ID, `revision_of`, previous version, change record |

@@ -302,6 +302,10 @@ class BundleCompiler:
                 "source_ids": source_ids, "relations": relations,
                 "change_reason": f"compile bundle from {source_id}",
             }
+            # A provider must name the semantic effect of an update.  Heuristic
+            # compilation is not allowed to silently turn new text into support.
+            if action == "update":
+                candidate["change_type"] = str(spec.get("change_type") or "needs_review")
             extra_metadata = spec.get("metadata", {}) or {}
             protected = {"id", "type", "status", "created_at", "updated_at", "source_ids", "relations"}
             for key, value in extra_metadata.items():

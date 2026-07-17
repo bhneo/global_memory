@@ -127,3 +127,42 @@ class EpistemicStatusMigration:
                     "epistemic_status": epistemic,
                 })
         return {"ok": not issues, "verified": not issues, "issues": issues, "documents_checked": len(self._documents())}
+
+
+class TrustPolicyRequalificationMigration:
+    """Move legacy Trusted objects back to Working until a v2 receipt exists."""
+
+    POLICY_VERSION = "trusted-promotion-v3-receipt-v2"
+
+    def __init__(self, repository: Repository):
+        self.repository = repository
+
+    def plan(self) -> dict[str, Any]:
+        from .consolidation import ConsolidationReceiptService
+        receipts = ConsolidationReceiptService(self.repository)
+        changes = []
+        for path in self.repository.memory_documents():
+            metadata, _ = read_document(path)
+            if metadata.get("memory_tier") == "trusted" and receipts.valid_for(str(metadata["id"])) is None:
+                changes.append({"path": self.repository.rel(path), "object_id": metadata["id"], "action": "demote_to_working", "reason": "missing valid receipt v2"})
+        return {"dry_run": True, "policy_version": self.POLICY_VERSION, "trusted_to_requalify": changes, "canonical_content_writes": 0}
+
+    def apply(self) -> dict[str, Any]:
+        plan = self.plan()
+        if not plan["trusted_to_requalify"]:
+            return {**plan, "dry_run": False, "idempotent_noop": True, "backup_path": None}
+        stamp = now_iso().replace(":", "-")
+        backup = self.repository.root / "data" / "backups" / f"trust-requalification-{stamp}"
+        changed = []
+        for item in plan["trusted_to_requalify"]:
+            path = self.repository.resolve_inside(str(item["path"]))
+            original = path.read_bytes()
+            backup_path = backup / str(item["path"])
+            backup_path.parent.mkdir(parents=True, exist_ok=True)
+            backup_path.write_bytes(original)
+            metadata, body = read_document(path)
+            metadata.update({"status": "working", "memory_tier": "working", "needs_revalidation": True, "updated_at": now_iso(), "updated_by": self.POLICY_VERSION})
+            atomic_write_text(path, render_document(metadata, body))
+            changed.append({**item, "sha256_before": sha256_bytes(original), "sha256_after": sha256_bytes(path.read_bytes())})
+        self.repository.rebuild_index()
+        return {**plan, "dry_run": False, "backup_path": self.repository.rel(backup), "documents_changed": len(changed), "changed": changed, "idempotent_noop": False}

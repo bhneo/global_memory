@@ -135,7 +135,7 @@ class WorkingMemoryService:
             old_sources = [str(item) for item in old.get("source_ids", [])]
             metadata["source_ids"] = list(dict.fromkeys([*old_sources, *metadata.get("source_ids", [])]))
             change = {
-                "change_type": metadata.get("change_type", "support"),
+                "change_type": metadata.get("change_type", "needs_review"),
                 "previous_statement": old_body.strip(), "new_statement": body.strip(),
                 "changed_fields": ["source_ids", "body"],
                 "reason": "incremental compiler update", "trigger_source": (metadata.get("source_ids") or [None])[-1],
@@ -207,9 +207,21 @@ class WorkingMemoryService:
                     touched_items.append(item)
                     continue
                 existing = (target, old, old_body)
+                classification = str(candidate.get("change_type") or item.get("change_type") or "needs_review")
+                if classification not in {"support", "refine", "limit", "contradict", "supersede", "metadata_only"}:
+                    exceptions.append(self.exceptions.create(
+                        "unclassified-change", f"Incremental change needs classification: {candidate.get('title')}",
+                        ["provider must classify update as support/refine/limit/contradict/supersede/metadata_only"],
+                        object_id=object_id, source_ids=list(candidate.get("source_ids", [])),
+                        context={"proposal_id": proposal_id, "item_id": item_id, "classification": classification},
+                    ))
+                    item["decision"] = "exception"
+                    item["exception_reasons"] = ["unclassified incremental change"]
+                    touched_items.append(item)
+                    continue
                 if infer_tier(old, target) == "trusted":
                     from .evolution import KnowledgeEvolutionService
-                    change_type = str(candidate.get("change_type") or item.get("change_type") or "refine")
+                    change_type = classification
                     evolution = KnowledgeEvolutionService(self.repository).apply(
                         object_id, candidate, body, change_type=change_type,
                         reason=str(candidate.get("change_reason") or "incremental material changed trusted memory"),

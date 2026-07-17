@@ -4,18 +4,20 @@ import hashlib
 import json
 from collections import Counter
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict
 
 from .bundle import BundleCompiler
 from .governance import PromotionService
 from .markdown import atomic_write_text, read_document, render_document
 from .memory import ExceptionService, WorkingMemoryService
 from .proposals import ProposalService
-from .repository import Repository, now_iso
+from .repository import Repository, now_iso, sha256_bytes
 from .triage import DailyTriageService
 
 
-CONSOLIDATOR_VERSION = "trustworthy-consolidation-v1"
+CONSOLIDATOR_VERSION = "trustworthy-consolidation-v2"
+RECEIPT_SCHEMA_VERSION = 2
+DRIFT_POLICY_VERSION = "semantic-drift-v2"
 REQUIRED_RECEIPT_CHECKS = {
     "schema_validated", "raw_available", "provenance_revalidated",
     "evidence_revalidated", "evidence_entailment_rechecked",
@@ -23,6 +25,20 @@ REQUIRED_RECEIPT_CHECKS = {
     "contradiction_search_completed", "freshness_checked",
     "source_independence_checked", "drift_checked",
 }
+
+
+class DriftReport(TypedDict):
+    drift_report_id: str
+    object_id: str
+    object_versions_compared: list[str]
+    source_evidence_ids: list[str]
+    drift_type: str
+    severity: str
+    original_statement: str
+    current_statement: str
+    evidence_summary: str
+    reason: str
+    recommended_action: str
 
 
 class ConsolidationReceiptService:
@@ -45,15 +61,32 @@ class ConsolidationReceiptService:
     @staticmethod
     def complete(metadata: dict[str, Any]) -> bool:
         checks = metadata.get("checks", {})
+        # v1 remains readable for audit history, but cannot qualify a v2
+        # Trusted promotion.  Its boolean checks are intentionally preserved.
+        if int(metadata.get("receipt_schema_version", 1)) < RECEIPT_SCHEMA_VERSION:
+            return (
+                metadata.get("status") == "complete"
+                and REQUIRED_RECEIPT_CHECKS <= set(checks)
+                and all(checks.get(key) is True for key in REQUIRED_RECEIPT_CHECKS)
+                and metadata.get("result") not in {"failed", "needs_review"}
+            )
         return (
-            metadata.get("status") == "complete"
+            metadata.get("execution_status") == "complete"
+            and metadata.get("validation_outcome") == "passed"
+            and metadata.get("status") == "complete"
             and REQUIRED_RECEIPT_CHECKS <= set(checks)
             and all(checks.get(key) is True for key in REQUIRED_RECEIPT_CHECKS)
             and metadata.get("result") not in {"failed", "needs_review"}
+            and bool(metadata.get("consolidation_fingerprint"))
         )
 
     def valid_for(self, object_id: str) -> dict[str, Any] | None:
-        candidates = [item for item in self._current_for(object_id) if self.complete(item)]
+        candidates = [
+            item for item in self._current_for(object_id)
+            if self.complete(item)
+            and int(item.get("receipt_schema_version", 1)) >= RECEIPT_SCHEMA_VERSION
+            and item.get("consolidation_fingerprint") == self.fingerprint(object_id)
+        ]
         return sorted(candidates, key=lambda item: str(item.get("completed_at", "")))[-1] if candidates else None
 
     def _current_for(self, object_id: str) -> list[dict[str, Any]]:
@@ -72,6 +105,37 @@ class ConsolidationReceiptService:
                 continue
             candidates.append({**receipt, "path": self.repository.rel(receipt_path)})
         return candidates
+
+    @staticmethod
+    def _digest(value: Any) -> str:
+        return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+
+    def fingerprint(self, object_id: str, *, metadata: dict[str, Any] | None = None, body: str | None = None) -> dict[str, Any]:
+        """Hash every governed input that can invalidate a consolidation."""
+        path, current, current_body = self.repository.find_document(object_id)
+        metadata = metadata or current
+        body = current_body if body is None else body
+        source_ids = [str(item) for item in metadata.get("source_ids", [])]
+        source_hashes, _, _ = self._source_state(source_ids)
+        evidence = [item for item in metadata.get("evidence", []) if isinstance(item, dict)]
+        relations = [item for item in metadata.get("relations", []) if isinstance(item, dict)]
+        try:
+            neighborhood = [item.__dict__ for item in self.repository.related(object_id)]
+        except Exception:
+            neighborhood = []
+        return {
+            "object_sha256": sha256_bytes(render_document(metadata, body).encode("utf-8")),
+            "source_state_sha256": self._digest(list(zip(source_ids, source_hashes))),
+            "raw_state_sha256": self._digest(source_hashes),
+            "evidence_sha256": self._digest(evidence),
+            "extraction_state_sha256": self._digest([metadata.get("extraction_id"), metadata.get("extraction_quality")]),
+            "work_identity_sha256": self._digest(metadata.get("reuse_work_ids", metadata.get("work_id", []))),
+            "relation_neighborhood_sha256": self._digest([relations, neighborhood]),
+            "contradictions_sha256": self._digest(metadata.get("unresolved_contradictions", [])),
+            "schema_version": metadata.get("memory_schema_version", 1),
+            "consolidator_version": CONSOLIDATOR_VERSION,
+            "policy_version": DRIFT_POLICY_VERSION,
+        }
 
     def counts(self) -> dict[str, int]:
         complete = failed = 0
@@ -139,7 +203,7 @@ class ConsolidationReceiptService:
         exceptions_created: list[str] | None = None,
         consolidator: str = "deterministic", model_provider: str = "none",
         model_version: str = "none", rebuild_index: bool = True,
-    ) -> dict[str, Any]:
+    ) -> DriftReport:
         path, metadata, body = self.repository.find_document(object_id)
         if not self.repository.rel(path).startswith(("vault/memory/", "vault/knowledge/", "vault/frontier/", "vault/action/")):
             raise ValueError("only governed knowledge objects can be consolidated")
@@ -169,6 +233,7 @@ class ConsolidationReceiptService:
         except Exception as exc:
             schema_validated = False
             warnings.append(f"schema validation failed: {exc}")
+        drift = DriftAuditService(self.repository).run_for(object_id)
         checks = {
             "schema_validated": schema_validated,
             "raw_available": raw_available,
@@ -180,6 +245,9 @@ class ConsolidationReceiptService:
             "source_independence_checked": True,
             "drift_checked": True,
         }
+        if any(item["severity"] == "high" for item in drift):
+            warnings.append("high severity semantic drift detected")
+            checks["drift_checked"] = False
         receipt_complete = all(checks.get(key) is True for key in REQUIRED_RECEIPT_CHECKS)
         resolved_result = result or ("unchanged" if receipt_complete else "failed")
         if resolved_result == "promotion_candidate" and not receipt_complete:
@@ -190,18 +258,28 @@ class ConsolidationReceiptService:
         )
         consolidation_id = "consolidation_" + hashlib.sha256(stable.encode("utf-8")).hexdigest()[:24]
         completed = now_iso()
-        if not metadata.get("user_locked"):
-            metadata["consolidation_count"] = int(metadata.get("consolidation_count", 0)) + 1
-            metadata["last_consolidated_at"] = completed
-            metadata["last_consolidation_id"] = consolidation_id
-            metadata["updated_at"] = completed
-            metadata["updated_by"] = CONSOLIDATOR_VERSION
-            atomic_write_text(path, render_document(metadata, body))
-        after_sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        # Failed validation is observational only: no governed object mutation.
+        updated = dict(metadata)
+        if receipt_complete and not metadata.get("user_locked"):
+            updated["consolidation_count"] = int(metadata.get("consolidation_count", 0)) + 1
+            updated["last_consolidated_at"] = completed
+            updated["last_consolidation_id"] = consolidation_id
+            updated["updated_at"] = completed
+            updated["updated_by"] = CONSOLIDATOR_VERSION
+        after_text = render_document(updated, body)
+        after_sha = sha256_bytes(after_text.encode("utf-8")) if receipt_complete else before_sha
+        fingerprint = self.fingerprint(object_id, metadata=updated if receipt_complete else metadata, body=body)
+        check_details = {
+            key: {"status": "passed" if value else "failed", "findings": [], "warnings": []}
+            for key, value in checks.items()
+        }
         receipt = {
             "id": consolidation_id,
             "type": "consolidation_receipt",
+            "receipt_schema_version": RECEIPT_SCHEMA_VERSION,
             "status": "complete" if receipt_complete and resolved_result not in {"failed", "needs_review"} else "failed",
+            "execution_status": "complete",
+            "validation_outcome": "passed" if receipt_complete and resolved_result not in {"failed", "needs_review"} else "failed",
             "title": f"Consolidation: {metadata.get('title', object_id)}",
             "created_at": completed,
             "updated_at": completed,
@@ -220,6 +298,9 @@ class ConsolidationReceiptService:
             "model_provider": model_provider,
             "model_version": model_version,
             "checks": checks,
+            "check_details": check_details,
+            "consolidation_fingerprint": fingerprint,
+            "drift_policy_version": DRIFT_POLICY_VERSION,
             "result": resolved_result,
             "changes": changes or [],
             "change_summary": change_summary or "No semantic change.",
@@ -228,10 +309,14 @@ class ConsolidationReceiptService:
             "promotion_recommendation": "evaluate" if receipt_complete else "blocked",
         }
         receipt_path = self.directory / f"consolidation-{consolidation_id}.md"
+        # Commit the receipt first.  Only a complete receipt permits the paired
+        # object write, so a failed receipt cannot leave Trusted state mutated.
         self.repository.immutable_write(
             receipt_path,
             render_document(receipt, "# Consolidation Receipt\n\n```json\n" + json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n```\n").encode("utf-8"),
         )
+        if receipt_complete and not metadata.get("user_locked"):
+            atomic_write_text(path, after_text)
         if rebuild_index:
             self.repository.rebuild_index()
         self.repository.append_event("memory-events", {
@@ -323,6 +408,11 @@ class DriftAuditService:
             "writes": 0,
         }
 
+    def run_for(self, object_id: str) -> list[DriftReport]:
+        """Run the same semantic rules for one object during consolidation."""
+        report = self.run()
+        return [item for item in report["issues"] if item["object_id"] == object_id]
+
 
 class ConsolidationService:
     def __init__(self, repository: Repository):
@@ -395,7 +485,7 @@ class ConsolidationService:
             if issue.get("severity") != "high":
                 continue
             self.exceptions.create(
-                "memory-drift", f"Drift audit: {issue['object_id']}", [issue["kind"]],
+                "memory-drift", f"Drift audit: {issue['object_id']}", [str(issue["drift_type"])],
                 object_id=issue["object_id"], context=issue,
             )
         canonical_candidates = []
