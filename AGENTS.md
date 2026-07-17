@@ -6,13 +6,14 @@
 - Start from `vault/INDEX.md`, then request a bounded Context Pack with `gm context "<question>" --format markdown --token-budget 1200`. Do not scan the whole vault by default.
 - Preserve each selected item's truth layer, status, evidence, source IDs, uncertainty, path, and selection reason. Follow raw/source links when a claim needs verification.
 - `vault/views/` and Context Packs are rebuildable views. Canonical Markdown and immutable raw remain the durable truth layers.
-- For durable write-back, create a concise session receipt with `gm receipt create --agent codex ...`, then use `gm receipt propose <receipt-id>`. This creates a review proposal and never grants approval.
+- For durable write-back, create a concise session receipt with `gm receipt create --agent codex ...`, compile it, and let validated candidates enter Working memory. A proposal is audit material; it is no longer routine human homework.
 - Receipt content should contain durable decisions, verified observations, changed assumptions, open questions, and sources—not transcript filler, secrets, or unsupported conclusions.
 - Obsidian opens `vault/`; rebuild its navigation with `gm obsidian build`. See `docs/AGENT_INTEGRATION.md` and ADR 0029.
 - Use `gm maintain` for a read-only maintenance check. `gm maintain --rebuild-derived` may refresh SQLite/Obsidian views only; neither mode authorizes canonical edits.
 - On Windows PowerShell use `.\\scripts\\gm.ps1`; the bare name `gm` may resolve to the built-in `Get-Member` alias.
-- Routine article import is capture-first: run `.\\scripts\\gm.ps1 triage <source-id>` for bounded extraction and quality checking. Do not compile every article or request per-article approval. Use `--compile-selected` only for material selected by value, current use, repeated retrieval, conflict, or promotion; capture-only sources remain valid and searchable.
-- Run `.\\scripts\\gm.ps1 weekly` for bounded triage, integrity, contradiction audit, backlog inventory, derived-view rebuild, and synthesis eligibility. Weekly never creates synthesis proposals or writes canonical automatically.
+- Routine article import is capture-first. `triage` remains the cheapest source preparation step; `consolidate daily` automatically compiles prepared material into Working memory. Do not request per-article approval.
+- Run `.\\scripts\\gm.ps1 consolidate weekly` for policy-backed Working review, Trusted promotion, drift audit, exceptions and canonical recommendations. Weekly never writes canonical automatically.
+- Only `gm promotion approve <promotion-id>` may normally move Trusted memory into Canonical. `promote --to canonical` merely creates a review card.
 - External assistants should use the read-only MCP tools documented in `docs/MCP_INTEGRATION.md`. MCP retrieval never grants capture, proposal, approval, rebuild, deletion, or canonical-write authority.
 
 ## M6 operating rules
@@ -21,7 +22,7 @@
 - 不把所有材料压成 claim。先判断 concept/claim/question/tension/hypothesis/analogy/anomaly/intuition/synthesis 或 source-only。
 - Claim 必须经过 atomicity 与 evidence coverage 检查；compound、partial/missing evidence、degraded extraction 不可直接 confirmed。
 - 优先检索已有 concept/claim/question/tension/project，再选择 create/update/refine/support/contradict/supersede/link/defer/source-only。
-- 主要审阅单位是 bundle；任何 item/relation 写 canonical 仍须 proposal gate。Analogy 永远先作为 proposal，必须写 where_it_breaks。
+- Bundle 是编译与审计单位；合格 item 可自动进入 Working，任何对象写 canonical 仍须 promotion gate。Analogy 必须保留 where_it_breaks。
 - quote exact、extraction quality、source authority、evidence entailment 与 claim confidence 是不同维度，不得互相替代。
 - `.tmp-*` 与 `system/runs/` 不是知识层；正式 candidate 只在 `vault/proposals/`。
 
@@ -47,7 +48,7 @@
 - 不默认扫描整个 vault；先读 `INDEX.md`、`SCHEMA.md`，再检索少量候选。
 - 知识回答必须能回到 `source_ids` 和 raw content；AI 摘要不得替代来源。
 - 逐字引用必须标为 `quote` 并回验 extraction span；转述、翻译、表格值、图示解释和计算不得伪装成原文 quote。
-- Agent 只能创建 proposal。未经用户明确授权，不得直接修改 canonical knowledge。
+- Agent 可创建 proposal 审计材料并自动物化 Working；未经用户明确批准 promotion card，不得修改 canonical knowledge。
 - 任务结束更新 `PROJECT_STATE.md`；用户可见行为改变时更新 `CHANGELOG.md`。
 - 重要且难以逆转的选择写 ADR；不为假想需求构建复杂抽象。
 - 有意义的知识编译必须保留 source、文件 diff、claim、relation、冲突与理由。
@@ -65,4 +66,4 @@
 
 ## Canonical write gate
 
-允许写 canonical 的常规路径只有两种：合格 claim 经显式自动门禁发布为带 `published_via` 的 provisional；或 pending proposal 经人工查看 diff 后明确 approve，写入带 `approved_via` 的 confirmed/其他审阅状态。两者都必须记录 audit 并重建索引。修复 schema 或迁移 canonical 数据也必须先取得明确授权并提供可检查 diff。
+允许写 canonical 的常规路径只有一种：Trusted 对象先生成 promotion card，再由用户执行 `gm promotion approve` 明确确认。自动 compile、daily、weekly、migration、drift audit 都不得写 canonical。修复 schema 或迁移 canonical 数据也必须先取得明确授权并提供可检查 diff。

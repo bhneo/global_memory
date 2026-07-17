@@ -1,0 +1,32 @@
+---
+id: "claim_54cac5c21565eb6d274a5383"
+type: "claim"
+status: "proposal"
+title: "Accepted October 06, 2023) S"
+created_at: "2026-07-17T12:17:07+08:00"
+updated_at: "2026-07-17T12:17:07+08:00"
+aliases: []
+tags: []
+domains: []
+confidence: "low"
+source_ids: ["source_b85c7e35189fedbd359efa94"]
+relations: [{"type": "derived_from", "target_id": "source_b85c7e35189fedbd359efa94", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "deterministic-bounded-bundle-v1", "status": "proposal"}]
+change_reason: "compile bundle from source_b85c7e35189fedbd359efa94"
+evidence: [{"evidence_id": "evidence_887c253c384e4923c392", "evidence_kind": "paraphrase", "source_id": "source_b85c7e35189fedbd359efa94", "content_id": "content_895c64ddb9204adf2853a7feb87d4315de7bdc656230361c5dc5ee249d4481bf", "extraction_id": "extraction_f7743ab92a554c94f10a12cd", "span_start": -1, "span_end": 27, "original_text": "Accepted October 06, 2023) S", "interpretation": "Accepted October 06, 2023) S", "section": "deterministic extracted block", "page": null, "stance": "context", "verification_status": "derived", "input_sha256": "895c64ddb9204adf2853a7feb87d4315de7bdc656230361c5dc5ee249d4481bf", "extractor": "pypdf", "extractor_version": "1.0", "reason": "确定性 fallback 只确认逐字位置，不自动判断支持或反对。"}]
+applicability: []
+uncertainty: "确定性 fallback 能力有限；该原文尚未经过语义事实核验。"
+atomicity_status: "atomic"
+evidence_coverage: "partial"
+split_from: "Draft version October 10, 2023\nTypeset using LATEX twocolumn style in AASTeX63\nDeep symbolic regression for physics guided by units constraints:\ntoward the automated discovery of physical laws\nW assim Tenachi\n ,1 Rodrigo Ibata\n ,1 and Foivos I. Diakogiannis\n 2\n1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France\n2Data61, CSIRO, Kensington, WA 6155, Australia\n(Received March 03, 2023; Revised October 06 2023; Accepted October 06, 2023)\nS"
+split_reason: "multiple independently testable clauses"
+quote_verification: "failed"
+extraction_quality: "good"
+epistemic_source_authority: "primary"
+evidence_entailment: "none"
+claim_confidence: "low"
+publication_gate: "needs_review"
+---
+
+# Accepted October 06, 2023) S
+
+Accepted October 06, 2023) S

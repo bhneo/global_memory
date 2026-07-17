@@ -1,10 +1,10 @@
 ---
 id: "proposal_bfb8c7a5d874d11f0c424ee4"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Work enrichment：[2605.10500] SkillEvolver: Skill Learning as a Meta-Skill"
 created_at: "2026-07-16T18:04:45+08:00"
-updated_at: "2026-07-16T18:04:45+08:00"
+updated_at: "2026-07-17T11:59:20+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,6 +23,7 @@ candidate_sha256: "eb01f02245d6263b8b70d95374036d52b4ac55eb6cf58163d45c05a62bb9b
 change_reason: "显式 work identity enrichment"
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Work enrichment：[2605.10500] SkillEvolver: Skill Learning as a Meta-Skill

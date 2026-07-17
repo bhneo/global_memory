@@ -1,10 +1,10 @@
 ---
 id: "proposal_eb195c605653ced3557cc842"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Work enrichment：[2605.10332] EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents"
 created_at: "2026-07-16T18:56:45+08:00"
-updated_at: "2026-07-16T18:56:45+08:00"
+updated_at: "2026-07-17T12:00:28+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,6 +23,7 @@ candidate_sha256: "07076db292017f6b72148f68abf4a1602ab9062c6682c13107e72805f0d4b
 change_reason: "显式 work identity enrichment"
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Work enrichment：[2605.10332] EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents

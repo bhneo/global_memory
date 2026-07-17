@@ -201,7 +201,7 @@ class BundleCompiler:
 
     def _find_same_object(self, object_type: str, title: str) -> tuple[Path, dict[str, Any], str] | None:
         key = self._semantic_key(title)
-        for path in self.repository.canonical_documents():
+        for path in [*self.repository.memory_documents(), *self.repository.canonical_documents()]:
             metadata, body = read_document(path)
             aliases = [metadata.get("title", ""), *metadata.get("aliases", [])]
             if metadata.get("type") == object_type and any(self._semantic_key(str(item)) == key for item in aliases):
@@ -316,11 +316,13 @@ class BundleCompiler:
                     start = text.find(body_text)
                 evidence = {
                     "evidence_id": f"evidence_{hashlib.sha256(f'{source_id}:{start}:{body_text}'.encode()).hexdigest()[:20]}",
-                    "evidence_kind": "quote", "source_id": source_id,
+                    "evidence_kind": "quote" if start >= 0 else "paraphrase", "source_id": source_id,
                     "content_id": source.get("content_id"), "extraction_id": extraction["extraction_id"],
                     "span_start": start, "span_end": start + len(body_text), "original_text": body_text,
+                    "interpretation": body_text if start < 0 else None,
+                    "section": "deterministic extracted block" if start < 0 else None,
                     "page": self._page_for_span(text, start), "stance": "context",
-                    "verification_status": "verified", "input_sha256": extraction["input_sha256"],
+                    "verification_status": "verified" if start >= 0 else "derived", "input_sha256": extraction["input_sha256"],
                     "extractor": extraction["extractor"], "extractor_version": extraction["extractor_version"],
                     "reason": "确定性 fallback 只确认逐字位置，不自动判断支持或反对。",
                 }
@@ -343,7 +345,11 @@ class BundleCompiler:
                     "publication_gate": "needs_review",
                 })
             candidate_text = render_document(candidate, canonical_body)
-            self.repository._validate_metadata(candidate, target_path)
+            # Validate candidate semantics in the proposal layer. The target may already
+            # be a Working object whose lifecycle schema intentionally rejects status=proposal.
+            self.repository._validate_metadata(
+                candidate, self.repository.root / "vault" / "proposals" / "_candidate-validation.md"
+            )
             candidate_sha = sha256_bytes(candidate_text.encode("utf-8"))
             item_id = f"{object_type}-{index}"
             prepared.append({

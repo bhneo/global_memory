@@ -11,12 +11,14 @@ from .backups import RawBackupService
 from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from .capture import CaptureService
 from .context import ContextPackService
+from .consolidation import ConsolidationService, DriftAuditService, ProposalGateMigration
 from .distillation import CorpusDistillationService
 from .errors import GlobalMemoryError
 from .extraction import ExtractionService
 from .followups import FollowupService
 from .lifecycle import SourceAnnotationService, SourceLifecycleService
 from .maintenance import MaintenanceService
+from .memory import ExceptionService, WorkingMemoryService
 from .mcp_server import add_mcp_arguments, run_mcp
 from .obsidian import ObsidianViewService
 from .markdown import read_document
@@ -30,9 +32,10 @@ from .repository import Repository, sha256_bytes
 from .receipts import ReceiptService
 from .triage import DailyTriageService
 from .works import WorkService
+from .governance import PromotionService
 
 
-PROPOSAL_STATUSES = {"pending", "deferred", "superseded", "published", "approved", "rejected"}
+PROPOSAL_STATUSES = {"pending", "deferred", "migrated", "superseded", "published", "approved", "rejected"}
 WIKILINK_PATTERN = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
 
 
@@ -138,7 +141,7 @@ def build_parser() -> argparse.ArgumentParser:
     model_propose.add_argument("--reason", required=True)
     proposals = commands.add_parser("proposals", help="列出 proposals")
     proposals.add_argument(
-        "--status", choices=["pending", "deferred", "superseded", "published", "approved", "rejected"]
+        "--status", choices=["pending", "deferred", "migrated", "superseded", "published", "approved", "rejected"]
     )
     review = commands.add_parser("review", help="以 Source Bundle 为主要审阅单位")
     review_commands = review.add_subparsers(dest="review_command", required=True)
@@ -216,9 +219,55 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_mark_compound.add_argument("--item", required=True)
     proposal_mark_compound.add_argument("--reason", required=True)
 
-    promote = commands.add_parser("promote", help="将 provisional canonical knowledge 显式晋升为 confirmed")
+    promote = commands.add_parser("promote", help="晋升 working/trusted memory；canonical 只创建 promotion card")
     promote.add_argument("target_id")
-    promote.add_argument("--reason", default="")
+    promote.add_argument("--to", choices=["trusted", "canonical"], default="trusted")
+    promote.add_argument("--reason", required=True)
+    demote = commands.add_parser("demote", help="将 trusted memory 降回 working")
+    demote.add_argument("target_id")
+    demote.add_argument("--to", choices=["working"], default="working")
+    demote.add_argument("--reason", required=True)
+    trust = commands.add_parser("trust", help="解释 working/trusted 对象的信任依据")
+    trust_commands = trust.add_subparsers(dest="trust_command", required=True)
+    trust_explain = trust_commands.add_parser("explain")
+    trust_explain.add_argument("target_id")
+    history = commands.add_parser("history", help="显示对象的晋升历史")
+    history.add_argument("target_id")
+    rollback = commands.add_parser("rollback", help="回滚最近一次 trusted 晋升")
+    rollback.add_argument("change_id")
+    rollback.add_argument("--reason", required=True)
+
+    exceptions = commands.add_parser("exceptions", help="列出例外队列")
+    exceptions.add_argument("--status", action="append")
+    exception = commands.add_parser("exception", help="查看或处理例外")
+    exception_commands = exception.add_subparsers(dest="exception_command", required=True)
+    exception_show = exception_commands.add_parser("show")
+    exception_show.add_argument("exception_id")
+    exception_resolve = exception_commands.add_parser("resolve")
+    exception_resolve.add_argument("exception_id")
+    exception_resolve.add_argument("--resolution", required=True)
+    exception_resolve.add_argument("--action", choices=["resolved", "deferred", "dismissed"], default="resolved")
+
+    promotions = commands.add_parser("promotions", help="列出 canonical promotion cards")
+    promotions.add_argument("--status", action="append")
+    promotion = commands.add_parser("promotion", help="查看或处理 canonical promotion card")
+    promotion_commands = promotion.add_subparsers(dest="promotion_command", required=True)
+    promotion_show = promotion_commands.add_parser("show")
+    promotion_show.add_argument("promotion_id")
+    promotion_approve = promotion_commands.add_parser("approve")
+    promotion_approve.add_argument("promotion_id")
+    promotion_approve.add_argument("--lock", action="store_true")
+    for decision in ("reject", "defer"):
+        decision_parser = promotion_commands.add_parser(decision)
+        decision_parser.add_argument("promotion_id")
+        decision_parser.add_argument("--reason", required=True)
+
+    consolidate = commands.add_parser("consolidate", help="运行 daily 或 weekly memory consolidation")
+    consolidate_commands = consolidate.add_subparsers(dest="consolidate_command", required=True)
+    consolidate_daily = consolidate_commands.add_parser("daily")
+    consolidate_daily.add_argument("--limit", type=int, default=25)
+    consolidate_commands.add_parser("weekly")
+    commands.add_parser("weekly-report", help="运行 weekly consolidation 并输出 digest")
 
     search = commands.add_parser("search", help="全文检索来源和 canonical knowledge")
     search.add_argument("query")
@@ -293,6 +342,10 @@ def build_parser() -> argparse.ArgumentParser:
     raw_store_mode.add_argument("--verify", action="store_true")
     batch_migration = migrate_commands.add_parser("batch-artifacts")
     batch_migration.add_argument("--dry-run", action="store_true")
+    proposal_gate_migration = migrate_commands.add_parser("proposal-gate-to-promotion")
+    proposal_gate_mode = proposal_gate_migration.add_mutually_exclusive_group()
+    proposal_gate_mode.add_argument("--dry-run", action="store_true")
+    proposal_gate_mode.add_argument("--verify", action="store_true")
     runs = commands.add_parser("runs", help="查看或清理可重建的 system/runs")
     runs_commands = runs.add_subparsers(dest="runs_command", required=True)
     runs_commands.add_parser("list")
@@ -304,6 +357,7 @@ def build_parser() -> argparse.ArgumentParser:
     audit = commands.add_parser("audit", help="只读生成知识治理审计报告")
     audit_commands = audit.add_subparsers(dest="audit_command", required=True)
     audit_commands.add_parser("contradictions", help="报告 evidence 与 relation 中的显式冲突")
+    audit_commands.add_parser("drift", help="检查翻译冒充原文、证据漂移与不确定性擦除")
     commands.add_parser("recover", help="幂等续做未完成的 canonical approval journal")
     return parser
 
@@ -314,8 +368,14 @@ def doctor(repository: Repository) -> dict[str, object]:
     sources: dict[str, dict[str, object]] = {}
     document_count = 0
     source_count = 0
-    for path in repository.all_indexed_documents():
-        document_count += 1
+    governance_documents = [
+        *sorted((repository.root / "vault" / "exceptions").glob("exception-*.md")),
+        *sorted((repository.root / "vault" / "promotions").glob("promotion-*.md")),
+    ]
+    indexed_documents = list(repository.all_indexed_documents())
+    for path in [*indexed_documents, *governance_documents]:
+        if path in indexed_documents:
+            document_count += 1
         try:
             metadata, _ = read_document(path)
             repository._validate_metadata(metadata, path)
@@ -816,7 +876,12 @@ def run(args: argparse.Namespace) -> int:
     run_service = RunArtifactService(repository)
     if args.command == "capture":
         result = captures.capture(args.target, args.comment, refresh=args.refresh).__dict__
-        result["obsidian"] = ObsidianViewService(repository).build()
+        obsidian_result = ObsidianViewService(repository).build()
+        result["obsidian"] = {
+            "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
+            "sources": obsidian_result["sources"], "written_count": len(obsidian_result["written"]),
+            "removed": obsidian_result["removed"],
+        }
         _print(result)
     elif args.command == "capture-wechat":
         result = captures.capture_wechat_url(args.url, args.comment, refresh=args.refresh).__dict__
@@ -863,7 +928,17 @@ def run(args: argparse.Namespace) -> int:
         ).__dict__)
     elif args.command == "compile":
         provider = JsonBundleProvider(args.bundle_file, args.provider_name) if args.bundle_file else None
-        _print(BundleCompiler(repository, provider).compile(args.source_id).__dict__)
+        compiled = BundleCompiler(repository, provider).compile(args.source_id)
+        result = {"compile": compiled.__dict__, "working": None, "canonical_writes": 0}
+        if compiled.proposal_id:
+            result["working"] = WorkingMemoryService(repository).ingest_bundle(compiled.proposal_id).__dict__
+        obsidian_result = ObsidianViewService(repository).build()
+        result["obsidian"] = {
+            "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
+            "sources": obsidian_result["sources"], "written_count": len(obsidian_result["written"]),
+            "removed": obsidian_result["removed"],
+        }
+        _print(result)
     elif args.command == "synthesize":
         _print(proposals.synthesize(args.claim_ids).__dict__)
     elif args.command in {"discover", "related-content"}:
@@ -895,10 +970,9 @@ def run(args: argparse.Namespace) -> int:
         elif args.review_command == "bundle":
             _print(service.show(args.bundle_id, details=args.details))
         elif args.review_command == "approve":
-            if args.high_confidence:
-                _print(service.approve_high_confidence(args.bundle_id))
-            else:
-                _print(BundleReviewService(repository).approve(args.bundle_id, args.items.split(",") if args.items else None))
+            _print(WorkingMemoryService(repository).ingest_bundle(
+                args.bundle_id, args.items.split(",") if args.items else None
+            ).__dict__)
         elif args.review_command == "source-only":
             _print(service.source_only(args.bundle_id, args.reason))
         else:
@@ -922,13 +996,13 @@ def run(args: argparse.Namespace) -> int:
             _, proposal_metadata, _ = repository.find_document(args.proposal_id)
             if proposal_metadata.get("proposal_kind") in {"compile_bundle", "source_bundle", "corpus_distillation"}:
                 item_ids = args.items.split(",") if args.items else None
-                _print(BundleReviewService(repository).approve(args.proposal_id, item_ids))
+                _print(WorkingMemoryService(repository).ingest_bundle(args.proposal_id, item_ids).__dict__)
             else:
                 if args.items:
                     raise GlobalMemoryError("--items 只适用于 compile bundle")
-                _print({"approved": args.proposal_id, "target_path": proposals.approve(args.proposal_id)})
+                _print(WorkingMemoryService(repository).ingest_bundle(args.proposal_id).__dict__)
         elif args.proposal_command == "publish":
-            _print({"published": args.proposal_id, "target_path": proposals.publish(args.proposal_id)})
+            _print(WorkingMemoryService(repository).ingest_bundle(args.proposal_id).__dict__)
         elif args.proposal_command == "reject":
             _, proposal_metadata, _ = repository.find_document(args.proposal_id)
             if proposal_metadata.get("proposal_kind") in {"compile_bundle", "source_bundle", "corpus_distillation"}:
@@ -966,7 +1040,60 @@ def run(args: argparse.Namespace) -> int:
                     raise GlobalMemoryError("--item 只适用于 compile bundle")
                 _print(proposals.revise(args.proposal_id, args.candidate_file, args.reason).__dict__)
     elif args.command == "promote":
-        _print({"confirmed": args.target_id, "target_path": proposals.promote(args.target_id, args.reason)})
+        service = PromotionService(repository)
+        if args.to == "trusted":
+            _print(service.promote_trusted(args.target_id, automatic=False, reason=args.reason))
+        else:
+            _print(service.recommend_canonical(args.target_id, args.reason))
+    elif args.command == "demote":
+        _print(PromotionService(repository).demote_working(args.target_id, args.reason))
+    elif args.command == "trust":
+        _print(PromotionService(repository).explain(args.target_id))
+    elif args.command == "history":
+        _, metadata, _ = repository.find_document(args.target_id)
+        _print({"object_id": args.target_id, "promotion_history": metadata.get("promotion_history", [])})
+    elif args.command == "rollback":
+        _print(PromotionService(repository).rollback(args.change_id, args.reason))
+    elif args.command == "exceptions":
+        _print(ExceptionService(repository).list(set(args.status) if args.status else None))
+    elif args.command == "exception":
+        service = ExceptionService(repository)
+        if args.exception_command == "show":
+            path, metadata, body = repository.find_document(args.exception_id)
+            _print({"path": repository.rel(path), "metadata": metadata, "body": body})
+        else:
+            _print(service.resolve(args.exception_id, args.resolution, args.action))
+    elif args.command == "promotions":
+        _print(PromotionService(repository).list_cards(set(args.status) if args.status else None))
+    elif args.command == "promotion":
+        service = PromotionService(repository)
+        if args.promotion_command == "show":
+            path, metadata, body = repository.find_document(args.promotion_id)
+            _print({"path": repository.rel(path), "metadata": metadata, "body": body})
+        elif args.promotion_command == "approve":
+            _print(service.approve_canonical(args.promotion_id, lock=args.lock))
+        else:
+            decision = "rejected" if args.promotion_command == "reject" else "deferred"
+            _print(service.decide(args.promotion_id, decision, args.reason))
+    elif args.command == "consolidate":
+        service = ConsolidationService(repository)
+        result = service.daily(limit=args.limit) if args.consolidate_command == "daily" else service.weekly()
+        obsidian_result = ObsidianViewService(repository).build()
+        result["obsidian"] = {
+            "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
+            "sources": obsidian_result["sources"], "written_count": len(obsidian_result["written"]),
+            "removed": obsidian_result["removed"],
+        }
+        _print(result)
+    elif args.command == "weekly-report":
+        result = ConsolidationService(repository).weekly()
+        obsidian_result = ObsidianViewService(repository).build()
+        result["obsidian"] = {
+            "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
+            "sources": obsidian_result["sources"], "written_count": len(obsidian_result["written"]),
+            "removed": obsidian_result["removed"],
+        }
+        _print(result)
     elif args.command == "search":
         filters = {
             "object_types": set(args.types.split(",")) if args.types else None,
@@ -1032,6 +1159,7 @@ def run(args: argparse.Namespace) -> int:
         triage_result = DailyTriageService(repository).run(
             limit=args.triage_limit, recheck=args.recheck
         )
+        consolidation_result = ConsolidationService(repository).weekly()
         rebuilt = None
         if not args.no_rebuild_derived:
             rebuilt = {
@@ -1054,6 +1182,7 @@ def run(args: argparse.Namespace) -> int:
             ),
             "mode": "weekly-maintenance",
             "triage": triage_result,
+            "consolidation": consolidation_result,
             "integrity": {
                 "doctor": doctor_result,
                 "lint": lint_result,
@@ -1090,7 +1219,7 @@ def run(args: argparse.Namespace) -> int:
             "root": str(repository.root), "objects_by_type": repository.count_by_type(),
             "inbox": len(proposals.inbox()), "proposals_by_status": {
                 state: len(proposals.list(state))
-                for state in ("pending", "deferred", "superseded", "published", "approved", "rejected")
+                for state in ("pending", "deferred", "migrated", "superseded", "published", "approved", "rejected")
             },
             "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()) + len(BundleRecoveryManager(repository).pending()),
             "source_processing_states": state_counts,
@@ -1130,6 +1259,15 @@ def run(args: argparse.Namespace) -> int:
             result = migration.plan() if args.dry_run else migration.migrate()
             _print(result.__dict__)
             return 0 if not result.errors else 1
+        if args.migrate_command == "proposal-gate-to-promotion":
+            migration = ProposalGateMigration(repository)
+            if args.verify:
+                result = migration.plan()
+                result["verified"] = result["pending_proposals"] == 0
+            else:
+                result = migration.plan() if args.dry_run else migration.apply()
+            _print(result)
+            return 0 if not args.verify or result["verified"] else 1
         if args.verify:
             result = raw_store.verify()
             _print(result)
@@ -1149,6 +1287,9 @@ def run(args: argparse.Namespace) -> int:
             result = contradiction_audit(repository)
             _print(result)
             return 0 if result["ok"] else 1
+        result = DriftAuditService(repository).run()
+        _print(result)
+        return 0 if result["ok"] else 1
     elif args.command == "recover":
         approval = ApprovalRecoveryManager(repository).recover_all()
         bundle = BundleRecoveryManager(repository).recover_all()

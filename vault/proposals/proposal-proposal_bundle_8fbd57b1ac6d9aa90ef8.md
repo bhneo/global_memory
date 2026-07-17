@@ -1,10 +1,10 @@
 ---
 id: "proposal_bundle_8fbd57b1ac6d9aa90ef8"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Compile bundle：对话李弘扬：从端到端 UniAD 之后，重新寻找机器智能的源点｜What's Next"
 created_at: "2026-07-16T23:14:16+08:00"
-updated_at: "2026-07-16T23:14:16+08:00"
+updated_at: "2026-07-17T11:59:25+08:00"
 aliases: []
 tags: []
 domains: []
@@ -22,7 +22,7 @@ content_quality: "valid"
 extraction_quality: "good"
 extraction_id: "extraction_49b8ffeac0de053a509f4bd2"
 input_sha256: "3b428837a31f2f57d282df6a6421d2b0f3c132b1c1a7590aff9986065c61c247"
-bundle_items: [{"item_id": "claim-1", "object_type": "claim", "action": "create", "target_id": "claim_23283adb0c3baf33a884cdac", "target_path": "vault/knowledge/claims/claim_23283adb0c3baf33a884cdac-来源原文-嘉宾-李弘扬-香港大学助理教授-香港大学计算与数据科学学院助理院长-上海创智学院全时导师-opendrivelab创始.md", "base_sha256": null, "candidate_sha256": "4f46751b523278812885c65300e89450f33b9b8b46fa8effc3de3680c34dbcbe", "decision": "pending", "potential_conflicts": [], "atomicity_status": "atomic", "evidence_coverage": "partial", "review_tier": "low", "candidate_path": "vault/proposals/candidate-proposal_bundle_8fbd57b1ac6d9aa90ef8-claim-1.md", "base_path": null}]
+bundle_items: [{"item_id": "claim-1", "object_type": "claim", "action": "create", "target_id": "claim_23283adb0c3baf33a884cdac", "target_path": "vault/knowledge/claims/claim_23283adb0c3baf33a884cdac-来源原文-嘉宾-李弘扬-香港大学助理教授-香港大学计算与数据科学学院助理院长-上海创智学院全时导师-opendrivelab创始.md", "base_sha256": null, "candidate_sha256": "4f46751b523278812885c65300e89450f33b9b8b46fa8effc3de3680c34dbcbe", "decision": "working", "potential_conflicts": [], "atomicity_status": "atomic", "evidence_coverage": "partial", "review_tier": "low", "candidate_path": "vault/proposals/candidate-proposal_bundle_8fbd57b1ac6d9aa90ef8-claim-1.md", "base_path": null, "working_path": "vault/memory/claim/claim_23283adb0c3baf33a884cdac.md", "working_at": "2026-07-17T11:59:25+08:00"}]
 existing_context: []
 contradiction_candidates: []
 unresolved_items: []
@@ -33,6 +33,7 @@ low_value_items_not_proposed: []
 bundle_metrics: {"novelty_score": 1.0, "importance_score": "requires_human_judgment", "source_authority": "secondary_analysis", "evidence_quality": "good", "knowledge_reuse_count": 0, "new_object_count": 1, "updated_object_count": 0, "duplicate_count": 0, "unresolved_count": 0, "review_cost_estimate": 1, "scoring_basis": "deterministic counts and quality labels; not a calibrated probability"}
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Compile bundle：对话李弘扬：从端到端 UniAD 之后，重新寻找机器智能的源点｜What's Next

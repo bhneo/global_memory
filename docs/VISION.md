@@ -1,5 +1,7 @@
 # Vision
 
+M7 operating model: memory should become useful at Working cost, gain confidence through periodic consolidation, and consume human attention only for exceptions and high-impact Canonical promotion. This preserves the original local-first, evidence-first design while removing per-item approval as the scaling bottleneck.
+
 Global Memory 要成为个人长期认知基础设施，而不是另一个收藏夹、模板库或单一模型的 RAG 附件。
 
 它服务于两个同时存在的模式：围绕问题、项目和目标建设可执行知识；也保留暂时无用、模糊、冲突或跨领域的材料，让未来连接有机会出现。

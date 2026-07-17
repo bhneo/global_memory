@@ -1,5 +1,7 @@
 # Principles
 
+M7 clarification: cheap ingestion and strict Canonical governance are compatible. Validated material may enter Working automatically; uncertainty stays visible instead of forcing approval. Trusted is an explainable policy result, not objective truth. Canonical is scarce, high-impact and human-confirmed. Periodic consolidation replaces per-item review, while exceptions reserve human attention for conflicts, compound claims, drift and consequential changes.
+
 1. **用户拥有记忆。** 本地文件是长期载体，聊天上下文和服务端记忆不是。
 2. **Markdown 优先。** 人可读、Git 可追踪、Agent 可编辑、工具可迁移。
 3. **Obsidian-ready，Obsidian-optional。** 使用 Frontmatter、相对附件和 wikilinks，但核心不依赖插件数据库。

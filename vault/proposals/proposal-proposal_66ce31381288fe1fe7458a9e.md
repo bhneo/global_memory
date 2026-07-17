@@ -1,10 +1,10 @@
 ---
 id: "proposal_66ce31381288fe1fe7458a9e"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Work enrichment：[2506.13018] Symmetry in Neural Network Parameter Spaces"
 created_at: "2026-07-16T19:15:46+08:00"
-updated_at: "2026-07-16T19:15:46+08:00"
+updated_at: "2026-07-17T11:58:43+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,6 +23,7 @@ candidate_sha256: "420cd6e11d5e4d9760dfcd72ed341984fe9eab366ec20cc4e97f0a3f37d69
 change_reason: "显式 work identity enrichment"
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Work enrichment：[2506.13018] Symmetry in Neural Network Parameter Spaces

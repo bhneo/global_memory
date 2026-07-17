@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.23.0] - 2026-07-17
+
+### Added
+
+- Added Working/Trusted/Canonical lifecycle, automatic Working ingestion, explainable Trusted policy, promotion and exception queues, drift audit, daily/weekly consolidation, rollback/demotion, proposal-gate migration and tier-aware Context Pack/Obsidian views.
+- Added ADR 0033-0041 and operator documentation for consolidation and canonical promotion.
+
+### Changed
+
+- CLI compile and review now materialize validated Working memory instead of requiring routine per-item Canonical approval.
+- Canonical entry is restricted to explicit approval of a Trusted promotion card; automated maintenance and migration report zero Canonical writes.
+- Consolidation batches rebuild the index once, same-day Weekly is incremental, and normalized material that cannot support an exact span is explicitly downgraded to paraphrase/partial evidence instead of blocking a whole daily batch.
+
 ## [0.22.0] - 2026-07-17
 
 ### Added

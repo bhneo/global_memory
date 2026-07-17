@@ -1,10 +1,10 @@
 ---
 id: "proposal_90070bd4cdd9be279c69a33a"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Work enrichment：[1810.08647] Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement Learning"
 created_at: "2026-07-16T19:55:27+08:00"
-updated_at: "2026-07-16T19:55:27+08:00"
+updated_at: "2026-07-17T11:59:04+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,6 +23,7 @@ candidate_sha256: "14351c3c265ffbd3c7a00d6182f0c42e5f2483b05906cf0fe5fd747ecb6bb
 change_reason: "显式 work identity enrichment"
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Work enrichment：[1810.08647] Social Influence as Intrinsic Motivation for Multi-Agent Deep Reinforcement Learning

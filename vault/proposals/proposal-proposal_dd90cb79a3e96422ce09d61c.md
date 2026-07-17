@@ -1,10 +1,10 @@
 ---
 id: "proposal_dd90cb79a3e96422ce09d61c"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Work enrichment：VIA: Interface-first Robot Control"
 created_at: "2026-07-15T16:18:43+08:00"
-updated_at: "2026-07-15T16:18:43+08:00"
+updated_at: "2026-07-17T11:59:59+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,6 +23,7 @@ candidate_sha256: "6fa3f5588b01a0855aeecf611c64a18a16d72c82a6d4316342c9aaddef7ab
 change_reason: "显式 work identity enrichment"
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Work enrichment：VIA: Interface-first Robot Control

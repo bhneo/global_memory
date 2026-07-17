@@ -39,3 +39,9 @@ jobs:
           python -m global_memory.cli --root . migrate raw-store --dry-run
           python -m global_memory.cli --root . migrate batch-artifacts --dry-run
           python scripts/m6_acceptance_demo.py --root .
+      - name: M7 consolidation policy and migration acceptance
+        run: |
+          python -m global_memory.cli --root . doctor --check-state
+          python -m global_memory.cli --root .ci-vault audit drift
+          python -m global_memory.cli --root . migrate proposal-gate-to-promotion --dry-run
+          python -m pytest tests/test_global_memory.py -k "m7_"

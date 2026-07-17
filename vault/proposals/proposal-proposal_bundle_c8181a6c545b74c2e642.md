@@ -1,10 +1,10 @@
 ---
 id: "proposal_bundle_c8181a6c545b74c2e642"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Compile bundle：Session receipt: M7 Cursor real acceptance"
 created_at: "2026-07-16T22:16:57+08:00"
-updated_at: "2026-07-16T22:19:28+08:00"
+updated_at: "2026-07-17T11:59:33+08:00"
 aliases: []
 tags: []
 domains: []
@@ -22,7 +22,7 @@ content_quality: "valid"
 extraction_quality: "good"
 extraction_id: "extraction_beed2aa2edcb076d1706db84"
 input_sha256: "394593d72af8067a8b05675fa643d682f03c6ea11956027ce8c0492f91201ace"
-bundle_items: [{"item_id": "experiment-1", "object_type": "experiment", "action": "create", "target_id": "experiment_7101e03fb065226e65f388a5", "target_path": "vault/action/experiments/experiment_7101e03fb065226e65f388a5-cursor-completed-the-m7-real-acceptance-run-on-2026-07-16-using-.md", "base_sha256": null, "candidate_sha256": "20b9ef612f5d4bbfa3fefa323d64c68a72ab3888b0e90455b98d6ac43c90e0d4", "decision": "pending", "potential_conflicts": [], "atomicity_status": null, "evidence_coverage": null, "review_tier": "high", "candidate_path": "vault/proposals/candidate-proposal_bundle_c8181a6c545b74c2e642-experiment-1-rev-20b9ef612f5d.md", "base_path": null, "revision_history": [{"candidate_path": "vault/proposals/candidate-proposal_bundle_c8181a6c545b74c2e642-experiment-1.md", "candidate_sha256": "b83182040db7a221960b99c29f304007d1babbb3571c990966829e064e47e2b8", "reason": "补全 Cursor M7 验收步骤、Context Pack 边界、故障和结果，避免只保留 deterministic fallback 首句", "revised_at": "2026-07-16T22:19:28+08:00"}], "review_reason": "补全 Cursor M7 验收步骤、Context Pack 边界、故障和结果，避免只保留 deterministic fallback 首句"}]
+bundle_items: [{"item_id": "experiment-1", "object_type": "experiment", "action": "create", "target_id": "experiment_7101e03fb065226e65f388a5", "target_path": "vault/action/experiments/experiment_7101e03fb065226e65f388a5-cursor-completed-the-m7-real-acceptance-run-on-2026-07-16-using-.md", "base_sha256": null, "candidate_sha256": "20b9ef612f5d4bbfa3fefa323d64c68a72ab3888b0e90455b98d6ac43c90e0d4", "decision": "working", "potential_conflicts": [], "atomicity_status": null, "evidence_coverage": null, "review_tier": "high", "candidate_path": "vault/proposals/candidate-proposal_bundle_c8181a6c545b74c2e642-experiment-1-rev-20b9ef612f5d.md", "base_path": null, "revision_history": [{"candidate_path": "vault/proposals/candidate-proposal_bundle_c8181a6c545b74c2e642-experiment-1.md", "candidate_sha256": "b83182040db7a221960b99c29f304007d1babbb3571c990966829e064e47e2b8", "reason": "补全 Cursor M7 验收步骤、Context Pack 边界、故障和结果，避免只保留 deterministic fallback 首句", "revised_at": "2026-07-16T22:19:28+08:00"}], "review_reason": "补全 Cursor M7 验收步骤、Context Pack 边界、故障和结果，避免只保留 deterministic fallback 首句", "working_path": "vault/memory/experiment/experiment_7101e03fb065226e65f388a5.md", "working_at": "2026-07-17T11:59:33+08:00"}]
 existing_context: []
 contradiction_candidates: []
 unresolved_items: []
@@ -33,6 +33,7 @@ low_value_items_not_proposed: []
 bundle_metrics: {"novelty_score": 1.0, "importance_score": "requires_human_judgment", "source_authority": "primary", "evidence_quality": "good", "knowledge_reuse_count": 0, "new_object_count": 1, "updated_object_count": 0, "duplicate_count": 0, "unresolved_count": 0, "review_cost_estimate": 1, "scoring_basis": "deterministic counts and quality labels; not a calibrated probability"}
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Compile bundle：Session receipt: M7 Cursor real acceptance

@@ -1,0 +1,51 @@
+---
+id: "claim_wechat_kairos_sim2real_training_20260716"
+title: "该文称 Kairos-HomeWorld 已用于大晓机器人训练，支持跨房间导航与全屋整理等长程任务并缩短 sim-to-real 迁移周期"
+tags: ["sim-to-real", "long-horizon", "household-robotics"]
+domains: ["robotics", "embodied-ai"]
+confidence: "low"
+applicability: ["大晓机器人内部训练应用叙述", "全屋物品整理 demo 视频语境"]
+uncertainty: "「大幅缩短」为宣传性表述；无定量迁移指标或第三方验证。"
+evidence: [{"evidence_id": "ev_457", "evidence_kind": "quote", "source_id": "source_a20c5fb22d91216503d413e1", "content_id": "content_10e43892aa54422eea042c9a487dddbfe1225fcc01652c5b0b63b1419a257fd8", "extraction_id": "extraction_a5edbc0cf2b49e4a1ec77b62", "input_sha256": "10e43892aa54422eea042c9a487dddbfe1225fcc01652c5b0b63b1419a257fd8", "span_start": 457, "span_end": 1096, "original_text": "跨房间导航、全屋物品整理等长程任务训练周期肉眼可见缩短。用开发者的话说：终于不用从零造房子了。\n\n具身智能的终极目标是走进千家万户，但家庭环境的高度复杂性与个性化，要求机器人必须在海量差异化真实场景中训练。为此，研究团队同步开源全球规模最大、首个专为中国家庭打造的全屋 3D 数据集。该数据集包含 30 万套中国真实住宅平面图与 5千个完整带可交互家具和物体的仿真场景，覆盖全国各类典型家居户型，完整还原中国本土家庭居住特征，为具身人工智能的国产化落地提供了核心数据与技术底座。\n\n此前，北美机器人领军企业 Figure AI 与全球最大房地产持有者之一 Brookfield 达成战略合作，依托Brookfield 超10万套的住宅单元，进行机器人导航、交互、家务执行的训练，这与 Kairos-HomeWorld 赋能本土机器人训练的思路形成全球呼应。\n\n与之相比，Kairos—HomeWorld在家庭机器人训练方面成本低、效率高。依托模型就能批量生成多样化中国家庭仿真场景，以及自带物理交互属性的物体。机器人可在虚拟环境完成各类家务训练，新增场景近乎零边际成本，省去场地运维、家具损耗等实景开支；同时不受现实房源总量限制，在训练效率与规模化拓展上优于实地采集路线。\n\n目前 Kairos-HomeWorld 已成功应用于大晓机器人的具身智能日常训练，能够支持机器人完成跨房间导航、多房间物品整理等复杂长程家务任务的全流程仿真训练，大幅缩短了从虚拟仿真到现实落地的迁移周期", "section": "训练应用", "stance": "supports", "verification_status": "verified", "reason": "文内对长程任务训练与迁移周期的表述。"}, {"evidence_id": "ev_463", "evidence_kind": "quote", "source_id": "source_a20c5fb22d91216503d413e1", "content_id": "content_10e43892aa54422eea042c9a487dddbfe1225fcc01652c5b0b63b1419a257fd8", "extraction_id": "extraction_a5edbc0cf2b49e4a1ec77b62", "input_sha256": "10e43892aa54422eea042c9a487dddbfe1225fcc01652c5b0b63b1419a257fd8", "span_start": 463, "span_end": 3449, "original_text": "全屋物品整理等长程任务训练周期肉眼可见缩短。用开发者的话说：终于不用从零造房子了。\n\n具身智能的终极目标是走进千家万户，但家庭环境的高度复杂性与个性化，要求机器人必须在海量差异化真实场景中训练。为此，研究团队同步开源全球规模最大、首个专为中国家庭打造的全屋 3D 数据集。该数据集包含 30 万套中国真实住宅平面图与 5千个完整带可交互家具和物体的仿真场景，覆盖全国各类典型家居户型，完整还原中国本土家庭居住特征，为具身人工智能的国产化落地提供了核心数据与技术底座。\n\n此前，北美机器人领军企业 Figure AI 与全球最大房地产持有者之一 Brookfield 达成战略合作，依托Brookfield 超10万套的住宅单元，进行机器人导航、交互、家务执行的训练，这与 Kairos-HomeWorld 赋能本土机器人训练的思路形成全球呼应。\n\n与之相比，Kairos—HomeWorld在家庭机器人训练方面成本低、效率高。依托模型就能批量生成多样化中国家庭仿真场景，以及自带物理交互属性的物体。机器人可在虚拟环境完成各类家务训练，新增场景近乎零边际成本，省去场地运维、家具损耗等实景开支；同时不受现实房源总量限制，在训练效率与规模化拓展上优于实地采集路线。\n\n目前 Kairos-HomeWorld 已成功应用于大晓机器人的具身智能日常训练，能够支持机器人完成跨房间导航、多房间物品整理等复杂长程家务任务的全流程仿真训练，大幅缩短了从虚拟仿真到现实落地的迁移周期，显著降低具身智能的研发门槛，加速机器人在中国市场的规模化普及。\n\n▎首创全屋三维生成与物体级可交互 打破行业仿真数据天花板\n\nKairos-HomeWorld 凭借四阶段分层生成架构（全局结构—局部细节—闭环校验—交互增强），首次实现从单句文本到结构全局一致、物理完全合规、物体可交互的完整住宅三维场景端到端生成，彻底重构了室内场景生成的技术范式。\n\n该架构将复杂的全屋级生成任务解耦为四个阶段，完美解决了传统方法全局一致性差、物理错误频发、场景不可交互的挑战。\n\n框架的第一阶段首创基于K-D树的平面图结构化表示方法，将真实住宅平面图转化为大语言模型可高效学习的分层文本结构，避免房间重叠、拓扑断裂等传统户型生成方法的缺陷。第二阶段采用\"俯视图全局初始化+第一人称细节漫游\"的分层策略，以一阶段生成的3D建筑外壳锚定整个生成过程，解决了2D-3D提升方法普遍存在的几何漂移问题。第三阶段通过微调视觉语言模型构建递归闭环校验机制，自动检测并修正\"沙发挡门\"、\"物体穿墙\"等物理违规，将家具布局碰撞率控制在行业最优水平。\n\n在物体级全交互层面，Kairos-HomeWorld是全球首个全屋可操作物体生成的统一框架，这一标志性能力由架构第四阶段的表面中心物体放置算法实现。系统自动获取物体材质、密度、铰接结构等。最终生成的每个场景平均包含超过 15 个可操作物体，足迹物体密度（衡量家具表面上物体的密集程度与功能丰富度）达4.16，且所有物体可直接导入仿真引擎进行抓取、移动、堆叠等交互操作。\n\n该框架精准解决了房间动线混乱、功能邻接性缺失的全局一致性问题；打破了生成场景 \"只能看不能用\" 的局限，让虚拟环境真正具备支撑机器人导航、操作、任务执行的能力；破解了3D仿真数据稀缺的瓶颈，解决了合成数据不真实、扫描数据不可交互的矛盾。此次同步开源的大规模数据集，将进一步加速具身人工智能的产业化落地。\n\n▎30万真实户型+5千家庭全场景，全球首个中国家庭专属全屋3D数据集发布\n\n大晓机器人联合香港中文大学多媒体实验室发布首个专为中国家庭居住场景打造的全屋 3D 数据集，数据规模全球最大。该数据集包含30万张经过结构化标注的真实住宅平面图、5千个具有完整室内布局与家具布置的全屋仿真场景，以及5万个支持物理仿真与交互操作的物体资产。彻底填补了国内缺乏大规模、高保真、符合本土居住习惯的室内场景数据的行业空白，为中国家庭服务机器人的本土化训练提供了核心数据底座。\n\n在规模上，该数据集实现了量级式突破。30万张真实住宅平面图全部来自中国市场真实房源，经过多阶段自动化处理流程完成矢量化与结构化标注，包含门窗位置、房间几何、功能分区、连通关系等全维度信息，是目前全球最大的真实住宅平面图数据集，是此前广泛使用 RPLAN 数据集包含8万张，ResPlan 数据集仅包含1.7万张。\n\n在此基础上训练生成的带家具和物体的全屋仿真场景，每户均包含完整的家具布局，并借助Physx-Omni模型，自动生成平均15+个带物理属性（包含密度、铰接、流形等）的可交互对象，且全部支持直接导入仿真引擎进行交互式训练。\n\n图注：全球室内场景资源对比表，其中各符号与术语的含义如下：Rec. 代表基于重建的真实世界数据集；S./H. 分别指代带家具场景数（单个、通常为房间级别的独立区域）与住宅数（包含多个房间的统一完整住宅）；Sim-ready 即仿真就绪度，用于衡量数据集是否提供可直接在仿真 / 渲染引擎中实例化、并支持物体级交互操作的完整 3D 场景；MObj. 表示有数据可查时的单场景平均可操作物体数量；n/r 指未报告相关数据，“–” 表示该项不适用；Collection 则代表由多个不同数据源整合而成的聚合类数据集。\n\n更具行业价值的是其中国家庭专属属性。此前全球主流的开源室内场景数据集均基于欧美居住习惯构建，普遍存在房间布局和装饰欧美化、开放式厨房、缺乏阳台功能区等问题，导致基于这些数据训练的机器人在进入中国家庭时出现水土不服。\n\nKairos-HomeWorld 数据集覆盖了全国不同城市、不同面积段的典型户型，从30㎡一居室刚需小户型到 200㎡以上改善型大户型，完整还原了中国家庭特有的南北通透布局、封闭式厨房、独立生活阳台、干湿分离卫生间、玄关鞋柜等本土居住特征，甚至包含老小区非矩形厨房、不规则客厅等常见复杂户型。\n\n此次数据集将面向学术界与产业界全面开源，团队还计划在后续版本中持续扩充不同地域、不同装修风格的场景样本，并加入更多中国家庭特有的物品与交互场景，进一步降低具身AI的本土化训练门槛，加速服务机器人在中国家庭的规模化落地。\n\n▎沉浸式演示一键生成中国家庭仿真场景，加速机器人训练\n\nKairos-HomeWorld 已成功应用于大晓机器人的具身智能日常训练。本次视频完整呈现了 Kairos-HomeWorld 从文本指令到可交互户型的全链路生成过程，直观展现了其 \"一键生成、全局一致、物理合规\" 的核心能力。\n\n视频中，只需输入 \"生成一套新中式 90 平米两室一厅\" 的文本提示，模型首先基于中国真实户型数据与 K-D 树结构化表示，快速生成符合本土居住习惯的空房间结构，精准还原南北通透、功能分区合理的典型户型。\n\n随后通过 \"俯视图全局布局 + 第一人称细节填充\" 的分层策略，自动生成风格统一的家具摆放；接着通过Physx-Omni模型为桌面、台面等表面生成带完整物理属性的可交互物品资产，例如铰接属性、密度、流形等。\n\n通过自然语言下达 \"全屋物品整理\" 的复杂指令，机器人自动将其拆解为多个精准的子任务，按照 \"客厅→阳台→厨房→主卧→餐厅→次卧\" 的完整全屋动线", "section": "长程任务 demo", "stance": "supports", "verification_status": "verified", "reason": "文内对复杂指令拆解与全屋动线执行的说明。"}]
+type: "claim"
+status: "working"
+created_at: "2026-07-16T00:59:00+08:00"
+updated_at: "2026-07-17T12:01:11+08:00"
+aliases: []
+superseded_by: null
+valid_during: null
+change_reason: "M6 corpus distillation from claim_wechat_kairos_sim2real_training_20260716"
+source_ids: ["source_a20c5fb22d91216503d413e1"]
+relations: [{"type": "derived_from", "target_id": "source_a20c5fb22d91216503d413e1", "reason": "由 ACERobotics 对大晓机器人 Kairos-HomeWorld 发布稿的转载归纳；项目主页未 capture", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}]
+atomicity_status: "atomic"
+evidence_coverage: "partial"
+quote_verification: "exact"
+extraction_quality: "good"
+epistemic_source_authority: "secondary"
+evidence_entailment: "partial"
+claim_confidence: "low"
+publication_gate: "needs_review"
+memory_tier: "working"
+created_by: "m6-controlled-distillation-v1"
+updated_by: "weekly-consolidation-v1"
+model_provider: null
+model_version: null
+compiler_version: "m6-controlled-distillation-v1"
+consolidation_count: 1
+last_consolidated_at: "2026-07-17T12:01:11+08:00"
+last_verified_at: null
+trust_score: 0
+trust_reasons: []
+promotion_history: []
+user_authored: false
+user_locked: false
+origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
+origin_item_id: "claim-18"
+origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-claim-18-rev-5423b95735a2.md"
+origin_candidate_sha256: "5423b95735a24edba4d255267554abf07a9a8e58da30d56b9091a8807a12086d"
+memory_schema_version: 1
+---
+
+# Sim-to-real
+
+跨房间/全屋整理训练；迁移周期声称待量化。

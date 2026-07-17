@@ -1,5 +1,16 @@
 # Architecture
 
+## M7 consolidation pipeline
+
+```text
+immutable raw -> rebuildable derived -> validated Working
+Working -> periodic consolidation + type policy -> Trusted
+Trusted -> promotion card -> explicit human approval -> Canonical
+                         \-> exception queue when judgement is required
+```
+
+Working and Trusted share stable IDs under `vault/memory/`. Proposals/candidates remain compiler audit records rather than the routine approval queue. Canonical stays in `vault/knowledge`, `vault/frontier`, and `vault/action`; automatic jobs and migrations have zero Canonical write authority. See ADR 0033-0041.
+
 ## M6 pipeline
 
 ```text

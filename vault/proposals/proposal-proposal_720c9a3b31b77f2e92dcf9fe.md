@@ -1,10 +1,10 @@
 ---
 id: "proposal_720c9a3b31b77f2e92dcf9fe"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Work enrichment：[2303.03192] Deep symbolic regression for physics guided by units constraints: toward the automated discovery of physical laws"
 created_at: "2026-07-16T18:59:17+08:00"
-updated_at: "2026-07-16T18:59:17+08:00"
+updated_at: "2026-07-17T11:58:48+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,6 +23,7 @@ candidate_sha256: "e6bbf5fef528c1b709e15560b015540fae651da590084b201d86f1161f466
 change_reason: "显式 work identity enrichment"
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Work enrichment：[2303.03192] Deep symbolic regression for physics guided by units constraints: toward the automated discovery of physical laws

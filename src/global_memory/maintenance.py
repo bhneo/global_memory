@@ -26,6 +26,25 @@ class MaintenanceService:
             metadata, _ = read_document(path)
             proposals.append((path, metadata))
 
+        memory = []
+        for path in self.repository.memory_documents():
+            metadata, _ = read_document(path)
+            memory.append((path, metadata))
+
+        open_exceptions = []
+        exception_dir = self.repository.root / "vault" / "exceptions"
+        for path in sorted(exception_dir.glob("exception-*.md")) if exception_dir.exists() else []:
+            metadata, _ = read_document(path)
+            if metadata.get("status") in {"open", "deferred"}:
+                open_exceptions.append(str(metadata["id"]))
+
+        pending_promotions = []
+        promotion_dir = self.repository.root / "vault" / "promotions"
+        for path in sorted(promotion_dir.glob("promotion-*.md")) if promotion_dir.exists() else []:
+            metadata, _ = read_document(path)
+            if metadata.get("status") in {"pending", "deferred"}:
+                pending_promotions.append(str(metadata["id"]))
+
         followups = []
         for path in self.repository.followup_documents():
             metadata, _ = read_document(path)
@@ -85,6 +104,7 @@ class MaintenanceService:
         ]
 
         proposal_counts = Counter(str(metadata.get("status", "unknown")) for _, metadata in proposals)
+        memory_counts = Counter(str(metadata.get("status", "unknown")) for _, metadata in memory)
         canonical_counts = Counter(str(metadata.get("type", "unknown")) for _, metadata in canonical)
         open_followups = [
             str(metadata.get("id")) for _, metadata in followups
@@ -115,11 +135,16 @@ class MaintenanceService:
             )
         if open_followups:
             actions.append(f"resolve {len(open_followups)} open follow-up(s)")
+        if open_exceptions:
+            actions.append(f"resolve {len(open_exceptions)} memory exception(s)")
+        if pending_promotions:
+            actions.append(f"decide {len(pending_promotions)} canonical promotion(s)")
         if not actions:
             actions.append("no governance backlog detected")
 
         return {
             "canonical_by_type": dict(sorted(canonical_counts.items())),
+            "memory_by_status": dict(sorted(memory_counts.items())),
             "proposals_by_status": dict(sorted(proposal_counts.items())),
             "inbox_count": len(inbox),
             "inbox_source_ids": [item["id"] for item in inbox],
@@ -129,6 +154,8 @@ class MaintenanceService:
             "receipt_count": len(receipts),
             "uncaptured_receipt_ids": uncaptured_receipts,
             "open_followup_ids": open_followups,
+            "open_exception_ids": open_exceptions,
+            "pending_promotion_ids": pending_promotions,
             "weak_evidence_paths": weak_evidence,
             "weak_evidence_proposal_items": weak_proposal_items,
             "stale_or_historical_paths": stale_or_historical,

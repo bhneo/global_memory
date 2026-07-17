@@ -1,6 +1,6 @@
 # Roadmap
 
-Current handoff (2026-07-16): M6.1 primary follow-up closure and the M7 lightweight agent/Obsidian entry are complete. Live state is 50 sources, 18 pending proposals, 17 inbox sources, 0 open follow-ups, and 1 canonical claim. The next governed work is maintenance reporting, real Codex/Cursor/Claude acceptance, selective proposal review, and knowledge-use validation; no batch canonical promotion is implied.
+Current handoff (2026-07-17): M7 automatic consolidation and promotion governance is implemented. Routine candidates become Working, policy-backed Weekly may produce Trusted memory and exception/promotion queues, and Canonical remains explicit human confirmation. The legacy pending corpus is migrated only after dry-run, backup and verification. Future work is real usage calibration of trust thresholds and review compression, not per-item approval.
 
 ## M6 — Knowledge Distillation and Graph Formation（已完成工程与首轮受控蒸馏）
 

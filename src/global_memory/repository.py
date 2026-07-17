@@ -21,6 +21,7 @@ OBJECT_TYPES = {
     "source", "intuition", "entity", "concept", "claim", "question",
     "tension", "analogy", "anomaly", "hypothesis", "project", "goal", "architecture", "decision",
     "experiment", "failure", "opportunity", "synthesis", "work", "proposal", "followup",
+    "exception", "promotion",
 }
 RELATION_TYPES = {
     "supports", "contradicts", "refines", "analogous_to", "derived_from",
@@ -31,6 +32,7 @@ CONFIDENCE_LEVELS = {"unknown", "low", "medium", "high"}
 EVIDENCE_STANCES = {"supports", "contradicts", "context"}
 EVIDENCE_KINDS = {"quote", "paraphrase", "translation", "table_value", "figure", "calculation"}
 CANONICAL_ROOTS = ("knowledge", "frontier", "action")
+MEMORY_STATUSES = {"working", "trusted", "canonical", "contested", "superseded", "archived"}
 TZ = ZoneInfo("Asia/Shanghai")
 
 
@@ -88,6 +90,7 @@ class Repository:
             "vault/action/projects", "vault/action/decisions", "vault/action/experiments",
             "vault/action/goals", "vault/action/architectures",
             "vault/action/failures", "vault/action/opportunities", "vault/proposals",
+            "vault/memory", "vault/exceptions", "vault/promotions",
             "vault/archive", "data/imports", "data/derived", "data/indexes", "data/backups",
             "system/logs", "system/reports", "system/error-book",
             "system/recovery", "system/runs", "vault/followups", "vault/annotations",
@@ -143,6 +146,11 @@ class Repository:
             if path.exists():
                 yield from path.rglob("*.md")
 
+    def memory_documents(self) -> Iterable[Path]:
+        path = self.root / "vault" / "memory"
+        if path.exists():
+            yield from path.rglob("*.md")
+
     def archive_documents(self) -> Iterable[Path]:
         path = self.root / "vault" / "archive"
         if path.exists():
@@ -160,6 +168,7 @@ class Repository:
 
     def all_indexed_documents(self) -> Iterable[Path]:
         yield from self.source_documents()
+        yield from self.memory_documents()
         yield from self.canonical_documents()
 
     def _schema(self, connection: sqlite3.Connection) -> None:
@@ -214,6 +223,24 @@ class Repository:
             raise ValidationError(f"{self.rel(path)} 缺少字段: {', '.join(missing)}")
         if metadata["type"] not in OBJECT_TYPES:
             raise ValidationError(f"{self.rel(path)} 使用非法对象类型: {metadata['type']}")
+        try:
+            relative = self.rel(path)
+        except ValueError:
+            # Explicit CLI candidate files may live outside the repository. They
+            # are validated before being copied into the governed proposal layer.
+            relative = str(path)
+        if relative.startswith("vault/memory/"):
+            if metadata.get("status") not in MEMORY_STATUSES:
+                raise ValidationError(f"{relative} 使用非法 memory status: {metadata.get('status')}")
+            if metadata.get("memory_tier") not in {"working", "trusted"}:
+                raise ValidationError(f"{relative} 缺少有效 memory_tier")
+            for key in ("created_by", "updated_by", "consolidation_count", "promotion_history"):
+                if key not in metadata:
+                    raise ValidationError(f"{relative} 缺少 lifecycle field: {key}")
+        elif metadata.get("type") == "exception" and metadata.get("status") not in {"open", "resolved", "deferred", "dismissed"}:
+            raise ValidationError(f"{relative} 使用非法 exception status")
+        elif metadata.get("type") == "promotion" and metadata.get("status") not in {"pending", "approved", "rejected", "deferred"}:
+            raise ValidationError(f"{relative} 使用非法 promotion status")
         if metadata.get("confidence") not in CONFIDENCE_LEVELS:
             raise ValidationError(f"{self.rel(path)} 使用非法 confidence: {metadata.get('confidence')}")
         source_ids = metadata.get("source_ids", [])
@@ -301,7 +328,7 @@ class Repository:
                 _, extraction, _ = extraction_service.find(str(item["extraction_id"]))
             except NotFoundError:
                 relative = self.rel(path)
-                if not relative.startswith(("vault/knowledge/", "vault/frontier/", "vault/action/")):
+                if not relative.startswith(("vault/memory/", "vault/knowledge/", "vault/frontier/", "vault/action/")):
                     raise ValidationError(f"{relative} 的 quote extraction 不存在")
                 _, source, _ = self.find_document(str(item.get("source_id")))
                 if (
@@ -536,6 +563,8 @@ class Repository:
         )
         candidates += list((self.root / "vault" / "proposals").glob("candidate-*.md"))
         candidates += list(self.followup_documents())
+        candidates += list((self.root / "vault" / "exceptions").glob("exception-*.md"))
+        candidates += list((self.root / "vault" / "promotions").glob("promotion-*.md"))
         for path in candidates:
             metadata, body = read_document(path)
             if metadata.get("id") == object_id:

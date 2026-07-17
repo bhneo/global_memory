@@ -284,10 +284,12 @@ class ContextPackService:
     @staticmethod
     def _type_priority(object_type: str, profiles: list[str], status: str) -> int:
         priority = max(PROFILE_PRIORITIES[profile].get(object_type, 0) for profile in profiles)
-        if status == "confirmed":
+        if status in {"canonical", "confirmed"}:
             priority += 12
-        elif status == "provisional":
-            priority += 4
+        elif status == "trusted":
+            priority += 8
+        elif status in {"working", "provisional"}:
+            priority += 2
         elif status in {"contested", "pending", "deferred"}:
             priority -= 2
         if object_type in {"decision", "failure", "goal", "project"}:
@@ -392,6 +394,16 @@ class ContextPackService:
             object_type = str(metadata.get("type"))
             if object_type not in allowed_types:
                 continue
+            status = str(metadata.get("status"))
+            if statuses is None and object_type not in {"source", "proposal"} and status != "archived":
+                visible = status in {"trusted", "canonical", "confirmed", "provisional", "contested"}
+                if status == "working":
+                    visible = "exploration" in profiles or "research" in profiles
+                    if "execution" in profiles and not ({"exploration", "research"} & set(profiles)):
+                        visible = object_type in {"question", "tension"}
+                if not visible:
+                    omitted.append({"id": str(metadata["id"]), "reason": "profile trust policy excluded this memory tier"})
+                    continue
             if updated_since and str(metadata.get("updated_at", "")) < updated_since:
                 omitted.append({"id": str(metadata["id"]), "reason": "早于 updated_since filter"})
                 continue
@@ -443,6 +455,7 @@ class ContextPackService:
                     "truth_layer": (
                         "source_capture" if object_type == "source"
                         else "proposal" if object_type == "proposal"
+                        else status if status in {"working", "trusted", "canonical"}
                         else "canonical"
                     ),
                     "proposal_id": str(metadata["id"]) if object_type == "proposal" else None,

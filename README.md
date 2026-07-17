@@ -1,5 +1,7 @@
 # Global Memory
 
+> M7 consolidation governance: validated compilation now enters Working memory automatically; Weekly may promote qualifying objects to Trusted; only an explicitly approved promotion card enters Canonical. See [Memory consolidation](docs/MEMORY_CONSOLIDATION.md).
+
 ## M6：Knowledge Distillation and Graph Formation
 
 当前真实语料已从 143 条逐条 model candidates 受控蒸馏为一个 62-item source-collection bundle：14 concepts、23 claims、6 questions、4 tensions、5 hypotheses、4 analogy proposals、2 syntheses，以及 4 个 action/project candidates。旧 proposals 保留为 superseded；新对象全部仍是 proposal，canonical 写入数为 0。
@@ -59,7 +61,12 @@ gm triage <source-id> --compile-selected # 明确选中后才生成 pending prop
 gm weekly # daily triage + integrity + contradiction audit + derived views；不写 canonical
 gm mcp stdio # 本地助手只读 MCP
 gm mcp http --host 127.0.0.1 --port 18765 --allowed-origin https://chatgpt.com
-gm compile <source-id> # deterministic fallback，生成 Compile Bundle Proposal
+gm compile <source-id> # 生成审计 bundle，并自动写入通过校验的 Working memory
+gm consolidate daily --limit 25
+gm consolidate weekly
+gm exceptions
+gm promotions
+gm promotion approve <promotion-id> --lock
 gm compile <source-id> --bundle-file cursor-output.json --provider-name cursor-json-v1
 gm proposal diff <bundle-proposal-id>
 gm proposal approve <bundle-proposal-id> --items claim-1,concept-2
@@ -119,11 +126,11 @@ gm doctor
 - `gm weekly [--triage-limit 100]`：运行每周维护闭环，包括增量 triage、doctor/lint/raw integrity、显式矛盾审计、维护积压、SQLite/Obsidian 重建及 synthesis 资格报告。它不会自动生成 synthesis proposal、批准 proposal 或写 canonical；可用 `--no-rebuild-derived` 保持完全只读的派生视图模式。
 - `gm obsidian build`：重建人类可读首页、最近导入、资料库、主题导航、知识目录、待深挖队列及逐篇阅读页。CLI capture、daily 与 weekly 默认自动刷新；生成页不改变 raw/canonical，也不自动摘要或推断主题。
 - `gm mcp stdio|http`：运行 provider-neutral 只读 MCP，暴露 context/search/show/source/status 五个有界工具。HTTP 默认仅监听 localhost；非 loopback 必须通过 `GM_MCP_TOKEN` 提供 bearer token。详见 `docs/MCP_INTEGRATION.md`。
-- `gm compile <source-id>`：生成低置信度 proposal，不修改 canonical knowledge。
+- `gm compile <source-id>`：保留低置信度 proposal/candidate 审计材料，并把通过校验的对象自动写入 Working；不修改 canonical knowledge。
 - `gm model-propose <source-id> --candidate <Markdown> ...`：导入用户明确提供的外部模型 candidate；记录 provider/model/prompt version/输入哈希与不确定性，但命令自身不调用 provider。
 - `gm proposals [--status pending]`：列出 proposal。
 - `gm followups`：列出活动 primary-source/recovery 任务；`gm followup normalize-locators [--apply]` 规范化 locator、合并重复任务并重写 proposal 引用，默认只输出迁移计划。
-- `gm proposal show|approve|defer|reject <proposal-id>`：查看 diff、明确审批或暂缓处理。
+- `gm proposal show|approve|defer|reject <proposal-id>`：查看或处理历史 proposal；CLI `approve` 现在表示接纳到 Working，不再直接写 Canonical。
 - `gm proposal revise <id> --from-file <candidate.md> --reason "..."`：用新的不可变 candidate 替代待审 proposal。
 - `gm proposal split-item <id> --item <item-id> --from-files <a.md,b.md> --reason "..."`：将 pending compound claim 替换为至少两个 atomic child；原 item 保留为 superseded，子项仍独立等待审阅。
 - `gm proposal verify-item-quote <id> ...`：把逐字匹配 primary extraction 的 quote 写成新的不可变 item revision；`--span-start -1` 仅在 quote 唯一出现时自动定位。核验不会自动 approve。
@@ -148,7 +155,7 @@ gm doctor
 
 - raw content 与 source record 通过独占创建写入，普通流程不能覆盖。
 - 已明确归档并需要清理活动目录的 canonical 可移入 `vault/archive/`，以最小墓碑保留 ID、来源和审计理由；归档目录不进入活动索引。
-- compile 只写 `vault/proposals/`；只有明确 approve 才写 canonical knowledge。
+- compile 写 `vault/proposals/` 审计材料和 `vault/memory/` Working；只有明确批准 Trusted promotion card 才写 canonical knowledge。
 - candidate 有 SHA-256 校验，审批前被改动会被拒绝。
 - SQLite 位于 `data/indexes/`，不进入 Git，可随时重建。
 - 二进制 raw payload 默认不进 Git；必须通过独立备份策略保护。
@@ -162,13 +169,13 @@ gm doctor
 
 Candidate 必须是 UTF-8 Markdown，保持 target 的 `id`、`type`、`created_at`，使用 `status: proposal`；可用 `proposed_status` 建议 `provisional`、`confirmed`、`contested`、`superseded` 或 `archived`。Claim 必须保留至少一个 `source_id`。
 
-批量导入时，结构化 claim 可通过 `proposal publish` 进入 `provisional`：它会立即进入全文检索和 Context Pack，但明确标注为“已通过自动门禁、尚未人工确认”。缺少来源、证据、适用范围或不确定性，包含反证，属于医疗、法律、金融等高风险领域，或不是 claim 的 proposal，都必须保留在待审区并使用人工 `proposal approve`。用户核对后用 `promote` 将其晋升为 `confirmed`。
+批量导入时，通过 schema 与 provenance 校验的对象直接进入 Working 并可被检索；低证据、反证与不确定性必须继续显式显示。周期整合只把满足类型策略的对象升为 Trusted。Canonical 需要 promotion card 和用户执行 `promotion approve`，不存在批量自动 Canonical 发布。
 
 所有新 capture 的 bytes 进入与入口无关的 `vault/raw/objects/sha256/`。URL、本地文件和粘贴文本只要 bytes 相同就共享一个物理对象，同时保留各自 source record。`gm raw verify` 校验引用与磁盘哈希；旧布局先运行 migration dry-run，再正式迁移。迁移会自动备份 source record并保留旧 payload，不执行清理。
 
 `gm extract` 从 raw 创建可重建正文：文本/Markdown 保留内容，HTML 去除明显模板噪声，PDF 保留逐页边界。PDF 支持是 optional dependency：`pip install -e .[pdf]`。`gm work propose` 把多个 capture 作为同一现实作品的候选聚合，只有 approve 后才写 logical work，且从不改写 source capture。
 
-`gm compile` 现在先读取 extraction 并检索已有 canonical，再生成 Compile Bundle。Deterministic fallback 只识别显式 `Concept:/Claim:/Question:/Hypothesis:/Tension:/Analogy:` 标记；没有标记时只保留第一段逐字材料，不为了填满 schema 强制生成对象。Bundle 支持整体或按 item approve/reject/revise；一组批准通过多目标 recovery journal 原子续做。
+`gm compile` 先读取 extraction 并检索已有 Working/Trusted/Canonical，再生成 Compile Bundle 并自动物化合格 Working。Deterministic fallback 只识别显式 `Concept:/Claim:/Question:/Hypothesis:/Tension:/Analogy:` 标记；没有标记时只保留第一段材料。无法逐字定位的规范化文本降级为 paraphrase/partial，而不是伪造 quote 或阻塞整个批次。
 
 Context Pack 支持 `execution`、`research`、`exploration` profile 及组合，可按 project/domain/type/status/time/source kind 过滤，并沿 typed relations 做深度与节点数受限的扩展。Proposal 默认不进入；只有显式 `--include-proposals` 才返回，并保留 pending/proposal 状态。搜索对 title、aliases、tags、domains 和 body 分字段加权。
 

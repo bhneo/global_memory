@@ -1,10 +1,10 @@
 ---
 id: "proposal_e8a9a980efc4b173d07acda1"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Work enrichment：[1811.05931] Evolving intrinsic motivations for altruistic behavior"
 created_at: "2026-07-16T19:55:31+08:00"
-updated_at: "2026-07-16T19:55:31+08:00"
+updated_at: "2026-07-17T12:00:20+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,6 +23,7 @@ candidate_sha256: "111ad16f79edd5f57a7acb478d9fc324def792c98c9142ca6060537ccfb30
 change_reason: "显式 work identity enrichment"
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Work enrichment：[1811.05931] Evolving intrinsic motivations for altruistic behavior

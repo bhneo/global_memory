@@ -1,5 +1,9 @@
 # Agent and Obsidian integration
 
+## M7 write-back contract
+
+Agents may capture, compile and create Working memory without requesting per-item approval. They must preserve raw provenance, candidate hashes, tier, uncertainty and evidence boundaries. They may recommend Trusted/Canonical promotion, but only the user can approve a Canonical promotion card. Read-only MCP remains unchanged and exposes no write authority. Use `consolidate daily`, `consolidate weekly`, `exceptions`, `promotions`, and `trust explain` as described in `MEMORY_CONSOLIDATION.md`.
+
 ## Goal
 
 Codex, Cursor, and Claude share one Global Memory without copying the vault into tool-specific memory stores. Each tool gets a thin filesystem entry; the knowledge and governance model remain provider-neutral.
@@ -24,9 +28,9 @@ The Context Pack is a temporary, versioned read-only contract. It is bounded by 
 agent session
   -> concise receipt in vault/receipts/
   -> immutable raw/source capture
-  -> normal compile proposal
-  -> inspect/diff/review
-  -> canonical only after the existing gate
+  -> compile audit bundle + Working memory
+  -> periodic consolidation -> Trusted
+  -> promotion card -> explicit user approval -> Canonical
 ```
 
 Use:
@@ -36,7 +40,7 @@ gm receipt create --agent codex|cursor|claude --project <name> --task <name> --f
 gm receipt propose <receipt-id>
 ```
 
-A receipt is not memory merely because an agent wrote it. It records a candidate handoff and cannot bypass evidence checks or approval. Keep durable decisions, validated observations, changed assumptions, unresolved questions, and source references; omit conversation filler and secrets.
+A receipt is not Trusted or Canonical merely because an agent wrote it. It records a candidate handoff and cannot bypass evidence or promotion checks. Keep durable decisions, validated observations, changed assumptions, unresolved questions, and source references; omit conversation filler and secrets.
 
 Begin each candidate section with an explicit marker such as `Experiment:`, `Decision:`, `Failure:`, `Question:`, or `Claim:`. The deterministic compiler preserves the complete section until the next marker and creates one pending item per section. It does not infer a type from unmarked prose and never approves the result.
 
@@ -54,9 +58,9 @@ These files use ordinary Markdown and path-based wikilinks. They are generated v
 
 ## Maintenance
 
-For routine article ingestion, run `gm triage [source-id ...] --limit 25`. Its default mode only creates or reuses extraction and quality assessment. It does not create a proposal. Use `--compile-selected` only after an explicit value decision; verification is normally deferred until use or promotion.
+For routine article ingestion, `gm triage [source-id ...] --limit 25` remains the cheapest extraction/quality preparation step. `gm consolidate daily` then compiles prepared sources into Working without per-article approval; expensive verification is deferred until use, conflict or promotion.
 
-Run `gm weekly` for the explicit weekly loop: bounded triage, integrity checks, contradiction audit, backlog inventory, derived-view rebuild, and synthesis eligibility. It reports candidates but never creates a synthesis proposal or canonical write automatically.
+Run `gm consolidate weekly` for Working review, Trusted policy, drift audit, exception routing, promotion recommendations and the review-compression digest. It never writes Canonical automatically.
 
 Run `gm maintain` for the normal read-only health and backlog report. It also reports whether generated Obsidian views are missing or stale. Run `gm maintain --rebuild-derived` only when an explicit refresh is wanted; it rebuilds SQLite and all generated Obsidian views, but never raw, proposal, receipt, or canonical content.
 

@@ -67,7 +67,7 @@ class SourceLifecycleService:
         content_quality = quality.content_quality if quality else "unknown"
         proposals = self._proposals(source_id)
         active = [p for p in proposals if p.get("status") in {"pending", "deferred"}]
-        terminal = [p for p in proposals if p.get("status") in {"approved", "published", "rejected", "superseded", "source_only"}]
+        terminal = [p for p in proposals if p.get("status") in {"approved", "published", "migrated", "rejected", "superseded", "source_only"}]
         reasons: list[str] = []
         if quality and not quality.compile_allowed:
             state = "failed"

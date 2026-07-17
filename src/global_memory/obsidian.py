@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +20,10 @@ class ObsidianViewService:
         self.extractions = ExtractionService(repository)
 
     def _documents(self) -> list[tuple[Path, dict[str, Any]]]:
-        documents = [(path, read_document(path)[0]) for path in self.repository.canonical_documents()]
+        documents = [
+            (path, read_document(path)[0])
+            for path in [*self.repository.memory_documents(), *self.repository.canonical_documents()]
+        ]
         return sorted(documents, key=lambda item: (str(item[1].get("type", "")), self._title(item[1])))
 
     def _sources(self) -> list[tuple[Path, dict[str, Any], str]]:
@@ -114,6 +117,19 @@ class ObsidianViewService:
                 pending.append((metadata, path))
         pending.sort(key=lambda item: str(item[0].get("created_at") or item[0].get("id") or ""), reverse=True)
 
+        exceptions = []
+        exception_dir = self.repository.root / "vault" / "exceptions"
+        for path in sorted(exception_dir.glob("exception-*.md")) if exception_dir.exists() else []:
+            metadata, _ = read_document(path)
+            if metadata.get("status") in {"open", "deferred"}:
+                exceptions.append((path, metadata))
+        promotions = []
+        promotion_dir = self.repository.root / "vault" / "promotions"
+        for path in sorted(promotion_dir.glob("promotion-*.md")) if promotion_dir.exists() else []:
+            metadata, _ = read_document(path)
+            if metadata.get("status") in {"pending", "deferred"}:
+                promotions.append((path, metadata))
+
         home = [self._header("超级大脑", "从这里阅读资料、回顾近期变化，并进入已经确认的知识。")]
         home.append("## 快速入口\n\n")
         home.extend([
@@ -122,10 +138,18 @@ class ObsidianViewService:
             "- [[views/主题导航|主题导航]] — 按主题和领域进入\n",
             "- [[views/知识目录|知识目录]] — 已进入 canonical 的知识\n",
             "- [[views/待深挖|待深挖]] — 需要复核、补证据或后续处理\n",
+            "- [[views/记忆层级|记忆层级]] — 浏览 Working / Trusted / Canonical\n",
+            "- [[views/例外队列|例外队列]] · [[views/晋升队列|晋升队列]] · [[views/每周整合|每周整合]]\n",
             "- [[views/Review Queues|审阅队列（技术视图）]]\n\n",
         ])
         home.append("## 当前概况\n\n")
-        home.append(f"- 资料：{len(sources)} 篇\n- Canonical 知识：{len(documents)} 条\n- 待审阅 proposal：{len(pending)} 项\n\n")
+        tier_counts = Counter(str(metadata.get("memory_tier") or metadata.get("status")) for _, metadata in documents)
+        home.append(
+            f"- 资料：{len(sources)} 篇\n- Working：{tier_counts.get('working', 0)} 条\n"
+            f"- Trusted：{tier_counts.get('trusted', 0)} 条\n- Canonical："
+            f"{sum(1 for path, _ in documents if self.repository.rel(path).startswith(('vault/knowledge/', 'vault/frontier/', 'vault/action/')))} 条\n"
+            f"- 开放例外：{len(exceptions)} 项\n- 待确认晋升：{len(promotions)} 项\n\n"
+        )
         home.append("## 最近收录\n\n")
         home.extend(f"- {self._reader_link(metadata)} · {self._date(metadata)}\n" for _, metadata, _ in sources[:8])
         if not sources:
@@ -174,7 +198,7 @@ class ObsidianViewService:
             topic_lines.append("\n")
         rendered["vault/views/主题导航.md"] = "".join(topic_lines)
 
-        catalog = [self._header("知识目录", "这里只列 canonical 对象；资料收录与知识确认保持分层。")]
+        catalog = [self._header("知识目录", "按对象类型列出可用记忆；每条保留 Working / Trusted / Canonical 状态。")]
         for object_type in sorted(by_type):
             catalog.append(f"## {object_type}\n\n")
             catalog.extend(f"- {self._link(path, metadata)} · `{metadata.get('status', 'unknown')}`\n" for path, metadata in by_type[object_type])
@@ -184,6 +208,46 @@ class ObsidianViewService:
         rendered["vault/views/知识目录.md"] = "".join(catalog)
         # Keep the old stable entry working for existing links and agent adapters.
         rendered["vault/views/Knowledge Catalog.md"] = "".join(catalog)
+
+        tiers: dict[str, list[tuple[Path, dict[str, Any]]]] = defaultdict(list)
+        for path, metadata in documents:
+            tier = str(metadata.get("memory_tier") or (
+                "canonical" if self.repository.rel(path).startswith(("vault/knowledge/", "vault/frontier/", "vault/action/"))
+                else metadata.get("status", "working")
+            ))
+            tiers[tier].append((path, metadata))
+        tier_lines = [self._header("记忆层级", "Working 可用但可变，Trusted 已通过整合策略，Canonical 只由人确认。")]
+        for tier in ("working", "trusted", "canonical"):
+            items = tiers.get(tier, [])
+            tier_lines.append(f"## {tier.title()}（{len(items)}）\n\n")
+            tier_lines.extend(f"- {self._link(path, metadata)} · `{metadata.get('type')}`\n" for path, metadata in items)
+            tier_lines.append("\n")
+        rendered["vault/views/记忆层级.md"] = "".join(tier_lines)
+
+        exception_lines = [self._header("例外队列", "只有冲突、证据不足、复合主张或高影响变更才进入人工处理。")]
+        exception_lines.extend(
+            f"- {self._link(path, metadata)} · `{metadata.get('severity')}` · {', '.join(metadata.get('reasons', []))}\n"
+            for path, metadata in exceptions
+        )
+        if not exceptions:
+            exception_lines.append("当前没有开放例外。\n")
+        rendered["vault/views/例外队列.md"] = "".join(exception_lines)
+
+        promotion_lines = [self._header("晋升队列", "这里仅显示需要你决定是否进入 Canonical 的高影响记忆。")]
+        promotion_lines.extend(
+            f"- {self._link(path, metadata)} · 对象 `{metadata.get('object_id')}`\n"
+            for path, metadata in promotions
+        )
+        if not promotions:
+            promotion_lines.append("当前没有待确认晋升。\n")
+        rendered["vault/views/晋升队列.md"] = "".join(promotion_lines)
+
+        reports = sorted((self.repository.root / "system" / "reports").glob("generated-weekly_*.md"), reverse=True)
+        weekly_lines = [self._header("每周整合", "Weekly consolidation 的压缩率、晋升、保留与例外摘要。")]
+        weekly_lines.extend(f"- `{self.repository.rel(path)}`\n" for path in reports[:12])
+        if not reports:
+            weekly_lines.append("尚未生成每周整合报告。\n")
+        rendered["vault/views/每周整合.md"] = "".join(weekly_lines)
 
         deep = [self._header("待深挖", "这里是工作队列，不代表内容已经成立。")]
         deep.append(f"## 待审阅 proposal（{len(pending)}）\n\n")

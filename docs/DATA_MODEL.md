@@ -1,5 +1,17 @@
 # Data Model
 
+## M7 memory lifecycle
+
+| Tier | Location | Meaning | Writer |
+|---|---|---|---|
+| raw | `vault/raw/` | immutable captured evidence | capture only |
+| derived | `data/derived/` | rebuildable extraction/index/assessment | tools |
+| working | `vault/memory/` | usable, provenance-preserving, revisable | compiler/consolidator |
+| trusted | `vault/memory/` | passed type-specific promotion policy | consolidator or explicit user action |
+| canonical | knowledge/frontier/action | scarce stable commitment | promotion approval only |
+
+Working metadata records creator/updater, compiler/model, source and candidate hashes, consolidation count, trust score/reasons, promotion history, locks and schema version. Exception and promotion cards are governance records, not knowledge facts.
+
 ## M6 objects and states
 
 | Object | Durable role | Gate |

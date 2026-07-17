@@ -1,4 +1,8 @@
-# Global Memory Schema v0.19
+# Global Memory Schema v0.23
+
+## M7 lifecycle extension
+
+Documents under `vault/memory/` use `status`/`memory_tier` of `working` or `trusted` and record `created_by`, `updated_by`, `consolidation_count`, `promotion_history`, provenance hashes and trust fields. Governance records use type `exception` (`open|resolved|deferred|dismissed`) or `promotion` (`pending|approved|rejected|deferred`). Canonical promotion changes status/tier to `canonical` and moves the stable object into its existing knowledge/frontier/action directory.
 
 ## M7 agent interchange
 

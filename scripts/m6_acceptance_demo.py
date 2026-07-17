@@ -29,14 +29,14 @@ def main() -> int:
     corpus = []
     for path in repo.proposal_documents():
         metadata, body = read_document(path)
-        if metadata.get("proposal_kind") == "corpus_distillation" and metadata.get("status") == "pending":
+        if metadata.get("proposal_kind") == "corpus_distillation" and metadata.get("status") in {"pending", "migrated"}:
             corpus.append((path, metadata, body))
-    require(len(corpus) == 1, "expected exactly one pending M6 corpus bundle")
+    require(len(corpus) == 1, "expected exactly one active or migrated M6 corpus bundle")
     bundle_path, bundle, _ = corpus[0]
 
     candidates = []
     for item in bundle.get("bundle_items", []):
-        if item.get("decision") == "superseded":
+        if item.get("decision") in {"superseded", "rejected"}:
             continue
         candidate_path = repo.resolve_inside(str(item["candidate_path"]))
         candidate, body = read_document(candidate_path)
@@ -92,9 +92,9 @@ def main() -> int:
     ).as_dict()
     selected_types = {item["type"] for item in context["items"]}
     require({"concept", "claim", "analogy"} <= selected_types, "Context Pack did not prioritize typed knowledge")
-    require(all(item["truth_layer"] in {"proposal", "canonical", "source_capture"} for item in context["items"]), "truth layer missing")
+    require(all(item["truth_layer"] in {"proposal", "working", "trusted", "canonical", "source_capture"} for item in context["items"]), "truth layer missing")
 
-    truth_paths = [*repo.canonical_documents(), *repo.proposal_documents()]
+    truth_paths = [*repo.memory_documents(), *repo.canonical_documents(), *repo.proposal_documents()]
     before = {repo.rel(path): sha256_bytes(path.read_bytes()) for path in truth_paths}
     repo.index_path.unlink(missing_ok=True)
     repo.rebuild_index()

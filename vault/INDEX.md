@@ -11,13 +11,18 @@
 - [[views/主题导航|主题导航]] — 按主题和领域进入
 - [[views/知识目录|知识目录]] — 已进入 canonical 的知识
 - [[views/待深挖|待深挖]] — 需要复核、补证据或后续处理
+- [[views/记忆层级|记忆层级]] — 浏览 Working / Trusted / Canonical
+- [[views/例外队列|例外队列]] · [[views/晋升队列|晋升队列]] · [[views/每周整合|每周整合]]
 - [[views/Review Queues|审阅队列（技术视图）]]
 
 ## 当前概况
 
 - 资料：53 篇
-- Canonical 知识：1 条
-- 待审阅 proposal：21 项
+- Working：83 条
+- Trusted：30 条
+- Canonical：1 条
+- 开放例外：2 项
+- 待确认晋升：0 项
 
 ## 最近收录
 

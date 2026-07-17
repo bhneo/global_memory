@@ -23,6 +23,9 @@ from global_memory.followups import FollowupService
 from global_memory.lifecycle import SourceAnnotationService, SourceLifecycleService
 from global_memory.markdown import read_document, render_document
 from global_memory.maintenance import MaintenanceService
+from global_memory.memory import ExceptionService, WorkingMemoryService
+from global_memory.governance import PromotionService
+from global_memory.consolidation import ConsolidationService, DriftAuditService, ProposalGateMigration
 from global_memory.mcp_server import MCPApplication, ReadOnlyMemoryTools, serve_http
 from global_memory.obsidian import ObsidianViewService
 from global_memory.proposals import ProposalService
@@ -2822,3 +2825,138 @@ def test_mcp_cli_arguments() -> None:
     assert http.host == "127.0.0.1"
     assert http.port == 9999
     assert http.allowed_origin == ["https://chatgpt.com"]
+
+
+def test_m7_compile_materializes_working_without_canonical_write(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Concept: Working memory is usable before canonical promotion.", title="M7 working fixture"
+    )
+    raw_before = (repo.root / captured.source_path).read_bytes()
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+
+    result = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id))
+
+    assert result.written and not result.exceptions
+    assert (repo.root / captured.source_path).read_bytes() == raw_before
+    working_path = repo.root / result.written[0]
+    metadata, _ = read_document(working_path)
+    assert metadata["status"] == metadata["memory_tier"] == "working"
+    assert metadata["origin_proposal_id"] == bundle.proposal_id
+    assert not list(repo.canonical_documents())
+    repeat = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id))
+    assert repeat.written == [] and repeat.updated == []
+
+
+def test_m7_working_write_rolls_back_on_interruption(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Concept: Atomic working rollback.", title="M7 rollback")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    proposal_path, before, _ = repo.find_document(str(bundle.proposal_id))
+    original = proposal_path.read_bytes()
+
+    def fail(phase: str) -> None:
+        if phase == "working_written":
+            raise RuntimeError("injected failure")
+
+    with pytest.raises(RuntimeError, match="injected failure"):
+        WorkingMemoryService(repo, failure_hook=fail).ingest_bundle(str(bundle.proposal_id))
+
+    assert list(repo.memory_documents()) == []
+    assert proposal_path.read_bytes() == original
+    assert before["status"] == "pending"
+
+
+def test_m7_trusted_policy_and_canonical_promotion_gate(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Concept: Reusable governed memory.", title="M7 promotion")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    result = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id))
+    path = repo.root / result.written[0]
+    metadata, body = read_document(path)
+    metadata["consolidation_count"] = 1
+    metadata["reuse_count"] = 2
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    service = PromotionService(repo)
+    promoted = service.promote_trusted(str(metadata["id"]), automatic=True)
+    assert promoted["promoted"] is True
+    assert not list(repo.canonical_documents())
+    card = service.recommend_canonical(str(metadata["id"]), "stable reusable concept")
+    assert service.list_cards({"pending"})[0]["id"] == card["promotion_id"]
+    approved = service.approve_canonical(card["promotion_id"], lock=True)
+    canonical, _ = read_document(repo.root / approved["path"])
+    assert canonical["status"] == "canonical" and canonical["user_locked"] is True
+    assert list(repo.memory_documents()) == []
+
+
+def test_m7_weak_or_contradicted_memory_stays_working(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Concept: Unreviewed idea.", title="M7 retained")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    result = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id))
+    object_id = read_document(repo.root / result.written[0])[0]["id"]
+
+    evaluation = PromotionService(repo).evaluate(object_id)
+
+    assert evaluation.eligible is False
+    assert "requires at least one consolidation review" in evaluation.failed_conditions
+    assert PromotionService(repo).promote_trusted(object_id, automatic=True)["promoted"] is False
+
+
+def test_m7_incremental_compile_reuses_working_identity(repo: Repository) -> None:
+    first = CaptureService(repo).capture_text("Concept: Shared working identity", title="M7 reuse A")
+    first_bundle = BundleCompiler(repo).compile(first.source_id)
+    first_result = WorkingMemoryService(repo).ingest_bundle(str(first_bundle.proposal_id))
+    first_path = repo.root / first_result.written[0]
+    first_id = read_document(first_path)[0]["id"]
+
+    second = CaptureService(repo).capture_text("Concept: Shared working identity", title="M7 reuse B")
+    second_bundle = BundleCompiler(repo).compile(second.source_id)
+    second_proposal, _ = read_document(repo.root / second_bundle.proposal_path)
+    assert second_proposal["bundle_items"][0]["action"] == "update"
+    second_result = WorkingMemoryService(repo).ingest_bundle(str(second_bundle.proposal_id))
+
+    assert second_result.updated == [repo.rel(first_path)]
+    merged, _ = read_document(first_path)
+    assert merged["id"] == first_id
+    assert set(merged["source_ids"]) == {first.source_id, second.source_id}
+    assert len(list(repo.memory_documents())) == 1
+
+
+def test_m7_migration_is_dry_run_backed_up_and_idempotent(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Concept: Legacy pending candidate.", title="M7 migration")
+    BundleCompiler(repo).compile(captured.source_id)
+    service = ProposalGateMigration(repo)
+
+    plan = service.plan()
+    assert plan["dry_run"] is True and plan["candidate_items"] == 1
+    assert list(repo.memory_documents()) == []
+    applied = service.apply()
+    assert applied["backup_path"] and (repo.root / applied["backup_path"]).exists()
+    assert applied["migrated_working_objects"] == 1
+    assert service.plan()["pending_proposals"] == 0
+
+
+def test_m7_weekly_never_writes_canonical_and_drift_is_read_only(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Concept: Weekly review candidate.", title="M7 weekly")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id))
+
+    report = ConsolidationService(repo).weekly()
+    audit = DriftAuditService(repo).run()
+
+    assert report["canonical_writes"] == 0
+    assert not list(repo.canonical_documents())
+    assert audit["writes"] == 0
+
+
+def test_m7_cli_surface_parses_governance_commands() -> None:
+    assert build_parser().parse_args(["consolidate", "daily"]).consolidate_command == "daily"
+    assert build_parser().parse_args(["audit", "drift"]).audit_command == "drift"
+    assert build_parser().parse_args(["migrate", "proposal-gate-to-promotion", "--dry-run"]).dry_run
+    assert build_parser().parse_args(["promote", "concept_x", "--to", "canonical", "--reason", "important"]).to == "canonical"
+
+
+def test_m7_exception_identity_includes_source_context(repo: Repository) -> None:
+    service = ExceptionService(repo)
+    first = service.create("daily-compile", "first", ["same failure"], source_ids=["source_a"], context={"source_id": "source_a"})
+    second = service.create("daily-compile", "second", ["same failure"], source_ids=["source_b"], context={"source_id": "source_b"})
+    assert first != second

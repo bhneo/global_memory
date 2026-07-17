@@ -1,10 +1,10 @@
 ---
 id: "proposal_34066e42b96c63defb4fe11c"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Work enrichment：Play2Perfect: What Matters in Dexterous Play Pretraining for Precise Assembly?"
 created_at: "2026-07-15T16:18:43+08:00"
-updated_at: "2026-07-15T16:18:43+08:00"
+updated_at: "2026-07-17T11:58:38+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,6 +23,7 @@ candidate_sha256: "c98c7bfbeb7848ed14dd4f07249c3313b68a9bec9d51fad93bc482b63ed41
 change_reason: "显式 work identity enrichment"
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Work enrichment：Play2Perfect: What Matters in Dexterous Play Pretraining for Precise Assembly?

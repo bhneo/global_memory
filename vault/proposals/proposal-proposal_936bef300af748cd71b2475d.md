@@ -1,10 +1,10 @@
 ---
 id: "proposal_936bef300af748cd71b2475d"
 type: "proposal"
-status: "pending"
+status: "migrated"
 title: "Work enrichment：From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence"
 created_at: "2026-07-16T19:41:28+08:00"
-updated_at: "2026-07-16T19:41:28+08:00"
+updated_at: "2026-07-17T11:59:09+08:00"
 aliases: []
 tags: []
 domains: []
@@ -23,6 +23,7 @@ candidate_sha256: "afedd4cab5cfe980b867490afa0ad270725fa5fafb697b00e32b3973b9fd8
 change_reason: "显式 work identity enrichment"
 reviewed_at: null
 review_reason: null
+migration_mode: "working-ingestion-v1"
 ---
 
 # Work enrichment：From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence
