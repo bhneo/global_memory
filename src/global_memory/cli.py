@@ -35,7 +35,7 @@ from .repository import Repository, sha256_bytes
 from .receipts import ReceiptService
 from .triage import DailyTriageService
 from .works import WorkService
-from .governance import PromotionService
+from .governance import PromotionService, TrustedPromotionRecoveryManager
 
 
 PROPOSAL_STATUSES = {"pending", "deferred", "migrated", "superseded", "published", "approved", "rejected"}
@@ -436,7 +436,7 @@ def doctor(repository: Repository) -> dict[str, object]:
     except Exception as exc:
         indexed_count = None
         issues.append(f"索引不可用: {exc}")
-    recovery_journals = [*ApprovalRecoveryManager(repository).pending(), *BundleRecoveryManager(repository).pending()]
+    recovery_journals = [*ApprovalRecoveryManager(repository).pending(), *BundleRecoveryManager(repository).pending(), *TrustedPromotionRecoveryManager(repository).pending()]
     for journal in recovery_journals:
         issues.append(f"存在未完成 approval recovery journal: {repository.rel(journal)}")
     lifecycle = SourceLifecycleService(repository).check()
@@ -1254,7 +1254,7 @@ def run(args: argparse.Namespace) -> int:
                 state: len(proposals.list(state))
                 for state in ("pending", "deferred", "migrated", "superseded", "published", "approved", "rejected")
             },
-            "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()) + len(BundleRecoveryManager(repository).pending()),
+            "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()) + len(BundleRecoveryManager(repository).pending()) + len(TrustedPromotionRecoveryManager(repository).pending()),
             "source_processing_states": state_counts,
             "metrics": ProjectMetricsService(repository).collect(),
         }
@@ -1341,9 +1341,10 @@ def run(args: argparse.Namespace) -> int:
     elif args.command == "recover":
         approval = ApprovalRecoveryManager(repository).recover_all()
         bundle = BundleRecoveryManager(repository).recover_all()
+        trusted = TrustedPromotionRecoveryManager(repository).recover_all()
         result = {
-            "recovered": [*approval["recovered"], *bundle["recovered"]],
-            "blocked": [*approval["blocked"], *bundle["blocked"]],
+            "recovered": [*approval["recovered"], *bundle["recovered"], *trusted["recovered"]],
+            "blocked": [*approval["blocked"], *bundle["blocked"], *trusted["blocked"]],
         }
         _print(result)
         return 1 if result["blocked"] else 0

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,57 @@ from .repository import Repository, now_iso, sha256_bytes
 
 POLICY_VERSION = "trusted-promotion-v3-receipt-v2"
 AUTO_TRUSTED_TYPES = {"claim", "concept"}
+
+
+class TrustedPromotionRecoveryManager:
+    """Crash-safe rollback journal for the staged Trusted promotion boundary."""
+
+    def __init__(self, repository: Repository):
+        self.repository = repository
+        self.directory = repository.root / "system" / "recovery"
+
+    def pending(self) -> list[Path]:
+        return sorted(self.directory.glob("trusted-promotion-*.json")) if self.directory.exists() else []
+
+    def prepare(self, promotion_id: str, target: Path, before: bytes, staged_text: str) -> Path:
+        self.directory.mkdir(parents=True, exist_ok=True)
+        path = self.directory / f"trusted-promotion-{promotion_id}.json"
+        record = {
+            "journal_version": 1, "operation": "trusted_promotion", "promotion_id": promotion_id,
+            "phase": "prepared", "target_path": self.repository.rel(target),
+            "before_sha256": sha256_bytes(before), "before_text": before.decode("utf-8"),
+            "staged_sha256": sha256_bytes(staged_text.encode("utf-8")), "receipt_id": None,
+        }
+        atomic_write_text(path, json.dumps(record, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        return path
+
+    def checkpoint(self, path: Path, phase: str, receipt_id: str | None = None) -> None:
+        record = json.loads(path.read_text(encoding="utf-8"))
+        record["phase"] = phase
+        record["receipt_id"] = receipt_id or record.get("receipt_id")
+        atomic_write_text(path, json.dumps(record, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+
+    def recover_all(self) -> dict[str, list[dict[str, str]]]:
+        recovered, blocked = [], []
+        for journal in self.pending():
+            try:
+                record = json.loads(journal.read_text(encoding="utf-8"))
+                target = self.repository.resolve_inside(str(record["target_path"]))
+                current = sha256_bytes(target.read_bytes()) if target.exists() else None
+                if record.get("phase") == "receipt_completed":
+                    journal.unlink()
+                    recovered.append({"journal": self.repository.rel(journal), "status": "completed"})
+                elif current == record.get("staged_sha256"):
+                    target.write_text(str(record["before_text"]), encoding="utf-8", newline="\n")
+                    journal.unlink()
+                    recovered.append({"journal": self.repository.rel(journal), "status": "rolled_back"})
+                else:
+                    blocked.append({"journal": self.repository.rel(journal), "error": "target no longer matches staged state"})
+            except Exception as exc:
+                blocked.append({"journal": self.repository.rel(journal), "error": str(exc)})
+        if recovered:
+            self.repository.rebuild_index()
+        return {"recovered": recovered, "blocked": blocked}
 
 
 @dataclass(frozen=True)
@@ -36,6 +88,7 @@ class PromotionService:
         self.repository = repository
         self.directory = repository.root / "vault" / "promotions"
         self.exceptions = ExceptionService(repository)
+        self.recovery = TrustedPromotionRecoveryManager(repository)
 
     def evaluate(self, object_id: str) -> PromotionEvaluation:
         path, metadata, body = self.repository.find_document(object_id)
@@ -142,8 +195,11 @@ class PromotionService:
         # Stage the promotion, verify it under its *new* bytes, and roll back
         # atomically if Receipt v2 cannot be completed.
         before = path.read_bytes()
+        staged_text = render_document(metadata, body)
+        journal = self.recovery.prepare(promotion_id, path, before, staged_text)
         try:
-            atomic_write_text(path, render_document(metadata, body))
+            atomic_write_text(path, staged_text)
+            self.recovery.checkpoint(journal, "staged")
             self.repository.rebuild_index()
             from .consolidation import ConsolidationReceiptService
             receipt = ConsolidationReceiptService(self.repository).consolidate(
@@ -152,13 +208,16 @@ class PromotionService:
             )
             if not ConsolidationReceiptService.complete(receipt):
                 raise ValidationError("Trusted promotion receipt v2 did not complete")
+            self.recovery.checkpoint(journal, "receipt_completed", receipt["consolidation_id"])
         except Exception:
             path.write_bytes(before)
             self.repository.rebuild_index()
+            journal.unlink(missing_ok=True)
             raise
         if rebuild_index:
             self.repository.rebuild_index()
         self.repository.append_event("memory-events", {"event": "promoted-trusted", "promotion_id": promotion_id, "object_id": object_id})
+        journal.unlink(missing_ok=True)
         return {"promoted": True, "promotion_id": promotion_id, "receipt_id": receipt["consolidation_id"], "evaluation": evaluation.as_dict(), "path": self.repository.rel(path)}
 
     def recommend_canonical(self, object_id: str, why_important: str = "") -> dict[str, Any]:

@@ -24,7 +24,7 @@ from global_memory.lifecycle import SourceAnnotationService, SourceLifecycleServ
 from global_memory.markdown import read_document, render_document
 from global_memory.maintenance import MaintenanceService
 from global_memory.memory import ExceptionService, WorkingMemoryService
-from global_memory.governance import PromotionService
+from global_memory.governance import PromotionService, TrustedPromotionRecoveryManager
 from global_memory.consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration
 from global_memory.epistemics import truth_layer
 from global_memory.evolution import KnowledgeEvolutionService
@@ -3027,6 +3027,24 @@ def test_context_strict_execution_reports_receipt_policy(repo: Repository) -> No
     item = next(item for item in pack["items"] if item["id"] == "claim_m81_context")
     assert item["receipt_state"] == "current_v2"
     assert item["policy_state"] == "execution_strict"
+
+
+def test_trusted_promotion_recovery_rolls_back_staged_object(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_m81_recovery")
+    before = path.read_bytes()
+    metadata, body = read_document(path)
+    metadata.update({"status": "trusted", "memory_tier": "trusted"})
+    staged = render_document(metadata, body)
+    recovery = TrustedPromotionRecoveryManager(repo)
+    journal = recovery.prepare("promotion_m81_recovery", path, before, staged)
+    path.write_text(staged, encoding="utf-8")
+    recovery.checkpoint(journal, "staged")
+
+    result = recovery.recover_all()
+
+    assert result["blocked"] == []
+    assert result["recovered"][0]["status"] == "rolled_back"
+    assert path.read_bytes() == before
     receipt = ConsolidationReceiptService(repo).consolidate(object_id)
     assert receipt["status"] == "complete"
     assert all(receipt["checks"].values())
