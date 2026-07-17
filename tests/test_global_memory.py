@@ -3015,6 +3015,18 @@ def test_m8_consolidation_receipt_is_real_and_hash_bound(repo: Repository) -> No
     path, _ = write_m8_claim(repo)
     object_id = read_document(path)[0]["id"]
     assert ConsolidationReceiptService(repo).valid_for(object_id) is None
+
+
+def test_context_strict_execution_reports_receipt_policy(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_m81_context")
+    ConsolidationReceiptService(repo).consolidate("claim_m81_context")
+    PromotionService(repo).promote_trusted("claim_m81_context", automatic=True)
+    pack = ContextPackService(repo).build(
+        "Bounded evidence", 1200, profiles=["execution"], strict_execution=True,
+    ).as_dict()
+    item = next(item for item in pack["items"] if item["id"] == "claim_m81_context")
+    assert item["receipt_state"] == "current_v2"
+    assert item["policy_state"] == "execution_strict"
     receipt = ConsolidationReceiptService(repo).consolidate(object_id)
     assert receipt["status"] == "complete"
     assert all(receipt["checks"].values())

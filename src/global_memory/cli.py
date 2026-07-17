@@ -300,6 +300,7 @@ def build_parser() -> argparse.ArgumentParser:
     context.add_argument("--source-kind")
     context.add_argument("--include-proposals", action="store_true")
     context.add_argument("--relation-depth", type=int, default=1)
+    context.add_argument("--strict-execution", action="store_true", help="execution profile requires current Receipt v2")
     context.add_argument("--token-budget", type=int, default=1200)
     context.add_argument("--format", choices=["json", "markdown"], default="json")
     obsidian = commands.add_parser("obsidian", help="构建可重建的 Obsidian 导航视图")
@@ -1152,6 +1153,7 @@ def run(args: argparse.Namespace) -> int:
             updated_since=args.updated_since,
             source_kinds=set(args.source_kind.split(",")) if args.source_kind else None,
             include_proposals=args.include_proposals, relation_depth=args.relation_depth,
+            strict_execution=args.strict_execution,
         )
         _print(pack.as_markdown() if args.format == "markdown" else pack.as_dict())
     elif args.command == "obsidian":

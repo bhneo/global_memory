@@ -13,7 +13,7 @@ from .proposals import CANONICAL_DIRECTORIES
 from .repository import Repository, now_iso, sha256_bytes
 
 
-POLICY_VERSION = "trusted-promotion-v2"
+POLICY_VERSION = "trusted-promotion-v3-receipt-v2"
 AUTO_TRUSTED_TYPES = {"claim", "concept"}
 
 
@@ -139,11 +139,27 @@ class PromotionService:
             "updated_by": "promotion-policy", "trust_score": evaluation.trust_score,
             "trust_reasons": evaluation.reasons, "promotion_history": history,
         })
-        atomic_write_text(path, render_document(metadata, body))
+        # Stage the promotion, verify it under its *new* bytes, and roll back
+        # atomically if Receipt v2 cannot be completed.
+        before = path.read_bytes()
+        try:
+            atomic_write_text(path, render_document(metadata, body))
+            self.repository.rebuild_index()
+            from .consolidation import ConsolidationReceiptService
+            receipt = ConsolidationReceiptService(self.repository).consolidate(
+                object_id, result="promotion_candidate", change_summary="Trusted promotion requalified under Receipt v2",
+                rebuild_index=False,
+            )
+            if not ConsolidationReceiptService.complete(receipt):
+                raise ValidationError("Trusted promotion receipt v2 did not complete")
+        except Exception:
+            path.write_bytes(before)
+            self.repository.rebuild_index()
+            raise
         if rebuild_index:
             self.repository.rebuild_index()
         self.repository.append_event("memory-events", {"event": "promoted-trusted", "promotion_id": promotion_id, "object_id": object_id})
-        return {"promoted": True, "promotion_id": promotion_id, "evaluation": evaluation.as_dict(), "path": self.repository.rel(path)}
+        return {"promoted": True, "promotion_id": promotion_id, "receipt_id": receipt["consolidation_id"], "evaluation": evaluation.as_dict(), "path": self.repository.rel(path)}
 
     def recommend_canonical(self, object_id: str, why_important: str = "") -> dict[str, Any]:
         path, metadata, object_body = self.repository.find_document(object_id)

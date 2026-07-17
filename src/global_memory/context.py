@@ -340,6 +340,7 @@ class ContextPackService:
         object_types: set[str] | None = None, statuses: set[str] | None = None,
         updated_since: str | None = None, source_kinds: set[str] | None = None,
         include_proposals: bool = False, relation_depth: int = 1,
+        strict_execution: bool = False,
     ) -> ContextPack:
         query = query.strip()
         if not query:
@@ -362,7 +363,10 @@ class ContextPackService:
             "object_types": sorted(object_types or []), "statuses": sorted(statuses or []),
             "updated_since": updated_since, "source_kinds": sorted(source_kinds or []),
             "include_proposals": include_proposals, "relation_depth": relation_depth,
+            "strict_execution": strict_execution,
         }
+        from .consolidation import ConsolidationReceiptService
+        receipt_service = ConsolidationReceiptService(self.repository)
 
         latest_source_ids = self._latest_source_ids()
         archived_only_source_ids = self._archived_only_source_ids()
@@ -409,6 +413,8 @@ class ContextPackService:
             status = str(metadata.get("status"))
             tier = infer_tier(metadata, path)
             epistemic = infer_epistemic_status(metadata, tier)
+            current_receipt = None if object_type == "source" else receipt_service.valid_for(str(metadata["id"]))
+            receipt_state = "not_applicable" if object_type == "source" else ("current_v2" if current_receipt else "missing_or_stale")
             if statuses is None and object_type not in {"source", "proposal"} and status != "archived":
                 visible = False
                 if "research" in profiles:
@@ -430,6 +436,9 @@ class ContextPackService:
                 if not visible:
                     omitted.append({"id": str(metadata["id"]), "reason": "profile trust policy excluded this memory tier"})
                     continue
+            if strict_execution and "execution" in profiles and object_type != "source" and tier in {"trusted", "canonical"} and current_receipt is None:
+                omitted.append({"id": str(metadata["id"]), "reason": "strict execution requires current Receipt v2"})
+                continue
             if updated_since and str(metadata.get("updated_at", "")) < updated_since:
                 omitted.append({"id": str(metadata["id"]), "reason": "早于 updated_since filter"})
                 continue
@@ -486,6 +495,8 @@ class ContextPackService:
                     "evidence_entailment": metadata.get("evidence_entailment", "unknown"),
                     "unresolved_contradictions": metadata.get("unresolved_contradictions", []),
                     "last_consolidated_at": metadata.get("last_consolidated_at"),
+                    "receipt_state": receipt_state,
+                    "policy_state": "execution_strict" if strict_execution and "execution" in profiles else "default",
                     "proposal_id": str(metadata["id"]) if object_type == "proposal" else None,
                     "title": str(metadata["title"]),
                     "path": self.repository.rel(path),
