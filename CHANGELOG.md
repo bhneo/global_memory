@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased] — M8
+
+### Fixed
+
+- Added the runtime `tzdata` dependency so `ZoneInfo("Asia/Shanghai")` works on clean Windows Python 3.11–3.13 runners.
+- Replaced CI checks against the private real-vault raw store with a portable, content-complete current-architecture fixture; real local raw integrity remains a separate operator check.
+
+### Changed
+
+- Split CI into independently attributable pytest, doctor, schema, state consistency, raw integrity, migration, historical fixture, current architecture, promotion, weekly, incremental, drift, and Context truth-layer steps.
+- All six matrix jobs now upload JUnit and structured acceptance reports even when an earlier diagnostic step fails; no check is skipped or marked continue-on-error.
+
 ## [0.23.0] - 2026-07-17
 
 ### Added
