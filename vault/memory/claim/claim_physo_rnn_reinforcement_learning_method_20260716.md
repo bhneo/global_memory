@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "Φ-SO 使用深度强化学习训练 RNN 生成符号表达式"
 created_at: "2026-07-15T18:45:00+08:00"
-updated_at: "2026-07-17T12:02:24+08:00"
+updated_at: "2026-07-17T15:23:45+08:00"
 aliases: []
 tags: ["PhySO", "symbolic-regression", "reinforcement-learning", "rnn"]
 domains: ["machine-learning", "physics"]
@@ -26,12 +26,12 @@ split_from: "claim_wechat_physo_method_20260715"
 split_reason: "将 RNN/RL 生成方法与单位约束作用分开核验"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:45+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"]
@@ -42,7 +42,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "claim-10.split-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-claim-10.split-1-primary-02a8b5565a84.md"
 origin_candidate_sha256: "02a8b5565a847f329f026166d1151e5bdcd7d92047cff276ca0d9a89b1971e6e"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "supported"
+last_consolidation_id: "consolidation_96707e4d66df87f827f27e34"
 ---
 
 Φ-SO 使用深度强化学习训练 RNN 生成符号表达式。

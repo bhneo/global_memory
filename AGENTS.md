@@ -1,5 +1,16 @@
 # Global Memory Agent Protocol
 
+## M8 non-negotiable trust protocol
+
+- Treat `memory_tier` and `epistemic_status` as independent. A Trusted Question remains `open_question`; a Trusted Analogy remains `exploratory_analogy`; `contested` is never a synonym for Canonical.
+- Unknown legacy status is `working + unknown`. Never use an unknown-to-canonical fallback in retrieval, migration, rendering, or reasoning.
+- `consolidation_count` is diagnostic only. Trusted Promotion requires a complete Consolidation Receipt whose `object_sha256_after` still matches the current object.
+- New evidence must declare `support`, `refine`, `limit`, `contradict`, `supersede`, or `metadata_only`. Do not append an unlabeled `Working update`.
+- Supporting evidence may update Trusted without resetting trust. Semantic changes create a Working Revision and preserve the old version. Conflict marks the object contested, retains both evidence sides, and creates an Exception.
+- Every Trusted demotion requires a Demotion Event. Canonical never auto-demotes; create a Canonical Exception instead.
+- Execution Context excludes hypothetical, exploratory analogy, unknown, degraded evidence and unverified Working Claims unless explicitly requested. Research/Exploration may include them with labels intact.
+- Weekly must distinguish completed Receipts from scans and failures. Drift analysis may recommend action but must not rewrite Trusted or Canonical.
+
 ## Lightweight agent entry (M7)
 
 - Codex, Cursor, and Claude use this same repository as one shared memory; tool-local instructions are adapters, not separate truth stores.

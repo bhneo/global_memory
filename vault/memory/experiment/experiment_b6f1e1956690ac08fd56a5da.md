@@ -4,7 +4,7 @@ type: "experiment"
 status: "working"
 title: "Codex M7 真实读取与 receipt 回写验收"
 created_at: "2026-07-16T21:57:20+08:00"
-updated_at: "2026-07-17T12:01:11+08:00"
+updated_at: "2026-07-17T15:24:05+08:00"
 aliases: []
 tags: ["m7", "agent-acceptance", "codex"]
 domains: ["global-memory"]
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_46d0aad5afd18dd2189979
 change_reason: "补全真实验收步骤、故障、修复和结果，避免只保留 deterministic fallback 的首句"
 memory_tier: "working"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "weekly-consolidation-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:24:05+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -30,7 +30,10 @@ origin_proposal_id: "proposal_bundle_d0aa087dcd1d1fd8e996"
 origin_item_id: "experiment-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_d0aa087dcd1d1fd8e996-experiment-1-rev-90b64a245da2.md"
 origin_candidate_sha256: "90b64a245da2cdb633df33e8597ccddeacccb7d917acca9cf20f11e34f7e8508"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_1442f904f2cb3f13a5e8b909"
 ---
 
 # Codex M7 真实读取与 receipt 回写验收

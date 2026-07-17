@@ -4,7 +4,7 @@ type: "tension"
 status: "trusted"
 title: "语言先验复用 vs 实时动作专用表示"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T12:04:58+08:00"
+updated_at: "2026-07-17T15:24:15+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,12 +18,12 @@ unresolved: "接口和训练信号如何分工"
 validation_method: "延迟、泛化、稳定性联合消融"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:24:15+08:00"
 last_verified_at: null
 trust_score: 66
 trust_reasons: ["completed consolidation review", "tension is durable and source-linked"]
@@ -34,7 +34,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "tension-46"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-tension_language_prior_action_control.md"
 origin_candidate_sha256: "3d675784ddc650eb43906213a83d0a415731b19651dbb13b2756ef6383fa373e"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_77f6ea65028e0438a3c9df5d"
 ---
 
 # 语言先验复用 vs 实时动作专用表示

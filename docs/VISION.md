@@ -1,5 +1,9 @@
 # Vision
 
+M8 operating model: memory must evolve through time without laundering uncertainty. New material should reuse, support, refine, limit or contradict existing knowledge while preserving Raw, Evidence, prior versions and governance history. Working may evolve automatically; every Trusted change must be verifiable, explainable and rollbackable.
+
+Memory Tier answers “is this worth stable long-term recall?” Epistemic Status answers “what do we actually know?” Keeping those questions separate allows durable open questions, hypotheses and analogies without presenting them as established facts.
+
 M7 operating model: memory should become useful at Working cost, gain confidence through periodic consolidation, and consume human attention only for exceptions and high-impact Canonical promotion. This preserves the original local-first, evidence-first design while removing per-item approval as the scaling bottleneck.
 
 Global Memory 要成为个人长期认知基础设施，而不是另一个收藏夹、模板库或单一模型的 RAG 附件。

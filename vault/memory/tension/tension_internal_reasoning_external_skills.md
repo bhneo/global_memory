@@ -4,7 +4,7 @@ type: "tension"
 status: "trusted"
 title: "模型内部推理 vs 外部可审计技能"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T12:04:50+08:00"
+updated_at: "2026-07-17T15:24:14+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,12 +18,12 @@ unresolved: "何时下沉及如何失效"
 validation_method: "按复用次数和环境漂移比较成功率与维护成本"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:24:14+08:00"
 last_verified_at: null
 trust_score: 66
 trust_reasons: ["completed consolidation review", "tension is durable and source-linked"]
@@ -34,7 +34,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "tension-47"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-tension_internal_reasoning_external_skills.md"
 origin_candidate_sha256: "577f4e4b9020165f8dc4ddcc2aef2c00584304042886e89ffe8533c5623bf398"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_1f0127f1fe40f0cec2228e3e"
 ---
 
 # 模型内部推理 vs 外部可审计技能

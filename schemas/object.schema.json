@@ -7,9 +7,11 @@
   "properties": {
     "id": {"type": "string", "minLength": 3},
     "type": {
-      "enum": ["source", "intuition", "entity", "concept", "claim", "question", "tension", "analogy", "hypothesis", "project", "decision", "experiment", "failure", "opportunity", "proposal"]
+      "enum": ["source", "intuition", "entity", "concept", "claim", "question", "tension", "analogy", "anomaly", "hypothesis", "project", "goal", "architecture", "decision", "experiment", "failure", "opportunity", "synthesis", "work", "proposal", "followup", "exception", "promotion", "receipt", "consolidation_receipt", "demotion_event"]
     },
     "status": {"type": "string"},
+    "memory_tier": {"enum": ["working", "trusted", "canonical", "historical"]},
+    "epistemic_status": {"enum": ["established", "supported", "provisional", "contested", "hypothetical", "open_question", "partially_answered", "exploratory_analogy", "observed_anomaly", "user_intuition", "superseded", "unknown"]},
     "title": {"type": "string", "minLength": 1},
     "created_at": {"type": "string", "format": "date-time"},
     "updated_at": {"type": "string", "format": "date-time"},

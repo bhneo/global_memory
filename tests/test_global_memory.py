@@ -25,7 +25,11 @@ from global_memory.markdown import read_document, render_document
 from global_memory.maintenance import MaintenanceService
 from global_memory.memory import ExceptionService, WorkingMemoryService
 from global_memory.governance import PromotionService
-from global_memory.consolidation import ConsolidationService, DriftAuditService, ProposalGateMigration
+from global_memory.consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration
+from global_memory.epistemics import truth_layer
+from global_memory.evolution import KnowledgeEvolutionService
+from global_memory.migration import EpistemicStatusMigration
+from global_memory.metrics import ProjectMetricsService
 from global_memory.mcp_server import MCPApplication, ReadOnlyMemoryTools, serve_http
 from global_memory.obsidian import ObsidianViewService
 from global_memory.proposals import ProposalService
@@ -2871,10 +2875,11 @@ def test_m7_trusted_policy_and_canonical_promotion_gate(repo: Repository) -> Non
     result = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id))
     path = repo.root / result.written[0]
     metadata, body = read_document(path)
-    metadata["consolidation_count"] = 1
-    metadata["reuse_count"] = 2
+    metadata["reuse_work_ids"] = ["work_independent_a", "work_independent_b"]
     path.write_text(render_document(metadata, body), encoding="utf-8")
     repo.rebuild_index()
+    receipt = ConsolidationReceiptService(repo).consolidate(str(metadata["id"]))
+    assert receipt["status"] == "complete"
 
     service = PromotionService(repo)
     promoted = service.promote_trusted(str(metadata["id"]), automatic=True)
@@ -2897,7 +2902,7 @@ def test_m7_weak_or_contradicted_memory_stays_working(repo: Repository) -> None:
     evaluation = PromotionService(repo).evaluate(object_id)
 
     assert evaluation.eligible is False
-    assert "requires at least one consolidation review" in evaluation.failed_conditions
+    assert "requires a valid hash-bound consolidation receipt" in evaluation.failed_conditions
     assert PromotionService(repo).promote_trusted(object_id, automatic=True)["promoted"] is False
 
 
@@ -2960,3 +2965,188 @@ def test_m7_exception_identity_includes_source_context(repo: Repository) -> None
     first = service.create("daily-compile", "first", ["same failure"], source_ids=["source_a"], context={"source_id": "source_a"})
     second = service.create("daily-compile", "second", ["same failure"], source_ids=["source_b"], context={"source_id": "source_b"})
     assert first != second
+
+
+def write_m8_memory(
+    repo: Repository, object_id: str, object_type: str, title: str, body: str,
+    source_ids: list[str], *, tier: str = "working", epistemic_status: str = "unknown",
+) -> Path:
+    timestamp = "2026-07-17T12:00:00+08:00"
+    metadata = {
+        "id": object_id, "type": object_type, "status": tier, "memory_tier": tier,
+        "epistemic_status": epistemic_status, "title": title,
+        "created_at": timestamp, "updated_at": timestamp, "aliases": [], "tags": [],
+        "domains": [], "confidence": "unknown", "source_ids": source_ids, "relations": [],
+        "created_by": "m8-test", "updated_by": "m8-test", "consolidation_count": 0,
+        "promotion_history": [], "trust_score": 0, "trust_reasons": [], "memory_schema_version": 2,
+    }
+    path = repo.root / "vault" / "memory" / object_type / f"{object_id}.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+    return path
+
+
+def write_m8_claim(repo: Repository, object_id: str = "claim_m8") -> tuple[Path, str]:
+    captured = CaptureService(repo).capture_text(
+        "The primary source states that bounded evidence supports the claim.", title="M8 primary source"
+    )
+    path = write_m8_memory(
+        repo, object_id, "claim", "Bounded evidence supports the claim",
+        "Bounded evidence supports the claim.", [captured.source_id], epistemic_status="provisional",
+    )
+    metadata, body = read_document(path)
+    metadata.update({
+        "atomicity_status": "atomic", "evidence_coverage": "full",
+        "evidence_entailment": "full", "extraction_quality": "good",
+        "epistemic_source_authority": "primary", "applicability": ["bounded fixture"],
+        "claim_confidence": "medium",
+        "evidence": [{
+            "source_id": captured.source_id, "stance": "supports", "location": "body",
+            "excerpt": "bounded evidence supports the claim", "reason": "direct support",
+        }],
+    })
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+    return path, captured.source_id
+
+
+def test_m8_consolidation_receipt_is_real_and_hash_bound(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo)
+    object_id = read_document(path)[0]["id"]
+    assert ConsolidationReceiptService(repo).valid_for(object_id) is None
+    receipt = ConsolidationReceiptService(repo).consolidate(object_id)
+    assert receipt["status"] == "complete"
+    assert all(receipt["checks"].values())
+    assert receipt["object_sha256_after"] == sha256_bytes(path.read_bytes())
+    assert ConsolidationReceiptService(repo).valid_for(object_id)["consolidation_id"] == receipt["consolidation_id"]
+    metadata, body = read_document(path)
+    metadata["confidence"] = "low"
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+    assert ConsolidationReceiptService(repo).valid_for(object_id) is None
+
+
+def test_m8_incomplete_receipt_and_failed_search_block_promotion(repo: Repository, monkeypatch: pytest.MonkeyPatch) -> None:
+    path, _ = write_m8_claim(repo, "claim_m8_failed")
+    metadata, body = read_document(path)
+    metadata["evidence"] = []
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+    failed = ConsolidationReceiptService(repo).consolidate("claim_m8_failed")
+    assert failed["status"] == "failed"
+    repeated = ConsolidationReceiptService(repo).consolidate("claim_m8_failed")
+    assert repeated["reused"] is True
+    assert repeated["consolidation_id"] == failed["consolidation_id"]
+    assert PromotionService(repo).evaluate("claim_m8_failed").eligible is False
+
+    path2, _ = write_m8_claim(repo, "claim_m8_search")
+    monkeypatch.setattr(repo, "related", lambda _: (_ for _ in ()).throw(RuntimeError("search unavailable")))
+    failed_search = ConsolidationReceiptService(repo).consolidate("claim_m8_search")
+    assert failed_search["checks"]["contradiction_search_completed"] is False
+    assert failed_search["status"] == "failed"
+
+
+def test_m8_tier_and_epistemic_status_are_orthogonal(repo: Repository) -> None:
+    source = CaptureService(repo).capture_text("durable exploration", title="durable exploration")
+    cases = {
+        "question": "open_question", "hypothesis": "hypothetical", "analogy": "exploratory_analogy",
+    }
+    for object_type, epistemic in cases.items():
+        path = write_m8_memory(repo, f"{object_type}_m8", object_type, object_type, object_type, [source.source_id], epistemic_status=epistemic)
+        object_id = read_document(path)[0]["id"]
+        PromotionService(repo).promote_trusted(object_id, automatic=False, reason="durable exploration")
+        promoted, _ = read_document(path)
+        assert promoted["memory_tier"] == "trusted"
+        assert promoted["epistemic_status"] == epistemic
+    assert truth_layer({"type": "claim", "status": "mystery"}) == "unknown"
+
+
+def test_m8_trusted_support_revision_conflict_and_demotion_are_explicit(repo: Repository) -> None:
+    path, source_a = write_m8_claim(repo, "claim_m8_evolve")
+    ConsolidationReceiptService(repo).consolidate("claim_m8_evolve")
+    PromotionService(repo).promote_trusted("claim_m8_evolve", automatic=True)
+    trusted_before, trusted_body = read_document(path)
+    trust_score = trusted_before["trust_score"]
+
+    source_b = CaptureService(repo).capture_text("Independent support.", title="support B")
+    support = KnowledgeEvolutionService(repo).apply(
+        "claim_m8_evolve", {"source_ids": [source_b.source_id], "evidence": [{
+            "source_id": source_b.source_id, "stance": "supports", "location": "body",
+            "excerpt": "Independent support", "reason": "additional support",
+        }]}, trusted_body, change_type="support", reason="new supporting evidence", trigger_source=source_b.source_id,
+    )
+    supported, _ = read_document(path)
+    assert supported["memory_tier"] == "trusted" and supported["trust_score"] == trust_score
+    assert set(supported["source_ids"]) == {source_a, source_b.source_id}
+    assert support["receipt_id"]
+
+    original_bytes = path.read_bytes()
+    revision = KnowledgeEvolutionService(repo).apply(
+        "claim_m8_evolve", {"source_ids": [source_b.source_id]}, "A refined statement.",
+        change_type="refine", reason="scope changed", trigger_source=source_b.source_id,
+    )
+    assert path.read_bytes() == original_bytes
+    revision_metadata, _ = read_document(repo.root / revision["revision_path"])
+    assert revision_metadata["memory_tier"] == "working" and revision_metadata["needs_revalidation"] is True
+
+    conflict = KnowledgeEvolutionService(repo).apply(
+        "claim_m8_evolve", {"source_ids": [source_b.source_id]}, trusted_body,
+        change_type="contradict", reason="primary evidence conflicts", trigger_source=source_b.source_id,
+    )
+    contested, _ = read_document(path)
+    assert contested["memory_tier"] == "trusted" and contested["epistemic_status"] == "contested"
+    assert conflict["exception_id"]
+    demotion = PromotionService(repo).demote_working("claim_m8_evolve", "user-approved demotion")
+    assert demotion["demotion_id"] and (repo.root / demotion["event_path"]).exists()
+
+
+def test_m8_incremental_a_b_c_and_execution_context(repo: Repository) -> None:
+    path, source_a = write_m8_claim(repo, "claim_m8_abc")
+    receipt_a = ConsolidationReceiptService(repo).consolidate("claim_m8_abc")
+    source_b = CaptureService(repo).capture_text("B supports A.", title="B")
+    b = KnowledgeEvolutionService(repo).apply(
+        "claim_m8_abc", {"source_ids": [source_b.source_id], "evidence": [{
+            "source_id": source_b.source_id, "stance": "supports", "location": "body",
+            "excerpt": "B supports A", "reason": "support",
+        }]}, read_document(path)[1], change_type="support", reason="B support", trigger_source=source_b.source_id,
+    )
+    source_c = CaptureService(repo).capture_text("C contradicts A.", title="C")
+    c = KnowledgeEvolutionService(repo).apply(
+        "claim_m8_abc", {"source_ids": [source_c.source_id]}, read_document(path)[1],
+        change_type="contradict", reason="C limitation", trigger_source=source_c.source_id,
+    )
+    current, _ = read_document(path)
+    assert receipt_a["consolidation_id"] != b["receipt_id"] != c["receipt_id"]
+    assert b["updated_object_count"] > 0 and b["knowledge_reuse_count"] > 0
+    assert current["epistemic_status"] == "contested" and c["exception_id"]
+    research = ContextPackService(repo).build("Bounded evidence", 2000, profiles=["research"]).as_dict()
+    item = next(item for item in research["items"] if item["id"] == "claim_m8_abc")
+    assert item["memory_tier"] == "working" and item["epistemic_status"] == "contested"
+    execution = ContextPackService(repo).build("Bounded evidence", 2000, profiles=["execution"]).as_dict()
+    assert "claim_m8_abc" not in {item["id"] for item in execution["items"]}
+
+
+def test_m8_drift_migration_and_metrics(repo: Repository) -> None:
+    drift = DriftAuditService(repo)
+    reports = drift.compare(
+        "claim_drift", "The variables may be correlated.", "The variables prove and cause the outcome.",
+    )
+    assert {item["drift_type"] for item in reports} >= {"uncertainty-erasure", "correlation-to-causation"}
+    assert all(item["severity"] == "high" for item in reports)
+
+    path, _ = write_m8_claim(repo, "claim_m8_migration")
+    metadata, body = read_document(path)
+    metadata.pop("memory_tier")
+    metadata.pop("epistemic_status")
+    metadata["status"] = "contested"
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    migration = EpistemicStatusMigration(repo)
+    assert migration.plan()["documents_to_change"] == 1
+    applied = migration.apply()
+    assert applied["backup_path"] and migration.verify()["ok"]
+    migrated, _ = read_document(path)
+    assert migrated["memory_tier"] == "working" and migrated["epistemic_status"] == "contested"
+    assert migration.apply()["idempotent_noop"] is True
+    metrics = ProjectMetricsService(repo).collect()
+    assert metrics["working"] == 1 and metrics["contested"] == 1

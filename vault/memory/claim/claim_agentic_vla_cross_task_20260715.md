@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "Agentic-VLA 在 LIBERO-Long 训练后无 Object 演示的跨任务适应达 31.2% 成功率，Direct SFT 迁移为 0%"
 created_at: "2026-07-15T12:20:00+08:00"
-updated_at: "2026-07-17T12:01:10+08:00"
+updated_at: "2026-07-17T15:23:37+08:00"
 aliases: []
 tags: ["vla", "cross-task", "transfer"]
 domains: ["robot-learning"]
@@ -19,12 +19,12 @@ uncertainty: "31.2% 远低于全监督 96.6%（50 demos）；Progress 68.7%。"
 evidence: [{"source_id": "source_2c21320690e566fbbf80fd75", "location": "第 1 页 Abstract", "excerpt": "cross-task transfer from 0% to 31.2% without task-specific demonstrations", "stance": "supports", "reason": "摘要陈述。"}, {"source_id": "source_2c21320690e566fbbf80fd75", "location": "第 8 页 Table 3", "excerpt": "Direct Transfer (SFT) 0.0±0.0 ... Agentic-VLA 31.2±2.3", "stance": "supports", "reason": "Table 3。"}, {"source_id": "source_2c21320690e566fbbf80fd75", "location": "第 8 页 Section 4.4", "excerpt": "direct transfer to LIBERO-Object achieves 0% success rate", "stance": "context", "reason": "0% 基线条件。"}]
 memory_tier: "working"
 created_by: "human-candidate-revision-v1"
-updated_by: "weekly-consolidation-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "human-candidate-revision-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:37+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -35,7 +35,10 @@ origin_proposal_id: "proposal_e79a010f0e001d3b10c7e7ed"
 origin_item_id: "candidate"
 origin_candidate_path: "vault/proposals/candidate-proposal_e79a010f0e001d3b10c7e7ed.md"
 origin_candidate_sha256: "87717e14de3cbc85d9220f0da744526d54b5c2c6aff2e116d70f2d634a974a63"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_818530d37444680c58c05ed6"
 ---
 
 # Agentic-VLA 的跨任务适应结果

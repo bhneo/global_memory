@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "A symmetry-group orbit consists of transformed parameters and lies within one loss level set"
 created_at: "2026-07-16T19:30:00+08:00"
-updated_at: "2026-07-17T12:02:18+08:00"
+updated_at: "2026-07-17T15:23:45+08:00"
 confidence: "medium"
 source_ids: ["source_6ae6c4bef52010f96ddb3dbf", "source_dbfef5ee180346812d6d9a99"]
 relations: [{"type": "derived_from", "target_id": "source_dbfef5ee180346812d6d9a99", "reason": "Primary survey states that a symmetry orbit lies in one loss level set", "confidence": "high", "created_by": "primary-quote-verification-v1", "status": "working"}]
@@ -23,12 +23,12 @@ split_from: "claim_wechat_param_symmetry_definition_20260716"
 split_reason: "Separate orbit geometry from loss-invariant group structure"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:45+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"]
@@ -39,7 +39,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "claim-7.split-2"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-claim-7.split-2-primary-2e021b8ae58b.md"
 origin_candidate_sha256: "2e021b8ae58b74ce0329029d16eaae38f00427c1ff630068f8ff191ee2dd6a32"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "supported"
+last_consolidation_id: "consolidation_4a1a0597edb88bc774616000"
 ---
 
 A symmetry-group orbit consists of transformed parameters and lies within one loss level set.

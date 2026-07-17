@@ -2,6 +2,14 @@
 
 ## [Unreleased] — M8
 
+### Added
+
+- Added immutable, hash-bound Consolidation Receipts with source hashes, evidence IDs, complete check results, warnings, exceptions and promotion recommendations.
+- Added independent `memory_tier` and `epistemic_status` dimensions, an idempotent backed-up migration and explicit Context Pack rendering/filtering.
+- Added safe incremental evolution for support, refine, limit, contradict, supersede and metadata-only changes; Trusted semantic edits now create Working Revisions.
+- Added explicit Demotion Events and previous-version snapshots, read-only semantic drift reports, generated metrics and machine-readable status.
+- Added deterministic A→B→C acceptance covering reuse, support, contradiction, Exceptions and zero silent Trusted demotions.
+
 ### Fixed
 
 - Added the runtime `tzdata` dependency so `ZoneInfo("Asia/Shanghai")` works on clean Windows Python 3.11–3.13 runners.
@@ -11,6 +19,8 @@
 
 - Split CI into independently attributable pytest, doctor, schema, state consistency, raw integrity, migration, historical fixture, current architecture, promotion, weekly, incremental, drift, and Context truth-layer steps.
 - All six matrix jobs now upload JUnit and structured acceptance reports even when an earlier diagnostic step fails; no check is skipped or marked continue-on-error.
+- Restricted automatic Trusted promotion to fully checked Claims and independently reused Concepts; exploratory object types remain Working/Trusted only by explicit governance.
+- Replaced counter-only weekly review with real per-object consolidation and explicit failed receipts. Canonical writes remain user-approved only.
 
 ## [0.23.0] - 2026-07-17
 

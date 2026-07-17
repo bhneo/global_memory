@@ -4,7 +4,7 @@ type: "question"
 status: "trusted"
 title: "Agent 何时应将显式推理固化为技能？"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T12:04:26+08:00"
+updated_at: "2026-07-17T15:24:12+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_d01f40e4896de2e186cbbe
 change_reason: "M6 controlled corpus distillation; requires human review"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:24:12+08:00"
 last_verified_at: null
 trust_score: 66
 trust_reasons: ["completed consolidation review", "question is durable and source-linked"]
@@ -30,7 +30,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "question-40"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-question_skill_compilation_boundary.md"
 origin_candidate_sha256: "6161fdf77fe161f87677d3a59824bbf7c860874bf69574fcf0e90e5e2817c17a"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "open_question"
+last_consolidation_id: "consolidation_539555a72f352b85332604e2"
 ---
 
 # Agent 何时应将显式推理固化为技能？

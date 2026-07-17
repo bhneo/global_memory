@@ -14,6 +14,7 @@ from typing import Any, Iterable
 from zoneinfo import ZoneInfo
 
 from .errors import ImmutableContentError, NotFoundError, ValidationError
+from .epistemics import EPISTEMIC_STATUSES
 from .markdown import atomic_write_text, read_document, render_document
 
 
@@ -234,6 +235,8 @@ class Repository:
                 raise ValidationError(f"{relative} 使用非法 memory status: {metadata.get('status')}")
             if metadata.get("memory_tier") not in {"working", "trusted"}:
                 raise ValidationError(f"{relative} 缺少有效 memory_tier")
+            if metadata.get("epistemic_status") not in EPISTEMIC_STATUSES:
+                raise ValidationError(f"{relative} missing valid epistemic_status")
             for key in ("created_by", "updated_by", "consolidation_count", "promotion_history"):
                 if key not in metadata:
                     raise ValidationError(f"{relative} 缺少 lifecycle field: {key}")
@@ -263,7 +266,7 @@ class Repository:
             for key, allowed in {
                 "quote_verification": {"exact", "normalized_match", "failed", "not_applicable"},
                 "extraction_quality": {"good", "degraded", "failed"},
-                "epistemic_source_authority": {"primary", "secondary", "commentary", "anecdotal", "unknown"},
+                "epistemic_source_authority": {"primary", "official", "peer_reviewed", "secondary", "commentary", "anecdotal", "unknown"},
                 "evidence_entailment": {"full", "partial", "indirect", "conflicting", "none"},
                 "claim_confidence": {"high", "medium", "low", "unknown"},
             }.items():

@@ -1,5 +1,9 @@
 # Agent and Obsidian integration
 
+## M8 read and evolution contract
+
+Every assistant must preserve `memory_tier`, `epistemic_status`, confidence, source authority, evidence coverage/entailment, unresolved contradictions and last consolidation from Context Pack. Execution answers must not express hypothetical, exploratory analogy, unknown, contested or degraded material as established fact. Durable write-back that changes existing knowledge must state `support`, `refine`, `limit`, `contradict`, `supersede` or `metadata_only`; Trusted changes follow Revision/Exception governance.
+
 ## M7 write-back contract
 
 Agents may capture, compile and create Working memory without requesting per-item approval. They must preserve raw provenance, candidate hashes, tier, uncertainty and evidence boundaries. They may recommend Trusted/Canonical promotion, but only the user can approve a Canonical promotion card. Read-only MCP remains unchanged and exposes no write authority. Use `consolidate daily`, `consolidate weekly`, `exceptions`, `promotions`, and `trust explain` as described in `MEMORY_CONSOLIDATION.md`.

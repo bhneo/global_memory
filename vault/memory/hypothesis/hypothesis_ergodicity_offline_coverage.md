@@ -4,7 +4,7 @@ type: "hypothesis"
 status: "trusted"
 title: "遍历性指标可能预测离线数据对部署轨迹的覆盖"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T12:03:28+08:00"
+updated_at: "2026-07-17T15:24:07+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_9d39636775b188c87d6a00
 change_reason: "M6 controlled corpus distillation; requires human review"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:24:07+08:00"
 last_verified_at: null
 trust_score: 66
 trust_reasons: ["completed consolidation review", "hypothesis is durable and source-linked"]
@@ -30,7 +30,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "hypothesis-48"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-hypothesis_ergodicity_offline_coverage.md"
 origin_candidate_sha256: "0ef0cdf2f6e23e94ef8db8602835ca6f259480b6b63a929919ca06e8bda7ceac"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "hypothetical"
+last_consolidation_id: "consolidation_0c7dbbc30e5380d6f39d359b"
 ---
 
 # 遍历性指标可能预测离线数据对部署轨迹的覆盖

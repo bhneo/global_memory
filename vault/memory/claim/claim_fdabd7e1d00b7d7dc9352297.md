@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "来源原文：[2303.03192] Deep symbolic regression for physics guided by units constraints: t"
 created_at: "2026-07-17T12:11:30+08:00"
-updated_at: "2026-07-17T12:11:30+08:00"
+updated_at: "2026-07-17T15:23:44+08:00"
 aliases: []
 tags: []
 domains: []
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-07-17T15:23:44+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -43,7 +43,10 @@ origin_proposal_id: "proposal_bundle_7a40e3271e4cc33a9605"
 origin_item_id: "claim-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_7a40e3271e4cc33a9605-claim-1.md"
 origin_candidate_sha256: "478b3dc3b001c16b13ea50118a7ce09abfb2080f659f750e2df98945d1ecdadf"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_f9c0debfd6e78fa41220fdbe"
 ---
 
 # 来源原文：[2303.03192] Deep symbolic regression for physics guided by units constraints: t

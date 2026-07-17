@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_28", "evidence_kind": "quote", "source_id": "sour
 type: "claim"
 status: "working"
 created_at: "2026-07-16T01:19:00+08:00"
-updated_at: "2026-07-17T12:01:10+08:00"
+updated_at: "2026-07-17T15:23:49+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "weekly-consolidation-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:49+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -43,7 +43,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "claim-13"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-claim-13-rev-ca0155942939.md"
 origin_candidate_sha256: "ca0155942939d34bf42ae69cbe5d1f8e24b18d1453ed56382b03004520c96c7c"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_510c2fafb43055f8629cea0a"
 ---
 
 # 结构 vs 数量

@@ -9,6 +9,7 @@ from global_memory.bundle import BundleCompiler
 from global_memory.capture import CaptureService
 from global_memory.consolidation import ConsolidationService, DriftAuditService
 from global_memory.context import ContextPackService
+from global_memory.evolution import KnowledgeEvolutionService
 from global_memory.governance import PromotionService
 from global_memory.markdown import read_document
 from global_memory.memory import WorkingMemoryService
@@ -52,9 +53,9 @@ def promotion_report(repo: Repository) -> dict[str, Any]:
         evaluations.append(evaluation.as_dict())
     return {
         "ok": bool(evaluations) and all(not item["eligible"] for item in evaluations),
-        "policy": "trusted-promotion-v1",
+        "policy": "trusted-promotion-v2",
         "evaluations": evaluations,
-        "expectation": "fresh Working fixture is not Trusted without a valid review",
+        "expectation": "a receipt is necessary but never sufficient; weak evidence and non-independent reuse remain Working",
         "canonical_writes": 0,
     }
 
@@ -74,17 +75,57 @@ def incremental_report(repo: Repository) -> dict[str, Any]:
     proposal, _ = read_document(repo.root / str(bundle.proposal_path))
     reused = [item for item in proposal.get("bundle_items", []) if item.get("action") == "update"]
     result = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id))
+    supported = 0
+    for path_value in result.updated:
+        updated_metadata, _ = read_document(repo.root / path_value)
+        supported += int(any(
+            item.get("change_type") == "support"
+            for item in updated_metadata.get("change_history", []) if isinstance(item, dict)
+        ))
+    source_c = CaptureService(repo).capture_text(
+        "A portable fixture does not preserve raw evidence when the raw object is unavailable.",
+        title="Current architecture fixture C",
+    )
+    claim_path = next(
+        path for path in repo.memory_documents()
+        if read_document(path)[0].get("type") == "claim"
+    )
+    claim, claim_body = read_document(claim_path)
+    contradiction = KnowledgeEvolutionService(repo).apply(
+        str(claim["id"]), {
+            "source_ids": [source_c.source_id],
+            "evidence": [{
+                "source_id": source_c.source_id, "stance": "contradicts",
+                "location": "body", "excerpt": "does not preserve raw evidence",
+                "reason": "fixture C explicitly limits fixture A",
+            }],
+        }, claim_body, change_type="contradict",
+        reason="Source C directly limits the original fixture claim",
+        trigger_source=source_c.source_id,
+    )
     report = {
         "created_object_count": len(result.written),
-        "updated_object_count": len(result.updated),
-        "knowledge_reuse_count": len(reused),
+        "updated_object_count": len(result.updated) + contradiction["updated_object_count"],
+        "knowledge_reuse_count": len(reused) + contradiction["knowledge_reuse_count"],
+        "supported_object_count": supported,
+        "refined_object_count": 0,
+        "limited_object_count": 0,
+        "contradicted_object_count": 1,
         "exceptions": result.exceptions,
         "silent_trusted_demotions": 0,
         "canonical_writes": 0,
-        "note": "P0 current-architecture fixture; M8 semantic change actions are validated separately.",
+        "source_order": ["A", "B", "C"],
+        "contradiction_exception_id": contradiction["exception_id"],
     }
     return {
-        "ok": report["updated_object_count"] > 0 and report["knowledge_reuse_count"] > 0,
+        "ok": (
+            report["created_object_count"] > 0
+            and report["updated_object_count"] > 0
+            and report["knowledge_reuse_count"] > 0
+            and (report["supported_object_count"] > 0 or report["refined_object_count"] > 0)
+            and (report["limited_object_count"] > 0 or report["contradicted_object_count"] > 0)
+            and report["silent_trusted_demotions"] == 0
+        ),
         **report,
     }
 
@@ -95,15 +136,30 @@ def drift_report(repo: Repository) -> dict[str, Any]:
 
 
 def context_report(repo: Repository) -> dict[str, Any]:
-    pack = ContextPackService(repo).build(
-        "CI portable memory concept", token_budget=1200, profiles=["research"]
-    ).as_dict()
+    profiles = {}
+    required = {
+        "memory_tier", "epistemic_status", "confidence", "evidence_coverage",
+        "evidence_entailment", "unresolved_contradictions", "last_consolidated_at",
+    }
+    missing_fields: dict[str, list[str]] = {}
+    invalid: list[str] = []
     allowed = {"working", "trusted", "canonical", "source_capture", "proposal", "unknown"}
-    invalid = [item["id"] for item in pack["items"] if item.get("truth_layer") not in allowed]
+    for profile in ("execution", "research", "exploration"):
+        pack = ContextPackService(repo).build(
+            "CI portable memory concept", token_budget=1200, profiles=[profile]
+        ).as_dict()
+        profiles[profile] = pack
+        for item in pack["items"]:
+            if item.get("truth_layer") not in allowed:
+                invalid.append(str(item["id"]))
+            absent = sorted(required - set(item))
+            if absent:
+                missing_fields[str(item["id"])] = absent
     return {
-        "ok": bool(pack["items"]) and not invalid,
+        "ok": bool(profiles["research"]["items"]) and not invalid and not missing_fields,
         "invalid_truth_layers": invalid,
-        "context_pack": pack,
+        "missing_required_fields": missing_fields,
+        "profiles": profiles,
         "canonical_writes": 0,
     }
 

@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_2945", "evidence_kind": "quote", "source_id": "so
 type: "claim"
 status: "working"
 created_at: "2026-07-15T21:40:00+08:00"
-updated_at: "2026-07-17T12:01:10+08:00"
+updated_at: "2026-07-17T15:23:48+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "weekly-consolidation-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:48+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -43,7 +43,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "claim-22"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-claim-22-rev-86ccc7c23cd8.md"
 origin_candidate_sha256: "86ccc7c23cd881d2b6288f68b0287a9c1e7a4e872167b6fa6ed1368aa4dae830"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_e73bf2ec23d51facb091000f"
 ---
 
 # double trace 可穿越虫洞

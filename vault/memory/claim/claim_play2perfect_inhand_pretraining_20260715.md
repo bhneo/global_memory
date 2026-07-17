@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "Play2Perfect 表明 play 预训练向装配迁移的关键是迫使手指 in-hand 操控而非固定抓握下的手臂运动"
 created_at: "2026-07-15T12:20:00+08:00"
-updated_at: "2026-07-17T12:01:10+08:00"
+updated_at: "2026-07-17T15:23:47+08:00"
 aliases: []
 tags: ["pretraining", "in-hand-manipulation", "ablation"]
 domains: ["robotics"]
@@ -19,12 +19,12 @@ uncertainty: "作者对 ablation 的综合解读；Translation-only 无法提供
 evidence: [{"source_id": "source_05d8a9da9e0b53b94872f2a7", "location": "第 2 页 Introduction", "excerpt": "play pretraining transfers best when it forces the robot to learn in-hand manipulation using its fingers rather than movement with a fixed grasp.", "stance": "supports", "reason": "引言总结。"}, {"source_id": "source_05d8a9da9e0b53b94872f2a7", "location": "第 7 页 Section 4.2", "excerpt": "Translation-only pretraining learns grasping and lifting, but does not learn object orientation control", "stance": "supports", "reason": "Objective 消融。"}, {"source_id": "source_05d8a9da9e0b53b94872f2a7", "location": "第 7 页 Section 4.2", "excerpt": "A loose 10cm threshold fails to transfer because coarse goal reaching does not require accurate object-pose control.", "stance": "supports", "reason": "Goal precision 消融。"}]
 memory_tier: "working"
 created_by: "human-candidate-revision-v1"
-updated_by: "weekly-consolidation-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "human-candidate-revision-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:47+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -35,7 +35,10 @@ origin_proposal_id: "proposal_1e4548999e2e2dbf0a44fc97"
 origin_item_id: "candidate"
 origin_candidate_path: "vault/proposals/candidate-proposal_1e4548999e2e2dbf0a44fc97.md"
 origin_candidate_sha256: "8d7e38b40e6c1a2b8c505674501d2a1059faf00bcb027743a097b5e09302dd0b"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_4f50d94b637f86864842dace"
 ---
 
 # Play 预训练中影响装配迁移的因素

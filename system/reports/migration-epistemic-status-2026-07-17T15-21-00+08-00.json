@@ -1,0 +1,1855 @@
+{
+  "backup_path": "data/backups/epistemic-status-2026-07-17T15-21-00+08-00",
+  "canonical_content_writes": 0,
+  "changed": [
+    {
+      "epistemic_status": "superseded",
+      "legacy_status": "archived",
+      "memory_tier": "historical",
+      "object_id": "source_b361ac9cddb531dba17c360e",
+      "path": "vault/archive/source_b361ac9cddb531dba17c360e.md",
+      "sha256_after": "6698241d5ce9110603f177dd4976b0defe4f01c70fcdbc87c469d4ce8a1dc544",
+      "sha256_before": "58ce16bb2d7b7402a4d169b0497887e758cb09d23127247268f242c4016735f5"
+    },
+    {
+      "epistemic_status": "established",
+      "legacy_status": "confirmed",
+      "memory_tier": "canonical",
+      "object_id": "claim_via_interface_first_robot_control_20260715",
+      "path": "vault/knowledge/claims/claim_via_interface_first_robot_control_20260715-via-表明稳定的视觉工具界面可让通用-agent-在限定仿真任务中零样本闭环控制机器人.md",
+      "sha256_after": "1611382d982c34ef44cef8f51990e8986efaaad97106ef10675607dd656b65fa",
+      "sha256_before": "54869ce8fe7c65f0e3063ee060682e171937b87429aa4a83c44e7e7f3685772e"
+    },
+    {
+      "epistemic_status": "exploratory_analogy",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "analogy_epiplexity_memory",
+      "path": "vault/memory/analogy/analogy_epiplexity_memory.md",
+      "sha256_after": "ed6745fb6bb12c74769b032de2eaa2e730431ae16a46182e53ca3242049e9ce9",
+      "sha256_before": "bf2e7cd37d61fe1fc0f0cfbbc63413b43fc690bd09cd2916c3176d0109d1caff"
+    },
+    {
+      "epistemic_status": "exploratory_analogy",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "analogy_ergodicity_dataset_coverage",
+      "path": "vault/memory/analogy/analogy_ergodicity_dataset_coverage.md",
+      "sha256_after": "9d35d45ff4461fed355a184080c4fd9138c0e4a8a6451e2d5556ab7cbfa06adb",
+      "sha256_before": "4f771a32905f9480afcc1652e2112cef4026fbb6c8930656528f22a381c5b75e"
+    },
+    {
+      "epistemic_status": "exploratory_analogy",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "analogy_kelly_project_portfolio",
+      "path": "vault/memory/analogy/analogy_kelly_project_portfolio.md",
+      "sha256_after": "06cfbf2e61a0420d3c1a63fe2b3bfcdb039f361ede410c66b3da1ec983297b1d",
+      "sha256_before": "c2dcdad66366cb25e61b2791ec5375ded63b278b8f4ea2c1cc7228f0b7703646"
+    },
+    {
+      "epistemic_status": "exploratory_analogy",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "analogy_lie_group_skill_transfer",
+      "path": "vault/memory/analogy/analogy_lie_group_skill_transfer.md",
+      "sha256_after": "09f52a539e4ac72c358a8ec4793b6000fa5213e87e49fa1cfc5916783be7a834",
+      "sha256_before": "c01d1cab579fe17e77f3ee0d67a5f2722feed329fdaf4ead53ac805d1ca76d49"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_080bdc5349e0e08fa8882e97",
+      "path": "vault/memory/claim/claim_080bdc5349e0e08fa8882e97.md",
+      "sha256_after": "1fccb5872de37af7653f402a4ac0aa63b84bf5f066fc30b34991f355e90d9da7",
+      "sha256_before": "664d2d9de783808428a3e46886041b1ee0bb7b5ca8a1299df0666a9d36e3ca79"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_0b690c465600b65a6f2a3652",
+      "path": "vault/memory/claim/claim_0b690c465600b65a6f2a3652.md",
+      "sha256_after": "250605d9a9c14855524d47591a6f615426d3dfbd83b0d0320a5a516c6faafc8a",
+      "sha256_before": "62edcc19bc23010e8af0a6f411a47833e6d908f13a65c37d3a7ab70ab1259081"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_0c81697b0e302dcee8d96199",
+      "path": "vault/memory/claim/claim_0c81697b0e302dcee8d96199.md",
+      "sha256_after": "aea49f3aae235089e782d4d2f165e71d784b82c945c2bf38c0de9024fc08db55",
+      "sha256_before": "de826f470682db87709f0c95c8b1f4539e05ac12ac4511edbd3f006b6f05ed16"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_23283adb0c3baf33a884cdac",
+      "path": "vault/memory/claim/claim_23283adb0c3baf33a884cdac.md",
+      "sha256_after": "ac0dc94dac1f5affa64e55b93ec20e03439f1381c1f72ad8d76fd3d0f3ca8656",
+      "sha256_before": "7560499d46f59da8c4a8e284544edcdfe25fa28509d9b1361600998506e24391"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_45e2c33254979ebece6a7502",
+      "path": "vault/memory/claim/claim_45e2c33254979ebece6a7502.md",
+      "sha256_after": "d56e6e9613a56e5ab5476e5291c71110045bf13d65e5638a9c051b7b9a9b2c6a",
+      "sha256_before": "9bed726600182284ac4205063f05a71647c6e79fd357d5a32c5106f93cd3c29e"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_4766d041f4bbb95d5823e5dd",
+      "path": "vault/memory/claim/claim_4766d041f4bbb95d5823e5dd.md",
+      "sha256_after": "98c90b70c2531747f1d679e583d1f39bf537c4b1b61933214b4c3794cf7ba72f",
+      "sha256_before": "3605bc8e17f47be43e2bf0cce0a435df73f5a21e129adf1b772ea7db8ae08bd3"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_499470a2d077fe16b177bd1e",
+      "path": "vault/memory/claim/claim_499470a2d077fe16b177bd1e.md",
+      "sha256_after": "f069166e7e7775d434fb20c84080e9c45af18fc354ebc1b618edf53a22b44bbd",
+      "sha256_before": "514b8149657f7f5a078f7150995727ccc8bb5155ed2204c006e660724ab17f8a"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_54cac5c21565eb6d274a5383",
+      "path": "vault/memory/claim/claim_54cac5c21565eb6d274a5383.md",
+      "sha256_after": "d286e4794071e7f3eb4df9b2a9674e945e49b1e7149b57a60972380453e7e761",
+      "sha256_before": "d1be0b44f1b953068c358e76d1f0dc9050a2363225bc2e426a7698a3fb75d0ab"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_92804ba3893e52d0c5696e45",
+      "path": "vault/memory/claim/claim_92804ba3893e52d0c5696e45.md",
+      "sha256_after": "2c1a81663764748d957232ffe677561ac40605e8490b6a2294361e48522bb0f3",
+      "sha256_before": "f39b1486375454f61cd8fa048792b5881be192f4560614c9bb988f703d589cca"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_a13acc3bcafaf6b69954a0c9",
+      "path": "vault/memory/claim/claim_a13acc3bcafaf6b69954a0c9.md",
+      "sha256_after": "f39b9d5b1f593581c83dbecd8782f18dc6d5189b54769b385b8aac4b1e8c7b96",
+      "sha256_before": "732bf18af3f088178a2ab6dce5d1edd24feb4754c9f8deb7420aaae19a1da081"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_a1bf006b4174d98d1d8108c5",
+      "path": "vault/memory/claim/claim_a1bf006b4174d98d1d8108c5.md",
+      "sha256_after": "e68219990a59ea7d6c367bec7fb52696ef2f78dbc7257a41fc5b96221d6585df",
+      "sha256_before": "137c483456826619a44c19499ab9f1ed912dcefce4cb51bab3b82f0e5c11d87d"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_a78ba4a2ebc88876f4393ad0",
+      "path": "vault/memory/claim/claim_a78ba4a2ebc88876f4393ad0.md",
+      "sha256_after": "230335d4aa4068b8634303e5da84d6fd93bc3a6b47b46419f902d3a360f0ece5",
+      "sha256_before": "293fa882408b0fff32edef7b7e26d242336a63d16e65872af78b6be16a485be6"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_ad8c28d32a7d55ab2806574d",
+      "path": "vault/memory/claim/claim_ad8c28d32a7d55ab2806574d.md",
+      "sha256_after": "22dcbfbd7c5fcb1003ae9e77164e01fe2dad7698d3efa7a45ff35f62f71e7fb0",
+      "sha256_before": "7e209810c74853b72003ba9c693a2d01e0e3280b6981d3277e81f164894ba3d2"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_agentic_vla_cross_task_20260715",
+      "path": "vault/memory/claim/claim_agentic_vla_cross_task_20260715.md",
+      "sha256_after": "263c51809af42d2468c05dac8cc4c5b4a3aa9894b076ae4b26d06831d03d0bc3",
+      "sha256_before": "83eddc06808f08772d32f4c4976c5731368c1a881223fcef88bdc9b5d23bfadc"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_agentic_vla_libero_main_20260715",
+      "path": "vault/memory/claim/claim_agentic_vla_libero_main_20260715.md",
+      "sha256_after": "969149e6103c58a90325b1694c3dc7ef1e91b079bc6ec905ad93cd203439ad7c",
+      "sha256_before": "9d31f6c33a4967fbebd54ee58c2e82a1579d015dc7d89fb2c040ec60728edd73"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_agentic_vla_one_shot_20260715",
+      "path": "vault/memory/claim/claim_agentic_vla_one_shot_20260715.md",
+      "sha256_after": "a15f39ecc3dbc9340de0313461f2dc16dec5196e1254dfd563f8cf1418f87b20",
+      "sha256_before": "6350f537d3584327dffe0c667838e44356d20d6caf4d45da6081b37e5f5969ec"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_agentic_vla_training_efficiency_20260715",
+      "path": "vault/memory/claim/claim_agentic_vla_training_efficiency_20260715.md",
+      "sha256_after": "0735900eadea34d73e020fa0ebb034279fd6360b5bce89ae70eb3d9273be41f7",
+      "sha256_before": "06437600601af6b69d9460ef84895cf89019bf290ad47917618669265906b3b5"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_b035b6de75ccf5819d0e89fa",
+      "path": "vault/memory/claim/claim_b035b6de75ccf5819d0e89fa.md",
+      "sha256_after": "393892721f4a1ad42ea8901c05d28a40279eff45acff9a81896d321e1fb3c1e1",
+      "sha256_before": "0839f54e8b275eb5cb4617a5c55ec126104c377bc5b7cd31bc060006e7a22250"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_c7f06719c78cc576410dded2",
+      "path": "vault/memory/claim/claim_c7f06719c78cc576410dded2.md",
+      "sha256_after": "c2c0bb67b0482597e4b1008a736028e0d61651cf9a74931e6c0dc6c0c4c55213",
+      "sha256_before": "36b303754b37360c54cc873307b4efa902e058846d0e4c56af0bb6138f96a3db"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_c9385096b06a12f170a42fa0",
+      "path": "vault/memory/claim/claim_c9385096b06a12f170a42fa0.md",
+      "sha256_after": "f171a5641ddcb0cdb42c1309454b3600a27c5dff47da4594d2e7f1881e8293b6",
+      "sha256_before": "c813d364afe89fccca4383cdb2357924b3ea25f1b3aa13a94cb70df1e01383d3"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_conserved_quantity_small_network_correlations_20260716",
+      "path": "vault/memory/claim/claim_conserved_quantity_small_network_correlations_20260716.md",
+      "sha256_after": "334c04571fee195e9a4a532ba31e46151c3aa7a38458fb52b13b02242c0d0c1e",
+      "sha256_before": "dd6dd97ba035b1a0342ee8051538871ad1460e5342d89fe9c61f1bbc9fcee033"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_d3c1dc84377e8ab740cf0f2b",
+      "path": "vault/memory/claim/claim_d3c1dc84377e8ab740cf0f2b.md",
+      "sha256_after": "3434168f31db2a2bdf2d2ab9bbe9ffdfc0a0c9806dd4809aecef8f5b688ffe80",
+      "sha256_before": "9993cb95ed8bfb06b17a663f4039a3dae530c6a96164112dc4070abd2fb3ef60"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_d9476033c30cbb2c7b1f3f51",
+      "path": "vault/memory/claim/claim_d9476033c30cbb2c7b1f3f51.md",
+      "sha256_after": "83d9addee5d064577acd2dea0d7911c0de2e872f5ba13a0c8e93c99a72d60852",
+      "sha256_before": "277c93e83ec7ce5fa1f94c8413b423ee37ae311a00cd50697953c8f8722f2963"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e0bd63c968b13d31416f354b",
+      "path": "vault/memory/claim/claim_e0bd63c968b13d31416f354b.md",
+      "sha256_after": "cccf40ab3a7667efb82dfb37c641596812709b88526e611adef01ce2bdb11b06",
+      "sha256_before": "0fd6ff0d734816cd9723d4ff3518f88255469c6bd850177d0f9118c88203cbba"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e0c466deeea1ce8281a7b176",
+      "path": "vault/memory/claim/claim_e0c466deeea1ce8281a7b176.md",
+      "sha256_after": "aa38d0624fe9c2db39c775c52043c6a09ced1398a060a8798a4190a92446ac76",
+      "sha256_before": "a09dc40a1a99880459e12caf9299e9b1b1e8f36ed00679360646450d0f0df3fb"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e2f86d4a5a367ae1dc8a5e1f",
+      "path": "vault/memory/claim/claim_e2f86d4a5a367ae1dc8a5e1f.md",
+      "sha256_after": "c3fcf056be786384abd53263224432bfee0904a7afde772ed06dbc8dc6a70848",
+      "sha256_before": "3fb5498b9b43262226d3149804ec01e952d3f3e6f5483f1e8b26ecd9fbef5842"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e5379e4b954671b9e870a05b",
+      "path": "vault/memory/claim/claim_e5379e4b954671b9e870a05b.md",
+      "sha256_after": "cd3a113d1b0c7ed7b7033d89b7afa43f5db88f9b67c9b33db6d890f89a9ba7a3",
+      "sha256_before": "f6858890a0d7cb19ef03b7ae902472551e82c0b9f7c0adbbc5c54617230e97ac"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e65d29cd493432e151cd8b45",
+      "path": "vault/memory/claim/claim_e65d29cd493432e151cd8b45.md",
+      "sha256_after": "c6d6cf7ace97f7717f8bb83091e52caabf1c2fc72c98ba3b5fa6becbdff181c4",
+      "sha256_before": "0032f802b0207587fbc6a89b5d37f5835d892fdd92106b38ecfa8697a99840e3"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_ea6b984ae4bdd1dfdf5288a1",
+      "path": "vault/memory/claim/claim_ea6b984ae4bdd1dfdf5288a1.md",
+      "sha256_after": "0370fb939149d95e833ffedd29cc4469c535fe0f6ed2ad62cb85bf9016206931",
+      "sha256_before": "8e47aae068891ec563a7cd2a8482c6a31ed50be55d46ad425116115894e51471"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_fdabd7e1d00b7d7dc9352297",
+      "path": "vault/memory/claim/claim_fdabd7e1d00b7d7dc9352297.md",
+      "sha256_after": "9ae9705f3a681ac159feedc4ac8af797bcbc4e81e97e5c1f7847b704579c0618",
+      "sha256_before": "1774235e803e78ce2923d3703122dbbe0e50565907ea3b8021d3c2090cb4d4b9"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_parameter_symmetry_conserved_gradient_flow_20260716",
+      "path": "vault/memory/claim/claim_parameter_symmetry_conserved_gradient_flow_20260716.md",
+      "sha256_after": "fee3c3d0c2cace890edf4b434566c6bab3c0acd824dcdd37245242a621845c56",
+      "sha256_before": "ab0eddf34e7075ba64691b77fdbac07feee7df9d7f9007724081c8fe3a3313bc"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_parameter_symmetry_loss_invariant_group_20260716",
+      "path": "vault/memory/claim/claim_parameter_symmetry_loss_invariant_group_20260716.md",
+      "sha256_after": "2ae98009119699da2b8773b8a04d345abdbbf3ff7640b604167c790aba0e9d85",
+      "sha256_before": "bdcd7c7b360c269797eb2c2f007ff7b3090fcff8f93c990b5ea75d4d133e07b5"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_parameter_symmetry_orbit_level_set_20260716",
+      "path": "vault/memory/claim/claim_parameter_symmetry_orbit_level_set_20260716.md",
+      "sha256_after": "df1cc294f3bb9ed606017b46345e7c785c73e9d4afda1f99972dc1ef74df031f",
+      "sha256_before": "730d80c8f38d5d0c1ff387e9e6528e9a8640f6bdd0d32633ae970507b7492391"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_physo_rnn_reinforcement_learning_method_20260716",
+      "path": "vault/memory/claim/claim_physo_rnn_reinforcement_learning_method_20260716.md",
+      "sha256_after": "4ef2ff1bcce469cc807757b53d33006ccf005d65eda65fb554220cf6e4ed9c0d",
+      "sha256_before": "ce5a40c0f5b855b7d834c034532446f0749d995b5dd75e8140e38fdba4bedfd3"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_physo_units_constraints_reduce_search_20260716",
+      "path": "vault/memory/claim/claim_physo_units_constraints_reduce_search_20260716.md",
+      "sha256_after": "897d252101f1195e652078c45ca3efe722fc5355e661f75f0d375048625d7b7b",
+      "sha256_before": "2f592a7e8a3e5b69987dbf599347f1db9feb3a1f520fe4e6c297090710425d27"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_play2perfect_finetuning_necessary_20260715",
+      "path": "vault/memory/claim/claim_play2perfect_finetuning_necessary_20260715.md",
+      "sha256_after": "a8dfceb90f57d28857c714b2a78303d8ef7a8e99967877508798d0aa8abb4274",
+      "sha256_before": "bdf033af16b6f4d58023f3108b663e3f4cf1d26327ff7909c47662dcf79d4d5a"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_play2perfect_inhand_pretraining_20260715",
+      "path": "vault/memory/claim/claim_play2perfect_inhand_pretraining_20260715.md",
+      "sha256_after": "330297632e86bc3e5ccb3ce185088906c80a5450330bc5ca7af59426a57a5ffe",
+      "sha256_before": "8c6b9f1e31d5357bf0d7e8bb9eb756008f99b5fd65d8f82cff34e9d1b1fe7158"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_play2perfect_realworld_tight_insertion_20260715",
+      "path": "vault/memory/claim/claim_play2perfect_realworld_tight_insertion_20260715.md",
+      "sha256_after": "595a292fcabe7dd2ea8208609d69fff7db840db8e1c329de7e35d30c233be58e",
+      "sha256_before": "9632e9682f9e045936ad74a479414a92f6987464791fe5cc20c323bbf674524c"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_play2perfect_sample_efficiency_20260715",
+      "path": "vault/memory/claim/claim_play2perfect_sample_efficiency_20260715.md",
+      "sha256_after": "5a792b7d671d574552f85d0edb079a990ef527807a45c4981c44888f3c79b651",
+      "sha256_before": "aee5f9e5d205c0de7835a4a0f13f72f4bad84385ec526228557cd42912924bb4"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_cross_modal_representation_alignment_20260716",
+      "path": "vault/memory/claim/claim_wechat_cross_modal_representation_alignment_20260716.md",
+      "sha256_after": "7eec4828d808a45e675d4f6c028a9f7d2aa2a6031358c22f7f9b813f9fdcdbbb",
+      "sha256_before": "303f50722e6beeb5ee513f19065e72bfaef15acfd05c109a695eb2a5efffad28"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_double_trace_traversable_20260715",
+      "path": "vault/memory/claim/claim_wechat_double_trace_traversable_20260715.md",
+      "sha256_after": "2b1af03ba3666dd597556dd9536b1dc378dac7cdb5bc0a1b23ad9864f042c80a",
+      "sha256_before": "bf4522c7463af0d51064aef005856b699cd4a89fd860b7aa0d8a466ef95d240b"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_embodied_data_quality_cost_tradeoff_20260716",
+      "path": "vault/memory/claim/claim_wechat_embodied_data_quality_cost_tradeoff_20260716.md",
+      "sha256_after": "559faecd3616ab7f7e842e79eb83b67dd73e6c75f81c61d8d14c81eee5b71f9a",
+      "sha256_before": "11980f66b5b67225cbf9ede2a0629894f19b79757bdb790a26d73ef4923e59eb"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_embodied_data_structure_not_volume_20260716",
+      "path": "vault/memory/claim/claim_wechat_embodied_data_structure_not_volume_20260716.md",
+      "sha256_after": "cd66f04048fd403066c645a3dbddb65f8e16e16fb7515822851bf5bc0988f614",
+      "sha256_before": "9544ce91eef5a03b267130b159244a34e5daa7c73a2a5be46980243474c1bb50"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_embodied_eval_bottleneck_20260715",
+      "path": "vault/memory/claim/claim_wechat_embodied_eval_bottleneck_20260715.md",
+      "sha256_after": "10b8fc4b1af9c665ef27f4ae5bd9136391d1210ddde47aa321f03a1e8f27638f",
+      "sha256_before": "5d78c7f5176d592e348b470ad7ff03ac25bea329eea1aa844bc41aee701cb3aa"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_wechat_epiplexity_definition_20260715",
+      "path": "vault/memory/claim/claim_wechat_epiplexity_definition_20260715.md",
+      "sha256_after": "eff31e8ab3d7821e045af71cb6b06cdc36bddfc302648b3e19985438df5f7d65",
+      "sha256_before": "51eeef2c3a945ed46e9e5a83fe9f9c3ded39080a630a08533b69d4789e85c9ce"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_ergodicity_time_ensemble_equivalence_20260716",
+      "path": "vault/memory/claim/claim_wechat_ergodicity_time_ensemble_equivalence_20260716.md",
+      "sha256_after": "5cfbe1d398dc60c19a531d771e29bd2319ee621d70162d4efb178bd1eef2b123",
+      "sha256_before": "eeadb02896bd31d6d9e8f1f27e409b9f1aa5c4a98c013485186dc9284f194b51"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_expanding_hole_pupil_perception_not_luminance_20260716",
+      "path": "vault/memory/claim/claim_wechat_expanding_hole_pupil_perception_not_luminance_20260716.md",
+      "sha256_after": "148728d758e6068553e0af51ab0a20e925dbb01727b9f425a0f29df48c3461c0",
+      "sha256_before": "8a289e1201e529dba0b6b498b7b066be42dc3457304a93a4c0657f5100806a5b"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_ganzfeld_mechanism_20260715",
+      "path": "vault/memory/claim/claim_wechat_ganzfeld_mechanism_20260715.md",
+      "sha256_after": "53d84a2994015b78113854573c570b72f31db3d787e6cc1fd499b8a19d299c72",
+      "sha256_before": "90aea7a59baefca8c6b86adf1e227b94be0ca592663dabf23eacd58d5803715b"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_godel_first_incompleteness_20260716",
+      "path": "vault/memory/claim/claim_wechat_godel_first_incompleteness_20260716.md",
+      "sha256_after": "04a97c400b3a4fcd9724fab4ed05bd4d167b64c2991e0bf9b11148e23794ed15",
+      "sha256_before": "b38eba97477d34deb1a4b4b69c7489091637b0d765adcb7dce4b5a6990d25abe"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_im_rl_framework_internal_rewards_20260716",
+      "path": "vault/memory/claim/claim_wechat_im_rl_framework_internal_rewards_20260716.md",
+      "sha256_after": "43214b950e40b6245e8e090fb6151ba590315a3bac2f5d29a5ca1dc05115a406",
+      "sha256_before": "1afc34cfdb0430f8dee194fe3ea1aca142faaf6e73a58708c61ec8aedb235997"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_kairos_sim2real_training_20260716",
+      "path": "vault/memory/claim/claim_wechat_kairos_sim2real_training_20260716.md",
+      "sha256_after": "183be03f28b5d7daeb71e9db737632e874817fba4ac1b247e01d5da1d25b5040",
+      "sha256_before": "a5a8dfa51f50ca6e35c857d914ffbbc12d6f358a66ee8037d4472f145215b28f"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_kelly_bet_fraction_20260716",
+      "path": "vault/memory/claim/claim_wechat_kelly_bet_fraction_20260716.md",
+      "sha256_after": "acb6af0d1e4a8eb7df900ff00e2ba4b7df8ade1e687ecd5cbd3718675b545599",
+      "sha256_before": "f710e062b3d146ff44dabdce921c44e0a9cf1cca1fc54519113dd9f3b4580ad5"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_lie_group_continuous_symmetry_20260715",
+      "path": "vault/memory/claim/claim_wechat_lie_group_continuous_symmetry_20260715.md",
+      "sha256_after": "16bcf30ef7d643b7ed1ee2428d24eaf227bb67aa36e703013ba0874b5e8c58ad",
+      "sha256_before": "da3c3c35394cbfb4fcb6aa8d6053ecf1ebee1db802e12c5d703a458714f1aeda"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_lie_group_definition_20260715",
+      "path": "vault/memory/claim/claim_wechat_lie_group_definition_20260715.md",
+      "sha256_after": "dc386de0b43c19a8045a8db2e1011deb37ddee7dc0f80b50a200203fce5d7a2c",
+      "sha256_before": "3d56eed0235ce227c3228bf81d8f5a1d918f1a4e65eab476a7faf22101dcb2f5"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_magnetic_bottle_constraint_20260715",
+      "path": "vault/memory/claim/claim_wechat_magnetic_bottle_constraint_20260715.md",
+      "sha256_after": "830620373faa0b16ec59fb8381a5d1928d99a7772aadd622b60df983c49ad59e",
+      "sha256_before": "5efff86a330dd4f32e4d4896eb9b09aa5abdcc029aea1a3cafdb01b9f5be958d"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_non_ergodic_coin_game_20260716",
+      "path": "vault/memory/claim/claim_wechat_non_ergodic_coin_game_20260716.md",
+      "sha256_after": "52964a8def141be61ebe7dc126b0dd19baf16c01ffe11f27f995be8a8a2e52da",
+      "sha256_before": "88322d7cc1b0a71c11c05f36209f1e4af916b12c01733dadd130a39d811a5df2"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_nonergodic_failure_exit_20260716",
+      "path": "vault/memory/claim/claim_wechat_nonergodic_failure_exit_20260716.md",
+      "sha256_after": "592c177295d994d58d473ae0f663b7454c819f3bc2e5aa583976b792662e531a",
+      "sha256_before": "2ff508c7177481e6883de6849d1dda82e3bff4095236c71f0ec9b063df2596ee"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_particle_poincare_irrep_20260716",
+      "path": "vault/memory/claim/claim_wechat_particle_poincare_irrep_20260716.md",
+      "sha256_after": "ec470b275491ba2bf415f6a4af42252132788d677e35c71cded617d78d902055",
+      "sha256_before": "dd0c507d3a6378a8be78bc0952d662a0c1ca5497c7a6a09f3dcaa47817b0a8e0"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_wechat_skillevolver_k4_strategy_exploration_20260716",
+      "path": "vault/memory/claim/claim_wechat_skillevolver_k4_strategy_exploration_20260716.md",
+      "sha256_after": "b933be855c11ee3af20083572125ac2cb039045e1134aa0155a23146af010b33",
+      "sha256_before": "68925da6ce27efc59717dfc4ff625fd780db055a5862ff5bf0f06c780967ed66"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_wechat_skillevolver_silent_bypass_audit_20260716",
+      "path": "vault/memory/claim/claim_wechat_skillevolver_silent_bypass_audit_20260716.md",
+      "sha256_after": "28d88f400bcaf26b4345cfbfccbc9e781da6f18ded71ac41461c926f17535513",
+      "sha256_before": "51a66049afff71a5ce612ac0ca1c0e27c462ddfcc9b547f5ec0fb9e76c17bdd0"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_standard_model_symmetry_group_20260716",
+      "path": "vault/memory/claim/claim_wechat_standard_model_symmetry_group_20260716.md",
+      "sha256_after": "815d60d03e98e757a53f9d8c885094e61dd5e2dc2a50b690ebd13b60190c3840",
+      "sha256_before": "08d5ac65ac77f7cb632c28d42044c7f9ab15a9566901ebccf262422c6bca3d4a"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_wangjun_global_workspace_integration_20260716",
+      "path": "vault/memory/claim/claim_wechat_wangjun_global_workspace_integration_20260716.md",
+      "sha256_after": "1dd28c773a0be0c647ffaa9db93e5dd85fbdf7dd40c9a69148301807141c46f9",
+      "sha256_before": "5747dd3e82e210f2ee3fa79eb6c8e82ab1552aaffdaf33ca9605af1be384533a"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "concept_embodied_data_loop",
+      "path": "vault/memory/concept/concept_embodied_data_loop.md",
+      "sha256_after": "47429c2568dffb6abe53c1ef97223b411983bb5525b4b627db7280871f786508",
+      "sha256_before": "1ffb03ec15bbaa81c684512f737207ac8da78e9d2e02131e3cf70c0662b91009"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_epiplexity",
+      "path": "vault/memory/concept/concept_epiplexity.md",
+      "sha256_after": "d25f894a2a3b700e4c6b6586bb9e13a34860883e908ab0c7cef79d4d4fba41b2",
+      "sha256_before": "1ab20c4bd1293571d6c6691f6dcd72a599a68b60b62f1109e7b0ae5351fc5a47"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_ergodicity",
+      "path": "vault/memory/concept/concept_ergodicity.md",
+      "sha256_after": "d6c8a3129eb9f747f4352093cce11a93c985641c1c8f32d953843912ef282e26",
+      "sha256_before": "61cdbd60cf39c41af8e5728bde23ae35a3f17fe347e0df9d2168c6bc31a8c360"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_intrinsic_motivation_rl",
+      "path": "vault/memory/concept/concept_intrinsic_motivation_rl.md",
+      "sha256_after": "a292e5fdb4895ba58001d539313813004948df138d931f7a017bc472905c46e5",
+      "sha256_before": "ce5d0fc1c3f9824b978a3b3390f83a6372d1a4bd8d741e300f3ac132a3afaa65"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_kelly_criterion",
+      "path": "vault/memory/concept/concept_kelly_criterion.md",
+      "sha256_after": "6274c432c1be3ea6dc598e6833c1e41dd180a0348ad8e08adf8be894c61ce82d",
+      "sha256_before": "92021cee349f6dc990e49b3ccab9888e62ad8c8299924ab5aae934ad5a99dc41"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_lie_group",
+      "path": "vault/memory/concept/concept_lie_group.md",
+      "sha256_after": "06e47fb373b4551b27b8abb45c3eac31599257c3151c5945356df0fb5882b53a",
+      "sha256_before": "ebba5cca3ee1907352806ec8381995a65668fa8af75ee3e1f395a975b4f8f3ce"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_machine_consciousness_integration",
+      "path": "vault/memory/concept/concept_machine_consciousness_integration.md",
+      "sha256_after": "1b9b6db3fe834193b9a10bdef15dab5738d96c473425e78b3c989af8420b9f63",
+      "sha256_before": "46044bc801cdf7da05b49d64bb7c33a395ebaa04c3f0ebc91aca3dc014d373be"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_parameter_symmetry",
+      "path": "vault/memory/concept/concept_parameter_symmetry.md",
+      "sha256_after": "bbbb74d53f1c76b0802dabee427323dbbb15253a84299927c7f6d86d1fdf86db",
+      "sha256_before": "cd1486f2de4faa0114c2cc6ed85a8276907f08a0c829fb6c8900628d955bf90d"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "concept_perceptual_prediction_bias",
+      "path": "vault/memory/concept/concept_perceptual_prediction_bias.md",
+      "sha256_after": "946acad768a34c836abe0dd3af029fe8eb97e01f7e0fa8ccf4c7bd30cc654e97",
+      "sha256_before": "74e2abf509d47297b20a8425d6408fe4eaf5de0fe088633f8f1445a795764c71"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_representation_convergence",
+      "path": "vault/memory/concept/concept_representation_convergence.md",
+      "sha256_after": "b2c2966c7ebc0359479b0ec34d1239e13fa07327d03ba7065fe94c867f64db34",
+      "sha256_before": "f247d9447c90b80991669fa9aae0977301f9b4c938394e39703277b4b59e23ec"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_sim_to_real_scene_infrastructure",
+      "path": "vault/memory/concept/concept_sim_to_real_scene_infrastructure.md",
+      "sha256_after": "e8e0b94365628506b76f0c26148fe381029686a215d7c9a5a7fa1c2476ced495",
+      "sha256_before": "0c3b4bdff88fb5ee327376dd642bfd4eda6274786800136a8262594095315889"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_skill_evolution",
+      "path": "vault/memory/concept/concept_skill_evolution.md",
+      "sha256_after": "f3fa7fa61f421e15932ddae243db90abd348161235e5171b03eb7943a5364539",
+      "sha256_before": "743c3bd7704ffdfdba0308a1ead798caf8fbd6c603cdeacd38ccfb51f6b750d1"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_symbolic_regression",
+      "path": "vault/memory/concept/concept_symbolic_regression.md",
+      "sha256_after": "748ebe5d07bd76091b1622c324706f527bd802691525a71609a37f0e715d9a8c",
+      "sha256_before": "878978f321981b7fe6b93f947fe743a7526e450391470b729a4696370537d320"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_world_model_evaluation",
+      "path": "vault/memory/concept/concept_world_model_evaluation.md",
+      "sha256_after": "5a639571fb941e5568c5d110235d4a7cf1cb566a40789efd965b29e755c49ebf",
+      "sha256_before": "6ddfdd7e88f4480eb6a3b427365b09ad4aa07ff63b9e57095978e96a34dab1d5"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "experiment_7101e03fb065226e65f388a5",
+      "path": "vault/memory/experiment/experiment_7101e03fb065226e65f388a5.md",
+      "sha256_after": "caaf577bc62712ece6af0a30175b81096282ef359c10d226c60ac9807aaca7b4",
+      "sha256_before": "8ec28a1aa4d45e82c38386f5c42ad86e66f851817b1d7991e0cd1b7d254b7ee5"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "experiment_b6f1e1956690ac08fd56a5da",
+      "path": "vault/memory/experiment/experiment_b6f1e1956690ac08fd56a5da.md",
+      "sha256_after": "ca375a3be8c8d9130e3df5e046dc5891008cc63b94387c2b44371b5793e56ed6",
+      "sha256_before": "b7cf160f587d2b055ba28b715b59136398175ff376c59b256d02bebb7a680188"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "experiment_dataset_trajectory_coverage",
+      "path": "vault/memory/experiment/experiment_dataset_trajectory_coverage.md",
+      "sha256_after": "3437e9a7ad73d51c735b8731911659f630c5277afcf1ec57b33d4caf84feec94",
+      "sha256_before": "f2095e24c95415343c9d0104368d2c4f2f6ec8755f02cc468743e30e36feb912"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "experiment_visual_illusion_world_model",
+      "path": "vault/memory/experiment/experiment_visual_illusion_world_model.md",
+      "sha256_after": "eaf76c1455728802290785859f7a939a69b35e7dd7045c8c034e292ef67895e4",
+      "sha256_before": "ffa791093e171059a8611c58037597d5cbf7d2e0f9b27428dfee57a998c1f89d"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_epiplexity_memory_compaction",
+      "path": "vault/memory/hypothesis/hypothesis_epiplexity_memory_compaction.md",
+      "sha256_after": "9de56391807474a76c1ca099392ed84046317691939edf4199fa617394d7d69f",
+      "sha256_before": "9441cd81804b4703caacba845cfae5d43a26a87f2e38725bc94cc4210eaea653"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_ergodicity_offline_coverage",
+      "path": "vault/memory/hypothesis/hypothesis_ergodicity_offline_coverage.md",
+      "sha256_after": "6059780d54407cc4feb4a04ab4b7bfe73bdd7ecd2e67844d8df92ba125b788ac",
+      "sha256_before": "8fb8fc029e11d91f88437b9b11df941d0cc8c81f83fe31f7d017d4e5b48aeab6"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_illusion_world_model_probe",
+      "path": "vault/memory/hypothesis/hypothesis_illusion_world_model_probe.md",
+      "sha256_after": "1bbdde87e9fa2d4cd377e675d508c10f53768d32d64f60be649c59f6ae8fc786",
+      "sha256_before": "a014d63183ae21dc97cfef1239e75f74f72fe01fc62ab5a832868c6da83ebb8f"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_invariants_skill_transfer",
+      "path": "vault/memory/hypothesis/hypothesis_invariants_skill_transfer.md",
+      "sha256_after": "e4c01855a9641f575db37bdfe3f92e2cf890f550e8d79a0c2f5b7f914c3c8d1e",
+      "sha256_before": "016d596c402ee880cdcf95bbc5498a677bca991cceca5e6347d4e68097b8a424"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_kelly_project_portfolio",
+      "path": "vault/memory/hypothesis/hypothesis_kelly_project_portfolio.md",
+      "sha256_after": "81cec367dfcaa5b798df24da3ad52f037026a87d6b5336adb62fe4ebe60a6d1a",
+      "sha256_before": "be5bb6248c4efbe5e2d038f89c5443222c4c90d39239bc3241a84f3c5c0fae11"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "opportunity_invariant_skill_transfer",
+      "path": "vault/memory/opportunity/opportunity_invariant_skill_transfer.md",
+      "sha256_after": "bd93265c8cd5fef294b3b8ca627e8e6e044a71a915a872bc7710a306330bf469",
+      "sha256_before": "06864aa35e13da3669e635d16f41fb046da4600f4161099591ae45c49bd8af1a"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "project_embodied_agent_learning_candidate",
+      "path": "vault/memory/project/project_embodied_agent_learning_candidate.md",
+      "sha256_after": "2fefc663470d4ce01e525302006d47ebb12f16ff97d0363b3563cd4d464be46a",
+      "sha256_before": "e02c57221327db30581230911f1e1ad501f83b343bbe1c05b9f8eb388caf3791"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "question_1e0121d4bdc2f58cea1ca426",
+      "path": "vault/memory/question/question_1e0121d4bdc2f58cea1ca426.md",
+      "sha256_after": "ec1e66efcfada482878cb298e4f6520f5bcbe50fa4d8b83fa130f171fd632fb8",
+      "sha256_before": "ff1405a0eb6ba3aff178a6df39e24d6e177f5306739d56017c208ef5cfdf02a8"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_data_quality_to_capability",
+      "path": "vault/memory/question/question_data_quality_to_capability.md",
+      "sha256_after": "181f70ce20430ce58e13d3bd4e2f3c61024bc9fbf958450ff3c0403fe1c18b75",
+      "sha256_before": "12d59e39f8d393537072094b2977c17f1f4ab80b428c9dd2f7f502b285790551"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_machine_consciousness_falsifiability",
+      "path": "vault/memory/question/question_machine_consciousness_falsifiability.md",
+      "sha256_after": "245260b285251f84f49f65541c38785b9f655d50049ea7851737616f77d0ea08",
+      "sha256_before": "620adc6dfd2047cd6e4d1e3461fdbf90b4b8b1236e4ccfbade55f507fd1aa048"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_offline_coverage_deployment",
+      "path": "vault/memory/question/question_offline_coverage_deployment.md",
+      "sha256_after": "efe4f5825c942acac5543534595054cefd3cdc382b69c665149d11dac8ab0f4a",
+      "sha256_before": "d89728228a0c2308c1d0161e98ae731c2be7c3dea93891ec10ea85598fd44eca"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_representation_equivalence",
+      "path": "vault/memory/question/question_representation_equivalence.md",
+      "sha256_after": "3a9ade9e7c0013f1eea32d12a59448ca130ff320221108e012f63935575c643d",
+      "sha256_before": "4360f0b8ae3af4c6d222ce2152e9cef60e27a8aaa5d402e6c349084dc368cc94"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_skill_compilation_boundary",
+      "path": "vault/memory/question/question_skill_compilation_boundary.md",
+      "sha256_after": "711ccf95480a2d9d9c935e68787530a33b624e11b47b763b91c39f9650695f1e",
+      "sha256_before": "fb5a7d1ee757916ff28205bc48e9caa3407a67c45ef7d2cb0d605b9fc11415e7"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_world_model_action_value",
+      "path": "vault/memory/question/question_world_model_action_value.md",
+      "sha256_after": "c6e845bbbc0313848c35ce303dfa49380ee7d5d72021e4bb6042f7e77cdae3c0",
+      "sha256_before": "023d75930d0197096b4cd23f4fea5ada3cdf4bc2ddc5211aa8d3723b88f3079d"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "synthesis_embodied_data_bottleneck_m6",
+      "path": "vault/memory/synthesis/synthesis_embodied_data_bottleneck_m6.md",
+      "sha256_after": "22e0b962dc30ec53d3d821d926953d266368852de3d794ef0f85778f9138bab2",
+      "sha256_before": "2814f6e4fe09fdaad3f1bbec9f92d9bbea34ee40fa92c444a8849802e00aac69"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "synthesis_limited_resource_experience_m6",
+      "path": "vault/memory/synthesis/synthesis_limited_resource_experience_m6.md",
+      "sha256_after": "dba352c192a4f7936e6d6a326b5803db3f179c4d2ace92764cda4b585400a196",
+      "sha256_before": "8454531d610570c9215c891c647f2698947b7e9c9fa60615149d3a7b768ec391"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "tension_embodied_data_scale_structure",
+      "path": "vault/memory/tension/tension_embodied_data_scale_structure.md",
+      "sha256_after": "735b5181355def51b064d452276eb8f21b89a0c68e0c1ace18171370a5a8488d",
+      "sha256_before": "a7bcd9f8b242422e5ae0678303e41e464997800af6e1deab3a29495963b50580"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "tension_internal_reasoning_external_skills",
+      "path": "vault/memory/tension/tension_internal_reasoning_external_skills.md",
+      "sha256_after": "6b23f868dbb9c5b29cc93542f2855cf35a351a45f85ffcf098e28a6f6343670c",
+      "sha256_before": "63284ba649c1656086ac0829033b9cfc2050bfe85d39df65d08c413caeae1abb"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "tension_language_prior_action_control",
+      "path": "vault/memory/tension/tension_language_prior_action_control.md",
+      "sha256_after": "399d2a7d74bb54123255f31f62dbc3f734c803049e5b24c8fd7c573971c308f8",
+      "sha256_before": "82a2508960a60810e7486ea8054f92f10cf97fa7bd04717c45104c56cae279c7"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "tension_world_model_eval_action",
+      "path": "vault/memory/tension/tension_world_model_eval_action.md",
+      "sha256_after": "fbce31ce0881625b777e60bc629b31b0934202de5b556c87717e4c574c926480",
+      "sha256_before": "f75c426a69f22630fdb5079104d533c4f5979302649040a24c81729873a88dd8"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_1810_08647",
+      "path": "vault/memory/work/work_arxiv_1810_08647.md",
+      "sha256_after": "7e52ceebf2579ed56d047d9036305d477b59dd2090b86916d388619a6c9498d3",
+      "sha256_before": "a570c81b15db68a2ab072b619617d1225a018538363763716fc6a0a7ac533e28"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_1811_05931",
+      "path": "vault/memory/work/work_arxiv_1811_05931.md",
+      "sha256_after": "a663b744f468b82f0140ffaeace207e0d26f3a59adbfff01842ed66b1f4ff805",
+      "sha256_before": "11246b67ef8756aa5122f28a89996f5954a6e97e67b14bd65ffe64621d01dfd9"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2303_03192",
+      "path": "vault/memory/work/work_arxiv_2303_03192.md",
+      "sha256_after": "144f2b8964b37201f268cc976505154efe36f3b2b17c76794981135f671c7e05",
+      "sha256_before": "f0a6dd347bcd55c4ed215a4a7acc6257428c20350b1854b6a689a54d17d5c1cb"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2506_13018",
+      "path": "vault/memory/work/work_arxiv_2506_13018.md",
+      "sha256_after": "208b5a94898131616a88637d98387f2a1e4e903469cc08543bd7104dd42163a1",
+      "sha256_before": "253f5eddc1cf418b28ac243f0421244dacb3c8c7fdcd3b5ee57c8f47d68e6537"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2601_03220",
+      "path": "vault/memory/work/work_arxiv_2601_03220.md",
+      "sha256_after": "d62b8eeafc732f0b9f2e8d9fce3d96e98ef0476c600cdb42a8d97a6436c7e0d6",
+      "sha256_before": "2aa904108c17c14ccbff4b1a01288729af682c534738f78a0ac7de2a49ef9145"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2605_10332",
+      "path": "vault/memory/work/work_arxiv_2605_10332.md",
+      "sha256_after": "414ca38256c6199e51ee0f0bca492714f975269c138f6e3134a47b4dd438a338",
+      "sha256_before": "8bd1d63a14aeb423a8962c2261f5f9dbc611cab5595195f6524b32eefdd3c10d"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2605_10500",
+      "path": "vault/memory/work/work_arxiv_2605_10500.md",
+      "sha256_after": "273f52dd4f669ca85f143973011cbc4784a194c230118669f887b15afe7f3917",
+      "sha256_before": "4fd4690919d6dc55ebed642a55f554b10ccae96d2a3c18660688993971d6bd51"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2606_26428",
+      "path": "vault/memory/work/work_arxiv_2606_26428.md",
+      "sha256_after": "9efc83cf976c7f58b8cc8672ea05cc3d9b6d5dca67b9b39709443599dce0d4bd",
+      "sha256_before": "6ad877e20b2fd6bc9be19ffede85d6688a136b1fc9e3710e668c53f0b83ef0eb"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2607_11119",
+      "path": "vault/memory/work/work_arxiv_2607_11119.md",
+      "sha256_after": "645eb3b2987c17ad05cef33e6d10c9f9732edc24960fe3bf65c3a129b6103d04",
+      "sha256_before": "a7313f6a215842c261a5d29b3cc4abb717b6db677f72a76dfeca8db30a314bec"
+    }
+  ],
+  "changes": [
+    {
+      "epistemic_status": "superseded",
+      "legacy_status": "archived",
+      "memory_tier": "historical",
+      "object_id": "source_b361ac9cddb531dba17c360e",
+      "path": "vault/archive/source_b361ac9cddb531dba17c360e.md"
+    },
+    {
+      "epistemic_status": "established",
+      "legacy_status": "confirmed",
+      "memory_tier": "canonical",
+      "object_id": "claim_via_interface_first_robot_control_20260715",
+      "path": "vault/knowledge/claims/claim_via_interface_first_robot_control_20260715-via-表明稳定的视觉工具界面可让通用-agent-在限定仿真任务中零样本闭环控制机器人.md"
+    },
+    {
+      "epistemic_status": "exploratory_analogy",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "analogy_epiplexity_memory",
+      "path": "vault/memory/analogy/analogy_epiplexity_memory.md"
+    },
+    {
+      "epistemic_status": "exploratory_analogy",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "analogy_ergodicity_dataset_coverage",
+      "path": "vault/memory/analogy/analogy_ergodicity_dataset_coverage.md"
+    },
+    {
+      "epistemic_status": "exploratory_analogy",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "analogy_kelly_project_portfolio",
+      "path": "vault/memory/analogy/analogy_kelly_project_portfolio.md"
+    },
+    {
+      "epistemic_status": "exploratory_analogy",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "analogy_lie_group_skill_transfer",
+      "path": "vault/memory/analogy/analogy_lie_group_skill_transfer.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_080bdc5349e0e08fa8882e97",
+      "path": "vault/memory/claim/claim_080bdc5349e0e08fa8882e97.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_0b690c465600b65a6f2a3652",
+      "path": "vault/memory/claim/claim_0b690c465600b65a6f2a3652.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_0c81697b0e302dcee8d96199",
+      "path": "vault/memory/claim/claim_0c81697b0e302dcee8d96199.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_23283adb0c3baf33a884cdac",
+      "path": "vault/memory/claim/claim_23283adb0c3baf33a884cdac.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_45e2c33254979ebece6a7502",
+      "path": "vault/memory/claim/claim_45e2c33254979ebece6a7502.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_4766d041f4bbb95d5823e5dd",
+      "path": "vault/memory/claim/claim_4766d041f4bbb95d5823e5dd.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_499470a2d077fe16b177bd1e",
+      "path": "vault/memory/claim/claim_499470a2d077fe16b177bd1e.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_54cac5c21565eb6d274a5383",
+      "path": "vault/memory/claim/claim_54cac5c21565eb6d274a5383.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_92804ba3893e52d0c5696e45",
+      "path": "vault/memory/claim/claim_92804ba3893e52d0c5696e45.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_a13acc3bcafaf6b69954a0c9",
+      "path": "vault/memory/claim/claim_a13acc3bcafaf6b69954a0c9.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_a1bf006b4174d98d1d8108c5",
+      "path": "vault/memory/claim/claim_a1bf006b4174d98d1d8108c5.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_a78ba4a2ebc88876f4393ad0",
+      "path": "vault/memory/claim/claim_a78ba4a2ebc88876f4393ad0.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_ad8c28d32a7d55ab2806574d",
+      "path": "vault/memory/claim/claim_ad8c28d32a7d55ab2806574d.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_agentic_vla_cross_task_20260715",
+      "path": "vault/memory/claim/claim_agentic_vla_cross_task_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_agentic_vla_libero_main_20260715",
+      "path": "vault/memory/claim/claim_agentic_vla_libero_main_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_agentic_vla_one_shot_20260715",
+      "path": "vault/memory/claim/claim_agentic_vla_one_shot_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_agentic_vla_training_efficiency_20260715",
+      "path": "vault/memory/claim/claim_agentic_vla_training_efficiency_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_b035b6de75ccf5819d0e89fa",
+      "path": "vault/memory/claim/claim_b035b6de75ccf5819d0e89fa.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_c7f06719c78cc576410dded2",
+      "path": "vault/memory/claim/claim_c7f06719c78cc576410dded2.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_c9385096b06a12f170a42fa0",
+      "path": "vault/memory/claim/claim_c9385096b06a12f170a42fa0.md"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_conserved_quantity_small_network_correlations_20260716",
+      "path": "vault/memory/claim/claim_conserved_quantity_small_network_correlations_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_d3c1dc84377e8ab740cf0f2b",
+      "path": "vault/memory/claim/claim_d3c1dc84377e8ab740cf0f2b.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_d9476033c30cbb2c7b1f3f51",
+      "path": "vault/memory/claim/claim_d9476033c30cbb2c7b1f3f51.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e0bd63c968b13d31416f354b",
+      "path": "vault/memory/claim/claim_e0bd63c968b13d31416f354b.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e0c466deeea1ce8281a7b176",
+      "path": "vault/memory/claim/claim_e0c466deeea1ce8281a7b176.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e2f86d4a5a367ae1dc8a5e1f",
+      "path": "vault/memory/claim/claim_e2f86d4a5a367ae1dc8a5e1f.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e5379e4b954671b9e870a05b",
+      "path": "vault/memory/claim/claim_e5379e4b954671b9e870a05b.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_e65d29cd493432e151cd8b45",
+      "path": "vault/memory/claim/claim_e65d29cd493432e151cd8b45.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_ea6b984ae4bdd1dfdf5288a1",
+      "path": "vault/memory/claim/claim_ea6b984ae4bdd1dfdf5288a1.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_fdabd7e1d00b7d7dc9352297",
+      "path": "vault/memory/claim/claim_fdabd7e1d00b7d7dc9352297.md"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_parameter_symmetry_conserved_gradient_flow_20260716",
+      "path": "vault/memory/claim/claim_parameter_symmetry_conserved_gradient_flow_20260716.md"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_parameter_symmetry_loss_invariant_group_20260716",
+      "path": "vault/memory/claim/claim_parameter_symmetry_loss_invariant_group_20260716.md"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_parameter_symmetry_orbit_level_set_20260716",
+      "path": "vault/memory/claim/claim_parameter_symmetry_orbit_level_set_20260716.md"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_physo_rnn_reinforcement_learning_method_20260716",
+      "path": "vault/memory/claim/claim_physo_rnn_reinforcement_learning_method_20260716.md"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_physo_units_constraints_reduce_search_20260716",
+      "path": "vault/memory/claim/claim_physo_units_constraints_reduce_search_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_play2perfect_finetuning_necessary_20260715",
+      "path": "vault/memory/claim/claim_play2perfect_finetuning_necessary_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_play2perfect_inhand_pretraining_20260715",
+      "path": "vault/memory/claim/claim_play2perfect_inhand_pretraining_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_play2perfect_realworld_tight_insertion_20260715",
+      "path": "vault/memory/claim/claim_play2perfect_realworld_tight_insertion_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_play2perfect_sample_efficiency_20260715",
+      "path": "vault/memory/claim/claim_play2perfect_sample_efficiency_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_cross_modal_representation_alignment_20260716",
+      "path": "vault/memory/claim/claim_wechat_cross_modal_representation_alignment_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_double_trace_traversable_20260715",
+      "path": "vault/memory/claim/claim_wechat_double_trace_traversable_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_embodied_data_quality_cost_tradeoff_20260716",
+      "path": "vault/memory/claim/claim_wechat_embodied_data_quality_cost_tradeoff_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_embodied_data_structure_not_volume_20260716",
+      "path": "vault/memory/claim/claim_wechat_embodied_data_structure_not_volume_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_embodied_eval_bottleneck_20260715",
+      "path": "vault/memory/claim/claim_wechat_embodied_eval_bottleneck_20260715.md"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_wechat_epiplexity_definition_20260715",
+      "path": "vault/memory/claim/claim_wechat_epiplexity_definition_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_ergodicity_time_ensemble_equivalence_20260716",
+      "path": "vault/memory/claim/claim_wechat_ergodicity_time_ensemble_equivalence_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_expanding_hole_pupil_perception_not_luminance_20260716",
+      "path": "vault/memory/claim/claim_wechat_expanding_hole_pupil_perception_not_luminance_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_ganzfeld_mechanism_20260715",
+      "path": "vault/memory/claim/claim_wechat_ganzfeld_mechanism_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_godel_first_incompleteness_20260716",
+      "path": "vault/memory/claim/claim_wechat_godel_first_incompleteness_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_im_rl_framework_internal_rewards_20260716",
+      "path": "vault/memory/claim/claim_wechat_im_rl_framework_internal_rewards_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_kairos_sim2real_training_20260716",
+      "path": "vault/memory/claim/claim_wechat_kairos_sim2real_training_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_kelly_bet_fraction_20260716",
+      "path": "vault/memory/claim/claim_wechat_kelly_bet_fraction_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_lie_group_continuous_symmetry_20260715",
+      "path": "vault/memory/claim/claim_wechat_lie_group_continuous_symmetry_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_lie_group_definition_20260715",
+      "path": "vault/memory/claim/claim_wechat_lie_group_definition_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_magnetic_bottle_constraint_20260715",
+      "path": "vault/memory/claim/claim_wechat_magnetic_bottle_constraint_20260715.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_non_ergodic_coin_game_20260716",
+      "path": "vault/memory/claim/claim_wechat_non_ergodic_coin_game_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_nonergodic_failure_exit_20260716",
+      "path": "vault/memory/claim/claim_wechat_nonergodic_failure_exit_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_particle_poincare_irrep_20260716",
+      "path": "vault/memory/claim/claim_wechat_particle_poincare_irrep_20260716.md"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_wechat_skillevolver_k4_strategy_exploration_20260716",
+      "path": "vault/memory/claim/claim_wechat_skillevolver_k4_strategy_exploration_20260716.md"
+    },
+    {
+      "epistemic_status": "supported",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "claim_wechat_skillevolver_silent_bypass_audit_20260716",
+      "path": "vault/memory/claim/claim_wechat_skillevolver_silent_bypass_audit_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_standard_model_symmetry_group_20260716",
+      "path": "vault/memory/claim/claim_wechat_standard_model_symmetry_group_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "claim_wechat_wangjun_global_workspace_integration_20260716",
+      "path": "vault/memory/claim/claim_wechat_wangjun_global_workspace_integration_20260716.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "concept_embodied_data_loop",
+      "path": "vault/memory/concept/concept_embodied_data_loop.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_epiplexity",
+      "path": "vault/memory/concept/concept_epiplexity.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_ergodicity",
+      "path": "vault/memory/concept/concept_ergodicity.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_intrinsic_motivation_rl",
+      "path": "vault/memory/concept/concept_intrinsic_motivation_rl.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_kelly_criterion",
+      "path": "vault/memory/concept/concept_kelly_criterion.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_lie_group",
+      "path": "vault/memory/concept/concept_lie_group.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_machine_consciousness_integration",
+      "path": "vault/memory/concept/concept_machine_consciousness_integration.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_parameter_symmetry",
+      "path": "vault/memory/concept/concept_parameter_symmetry.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "concept_perceptual_prediction_bias",
+      "path": "vault/memory/concept/concept_perceptual_prediction_bias.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_representation_convergence",
+      "path": "vault/memory/concept/concept_representation_convergence.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_sim_to_real_scene_infrastructure",
+      "path": "vault/memory/concept/concept_sim_to_real_scene_infrastructure.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_skill_evolution",
+      "path": "vault/memory/concept/concept_skill_evolution.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_symbolic_regression",
+      "path": "vault/memory/concept/concept_symbolic_regression.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "concept_world_model_evaluation",
+      "path": "vault/memory/concept/concept_world_model_evaluation.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "experiment_7101e03fb065226e65f388a5",
+      "path": "vault/memory/experiment/experiment_7101e03fb065226e65f388a5.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "experiment_b6f1e1956690ac08fd56a5da",
+      "path": "vault/memory/experiment/experiment_b6f1e1956690ac08fd56a5da.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "experiment_dataset_trajectory_coverage",
+      "path": "vault/memory/experiment/experiment_dataset_trajectory_coverage.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "experiment_visual_illusion_world_model",
+      "path": "vault/memory/experiment/experiment_visual_illusion_world_model.md"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_epiplexity_memory_compaction",
+      "path": "vault/memory/hypothesis/hypothesis_epiplexity_memory_compaction.md"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_ergodicity_offline_coverage",
+      "path": "vault/memory/hypothesis/hypothesis_ergodicity_offline_coverage.md"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_illusion_world_model_probe",
+      "path": "vault/memory/hypothesis/hypothesis_illusion_world_model_probe.md"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_invariants_skill_transfer",
+      "path": "vault/memory/hypothesis/hypothesis_invariants_skill_transfer.md"
+    },
+    {
+      "epistemic_status": "hypothetical",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "hypothesis_kelly_project_portfolio",
+      "path": "vault/memory/hypothesis/hypothesis_kelly_project_portfolio.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "opportunity_invariant_skill_transfer",
+      "path": "vault/memory/opportunity/opportunity_invariant_skill_transfer.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "project_embodied_agent_learning_candidate",
+      "path": "vault/memory/project/project_embodied_agent_learning_candidate.md"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "question_1e0121d4bdc2f58cea1ca426",
+      "path": "vault/memory/question/question_1e0121d4bdc2f58cea1ca426.md"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_data_quality_to_capability",
+      "path": "vault/memory/question/question_data_quality_to_capability.md"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_machine_consciousness_falsifiability",
+      "path": "vault/memory/question/question_machine_consciousness_falsifiability.md"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_offline_coverage_deployment",
+      "path": "vault/memory/question/question_offline_coverage_deployment.md"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_representation_equivalence",
+      "path": "vault/memory/question/question_representation_equivalence.md"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_skill_compilation_boundary",
+      "path": "vault/memory/question/question_skill_compilation_boundary.md"
+    },
+    {
+      "epistemic_status": "open_question",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "question_world_model_action_value",
+      "path": "vault/memory/question/question_world_model_action_value.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "synthesis_embodied_data_bottleneck_m6",
+      "path": "vault/memory/synthesis/synthesis_embodied_data_bottleneck_m6.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "synthesis_limited_resource_experience_m6",
+      "path": "vault/memory/synthesis/synthesis_limited_resource_experience_m6.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "tension_embodied_data_scale_structure",
+      "path": "vault/memory/tension/tension_embodied_data_scale_structure.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "tension_internal_reasoning_external_skills",
+      "path": "vault/memory/tension/tension_internal_reasoning_external_skills.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "tension_language_prior_action_control",
+      "path": "vault/memory/tension/tension_language_prior_action_control.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "trusted",
+      "memory_tier": "trusted",
+      "object_id": "tension_world_model_eval_action",
+      "path": "vault/memory/tension/tension_world_model_eval_action.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_1810_08647",
+      "path": "vault/memory/work/work_arxiv_1810_08647.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_1811_05931",
+      "path": "vault/memory/work/work_arxiv_1811_05931.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2303_03192",
+      "path": "vault/memory/work/work_arxiv_2303_03192.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2506_13018",
+      "path": "vault/memory/work/work_arxiv_2506_13018.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2601_03220",
+      "path": "vault/memory/work/work_arxiv_2601_03220.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2605_10332",
+      "path": "vault/memory/work/work_arxiv_2605_10332.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2605_10500",
+      "path": "vault/memory/work/work_arxiv_2605_10500.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2606_26428",
+      "path": "vault/memory/work/work_arxiv_2606_26428.md"
+    },
+    {
+      "epistemic_status": "unknown",
+      "legacy_status": "working",
+      "memory_tier": "working",
+      "object_id": "work_arxiv_2607_11119",
+      "path": "vault/memory/work/work_arxiv_2607_11119.md"
+    }
+  ],
+  "documents_changed": 115,
+  "documents_considered": 115,
+  "documents_to_change": 115,
+  "dry_run": false,
+  "idempotent_noop": false,
+  "unknown_to_canonical": 0,
+  "unreadable": []
+}

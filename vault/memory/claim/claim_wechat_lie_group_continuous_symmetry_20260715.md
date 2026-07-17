@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_75", "evidence_kind": "quote", "source_id": "sour
 type: "claim"
 status: "working"
 created_at: "2026-07-15T21:00:00+08:00"
-updated_at: "2026-07-17T12:01:11+08:00"
+updated_at: "2026-07-17T15:23:54+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -27,12 +27,12 @@ claim_confidence: "medium"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "weekly-consolidation-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:54+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -43,7 +43,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "claim-6"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-claim-6-rev-c58044a5b432.md"
 origin_candidate_sha256: "c58044a5b43232c329cb266cdfae7d3f94fb95c929382b41123e2ad29585f22a"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_9bf390128b5663f74c0fcd4a"
 ---
 
 # 李群与连续对称

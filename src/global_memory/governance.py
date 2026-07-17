@@ -6,13 +6,15 @@ from pathlib import Path
 from typing import Any
 
 from .errors import ValidationError
+from .epistemics import default_epistemic_status, infer_epistemic_status
 from .markdown import atomic_write_text, read_document, render_document
 from .memory import ExceptionService
 from .proposals import CANONICAL_DIRECTORIES
-from .repository import Repository, now_iso
+from .repository import Repository, now_iso, sha256_bytes
 
 
-POLICY_VERSION = "trusted-promotion-v1"
+POLICY_VERSION = "trusted-promotion-v2"
+AUTO_TRUSTED_TYPES = {"claim", "concept"}
 
 
 @dataclass(frozen=True)
@@ -46,14 +48,24 @@ class PromotionService:
             if relation.get("type") == "contradicts" and relation.get("status") not in {"rejected", "superseded"}
         ]
         object_type = str(metadata.get("type"))
+        if object_type not in AUTO_TRUSTED_TYPES:
+            failed.append(f"automatic trusted promotion is paused for {object_type}")
         if metadata.get("user_locked") and metadata.get("status") != "trusted":
             failed.append("user_locked object cannot be automatically changed")
-        if int(metadata.get("consolidation_count", 0)) < 1:
-            failed.append("requires at least one consolidation review")
+        from .consolidation import ConsolidationReceiptService
+        receipt = ConsolidationReceiptService(self.repository).valid_for(object_id)
+        if receipt is None:
+            failed.append("requires a valid hash-bound consolidation receipt")
         else:
-            reasons.append("completed consolidation review")
+            reasons.append("valid consolidation receipt matches current object")
         if contradictions:
             failed.append("unresolved direct contradiction")
+        if metadata.get("unresolved_contradictions"):
+            failed.append("unresolved contradiction metadata")
+        if metadata.get("needs_revalidation") or metadata.get("pending_revision_id"):
+            failed.append("working revision awaits revalidation")
+        if metadata.get("user_rejected"):
+            failed.append("user rejected promotion")
         if object_type == "claim":
             checks = {
                 "atomic claim": metadata.get("atomicity_status") == "atomic",
@@ -63,32 +75,29 @@ class PromotionService:
                 "primary or official authority": metadata.get("epistemic_source_authority") in {"primary", "official", "peer_reviewed"},
                 "explicit applicability": bool(metadata.get("applicability")),
                 "supporting evidence exists": any(item.get("stance") == "supports" for item in metadata.get("evidence", [])),
+                "drift audit has no high risk": not metadata.get("high_risk_drift"),
             }
             for label, passed in checks.items():
                 (reasons if passed else failed).append(label)
         elif object_type == "concept":
-            reuse = int(metadata.get("reuse_count", 0))
-            if reuse >= 2 or len(set(metadata.get("source_ids", []))) >= 2:
-                reasons.append("concept reused by independent material")
+            work_ids = {str(item) for item in metadata.get("reuse_work_ids", []) if item}
+            for source_id in metadata.get("source_ids", []):
+                try:
+                    _, source, _ = self.repository.find_document(str(source_id))
+                    work_id = source.get("work_id")
+                    if work_id:
+                        work_ids.add(str(work_id))
+                except Exception:
+                    continue
+            if len(work_ids) >= 2:
+                reasons.append("concept reused by two independent works")
             else:
-                failed.append("concept requires two independent uses or sources")
+                failed.append("concept requires two independent work_ids")
             if metadata.get("duplicate_of"):
                 failed.append("unresolved duplicate concept")
-        elif object_type == "analogy":
-            if metadata.get("shared_structure") and metadata.get("where_it_breaks"):
-                reasons.append("analogy records shared structure and break boundary")
-            else:
-                failed.append("analogy requires shared_structure and where_it_breaks")
-        elif object_type in {"question", "tension", "hypothesis", "anomaly", "intuition"}:
-            if metadata.get("source_ids"):
-                reasons.append(f"{object_type} is durable and source-linked")
-            else:
-                failed.append(f"{object_type} has no source")
-        elif object_type == "synthesis":
-            if len(set(metadata.get("source_ids", []))) >= 2 and metadata.get("unresolved_tensions") is not None:
-                reasons.append("multi-source synthesis preserves unresolved tensions")
-            else:
-                failed.append("synthesis requires multiple sources and unresolved_tensions")
+        elif object_type not in AUTO_TRUSTED_TYPES:
+            # These objects can still be manually promoted with an explicit reason.
+            pass
         else:
             failed.append(f"automatic trusted policy is not defined for {object_type}")
         score = max(0, min(100, 50 + 8 * len(reasons) - 12 * len(failed)))
@@ -121,8 +130,12 @@ class PromotionService:
             "contradictions": evaluation.contradictions, "promoted_at": timestamp,
             "promoted_by": "promotion-policy" if automatic else "user",
         })
+        epistemic_status = metadata.get("epistemic_status") or default_epistemic_status(str(metadata.get("type")), "trusted")
+        if metadata.get("type") == "claim" and epistemic_status in {"unknown", "provisional"}:
+            epistemic_status = "supported"
         metadata.update({
             "status": "trusted", "memory_tier": "trusted", "updated_at": timestamp,
+            "epistemic_status": epistemic_status,
             "updated_by": "promotion-policy", "trust_score": evaluation.trust_score,
             "trust_reasons": evaluation.reasons, "promotion_history": history,
         })
@@ -178,6 +191,7 @@ class PromotionService:
         timestamp = now_iso()
         metadata.update({
             "status": "canonical", "memory_tier": "canonical", "updated_at": timestamp,
+            "epistemic_status": infer_epistemic_status(metadata, "canonical"),
             "updated_by": "user", "user_locked": lock, "canonical_promotion_id": promotion_id,
         })
         card["status"] = "approved"
@@ -220,24 +234,51 @@ class PromotionService:
         if not self.repository.rel(path).startswith("vault/memory/") or metadata.get("status") != "trusted":
             raise ValidationError("only trusted memory can be demoted to working")
         timestamp = now_iso()
+        before = path.read_bytes()
+        before_sha = sha256_bytes(before)
+        version_path = self.repository.root / "vault" / "archive" / "versions" / object_id / f"{before_sha}.md"
+        self.repository.immutable_write(version_path, before)
+        from_epistemic = infer_epistemic_status(metadata, "trusted")
+        demotion_id = "demotion_" + hashlib.sha256(f"{object_id}:{before_sha}:{reason.strip()}".encode()).hexdigest()[:24]
         history = list(metadata.get("promotion_history", []))
         history.append({
-            "promotion_id": "demotion_" + hashlib.sha256(f"{object_id}:{timestamp}".encode()).hexdigest()[:24],
+            "promotion_id": demotion_id,
             "object_id": object_id, "from_status": "trusted", "to_status": "working",
             "promotion_mode": "user_approved", "policy_version": POLICY_VERSION,
             "reasons": [reason.strip()], "promoted_at": timestamp, "promoted_by": "user",
         })
         metadata.update({
             "status": "working", "memory_tier": "working", "updated_at": timestamp,
+            "epistemic_status": from_epistemic,
             "updated_by": "user", "trust_score": 0, "trust_reasons": [],
             "promotion_history": history,
         })
         atomic_write_text(path, render_document(metadata, body))
+        event = {
+            "id": demotion_id, "type": "demotion_event", "status": "recorded",
+            "title": f"Demotion: {metadata.get('title', object_id)}",
+            "created_at": timestamp, "updated_at": timestamp,
+            "demotion_id": demotion_id, "object_id": object_id,
+            "from_tier": "trusted", "to_tier": "working",
+            "from_epistemic_status": from_epistemic,
+            "to_epistemic_status": from_epistemic,
+            "trigger_source_ids": list(metadata.get("source_ids", [])),
+            "reason": reason.strip(), "previous_version": self.repository.rel(version_path),
+            "new_revision": self.repository.rel(path), "created_by": "user",
+            "exception_id": None,
+        }
+        event_path = self.repository.root / "vault" / "receipts" / "demotions" / f"demotion-{demotion_id}.md"
+        self.repository.immutable_write(event_path, render_document(event, "# Demotion Event\n").encode("utf-8"))
         self.repository.rebuild_index()
         self.repository.append_event("memory-events", {
             "event": "demoted-working", "object_id": object_id, "reason": reason.strip(),
         })
-        return {"object_id": object_id, "status": "working", "path": self.repository.rel(path)}
+        return {
+            "demotion_id": demotion_id, "object_id": object_id, "status": "working",
+            "memory_tier": "working", "epistemic_status": from_epistemic,
+            "path": self.repository.rel(path), "event_path": self.repository.rel(event_path),
+            "previous_version": self.repository.rel(version_path),
+        }
 
     def list_cards(self, statuses: set[str] | None = None) -> list[dict[str, Any]]:
         cards: list[dict[str, Any]] = []

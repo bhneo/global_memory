@@ -9,12 +9,13 @@ from pathlib import Path
 from typing import Any, Callable
 
 from .errors import NotFoundError, ValidationError
+from .epistemics import default_epistemic_status, infer_epistemic_status, infer_tier
 from .markdown import atomic_write_text, read_document, render_document
 from .repository import Repository, now_iso, sha256_bytes
 
 
 FailureHook = Callable[[str], None]
-MEMORY_SCHEMA_VERSION = 1
+MEMORY_SCHEMA_VERSION = 2
 
 
 @dataclass(frozen=True)
@@ -103,6 +104,7 @@ class WorkingMemoryService:
         metadata.pop("proposed_status", None)
         metadata.update({
             "status": "working", "memory_tier": "working", "updated_at": timestamp,
+            "epistemic_status": metadata.get("epistemic_status") or default_epistemic_status(str(metadata.get("type"))),
             "created_by": metadata.get("created_by") or str(proposal.get("processor", "bundle-compiler")),
             "updated_by": "working-ingestion-v1", "model_provider": proposal.get("provider"),
             "model_version": proposal.get("model"), "compiler_version": proposal.get("processor", "unknown"),
@@ -127,9 +129,20 @@ class WorkingMemoryService:
             metadata["created_at"] = old["created_at"]
             metadata["promotion_history"] = list(old.get("promotion_history", []))
             metadata["consolidation_count"] = int(old.get("consolidation_count", 0))
+            metadata["last_consolidated_at"] = old.get("last_consolidated_at")
+            metadata["last_consolidation_id"] = old.get("last_consolidation_id")
+            metadata["epistemic_status"] = infer_epistemic_status(old, infer_tier(old))
             old_sources = [str(item) for item in old.get("source_ids", [])]
             metadata["source_ids"] = list(dict.fromkeys([*old_sources, *metadata.get("source_ids", [])]))
-            body = old_body.rstrip() + "\n\n## Working update\n\n" + body.strip() + "\n"
+            change = {
+                "change_type": metadata.get("change_type", "support"),
+                "previous_statement": old_body.strip(), "new_statement": body.strip(),
+                "changed_fields": ["source_ids", "body"],
+                "reason": "incremental compiler update", "trigger_source": (metadata.get("source_ids") or [None])[-1],
+                "evidence_added": [],
+            }
+            metadata["change_history"] = [*old.get("change_history", []), change]
+            body = old_body.rstrip() + "\n\n## Change record\n\n" + json.dumps(change, ensure_ascii=False, indent=2) + "\n"
         return render_document(metadata, body)
 
     def ingest_bundle(
@@ -156,6 +169,7 @@ class WorkingMemoryService:
         exceptions: list[str] = []
         skipped: list[str] = []
         touched_items: list[dict[str, Any]] = []
+        evolved_paths: list[str] = []
         for item in items:
             item_id = str(item.get("item_id"))
             if item_id not in selected_ids or item.get("decision") in {"approved", "rejected", "superseded", "working"}:
@@ -193,6 +207,21 @@ class WorkingMemoryService:
                     touched_items.append(item)
                     continue
                 existing = (target, old, old_body)
+                if infer_tier(old, target) == "trusted":
+                    from .evolution import KnowledgeEvolutionService
+                    change_type = str(candidate.get("change_type") or item.get("change_type") or "refine")
+                    evolution = KnowledgeEvolutionService(self.repository).apply(
+                        object_id, candidate, body, change_type=change_type,
+                        reason=str(candidate.get("change_reason") or "incremental material changed trusted memory"),
+                        trigger_source=(list(candidate.get("source_ids", [])) or [None])[-1],
+                    )
+                    evolved_paths.append(str(evolution.get("revision_path") or self.repository.rel(target)))
+                    item["decision"] = "working"
+                    item["working_path"] = evolved_paths[-1]
+                    item["evolution_action"] = evolution["action"]
+                    item["working_at"] = now_iso()
+                    touched_items.append(item)
+                    continue
             elif item.get("action") == "update":
                 try:
                     found = self.repository.find_document(object_id)
@@ -251,7 +280,7 @@ class WorkingMemoryService:
             })
         return WorkingWriteResult(
             proposal_id, [self.repository.rel(path) for path, _, updated, _ in writes if not updated],
-            [self.repository.rel(path) for path, _, updated, _ in writes if updated], exceptions, skipped,
+            [*[self.repository.rel(path) for path, _, updated, _ in writes if updated], *evolved_paths], exceptions, skipped,
         )
 
 

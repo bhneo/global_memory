@@ -36,7 +36,7 @@
 - [[memory/claim/claim_45e2c33254979ebece6a7502|Revised October 06 2023]] · `working`
 - [[memory/claim/claim_0b690c465600b65a6f2a3652|Technology 3 University of Science]] · `working`
 - [[memory/claim/claim_d9476033c30cbb2c7b1f3f51|Technology of China 4 Microsoft Research 5 Institute for AI Industry Research (AIR), Tsinghua University Embodied agents can benefit from skills that]] · `working`
-- [[knowledge/claims/claim_via_interface_first_robot_control_20260715-via-表明稳定的视觉工具界面可让通用-agent-在限定仿真任务中零样本闭环控制机器人|VIA 表明通用视觉 Agent 可在限定仿真任务中通过工具界面零样本闭环控制机器人]] · `confirmed`
+- [[knowledge/claims/claim_via_interface_first_robot_control_20260715-via-表明稳定的视觉工具界面可让通用-agent-在限定仿真任务中零样本闭环控制机器人|VIA 表明通用视觉 Agent 可在限定仿真任务中通过工具界面零样本闭环控制机器人]] · `canonical`
 - [[memory/claim/claim_92804ba3893e52d0c5696e45|humans are able to overcome t]] · `working`
 - [[memory/claim/claim_080bdc5349e0e08fa8882e97|then consumed unchanged, with no mechanism to improve from real use. We proposeSkillEvolver, a lightweight, plug-and-play solution foronline skill learning, in]] · `working`
 - [[memory/claim/claim_c7f06719c78cc576410dded2|useful information be constructed from merely applying deterministic transformations to existing data? Can the learnable content in data be evaluated without co]] · `working`

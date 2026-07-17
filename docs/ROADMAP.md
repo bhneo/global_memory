@@ -1,5 +1,17 @@
 # Roadmap
 
+## M8 — Trustworthy Consolidation and Incremental Knowledge Evolution
+
+- P0 six-platform CI, independent diagnostics and artifacts: implemented and publicly green.
+- Orthogonal Memory Tier / Epistemic Status, explicit Context mapping and migration: implemented and verified on the real vault.
+- Hash-bound Consolidation Receipts and narrow Claim/Concept Promotion: implemented.
+- Trusted support, Working Revision, conflict/Exception and explicit Demotion Event: implemented.
+- Sequential A→B→C support/contradict acceptance and semantic drift interface: implemented in deterministic fixtures.
+- Weekly report and generated metrics: implemented; final real-vault counts are generated, not hand-maintained.
+- Milestone close gate: full local acceptance is complete; confirm the six CI jobs on the final commit.
+
+M8 deliberately does not add embeddings, vector/graph databases, new MCP tools, browser ingestion, Web UI or multi-Agent orchestration.
+
 Current handoff (2026-07-17): M7 automatic consolidation and promotion governance is implemented. Routine candidates become Working, policy-backed Weekly may produce Trusted memory and exception/promotion queues, and Canonical remains explicit human confirmation. The legacy pending corpus is migrated only after dry-run, backup and verification. Future work is real usage calibration of trust thresholds and review compression, not per-item approval.
 
 ## M6 — Knowledge Distillation and Graph Formation（已完成工程与首轮受控蒸馏）

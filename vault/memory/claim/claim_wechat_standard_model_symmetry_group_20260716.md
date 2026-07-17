@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "该文称标准模型通常以对称群 SU(3)×SU(2)×U(1) 表示"
 created_at: "2026-07-16T10:48:00+08:00"
-updated_at: "2026-07-17T12:01:11+08:00"
+updated_at: "2026-07-17T15:23:57+08:00"
 aliases: []
 tags: ["standard-model", "SU(3)", "SU(2)", "U(1)"]
 domains: ["physics", "mathematics"]
@@ -26,12 +26,12 @@ split_from: "claim_wechat_particle_poincare_wigner_20260716"
 split_reason: "将标准模型内部对称群与庞加莱群表示定义分开核验"
 memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "weekly-consolidation-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:57+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -42,7 +42,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "claim-23.split-2"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-claim-23.split-2-65cac6eea4f8.md"
 origin_candidate_sha256: "65cac6eea4f878a58f929ec78c9689edd27fd1668519434f730901f21776e8db"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_641cb14a4ab02cebb9fe7e9e"
 ---
 
 该文称标准模型通常以对称群 SU(3)×SU(2)×U(1) 表示。

@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "来源原文：GitHub - WassimTenachi/PhySO: Physical Symbolic Optimization · GitHub"
 created_at: "2026-07-17T12:11:33+08:00"
-updated_at: "2026-07-17T12:11:33+08:00"
+updated_at: "2026-07-17T15:23:36+08:00"
 aliases: []
 tags: []
 domains: []
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-07-17T15:23:36+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -43,7 +43,10 @@ origin_proposal_id: "proposal_bundle_7b369a05f01115b8bba9"
 origin_item_id: "claim-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_7b369a05f01115b8bba9-claim-1.md"
 origin_candidate_sha256: "93cfd722707b3dfa88b86b794d4170a2cdc6fca0db6bac4242a817b39029bdc5"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_1810807c9107eda22698af42"
 ---
 
 # 来源原文：GitHub - WassimTenachi/PhySO: Physical Symbolic Optimization · GitHub

@@ -4,7 +4,7 @@ type: "concept"
 status: "trusted"
 title: "具身数据闭环"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T12:03:05+08:00"
+updated_at: "2026-07-17T15:23:58+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_0a113baae7ce4d1ab78da1
 change_reason: "M6 controlled corpus distillation; requires human review"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:58+08:00"
 last_verified_at: null
 trust_score: 66
 trust_reasons: ["completed consolidation review", "concept reused by independent material"]
@@ -30,7 +30,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "concept-30"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-concept_embodied_data_loop.md"
 origin_candidate_sha256: "d11d97a36dac2ee96d62d2401d19f3909f968fad33082923d307a5f37f6e117a"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_0f99a505d303d9b8dde41c2f"
 ---
 
 # 具身数据闭环

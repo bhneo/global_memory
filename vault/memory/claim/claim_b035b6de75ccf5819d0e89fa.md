@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "Draft version October 10, 2023 Typeset using LATEX twocolumn style in AASTeX63 Deep symbolic regression for physics guided by units constraints: toward the auto"
 created_at: "2026-07-17T12:17:07+08:00"
-updated_at: "2026-07-17T12:17:07+08:00"
+updated_at: "2026-07-17T15:23:39+08:00"
 aliases: []
 tags: []
 domains: []
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-07-17T15:23:39+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -43,7 +43,10 @@ origin_proposal_id: "proposal_bundle_7e9e9ea5035dd1e5ce4e"
 origin_item_id: "claim-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_7e9e9ea5035dd1e5ce4e-claim-1.md"
 origin_candidate_sha256: "546ff9225184643c50c2985466be9f6c12b0109d42965814f9f4063863536695"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_06093e6856586c44147c0049"
 ---
 
 # Draft version October 10, 2023 Typeset using LATEX twocolumn style in AASTeX63 Deep symbolic regression for physics guided by units constraints: toward the auto

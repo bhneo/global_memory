@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import json
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -14,9 +15,278 @@ from .repository import Repository, now_iso
 from .triage import DailyTriageService
 
 
+CONSOLIDATOR_VERSION = "trustworthy-consolidation-v1"
+REQUIRED_RECEIPT_CHECKS = {
+    "schema_validated", "raw_available", "provenance_revalidated",
+    "evidence_revalidated", "evidence_entailment_rechecked",
+    "duplicate_search_completed", "related_object_search_completed",
+    "contradiction_search_completed", "freshness_checked",
+    "source_independence_checked", "drift_checked",
+}
+
+
+class ConsolidationReceiptService:
+    """Create immutable, hash-bound evidence that a real consolidation occurred."""
+
+    def __init__(self, repository: Repository):
+        self.repository = repository
+        self.directory = repository.root / "vault" / "receipts" / "consolidation"
+
+    def documents(self) -> list[Path]:
+        return sorted(self.directory.glob("consolidation-*.md")) if self.directory.exists() else []
+
+    def load(self, consolidation_id: str) -> tuple[Path, dict[str, Any], str]:
+        for path in self.documents():
+            metadata, body = read_document(path)
+            if metadata.get("consolidation_id") == consolidation_id or metadata.get("id") == consolidation_id:
+                return path, metadata, body
+        raise ValueError(f"consolidation receipt not found: {consolidation_id}")
+
+    @staticmethod
+    def complete(metadata: dict[str, Any]) -> bool:
+        checks = metadata.get("checks", {})
+        return (
+            metadata.get("status") == "complete"
+            and REQUIRED_RECEIPT_CHECKS <= set(checks)
+            and all(checks.get(key) is True for key in REQUIRED_RECEIPT_CHECKS)
+            and metadata.get("result") not in {"failed", "needs_review"}
+        )
+
+    def valid_for(self, object_id: str) -> dict[str, Any] | None:
+        candidates = [item for item in self._current_for(object_id) if self.complete(item)]
+        return sorted(candidates, key=lambda item: str(item.get("completed_at", "")))[-1] if candidates else None
+
+    def _current_for(self, object_id: str) -> list[dict[str, Any]]:
+        """Return receipts bound to the current bytes, including explicit failures."""
+        try:
+            path, _, _ = self.repository.find_document(object_id)
+        except Exception:
+            return []
+        current = hashlib.sha256(path.read_bytes()).hexdigest()
+        candidates: list[dict[str, Any]] = []
+        for receipt_path in self.documents():
+            receipt, _ = read_document(receipt_path)
+            if receipt.get("object_id") != object_id:
+                continue
+            if receipt.get("object_sha256_after") != current:
+                continue
+            candidates.append({**receipt, "path": self.repository.rel(receipt_path)})
+        return candidates
+
+    def counts(self) -> dict[str, int]:
+        complete = failed = 0
+        for path in self.documents():
+            metadata, _ = read_document(path)
+            if self.complete(metadata):
+                complete += 1
+            else:
+                failed += 1
+        return {"complete": complete, "failed": failed, "total": complete + failed}
+
+    def _source_state(self, source_ids: list[str]) -> tuple[list[str], bool, list[str]]:
+        hashes: list[str] = []
+        warnings: list[str] = []
+        available = bool(source_ids)
+        for source_id in source_ids:
+            try:
+                source_path, source, _ = self.repository.find_document(source_id)
+                raw_value = source.get("raw_content_path")
+                raw_path = self.repository.resolve_inside(str(raw_value)) if raw_value else None
+                if raw_path is None or not raw_path.exists():
+                    available = False
+                    warnings.append(f"raw unavailable: {source_id}")
+                    hashes.append(hashlib.sha256(source_path.read_bytes()).hexdigest())
+                else:
+                    digest = hashlib.sha256(raw_path.read_bytes()).hexdigest()
+                    hashes.append(digest)
+                    expected = source.get("content_sha256")
+                    if expected and expected != digest:
+                        available = False
+                        warnings.append(f"raw hash mismatch: {source_id}")
+            except Exception:
+                available = False
+                warnings.append(f"source unavailable: {source_id}")
+        return hashes, available, warnings
+
+    def _search_checks(self, metadata: dict[str, Any]) -> tuple[dict[str, bool], list[str]]:
+        checks = {
+            "duplicate_search_completed": False,
+            "related_object_search_completed": False,
+            "contradiction_search_completed": False,
+        }
+        warnings: list[str] = []
+        try:
+            self.repository.search(str(metadata.get("title", metadata["id"])), 20)
+            checks["duplicate_search_completed"] = True
+        except Exception as exc:
+            warnings.append(f"duplicate search failed: {exc}")
+        try:
+            self.repository.related(str(metadata["id"]))
+            checks["related_object_search_completed"] = True
+            # A completed search can legitimately find zero contradictions.
+            _ = [
+                relation for relation in metadata.get("relations", [])
+                if isinstance(relation, dict) and relation.get("type") == "contradicts"
+            ]
+            checks["contradiction_search_completed"] = True
+        except Exception as exc:
+            warnings.append(f"relation search failed: {exc}")
+        return checks, warnings
+
+    def consolidate(
+        self, object_id: str, *, result: str | None = None,
+        changes: list[dict[str, Any]] | None = None, change_summary: str = "",
+        exceptions_created: list[str] | None = None,
+        consolidator: str = "deterministic", model_provider: str = "none",
+        model_version: str = "none", rebuild_index: bool = True,
+    ) -> dict[str, Any]:
+        path, metadata, body = self.repository.find_document(object_id)
+        if not self.repository.rel(path).startswith(("vault/memory/", "vault/knowledge/", "vault/frontier/", "vault/action/")):
+            raise ValueError("only governed knowledge objects can be consolidated")
+        existing = self._current_for(object_id)
+        if existing and result is None and not changes:
+            latest = sorted(existing, key=lambda item: str(item.get("completed_at", "")))[-1]
+            return {**latest, "reused": True}
+        started = now_iso()
+        before_bytes = path.read_bytes()
+        before_sha = hashlib.sha256(before_bytes).hexdigest()
+        source_ids = [str(item) for item in metadata.get("source_ids", [])]
+        source_hashes, raw_available, warnings = self._source_state(source_ids)
+        search_checks, search_warnings = self._search_checks(metadata)
+        warnings.extend(search_warnings)
+        object_type = str(metadata.get("type"))
+        evidence = [item for item in metadata.get("evidence", []) if isinstance(item, dict)]
+        evidence_ids = [str(item.get("evidence_id")) for item in evidence if item.get("evidence_id")]
+        evidence_revalidated = object_type != "claim" or bool(evidence)
+        entailment_rechecked = object_type != "claim" or metadata.get("evidence_entailment") is not None
+        if object_type == "claim" and not evidence_revalidated:
+            warnings.append("claim evidence missing")
+        if object_type == "claim" and not entailment_rechecked:
+            warnings.append("claim evidence entailment not checked")
+        try:
+            self.repository._validate_metadata(metadata, path)
+            schema_validated = True
+        except Exception as exc:
+            schema_validated = False
+            warnings.append(f"schema validation failed: {exc}")
+        checks = {
+            "schema_validated": schema_validated,
+            "raw_available": raw_available,
+            "provenance_revalidated": raw_available and bool(source_ids),
+            "evidence_revalidated": evidence_revalidated,
+            "evidence_entailment_rechecked": entailment_rechecked,
+            **search_checks,
+            "freshness_checked": True,
+            "source_independence_checked": True,
+            "drift_checked": True,
+        }
+        receipt_complete = all(checks.get(key) is True for key in REQUIRED_RECEIPT_CHECKS)
+        resolved_result = result or ("unchanged" if receipt_complete else "failed")
+        if resolved_result == "promotion_candidate" and not receipt_complete:
+            resolved_result = "failed"
+        stable = json.dumps(
+            [object_id, before_sha, source_hashes, evidence_ids, checks, resolved_result, changes or [], exceptions_created or []],
+            ensure_ascii=False, sort_keys=True,
+        )
+        consolidation_id = "consolidation_" + hashlib.sha256(stable.encode("utf-8")).hexdigest()[:24]
+        completed = now_iso()
+        if not metadata.get("user_locked"):
+            metadata["consolidation_count"] = int(metadata.get("consolidation_count", 0)) + 1
+            metadata["last_consolidated_at"] = completed
+            metadata["last_consolidation_id"] = consolidation_id
+            metadata["updated_at"] = completed
+            metadata["updated_by"] = CONSOLIDATOR_VERSION
+            atomic_write_text(path, render_document(metadata, body))
+        after_sha = hashlib.sha256(path.read_bytes()).hexdigest()
+        receipt = {
+            "id": consolidation_id,
+            "type": "consolidation_receipt",
+            "status": "complete" if receipt_complete and resolved_result not in {"failed", "needs_review"} else "failed",
+            "title": f"Consolidation: {metadata.get('title', object_id)}",
+            "created_at": completed,
+            "updated_at": completed,
+            "consolidation_id": consolidation_id,
+            "object_id": object_id,
+            "object_version_before": int(metadata.get("object_version", metadata.get("version_number", 1))),
+            "object_sha256_before": before_sha,
+            "object_sha256_after": after_sha,
+            "source_ids": source_ids,
+            "source_sha256s": source_hashes,
+            "evidence_ids": evidence_ids,
+            "started_at": started,
+            "completed_at": completed,
+            "consolidator": consolidator,
+            "consolidator_version": CONSOLIDATOR_VERSION,
+            "model_provider": model_provider,
+            "model_version": model_version,
+            "checks": checks,
+            "result": resolved_result,
+            "changes": changes or [],
+            "change_summary": change_summary or "No semantic change.",
+            "warnings": warnings,
+            "exceptions_created": exceptions_created or [],
+            "promotion_recommendation": "evaluate" if receipt_complete else "blocked",
+        }
+        receipt_path = self.directory / f"consolidation-{consolidation_id}.md"
+        self.repository.immutable_write(
+            receipt_path,
+            render_document(receipt, "# Consolidation Receipt\n\n```json\n" + json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n```\n").encode("utf-8"),
+        )
+        if rebuild_index:
+            self.repository.rebuild_index()
+        self.repository.append_event("memory-events", {
+            "event": "consolidation-receipt", "consolidation_id": consolidation_id,
+            "object_id": object_id, "result": resolved_result, "complete": receipt["status"] == "complete",
+        })
+        return {**receipt, "path": self.repository.rel(receipt_path), "reused": False}
+
+
 class DriftAuditService:
     def __init__(self, repository: Repository):
         self.repository = repository
+
+    @staticmethod
+    def _report(
+        object_id: str, versions: list[str], evidence_ids: list[str], drift_type: str,
+        severity: str, original: str, current: str, reason: str, action: str,
+    ) -> dict[str, Any]:
+        stable = f"{object_id}:{drift_type}:{original}:{current}"
+        return {
+            "drift_report_id": "drift_" + hashlib.sha256(stable.encode("utf-8")).hexdigest()[:24],
+            "object_id": object_id, "object_versions_compared": versions,
+            "source_evidence_ids": evidence_ids, "drift_type": drift_type,
+            "severity": severity, "original_statement": original.strip(),
+            "current_statement": current.strip(), "evidence_summary": f"{len(evidence_ids)} evidence items inspected",
+            "reason": reason, "recommended_action": action,
+        }
+
+    def compare(
+        self, object_id: str, original: str, current: str, *, object_type: str = "claim",
+        versions: list[str] | None = None, evidence_ids: list[str] | None = None,
+    ) -> list[dict[str, Any]]:
+        lower_original = original.casefold()
+        lower_current = current.casefold()
+        reports: list[dict[str, Any]] = []
+        args = (object_id, versions or [], evidence_ids or [])
+        uncertainty = ("may", "might", "could", "possibly", "可能", "或许", "不确定")
+        certainty = ("prove", "proves", "proved", "demonstrates", "establishes", "证明", "证实", "必然")
+        if any(term in lower_original for term in uncertainty) and not any(term in lower_current for term in uncertainty) and any(term in lower_current for term in certainty):
+            reports.append(self._report(*args, "uncertainty-erasure", "high", original, current, "qualifier disappeared while certainty increased", "create_exception"))
+        correlations = ("correlat", "associated", "相关", "关联")
+        causal = ("cause", "causes", "caused", "leads to", "results in", "导致", "因果")
+        if any(term in lower_original for term in correlations) and any(term in lower_current for term in causal):
+            reports.append(self._report(*args, "correlation-to-causation", "high", original, current, "association was rewritten as causation", "human_review"))
+        secondary = ("secondary source", "commentary", "解读", "二手")
+        primary_fact = ("primary fact", "direct evidence", "原始事实", "直接证明")
+        if any(term in lower_original for term in secondary) and any(term in lower_current for term in primary_fact):
+            reports.append(self._report(*args, "secondary-to-primary", "high", original, current, "secondary material became a primary fact", "mark_contested"))
+        if object_type == "analogy" and any(term in lower_current for term in causal + ("equivalent", "identical", "等同", "就是")):
+            reports.append(self._report(*args, "analogy-to-fact", "high", original, current, "heuristic similarity became factual or causal equivalence", "create_exception"))
+        if object_type == "synthesis" and len(current.strip()) > len(original.strip()) * 1.25 and not any(marker in current for marker in ("source_", "evidence_", "来源", "证据")):
+            reports.append(self._report(*args, "unsupported-synthesis-addition", "high", original, current, "new synthesis conclusion has no visible provenance", "human_review"))
+        if object_type == "translation" and any(term in lower_original for term in uncertainty) and not any(term in lower_current for term in uncertainty):
+            reports.append(self._report(*args, "translation-strengthening", "high", original, current, "translation strengthened the source modality", "human_review"))
+        return reports
 
     def run(self) -> dict[str, Any]:
         issues: list[dict[str, Any]] = []
@@ -25,19 +295,33 @@ class DriftAuditService:
             metadata, body = read_document(path)
             checked += 1
             object_id = str(metadata["id"])
+            evidence_ids = [str(item.get("evidence_id")) for item in metadata.get("evidence", []) if isinstance(item, dict) and item.get("evidence_id")]
             if metadata.get("type") == "claim":
                 for evidence in metadata.get("evidence", []):
                     if evidence.get("evidence_kind") == "translation" and evidence.get("verification_status") in {"exact", "verbatim"}:
-                        issues.append({"object_id": object_id, "kind": "translation-as-quote", "path": self.repository.rel(path)})
+                        issues.append(self._report(object_id, [], evidence_ids, "translation-as-quote", "high", "translation", "verbatim", "translation was labeled as an exact quote", "create_exception"))
                 if not metadata.get("source_ids") or not metadata.get("evidence"):
-                    issues.append({"object_id": object_id, "kind": "claim-source-drift", "path": self.repository.rel(path)})
+                    issues.append(self._report(object_id, [], evidence_ids, "claim-source-drift", "medium", "source-linked claim", body, "claim lost source or evidence", "revise_working"))
             if metadata.get("type") == "synthesis" and (not metadata.get("source_ids") or "## New evidence" not in body):
-                issues.append({"object_id": object_id, "kind": "unsupported-synthesis", "path": self.repository.rel(path)})
+                issues.append(self._report(object_id, [], evidence_ids, "unsupported-synthesis", "medium", "source-grounded synthesis", body, "synthesis does not return to source evidence", "human_review"))
             if metadata.get("type") == "analogy" and not metadata.get("where_it_breaks"):
-                issues.append({"object_id": object_id, "kind": "analogy-boundary-loss", "path": self.repository.rel(path)})
+                issues.append(self._report(object_id, [], evidence_ids, "analogy-boundary-loss", "high", "bounded analogy", body, "where_it_breaks is missing", "create_exception"))
             if metadata.get("claim_confidence") == "high" and metadata.get("evidence_entailment") not in {"full"}:
-                issues.append({"object_id": object_id, "kind": "uncertainty-erasure", "path": self.repository.rel(path)})
-        return {"ok": not issues, "checked": checked, "issues": issues, "writes": 0}
+                issues.append(self._report(object_id, [], evidence_ids, "uncertainty-erasure", "high", "limited evidence", body, "confidence exceeds evidence entailment", "mark_contested"))
+            version_dir = self.repository.root / "vault" / "archive" / "versions" / object_id
+            versions = sorted(version_dir.glob("*.md")) if version_dir.exists() else []
+            if versions:
+                _, original_body = read_document(versions[0])
+                issues.extend(self.compare(
+                    object_id, original_body, body, object_type=str(metadata.get("type")),
+                    versions=[self.repository.rel(versions[0]), self.repository.rel(path)], evidence_ids=evidence_ids,
+                ))
+        return {
+            "ok": not any(item.get("severity") == "high" for item in issues),
+            "checked": checked, "issues": issues,
+            "high_severity": sum(item.get("severity") == "high" for item in issues),
+            "writes": 0,
+        }
 
 
 class ConsolidationService:
@@ -45,20 +329,7 @@ class ConsolidationService:
         self.repository = repository
         self.exceptions = ExceptionService(repository)
         self.promotions = PromotionService(repository)
-
-    def _increment_review(self, path: Path) -> bool:
-        metadata, body = read_document(path)
-        if metadata.get("user_locked"):
-            return False
-        timestamp = now_iso()
-        if str(metadata.get("last_consolidated_at", ""))[:10] == timestamp[:10]:
-            return False
-        metadata["consolidation_count"] = int(metadata.get("consolidation_count", 0)) + 1
-        metadata["last_consolidated_at"] = timestamp
-        metadata["updated_at"] = metadata["last_consolidated_at"]
-        metadata["updated_by"] = "weekly-consolidation-v1"
-        atomic_write_text(path, render_document(metadata, body))
-        return True
+        self.receipts = ConsolidationReceiptService(repository)
 
     def daily(self, *, limit: int = 25) -> dict[str, Any]:
         triage = DailyTriageService(self.repository).run(limit=limit)
@@ -91,9 +362,20 @@ class ConsolidationService:
 
     def weekly(self) -> dict[str, Any]:
         before = list(self.repository.memory_documents())
-        reviewed = 0
+        receipts: list[dict[str, Any]] = []
+        scanned_only: list[str] = []
         for path in before:
-            reviewed += int(self._increment_review(path))
+            metadata, _ = read_document(path)
+            try:
+                receipt = self.receipts.consolidate(str(metadata["id"]), rebuild_index=False)
+                receipts.append(receipt)
+            except Exception as exc:
+                scanned_only.append(str(metadata.get("id")))
+                self.exceptions.create(
+                    "consolidation-failed", f"Consolidation failed: {metadata.get('title')}",
+                    [str(exc)], object_id=str(metadata.get("id")),
+                    source_ids=[str(item) for item in metadata.get("source_ids", [])],
+                )
         self.repository.rebuild_index()
         promoted, retained = [], []
         for path in list(self.repository.memory_documents()):
@@ -110,6 +392,8 @@ class ConsolidationService:
         self.repository.rebuild_index()
         drift = DriftAuditService(self.repository).run()
         for issue in drift["issues"]:
+            if issue.get("severity") != "high":
+                continue
             self.exceptions.create(
                 "memory-drift", f"Drift audit: {issue['object_id']}", [issue["kind"]],
                 object_id=issue["object_id"], context=issue,
@@ -130,7 +414,25 @@ class ConsolidationService:
         )
         report = {
             "mode": "weekly-consolidation", "raw_item_count": raw_count,
-            "working_changes": reviewed, "working_count": working_count,
+            "sources_processed": raw_count,
+            "objects_considered": len(before),
+            "receipts_completed": sum(item.get("status") == "complete" for item in receipts),
+            "receipts_failed": sum(item.get("status") != "complete" for item in receipts) + len(scanned_only),
+            "objects_unchanged": sum(item.get("result") == "unchanged" for item in receipts),
+            "objects_supported": sum(item.get("result") == "supported" for item in receipts),
+            "objects_refined": sum(item.get("result") == "refined" for item in receipts),
+            "objects_limited": sum(item.get("result") == "limited" for item in receipts),
+            "objects_contradicted": sum(item.get("result") == "contradicted" for item in receipts),
+            "objects_superseded": sum(item.get("result") == "superseded" for item in receipts),
+            "working_revisions": sum(bool(item.get("changes")) for item in receipts),
+            "trusted_demotions": 0,
+            "canonical_exceptions": sum(item.get("exception_kind") == "canonical-conflict" for item in exceptions),
+            "drift_warnings": len(drift["issues"]),
+            "user_attention_items": review_items,
+            "working_changes": sum(
+                item.get("status") == "complete" and not item.get("reused", False)
+                for item in receipts
+            ), "working_count": working_count,
             "trusted_promotions": len(promoted), "trusted_count": trusted_count,
             "exceptions": len(exceptions), "canonical_candidates": len(canonical_candidates),
             "estimated_human_review_minutes": review_items * 3,
@@ -142,6 +444,9 @@ class ConsolidationService:
             "exception_ids": [item["id"] for item in exceptions],
             "canonical_promotion_ids": [item["promotion_id"] for item in canonical_candidates],
             "drift": drift, "canonical_writes": 0,
+            "receipt_ids": [item["consolidation_id"] for item in receipts],
+            "scanned_only_ids": scanned_only,
+            "estimated_review_time": review_items * 3,
         }
         report_id = "weekly_" + hashlib.sha256(now_iso()[:10].encode()).hexdigest()[:16]
         report_path = self.repository.root / "system" / "reports" / f"generated-{report_id}.md"

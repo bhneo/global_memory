@@ -1,5 +1,22 @@
 # Data Model
 
+## M8 orthogonal state
+
+| Dimension | Values | Question answered |
+|---|---|---|
+| Memory Tier | working, trusted, canonical, historical | Is this worth stable recall and retention? |
+| Epistemic Status | established, supported, provisional, contested, hypothetical, open_question, partially_answered, exploratory_analogy, observed_anomaly, user_intuition, superseded, unknown | What is currently known? |
+
+Examples: `trusted + open_question` is a durable unanswered question; `trusted + exploratory_analogy` is a retained heuristic, not factual equivalence; `trusted + contested` is important but conflicted. `status` remains a compatibility mirror of tier after migration; `legacy_status` preserves the prior value.
+
+| M8 record | Location | Identity / validity |
+|---|---|---|
+| Consolidation Receipt | `vault/receipts/consolidation/` | object before/after hashes + source/evidence hashes + checks |
+| Working Revision | `vault/memory/revisions/` | immutable revision ID, `revision_of`, previous version, change record |
+| Version snapshot | `vault/archive/versions/` | SHA-256 of exact previous Markdown |
+| Demotion Event | `vault/receipts/demotions/` | object + from/to dimensions + reason + version paths |
+| Drift Report | report/CLI output | compared versions + evidence + drift type/severity/action |
+
 ## M7 memory lifecycle
 
 | Tier | Location | Meaning | Writer |

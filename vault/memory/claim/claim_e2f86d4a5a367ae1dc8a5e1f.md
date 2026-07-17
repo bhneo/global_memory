@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z"
 created_at: "2026-07-17T12:17:01+08:00"
-updated_at: "2026-07-17T12:17:01+08:00"
+updated_at: "2026-07-17T15:23:42+08:00"
 aliases: []
 tags: []
 domains: []
@@ -27,12 +27,12 @@ claim_confidence: "low"
 publication_gate: "needs_review"
 memory_tier: "working"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-07-17T15:23:42+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -43,7 +43,10 @@ origin_proposal_id: "proposal_bundle_be045dcd91e56c13a43e"
 origin_item_id: "claim-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_be045dcd91e56c13a43e-claim-1.md"
 origin_candidate_sha256: "e5f7d8dd72a4637eed63aae5d658d9d48fb04b9547d026798cc5e0f0b5c16d44"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_581e9591263b1b87ab2dd5af"
 ---
 
 # 2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z

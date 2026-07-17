@@ -4,7 +4,7 @@ type: "question"
 status: "trusted"
 title: "数据质量如何转化为可执行能力？"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T12:03:58+08:00"
+updated_at: "2026-07-17T15:24:10+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_0a113baae7ce4d1ab78da1
 change_reason: "M6 controlled corpus distillation; requires human review"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:24:10+08:00"
 last_verified_at: null
 trust_score: 66
 trust_reasons: ["completed consolidation review", "question is durable and source-linked"]
@@ -30,7 +30,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "question-38"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-question_data_quality_to_capability.md"
 origin_candidate_sha256: "30522fb63cf7a5222242643a1d766b79a911901f955f85c6a9885aebe972c37d"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "open_question"
+last_consolidation_id: "consolidation_55694252af72ec37fb94890e"
 ---
 
 # 数据质量如何转化为可执行能力？

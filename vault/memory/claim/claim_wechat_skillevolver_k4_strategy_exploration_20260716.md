@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "该文称 SkillEvolver 每轮显式生成 K=4 个覆盖不同高层决策轴的策略"
 created_at: "2026-07-16T11:16:00+08:00"
-updated_at: "2026-07-17T12:02:50+08:00"
+updated_at: "2026-07-17T15:23:56+08:00"
 aliases: []
 tags: ["SkillEvolver", "strategy-exploration", "CLI-agent"]
 domains: ["agent-systems", "software-engineering"]
@@ -26,12 +26,12 @@ split_from: "claim_wechat_skillevolver_meta_audit_loop_20260716"
 split_reason: "将策略探索设置与 Auditor 行为检查分开核验"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:11+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:56+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"]
@@ -42,7 +42,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "claim-16.split-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-claim-16.split-1-primary-c84c1a8da479.md"
 origin_candidate_sha256: "c84c1a8da4795812496769b1baafba62ca5b2ea1b45742cf6b7d9ccc8a31308d"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "supported"
+last_consolidation_id: "consolidation_a5d393aa0a17f96c50d81396"
 ---
 
 该文称 SkillEvolver 每轮显式生成 K=4 个覆盖不同高层决策轴的策略。

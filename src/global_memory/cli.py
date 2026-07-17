@@ -11,7 +11,7 @@ from .backups import RawBackupService
 from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from .capture import CaptureService
 from .context import ContextPackService
-from .consolidation import ConsolidationService, DriftAuditService, ProposalGateMigration
+from .consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration
 from .distillation import CorpusDistillationService
 from .errors import GlobalMemoryError
 from .extraction import ExtractionService
@@ -19,6 +19,9 @@ from .followups import FollowupService
 from .lifecycle import SourceAnnotationService, SourceLifecycleService
 from .maintenance import MaintenanceService
 from .memory import ExceptionService, WorkingMemoryService
+from .metrics import ProjectMetricsService
+from .migration import EpistemicStatusMigration
+from .evolution import KnowledgeEvolutionService
 from .mcp_server import add_mcp_arguments, run_mcp
 from .obsidian import ObsidianViewService
 from .markdown import read_document
@@ -267,6 +270,14 @@ def build_parser() -> argparse.ArgumentParser:
     consolidate_daily = consolidate_commands.add_parser("daily")
     consolidate_daily.add_argument("--limit", type=int, default=25)
     consolidate_commands.add_parser("weekly")
+    consolidate_object = consolidate_commands.add_parser("object")
+    consolidate_object.add_argument("object_id")
+    evolve = commands.add_parser("evolve")
+    evolve.add_argument("object_id")
+    evolve.add_argument("--change-type", choices=["support", "refine", "limit", "contradict", "supersede", "metadata_only"], required=True)
+    evolve.add_argument("--from-file", required=True)
+    evolve.add_argument("--reason", required=True)
+    evolve.add_argument("--trigger-source")
     commands.add_parser("weekly-report", help="运行 weekly consolidation 并输出 digest")
 
     search = commands.add_parser("search", help="全文检索来源和 canonical knowledge")
@@ -315,7 +326,10 @@ def build_parser() -> argparse.ArgumentParser:
     show.add_argument("object_id")
     related = commands.add_parser("related", help="显示 typed relations")
     related.add_argument("object_id")
-    commands.add_parser("status", help="显示仓库统计")
+    status = commands.add_parser("status", help="显示仓库统计")
+    status.add_argument("--machine-readable", action="store_true")
+    metrics = commands.add_parser("metrics", help="generate current vault metrics")
+    metrics.add_argument("--write-project-state", action="store_true")
     commands.add_parser("rebuild-index", help="从 Markdown 与 raw source 重建 SQLite 索引")
     doctor_parser = commands.add_parser("doctor", help="检查 schema、状态、批处理、关系和索引")
     doctor_parser.add_argument("--check-state", action="store_true")
@@ -346,6 +360,10 @@ def build_parser() -> argparse.ArgumentParser:
     proposal_gate_mode = proposal_gate_migration.add_mutually_exclusive_group()
     proposal_gate_mode.add_argument("--dry-run", action="store_true")
     proposal_gate_mode.add_argument("--verify", action="store_true")
+    epistemic_migration = migrate_commands.add_parser("epistemic-status")
+    epistemic_mode = epistemic_migration.add_mutually_exclusive_group()
+    epistemic_mode.add_argument("--dry-run", action="store_true")
+    epistemic_mode.add_argument("--verify", action="store_true")
     runs = commands.add_parser("runs", help="查看或清理可重建的 system/runs")
     runs_commands = runs.add_subparsers(dest="runs_command", required=True)
     runs_commands.add_parser("list")
@@ -1077,7 +1095,12 @@ def run(args: argparse.Namespace) -> int:
             _print(service.decide(args.promotion_id, decision, args.reason))
     elif args.command == "consolidate":
         service = ConsolidationService(repository)
-        result = service.daily(limit=args.limit) if args.consolidate_command == "daily" else service.weekly()
+        if args.consolidate_command == "daily":
+            result = service.daily(limit=args.limit)
+        elif args.consolidate_command == "weekly":
+            result = service.weekly()
+        else:
+            result = ConsolidationReceiptService(repository).consolidate(args.object_id)
         obsidian_result = ObsidianViewService(repository).build()
         result["obsidian"] = {
             "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
@@ -1085,6 +1108,12 @@ def run(args: argparse.Namespace) -> int:
             "removed": obsidian_result["removed"],
         }
         _print(result)
+    elif args.command == "evolve":
+        candidate, body = read_document(Path(args.from_file).expanduser().resolve())
+        _print(KnowledgeEvolutionService(repository).apply(
+            args.object_id, candidate, body, change_type=args.change_type,
+            reason=args.reason, trigger_source=args.trigger_source,
+        ))
     elif args.command == "weekly-report":
         result = ConsolidationService(repository).weekly()
         obsidian_result = ObsidianViewService(repository).build()
@@ -1215,7 +1244,7 @@ def run(args: argparse.Namespace) -> int:
         state_counts: dict[str, int] = {}
         for state in lifecycle.all():
             state_counts[state["state"]] = state_counts.get(state["state"], 0) + 1
-        _print({
+        status_result = {
             "root": str(repository.root), "objects_by_type": repository.count_by_type(),
             "inbox": len(proposals.inbox()), "proposals_by_status": {
                 state: len(proposals.list(state))
@@ -1223,7 +1252,13 @@ def run(args: argparse.Namespace) -> int:
             },
             "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()) + len(BundleRecoveryManager(repository).pending()),
             "source_processing_states": state_counts,
-        })
+            "metrics": ProjectMetricsService(repository).collect(),
+        }
+        _print(status_result)
+    elif args.command == "metrics":
+        service = ProjectMetricsService(repository)
+        metrics_result = service.collect()
+        _print(service.write_project_state(metrics_result) if args.write_project_state else metrics_result)
     elif args.command == "rebuild-index":
         _print({"indexed_documents": repository.rebuild_index(), "index": repository.rel(repository.index_path)})
     elif args.command == "doctor":
@@ -1254,6 +1289,11 @@ def run(args: argparse.Namespace) -> int:
         _print(result)
         return 0 if result["ok"] else 1
     elif args.command == "migrate":
+        if args.migrate_command == "epistemic-status":
+            migration = EpistemicStatusMigration(repository)
+            result = migration.verify() if args.verify else migration.plan() if args.dry_run else migration.apply()
+            _print(result)
+            return 0 if not args.verify or result["ok"] else 1
         if args.migrate_command == "batch-artifacts":
             migration = BatchArtifactMigrator(repository)
             result = migration.plan() if args.dry_run else migration.migrate()

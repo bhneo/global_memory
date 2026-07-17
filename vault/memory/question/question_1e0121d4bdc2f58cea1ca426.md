@@ -4,7 +4,7 @@ type: "question"
 status: "working"
 title: "“How would j’s action change if I had acted"
 created_at: "2026-07-17T12:11:41+08:00"
-updated_at: "2026-07-17T12:11:41+08:00"
+updated_at: "2026-07-17T15:24:09+08:00"
 aliases: []
 tags: []
 domains: []
@@ -14,12 +14,12 @@ relations: [{"type": "derived_from", "target_id": "source_c019c0a492cc659d785813
 change_reason: "compile bundle from source_c019c0a492cc659d7858134d"
 memory_tier: "working"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-07-17T15:24:09+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -30,7 +30,10 @@ origin_proposal_id: "proposal_bundle_70b27fd90bc932fc9712"
 origin_item_id: "question-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_70b27fd90bc932fc9712-question-1.md"
 origin_candidate_sha256: "2bd756052a8b0afb880b933673e37dc1bf9f606315d2b708ee0e986dc0cffaaa"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "open_question"
+last_consolidation_id: "consolidation_34c5aaba31d3f037a9410a8b"
 ---
 
 # “How would j’s action change if I had acted

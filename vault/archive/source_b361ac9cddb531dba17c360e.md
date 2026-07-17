@@ -1,7 +1,7 @@
 ---
 id: "source_b361ac9cddb531dba17c360e"
 type: "source"
-status: "archived"
+status: "historical"
 title: "quickstart-note.md（已归档验收 fixture）"
 created_at: "2026-07-14T17:09:52+08:00"
 updated_at: "2026-07-15T17:50:00+08:00"
@@ -29,6 +29,10 @@ mime_type: "text/markdown"
 original_filename: "quickstart-note.md"
 display_extension: ".md"
 change_reason: "用户要求清理 quickstart 验收 fixture；source 移出活动 raw 索引，不可变 raw object 与 proposal 历史保留"
+legacy_status: "archived"
+memory_tier: "historical"
+epistemic_status: "superseded"
+memory_schema_version: 2
 ---
 
 # quickstart-note.md（已归档）

@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "Agentic-VLA 在 LIBERO 上报告平均成功率 97.8%，Long 套件相对 SFT 基线提升 12.3 个百分点"
 created_at: "2026-07-15T12:20:00+08:00"
-updated_at: "2026-07-17T12:01:10+08:00"
+updated_at: "2026-07-17T15:23:38+08:00"
 aliases: ["Agentic-VLA LIBERO"]
 tags: ["vla", "libero", "online-adaptation"]
 domains: ["robot-learning"]
@@ -19,12 +19,12 @@ uncertainty: "LIBERO 仿真 benchmark；+12.3% 相对 SFT baseline（Table 1 Δ 
 evidence: [{"source_id": "source_2c21320690e566fbbf80fd75", "location": "第 1 页 Abstract", "excerpt": "+12.3% on long-horizon tasks", "stance": "supports", "reason": "摘要 Long 提升。"}, {"source_id": "source_2c21320690e566fbbf80fd75", "location": "第 7 页 Table 1", "excerpt": "Agentic-VLA† 97.8±0.4 ... Δ vs. SFT baseline +12.3", "stance": "supports", "reason": "Table 1 平均与 Long 差值。"}, {"source_id": "source_2c21320690e566fbbf80fd75", "location": "第 7 页 Section 4.2", "excerpt": "Reporting mean ± std over 5 independent seeds", "stance": "context", "reason": "统计协议。"}]
 memory_tier: "working"
 created_by: "human-candidate-revision-v1"
-updated_by: "weekly-consolidation-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "human-candidate-revision-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:38+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -35,7 +35,10 @@ origin_proposal_id: "proposal_a99124724d635b4102390d75"
 origin_item_id: "candidate"
 origin_candidate_path: "vault/proposals/candidate-proposal_a99124724d635b4102390d75.md"
 origin_candidate_sha256: "9b3e8467bac10234561572ef50cc3d68fa4c9714c794930760c38293eabc2deb"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_b04d66aac36680ab6139a87c"
 ---
 
 # Agentic-VLA 的 LIBERO 主结果

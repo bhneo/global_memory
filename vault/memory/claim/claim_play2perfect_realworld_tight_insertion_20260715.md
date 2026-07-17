@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "Play2Perfect 仿真微调策略可零样本迁移到真实世界紧配合插入，0.5 mm 间隙成功率 6/10"
 created_at: "2026-07-15T12:20:00+08:00"
-updated_at: "2026-07-17T12:01:10+08:00"
+updated_at: "2026-07-17T15:23:47+08:00"
 aliases: []
 tags: ["sim-to-real", "dexterous-manipulation", "assembly"]
 domains: ["robotics"]
@@ -19,12 +19,12 @@ uncertainty: "仅 10 次 rollout/条件；依赖 FoundationPose；摘要 60% 与
 evidence: [{"source_id": "source_05d8a9da9e0b53b94872f2a7", "location": "第 1 页 Abstract", "excerpt": "achieving 60% success on tight insertions with only 0.5 mm contact clearance", "stance": "supports", "reason": "摘要给出 0.5 mm 成功率。"}, {"source_id": "source_05d8a9da9e0b53b94872f2a7", "location": "第 8 页 Table 1", "excerpt": "Success Rate 10/10 9/10 6/10", "stance": "supports", "reason": "Table 1 各 clearance 成功次数。"}, {"source_id": "source_05d8a9da9e0b53b94872f2a7", "location": "第 8 页 Section 4.4", "excerpt": "using FoundationPose for object pose tracking and no real-world finetuning", "stance": "context", "reason": "限定 sim-to-real 设定。"}]
 memory_tier: "working"
 created_by: "human-candidate-revision-v1"
-updated_by: "weekly-consolidation-v1"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "human-candidate-revision-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:47+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -35,7 +35,10 @@ origin_proposal_id: "proposal_e4c5d7883d8cafc851d3a466"
 origin_item_id: "candidate"
 origin_candidate_path: "vault/proposals/candidate-proposal_e4c5d7883d8cafc851d3a466.md"
 origin_candidate_sha256: "4496101420695eb52879175a9be69b74c16c7cf7ebc149a42b0fe544eb4aeb2d"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "working"
+epistemic_status: "unknown"
+last_consolidation_id: "consolidation_c2238a7307006643baf9e20c"
 ---
 
 # Play2Perfect 的真实世界紧配合插入结果

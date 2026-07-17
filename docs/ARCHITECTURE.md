@@ -1,5 +1,23 @@
 # Architecture
 
+## M8 trustworthy evolution pipeline
+
+```text
+immutable Raw/Source
+  -> Working object
+  -> revalidate schema + Raw + provenance + Evidence
+  -> duplicate/related/contradiction/independence/drift checks
+  -> immutable hash-bound Consolidation Receipt
+  -> explicit support/refine/limit/contradict/supersede action
+  -> safe Working evolution OR Trusted Revision/Exception
+  -> narrow Claim/Concept Trusted Promotion
+  -> human-only Canonical Promotion
+```
+
+Governance records live beside, not inside, the canonical truth directories: consolidation receipts in `vault/receipts/consolidation/`, demotion events in `vault/receipts/demotions/`, versions in `vault/archive/versions/`, exceptions in `vault/exceptions/`, and promotion cards in `vault/promotions/`. SQLite, reports and Obsidian views remain rebuildable.
+
+The compiler may cheaply create or update Working. It may not silently reset Trusted, overwrite its semantic body, auto-demote it, or write Canonical. High-severity drift and Canonical conflict route to Exception rather than mutation.
+
 ## M7 consolidation pipeline
 
 ```text

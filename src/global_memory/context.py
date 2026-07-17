@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from .errors import ValidationError
+from .epistemics import infer_epistemic_status, infer_tier, truth_layer
 from .extraction import ExtractionService
 from .markdown import read_document
 from .repository import Repository, sha256_bytes
@@ -78,7 +79,11 @@ class ContextPack:
         for item in self.items:
             lines.append(f"## {item.get('title', item.get('id'))}\n\n")
             lines.append(f"- ID: `{item.get('id')}`\n- Type/status: `{item.get('type')}` / `{item.get('knowledge_status')}`\n")
-            lines.append(f"- Truth layer: `{item.get('truth_layer')}`\n- Path: `{item.get('path')}`\n")
+            lines.append(
+                f"- Memory tier: `{item.get('memory_tier')}`\n"
+                f"- Epistemic status: `{item.get('epistemic_status')}`\n"
+                f"- Truth layer: `{item.get('truth_layer')}`\n- Path: `{item.get('path')}`\n"
+            )
             lines.append(f"- Sources: {', '.join(item.get('source_ids', [])) or 'none'}\n")
             if item.get("evidence"):
                 lines.append(f"- Evidence: `{item['evidence']}`\n")
@@ -248,6 +253,13 @@ class ContextPackService:
                     "type": object_type,
                     "knowledge_status": "proposal",
                     "truth_layer": "proposal",
+                    "memory_tier": "working",
+                    "epistemic_status": candidate.get("epistemic_status", "provisional"),
+                    "confidence": candidate.get("confidence", "unknown"),
+                    "evidence_coverage": candidate.get("evidence_coverage"),
+                    "evidence_entailment": candidate.get("evidence_entailment", "unknown"),
+                    "unresolved_contradictions": candidate.get("unresolved_contradictions", []),
+                    "last_consolidated_at": candidate.get("last_consolidated_at"),
                     "proposal_id": str(proposal["id"]),
                     "title": str(candidate.get("title", candidate_id)),
                     "path": self.repository.rel(candidate_path),
@@ -395,12 +407,26 @@ class ContextPackService:
             if object_type not in allowed_types:
                 continue
             status = str(metadata.get("status"))
+            tier = infer_tier(metadata, path)
+            epistemic = infer_epistemic_status(metadata, tier)
             if statuses is None and object_type not in {"source", "proposal"} and status != "archived":
-                visible = status in {"trusted", "canonical", "confirmed", "provisional", "contested"}
-                if status == "working":
-                    visible = "exploration" in profiles or "research" in profiles
-                    if "execution" in profiles and not ({"exploration", "research"} & set(profiles)):
-                        visible = object_type in {"question", "tension"}
+                visible = False
+                if "research" in profiles:
+                    visible = tier in {"working", "trusted", "canonical"}
+                if "exploration" in profiles:
+                    visible = visible or epistemic in {
+                        "user_intuition", "observed_anomaly", "exploratory_analogy",
+                        "hypothetical", "open_question", "partially_answered", "contested",
+                    } or object_type in {"intuition", "tension", "analogy", "anomaly", "hypothesis"}
+                if "execution" in profiles:
+                    execution_safe = (
+                        (tier == "canonical" and epistemic not in {"contested", "hypothetical", "exploratory_analogy", "unknown"})
+                        or (tier == "trusted" and epistemic in {"established", "supported"})
+                        or (tier == "trusted" and object_type in {"question", "tension"} and epistemic in {"open_question", "partially_answered", "contested"})
+                        or (tier == "working" and bool(metadata.get("execution_blocker")))
+                    )
+                    degraded = metadata.get("extraction_quality") in {"degraded", "failed"}
+                    visible = visible or (execution_safe and not degraded)
                 if not visible:
                     omitted.append({"id": str(metadata["id"]), "reason": "profile trust policy excluded this memory tier"})
                     continue
@@ -452,12 +478,14 @@ class ContextPackService:
                     "id": str(metadata["id"]),
                     "type": object_type,
                     "knowledge_status": str(metadata.get("status")),
-                    "truth_layer": (
-                        "source_capture" if object_type == "source"
-                        else "proposal" if object_type == "proposal"
-                        else status if status in {"working", "trusted", "canonical"}
-                        else "canonical"
-                    ),
+                    "truth_layer": truth_layer(metadata, path),
+                    "memory_tier": None if object_type == "source" else tier,
+                    "epistemic_status": "unknown" if object_type == "source" else epistemic,
+                    "confidence": metadata.get("claim_confidence", metadata.get("confidence", "unknown")),
+                    "evidence_coverage": metadata.get("evidence_coverage"),
+                    "evidence_entailment": metadata.get("evidence_entailment", "unknown"),
+                    "unresolved_contradictions": metadata.get("unresolved_contradictions", []),
+                    "last_consolidated_at": metadata.get("last_consolidated_at"),
                     "proposal_id": str(metadata["id"]) if object_type == "proposal" else None,
                     "title": str(metadata["title"]),
                     "path": self.repository.rel(path),

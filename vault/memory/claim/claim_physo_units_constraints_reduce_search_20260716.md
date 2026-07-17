@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "Φ-SO 在生成过程中施加物理单位约束以排除不一致表达式并缩小搜索空间"
 created_at: "2026-07-15T18:45:00+08:00"
-updated_at: "2026-07-17T12:02:31+08:00"
+updated_at: "2026-07-17T15:23:46+08:00"
 aliases: []
 tags: ["PhySO", "symbolic-regression", "units-constraints"]
 domains: ["machine-learning", "physics"]
@@ -26,12 +26,12 @@ split_from: "claim_wechat_physo_method_20260715"
 split_reason: "将单位约束作用与 RNN/RL 生成方法分开核验"
 memory_tier: "trusted"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "promotion-policy"
+updated_by: "trustworthy-consolidation-v1"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-17T12:01:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-17T15:23:46+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["completed consolidation review", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists"]
@@ -42,7 +42,10 @@ origin_proposal_id: "proposal_corpus_m6_6078ce0966734a116581"
 origin_item_id: "claim-10.split-2"
 origin_candidate_path: "vault/proposals/candidate-proposal_corpus_m6_6078ce0966734a116581-claim-10.split-2-primary-56500a927a1c.md"
 origin_candidate_sha256: "56500a927a1c126a26835ecf986c44f78e52905531151233eb82fbcdad92fa99"
-memory_schema_version: 1
+memory_schema_version: 2
+legacy_status: "trusted"
+epistemic_status: "supported"
+last_consolidation_id: "consolidation_0b45491886bff038a1dbb2ad"
 ---
 
 Φ-SO 在生成过程中施加物理单位约束，以排除单位不一致表达式并缩小搜索空间。

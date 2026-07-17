@@ -43,6 +43,7 @@ jobs:
           python -m global_memory.cli --root .ci-vault migrate raw-store --dry-run > artifacts/migration-raw.json
           python -m global_memory.cli --root .ci-vault migrate batch-artifacts --dry-run > artifacts/migration-batch.json
           python -m global_memory.cli --root .ci-vault migrate proposal-gate-to-promotion --dry-run > artifacts/migration-promotion-gate.json
+          python -m global_memory.cli --root .ci-vault migrate epistemic-status --dry-run > artifacts/migration-epistemic-status.json
       - name: Historical fixture acceptance
         if: always()
         run: python -m pytest tests/test_global_memory.py -k "m6_ or m61_" --junitxml=artifacts/historical-fixtures.xml
@@ -51,7 +52,10 @@ jobs:
         run: python -m pytest tests/test_global_memory.py -k "m7_" --junitxml=artifacts/current-architecture.xml
       - name: Migration acceptance
         if: always()
-        run: python -m pytest tests/test_global_memory.py -k "m7_migration" --junitxml=artifacts/migration-acceptance.xml
+        run: python -m pytest tests/test_global_memory.py -k "m7_migration or m8_drift_migration_and_generated_metrics" --junitxml=artifacts/migration-acceptance.xml
+      - name: M8 governance acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "m8_" --junitxml=artifacts/m8-governance.xml
       - name: Promotion policy validation
         if: always()
         run: python scripts/ci_acceptance.py promotion --root .ci-vault --output artifacts/promotion.json
