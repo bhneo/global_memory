@@ -3015,6 +3015,18 @@ def test_m8_consolidation_receipt_is_real_and_hash_bound(repo: Repository) -> No
     path, _ = write_m8_claim(repo)
     object_id = read_document(path)[0]["id"]
     assert ConsolidationReceiptService(repo).valid_for(object_id) is None
+    receipt = ConsolidationReceiptService(repo).consolidate(object_id)
+    assert receipt["receipt_schema_version"] == 2
+    assert receipt["status"] == "complete"
+    assert all(receipt["checks"].values())
+    assert receipt["object_sha256_after"] == sha256_bytes(path.read_bytes())
+    assert receipt["consolidation_fingerprint"] == ConsolidationReceiptService(repo).fingerprint(object_id)
+    assert ConsolidationReceiptService(repo).valid_for(object_id)["consolidation_id"] == receipt["consolidation_id"]
+    metadata, body = read_document(path)
+    metadata["confidence"] = "low"
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+    assert ConsolidationReceiptService(repo).valid_for(object_id) is None
 
 
 def test_context_strict_execution_reports_receipt_policy(repo: Repository) -> None:
@@ -3037,7 +3049,7 @@ def test_trusted_promotion_recovery_rolls_back_staged_object(repo: Repository) -
     staged = render_document(metadata, body)
     recovery = TrustedPromotionRecoveryManager(repo)
     journal = recovery.prepare("promotion_m81_recovery", path, before, staged)
-    path.write_text(staged, encoding="utf-8")
+    path.write_bytes(staged.encode("utf-8"))
     recovery.checkpoint(journal, "staged")
 
     result = recovery.recover_all()
@@ -3045,16 +3057,33 @@ def test_trusted_promotion_recovery_rolls_back_staged_object(repo: Repository) -
     assert result["blocked"] == []
     assert result["recovered"][0]["status"] == "rolled_back"
     assert path.read_bytes() == before
-    receipt = ConsolidationReceiptService(repo).consolidate(object_id)
-    assert receipt["status"] == "complete"
-    assert all(receipt["checks"].values())
-    assert receipt["object_sha256_after"] == sha256_bytes(path.read_bytes())
-    assert ConsolidationReceiptService(repo).valid_for(object_id)["consolidation_id"] == receipt["consolidation_id"]
-    metadata, body = read_document(path)
-    metadata["confidence"] = "low"
-    path.write_text(render_document(metadata, body), encoding="utf-8")
-    repo.rebuild_index()
-    assert ConsolidationReceiptService(repo).valid_for(object_id) is None
+
+
+def test_m81_test_functions_do_not_reference_object_id_before_assignment() -> None:
+    import ast
+
+    tree = ast.parse(Path(__file__).read_text(encoding="utf-8"))
+    targets = {
+        "test_m8_consolidation_receipt_is_real_and_hash_bound",
+        "test_trusted_promotion_recovery_rolls_back_staged_object",
+    }
+    found = set()
+    for node in tree.body:
+        if not isinstance(node, ast.FunctionDef) or node.name not in targets:
+            continue
+        found.add(node.name)
+        assigned = {arg.arg for arg in node.args.args}
+        for statement in node.body:
+            loads = {
+                child.id for child in ast.walk(statement)
+                if isinstance(child, ast.Name) and isinstance(child.ctx, ast.Load)
+            }
+            assert "object_id" not in loads or "object_id" in assigned, node.name
+            assigned.update(
+                child.id for child in ast.walk(statement)
+                if isinstance(child, ast.Name) and isinstance(child.ctx, (ast.Store, ast.Param))
+            )
+    assert found == targets
 
 
 def test_m8_incomplete_receipt_and_failed_search_block_promotion(repo: Repository, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -3099,6 +3128,12 @@ def test_m8_tier_and_epistemic_status_are_orthogonal(repo: Repository) -> None:
     for object_type, epistemic in cases.items():
         path = write_m8_memory(repo, f"{object_type}_m8", object_type, object_type, object_type, [source.source_id], epistemic_status=epistemic)
         object_id = read_document(path)[0]["id"]
+        if object_type == "analogy":
+            metadata, body = read_document(path)
+            metadata["where_it_breaks"] = ["not factual equivalence"]
+            path.write_text(render_document(metadata, body), encoding="utf-8")
+            repo.rebuild_index()
+        ConsolidationReceiptService(repo).consolidate(object_id)
         PromotionService(repo).promote_trusted(object_id, automatic=False, reason="durable exploration")
         promoted, _ = read_document(path)
         assert promoted["memory_tier"] == "trusted"
