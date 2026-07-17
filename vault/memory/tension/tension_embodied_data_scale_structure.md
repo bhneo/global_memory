@@ -1,10 +1,10 @@
 ---
 id: "tension_embodied_data_scale_structure"
 type: "tension"
-status: "trusted"
+status: "working"
 title: "具身数据规模 vs 数据结构与闭环"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:14+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,9 +16,9 @@ left_view: "扩大真实数据规模与覆盖"
 right_view: "优先改善结构、质量与闭环"
 unresolved: "不同任务和阶段的边际收益"
 validation_method: "按规模和结构正交设计消融与部署评测"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -38,6 +38,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_e9b68630a0a69c96fd1bbcf8"
+needs_revalidation: true
 ---
 
 # 具身数据规模 vs 数据结构与闭环

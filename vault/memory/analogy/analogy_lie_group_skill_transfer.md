@@ -1,10 +1,10 @@
 ---
 id: "analogy_lie_group_skill_transfer"
 type: "analogy"
-status: "trusted"
+status: "working"
 title: "李群与不变量 ↔ 技能组合和形态迁移"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:23:33+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,9 +16,9 @@ source_domain: "geometry and symmetry"
 target_domain: "robot skill transfer"
 shared_structure: "变换下的不变量与组合"
 where_it_breaks: "实际技能空间可能不闭合也不光滑"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -38,6 +38,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "exploratory_analogy"
 last_consolidation_id: "consolidation_0c82ea8d31a650ef651c7544"
+needs_revalidation: true
 ---
 
 # 李群与不变量 ↔ 技能组合和形态迁移

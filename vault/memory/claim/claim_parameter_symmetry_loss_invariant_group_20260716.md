@@ -1,10 +1,10 @@
 ---
 id: "claim_parameter_symmetry_loss_invariant_group_20260716"
 type: "claim"
-status: "trusted"
+status: "working"
 title: "Loss-invariant bijective parameter transformations form a group under composition"
 created_at: "2026-07-16T19:30:00+08:00"
-updated_at: "2026-07-17T15:23:44+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 confidence: "medium"
 source_ids: ["source_6ae6c4bef52010f96ddb3dbf", "source_dbfef5ee180346812d6d9a99"]
 relations: [{"type": "derived_from", "target_id": "source_dbfef5ee180346812d6d9a99", "reason": "Primary survey directly states the group property", "confidence": "high", "created_by": "primary-quote-verification-v1", "status": "working"}]
@@ -21,9 +21,9 @@ claim_confidence: "high"
 publication_gate: "needs_review"
 split_from: "claim_wechat_param_symmetry_definition_20260716"
 split_reason: "Separate loss-invariant group structure from orbit geometry"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -43,6 +43,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
 last_consolidation_id: "consolidation_7df6ddb12bf761c9e8f54a5c"
+needs_revalidation: true
 ---
 
 Loss-invariant bijective parameter transformations form a group under composition.

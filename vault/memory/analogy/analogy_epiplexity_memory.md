@@ -1,10 +1,10 @@
 ---
 id: "analogy_epiplexity_memory"
 type: "analogy"
-status: "trusted"
+status: "working"
 title: "Epiplexity ↔ 有限上下文记忆压缩"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:23:32+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,9 +16,9 @@ source_domain: "information theory"
 target_domain: "agent memory"
 shared_structure: "有限预算下提取可复用结构"
 where_it_breaks: "正式量化对象与任务效用不同"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -38,6 +38,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "exploratory_analogy"
 last_consolidation_id: "consolidation_ac078bd51059ec8e53dd4797"
+needs_revalidation: true
 ---
 
 # Epiplexity ↔ 有限上下文记忆压缩

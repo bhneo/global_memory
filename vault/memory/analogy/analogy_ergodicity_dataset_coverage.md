@@ -1,10 +1,10 @@
 ---
 id: "analogy_ergodicity_dataset_coverage"
 type: "analogy"
-status: "trusted"
+status: "working"
 title: "遍历性 ↔ 离线数据对部署轨迹的覆盖"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:23:33+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,9 +16,9 @@ source_domain: "stochastic processes"
 target_domain: "offline embodied learning"
 shared_structure: "ensemble coverage may differ from temporal trajectory coverage"
 where_it_breaks: "部署策略和环境会共同改变分布"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -38,6 +38,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "exploratory_analogy"
 last_consolidation_id: "consolidation_ba6d2542746f42efb71b88ad"
+needs_revalidation: true
 ---
 
 # 遍历性 ↔ 离线数据对部署轨迹的覆盖

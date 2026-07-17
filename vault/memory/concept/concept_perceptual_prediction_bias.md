@@ -1,10 +1,10 @@
 ---
 id: "concept_perceptual_prediction_bias"
 type: "concept"
-status: "trusted"
+status: "working"
 title: "感知预测偏差"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:02+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -12,9 +12,9 @@ confidence: "unknown"
 source_ids: ["source_38756ea977001ddb8594f144", "source_12432807660136b2471717f1"]
 relations: [{"type": "derived_from", "target_id": "source_38756ea977001ddb8594f144", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "derived_from", "target_id": "source_12432807660136b2471717f1", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}]
 change_reason: "M6 controlled corpus distillation; requires human review"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -34,6 +34,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_b4836bc827d8a844710e9dd8"
+needs_revalidation: true
 ---
 
 # 感知预测偏差

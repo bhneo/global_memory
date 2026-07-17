@@ -1,10 +1,10 @@
 ---
 id: "tension_internal_reasoning_external_skills"
 type: "tension"
-status: "trusted"
+status: "working"
 title: "模型内部推理 vs 外部可审计技能"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:14+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,9 +16,9 @@ left_view: "依赖模型内部推理"
 right_view: "沉淀外部可审计技能"
 unresolved: "何时下沉及如何失效"
 validation_method: "按复用次数和环境漂移比较成功率与维护成本"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -38,6 +38,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_1f0127f1fe40f0cec2228e3e"
+needs_revalidation: true
 ---
 
 # 模型内部推理 vs 外部可审计技能

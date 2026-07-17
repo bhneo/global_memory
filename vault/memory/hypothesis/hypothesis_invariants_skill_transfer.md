@@ -1,10 +1,10 @@
 ---
 id: "hypothesis_invariants_skill_transfer"
 type: "hypothesis"
-status: "trusted"
+status: "working"
 title: "显式不变量可能提高技能跨形态迁移"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:08+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -12,9 +12,9 @@ confidence: "low"
 source_ids: ["source_941321d95232028c233c9433", "source_6ae6c4bef52010f96ddb3dbf"]
 relations: [{"type": "derived_from", "target_id": "source_941321d95232028c233c9433", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "derived_from", "target_id": "source_6ae6c4bef52010f96ddb3dbf", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "depends_on", "target_id": "concept_lie_group", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "depends_on", "target_id": "concept_parameter_symmetry", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}]
 change_reason: "M6 controlled corpus distillation; requires human review"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -34,6 +34,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "hypothetical"
 last_consolidation_id: "consolidation_626d41ac7a03dc811f708a45"
+needs_revalidation: true
 ---
 
 # 显式不变量可能提高技能跨形态迁移

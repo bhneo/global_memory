@@ -1,10 +1,10 @@
 ---
 id: "claim_wechat_skillevolver_silent_bypass_audit_20260716"
 type: "claim"
-status: "trusted"
+status: "working"
 title: "该文称 SkillEvolver 的 silent-bypass 审计检查下游 Agent 是否实际调用技能脚本"
 created_at: "2026-07-16T11:16:00+08:00"
-updated_at: "2026-07-17T15:23:57+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["SkillEvolver", "auditor", "silent-bypass"]
 domains: ["agent-systems", "software-engineering"]
@@ -24,9 +24,9 @@ claim_confidence: "high"
 publication_gate: "needs_review"
 split_from: "claim_wechat_skillevolver_meta_audit_loop_20260716"
 split_reason: "将 Auditor 行为检查与策略探索设置分开核验"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -46,6 +46,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
 last_consolidation_id: "consolidation_73193a4a5dbf2e78d523ebd6"
+needs_revalidation: true
 ---
 
 该文称 SkillEvolver 的 silent-bypass 审计检查下游 Agent 是否实际调用技能脚本。

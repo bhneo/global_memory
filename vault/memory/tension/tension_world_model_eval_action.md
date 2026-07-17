@@ -1,10 +1,10 @@
 ---
 id: "tension_world_model_eval_action"
 type: "tension"
-status: "trusted"
+status: "working"
 title: "更好的世界模型评价 vs 直接优化动作结果"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:15+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,9 +16,9 @@ left_view: "改进世界模型评价"
 right_view: "直接优化真实动作结果"
 unresolved: "评价与动作收益的稳定相关性"
 validation_method: "跨任务前瞻相关性与干预实验"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -38,6 +38,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_4a2737a4d8153e9fc7c5860e"
+needs_revalidation: true
 ---
 
 # 更好的世界模型评价 vs 直接优化动作结果

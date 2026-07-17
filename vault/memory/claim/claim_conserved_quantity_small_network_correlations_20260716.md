@@ -1,10 +1,10 @@
 ---
 id: "claim_conserved_quantity_small_network_correlations_20260716"
 type: "claim"
-status: "trusted"
+status: "working"
 title: "In small two-layer networks, conserved quantities were observed to correlate with convergence and minima sharpness"
 created_at: "2026-07-16T19:30:00+08:00"
-updated_at: "2026-07-17T15:23:40+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 confidence: "low"
 source_ids: ["source_6ae6c4bef52010f96ddb3dbf", "source_dbfef5ee180346812d6d9a99"]
 relations: [{"type": "derived_from", "target_id": "source_dbfef5ee180346812d6d9a99", "reason": "Primary survey limits the observation to small two-layer networks and reports correlation rather than general causality", "confidence": "high", "created_by": "primary-quote-verification-v1", "status": "working"}]
@@ -21,9 +21,9 @@ claim_confidence: "high"
 publication_gate: "needs_review"
 split_from: "claim_wechat_param_symmetry_conserved_quantities_20260716"
 split_reason: "Replace an overbroad causal statement with the survey's restricted empirical observation"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -43,6 +43,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
 last_consolidation_id: "consolidation_fd441294c43b19a5f7b10e1b"
+needs_revalidation: true
 ---
 
 In small two-layer networks, conserved quantities were observed to correlate with convergence and minima sharpness.

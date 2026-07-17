@@ -1,10 +1,10 @@
 ---
 id: "claim_wechat_skillevolver_k4_strategy_exploration_20260716"
 type: "claim"
-status: "trusted"
+status: "working"
 title: "该文称 SkillEvolver 每轮显式生成 K=4 个覆盖不同高层决策轴的策略"
 created_at: "2026-07-16T11:16:00+08:00"
-updated_at: "2026-07-17T15:23:56+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["SkillEvolver", "strategy-exploration", "CLI-agent"]
 domains: ["agent-systems", "software-engineering"]
@@ -24,9 +24,9 @@ claim_confidence: "high"
 publication_gate: "needs_review"
 split_from: "claim_wechat_skillevolver_meta_audit_loop_20260716"
 split_reason: "将策略探索设置与 Auditor 行为检查分开核验"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -46,6 +46,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
 last_consolidation_id: "consolidation_a5d393aa0a17f96c50d81396"
+needs_revalidation: true
 ---
 
 该文称 SkillEvolver 每轮显式生成 K=4 个覆盖不同高层决策轴的策略。

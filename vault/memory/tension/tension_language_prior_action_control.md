@@ -1,10 +1,10 @@
 ---
 id: "tension_language_prior_action_control"
 type: "tension"
-status: "trusted"
+status: "working"
 title: "语言先验复用 vs 实时动作专用表示"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T15:24:15+08:00"
+updated_at: "2026-07-17T17:04:22+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -16,9 +16,9 @@ left_view: "复用语言/视觉预训练先验"
 right_view: "使用动作专用连续表示"
 unresolved: "接口和训练信号如何分工"
 validation_method: "延迟、泛化、稳定性联合消融"
-memory_tier: "trusted"
+memory_tier: "working"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v1"
+updated_by: "trusted-promotion-v3-receipt-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -38,6 +38,7 @@ memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_77f6ea65028e0438a3c9df5d"
+needs_revalidation: true
 ---
 
 # 语言先验复用 vs 实时动作专用表示
