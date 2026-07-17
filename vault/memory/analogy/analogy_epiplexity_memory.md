@@ -4,7 +4,7 @@ type: "analogy"
 status: "trusted"
 title: "Epiplexity ↔ 有限上下文记忆压缩"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:36:30+08:00"
+updated_at: "2026-07-17T22:39:52+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -22,8 +22,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 4
-last_consolidated_at: "2026-07-17T18:36:30+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T22:39:52+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -37,7 +37,7 @@ origin_candidate_sha256: "b02bc55c367f31b513bf12f309fca8f999d8bd6a8767692f6f97dd
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "exploratory_analogy"
-last_consolidation_id: "consolidation_ac193ced323ad3ff48131797"
+last_consolidation_id: "consolidation_ec2b2c583b79066c6779165a"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:36:25+08:00"

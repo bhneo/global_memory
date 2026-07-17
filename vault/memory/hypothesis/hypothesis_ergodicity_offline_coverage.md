@@ -4,7 +4,7 @@ type: "hypothesis"
 status: "trusted"
 title: "遍历性指标可能预测离线数据对部署轨迹的覆盖"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:38:49+08:00"
+updated_at: "2026-07-17T22:40:04+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 5
-last_consolidated_at: "2026-07-17T18:38:49+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T22:40:04+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -33,7 +33,7 @@ origin_candidate_sha256: "0ef0cdf2f6e23e94ef8db8602835ca6f259480b6b63a929919ca06
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "hypothetical"
-last_consolidation_id: "consolidation_5d9d411d90b36e9a91b510ec"
+last_consolidation_id: "consolidation_e46ceab1df5ea9ceae62621b"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:38:42+08:00"

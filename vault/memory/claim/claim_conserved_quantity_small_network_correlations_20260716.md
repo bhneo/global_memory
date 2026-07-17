@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "In small two-layer networks, conserved quantities were observed to correlate with convergence and minima sharpness"
 created_at: "2026-07-16T19:30:00+08:00"
-updated_at: "2026-07-17T18:36:49+08:00"
+updated_at: "2026-07-17T22:39:55+08:00"
 confidence: "low"
 source_ids: ["source_6ae6c4bef52010f96ddb3dbf", "source_dbfef5ee180346812d6d9a99"]
 relations: [{"type": "derived_from", "target_id": "source_dbfef5ee180346812d6d9a99", "reason": "Primary survey limits the observation to small two-layer networks and reports correlation rather than general causality", "confidence": "high", "created_by": "primary-quote-verification-v1", "status": "working"}]
@@ -27,8 +27,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 4
-last_consolidated_at: "2026-07-17T18:36:49+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T22:39:55+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
@@ -42,7 +42,7 @@ origin_candidate_sha256: "d2894b304b0766eea195fbdfd3e9092016cd1f223b519486172522
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_d15d67d73ee622d74cad1e4b"
+last_consolidation_id: "consolidation_fd52dccd39789892fba3bb50"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:36:44+08:00"

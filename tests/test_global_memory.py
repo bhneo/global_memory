@@ -2586,11 +2586,11 @@ def test_obsidian_views_are_rebuildable_and_do_not_change_canonical(repo: Reposi
     graph_config.parent.mkdir(parents=True, exist_ok=True)
     graph_config.write_text('{"sentinel": true}\n', encoding="utf-8")
 
-    first = service.build()
+    first = service.build(graph_profile="all")
     first_bytes = {
         relative: (repo.root / relative).read_bytes() for relative in first["written"]
     }
-    second = service.build()
+    second = service.build(graph_profile="all")
 
     assert first["written"] == second["written"]
     assert first_bytes == {
@@ -2620,7 +2620,7 @@ def test_obsidian_semantic_graph_uses_readable_names_and_materializes_source_edg
         [captured.source_id],
     )
 
-    ObsidianViewService(repo).build()
+    ObsidianViewService(repo).build(graph_profile="all")
 
     node = repo.root / "vault/views/graph/claims/Human Readable Claim.md"
     assert node.exists()
@@ -2963,7 +2963,68 @@ def test_m7_trusted_policy_and_canonical_promotion_gate(repo: Repository) -> Non
     approved = service.approve_canonical(card["promotion_id"], lock=True)
     canonical, _ = read_document(repo.root / approved["path"])
     assert canonical["status"] == "canonical" and canonical["user_locked"] is True
+    assert canonical["user_approved"] is True and canonical["approval_event_id"] == approved["approval_event_id"]
+    assert ConsolidationReceiptService(repo).valid_for(str(canonical["id"]))["consolidation_id"] == approved["receipt_id"]
+    strict = ContextPackService(repo).build("Reusable governed memory", 1200, profiles=["execution", "research"], strict_execution=True).as_dict()
+    assert str(canonical["id"]) in {item["id"] for item in strict["items"]}
     assert list(repo.memory_documents()) == []
+
+
+def test_canonical_promotion_recovers_exact_preimage_before_final_receipt(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Concept: Canonical recovery preimage.", title="Canonical recovery")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    written = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id)).written[0]
+    path = repo.root / written
+    metadata, body = read_document(path)
+    metadata["reuse_work_ids"] = ["independent_a", "independent_b"]
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+    ConsolidationReceiptService(repo).consolidate(str(metadata["id"]))
+    PromotionService(repo).promote_trusted(str(metadata["id"]), automatic=True)
+    service = PromotionService(repo)
+    card = service.recommend_canonical(str(metadata["id"]))
+    trusted_before = path.read_bytes()
+
+    def fail(phase: str) -> None:
+        if phase == "canonical_written":
+            raise RuntimeError("injected interruption")
+
+    with pytest.raises(RuntimeError, match="injected interruption"):
+        PromotionService(repo, failure_hook=fail).approve_canonical(card["promotion_id"])
+
+    assert path.read_bytes() == trusted_before
+    assert not list(repo.canonical_documents())
+    assert not PromotionService(repo).canonical_recovery.pending()
+
+
+def test_canonical_promotion_rolls_forward_after_final_receipt(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Concept: Canonical recovery roll forward.", title="Canonical receipt")
+    bundle = BundleCompiler(repo).compile(captured.source_id)
+    written = WorkingMemoryService(repo).ingest_bundle(str(bundle.proposal_id)).written[0]
+    path = repo.root / written
+    metadata, body = read_document(path)
+    metadata["reuse_work_ids"] = ["independent_a", "independent_b"]
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+    ConsolidationReceiptService(repo).consolidate(str(metadata["id"]))
+    PromotionService(repo).promote_trusted(str(metadata["id"]), automatic=True)
+    service = PromotionService(repo)
+    card = service.recommend_canonical(str(metadata["id"]))
+
+    def fail(phase: str) -> None:
+        if phase == "canonical_receipt_completed":
+            raise RuntimeError("injected interruption after receipt")
+
+    recovered = PromotionService(repo, failure_hook=fail).approve_canonical(card["promotion_id"])
+
+    canonical = list(repo.canonical_documents())
+    assert len(canonical) == 1 and not path.exists()
+    assert recovered["recovered_after_interruption"] is True
+    canonical_metadata, _ = read_document(canonical[0])
+    assert ConsolidationReceiptService(repo).valid_for(str(canonical_metadata["id"])) is not None
+    assert not PromotionService(repo).canonical_recovery.pending()
+    events = (repo.root / "system" / "logs" / "memory-events.jsonl").read_text(encoding="utf-8")
+    assert events.count('"event": "promoted-canonical"') == 1
 
 
 def test_m7_weak_or_contradicted_memory_stays_working(repo: Repository) -> None:
@@ -3031,6 +3092,10 @@ def test_m7_cli_surface_parses_governance_commands() -> None:
     assert build_parser().parse_args(["audit", "drift"]).audit_command == "drift"
     assert build_parser().parse_args(["migrate", "proposal-gate-to-promotion", "--dry-run"]).dry_run
     assert build_parser().parse_args(["promote", "concept_x", "--to", "canonical", "--reason", "important"]).to == "canonical"
+    assert build_parser().parse_args([
+        "evolve", "claim_x", "--change-type", "contradict", "--from-file", "candidate.md",
+        "--reason", "human review", "--force-contest",
+    ]).force_contest is True
 
 
 def test_m7_exception_identity_includes_source_context(repo: Repository) -> None:
@@ -3064,6 +3129,7 @@ def write_m8_claim(repo: Repository, object_id: str = "claim_m8") -> tuple[Path,
     captured = CaptureService(repo).capture_text(
         "The primary source states that bounded evidence supports the claim.", title="M8 primary source"
     )
+    _, source_metadata, _ = repo.find_document(captured.source_id)
     path = write_m8_memory(
         repo, object_id, "claim", "Bounded evidence supports the claim",
         "Bounded evidence supports the claim.", [captured.source_id], epistemic_status="provisional",
@@ -3073,10 +3139,14 @@ def write_m8_claim(repo: Repository, object_id: str = "claim_m8") -> tuple[Path,
         "atomicity_status": "atomic", "evidence_coverage": "full",
         "evidence_entailment": "full", "extraction_quality": "good",
         "epistemic_source_authority": "primary", "applicability": ["bounded fixture"],
-        "claim_confidence": "medium",
+        "claim_confidence": "medium", "quote_verification": "exact",
         "evidence": [{
             "source_id": captured.source_id, "stance": "supports", "location": "body",
             "excerpt": "bounded evidence supports the claim", "reason": "direct support",
+            "evidence_id": f"evidence_{object_id}", "evidence_kind": "quote",
+            "verification_status": "verified", "input_sha256": source_metadata["content_sha256"],
+            "extraction_id": f"extraction_{object_id}", "span_start": 0, "span_end": 44,
+            "original_text": "bounded evidence supports the claim",
         }],
     })
     path.write_text(render_document(metadata, body), encoding="utf-8")
@@ -3093,6 +3163,11 @@ def test_m8_consolidation_receipt_is_real_and_hash_bound(repo: Repository) -> No
     assert receipt["status"] == "complete"
     assert all(receipt["checks"].values())
     assert all(receipt["check_details"][key]["findings"] for key in receipt["checks"])
+    entailment = receipt["check_details"]["evidence_entailment_rechecked"]
+    assert entailment["execution_status"] == "completed"
+    assert entailment["validation_outcome"] == "passed"
+    assert entailment["semantic_recheck_performed"] is True
+    assert receipt["check_details"]["source_independence_checked"]["validation_outcome"] == "not_applicable"
     assert any("record_sha256" in item for item in receipt["check_details"]["provenance_revalidated"]["findings"])
     assert any("drift_reports:" in item for item in receipt["check_details"]["drift_checked"]["findings"])
     assert receipt["object_sha256_after"] == sha256_bytes(path.read_bytes())
@@ -3147,6 +3222,115 @@ def test_receipt_v2_reuse_requires_full_current_fingerprint(repo: Repository, mo
     assert policy_changed["reused"] is False and policy_changed["consolidation_id"] != source_changed["consolidation_id"]
 
 
+def test_incoming_contradiction_invalidates_receipt_and_strict_execution(repo: Repository) -> None:
+    path_a, _ = write_m8_claim(repo, "claim_incoming_contradiction_a")
+    receipts = ConsolidationReceiptService(repo)
+    first = receipts.consolidate("claim_incoming_contradiction_a")
+    assert receipts.valid_for("claim_incoming_contradiction_a") is not None
+    assert PromotionService(repo).promote_trusted("claim_incoming_contradiction_a", automatic=True)["promoted"]
+
+    path_b, _ = write_m8_claim(repo, "claim_incoming_contradiction_b")
+    metadata_b, body_b = read_document(path_b)
+    metadata_b["relations"] = [{
+        "type": "contradicts", "target_id": "claim_incoming_contradiction_a",
+        "reason": "independent contrary result", "status": "active",
+        "confidence": "high", "created_by": "test",
+    }]
+    path_b.write_text(render_document(metadata_b, body_b), encoding="utf-8")
+    repo.rebuild_index()
+
+    assert receipts.valid_for("claim_incoming_contradiction_a") is None
+    second = receipts.consolidate("claim_incoming_contradiction_a")
+    assert second["consolidation_id"] != first["consolidation_id"]
+    assert second["contradiction_search"]["validation_outcome"] == "contested"
+    assert second["contradiction_search"]["incoming"][0]["source_id"] == "claim_incoming_contradiction_b"
+    assert PromotionService(repo).evaluate("claim_incoming_contradiction_a").eligible is False
+    strict = ContextPackService(repo).build(
+        "Bounded evidence", 1200, profiles=["execution"], strict_execution=True,
+    ).as_dict()
+    assert "claim_incoming_contradiction_a" not in {item["id"] for item in strict["items"]}
+
+
+def test_relation_fingerprint_failure_cannot_create_a_usable_receipt(repo: Repository, monkeypatch: pytest.MonkeyPatch) -> None:
+    write_m8_claim(repo, "claim_relation_fingerprint_failure")
+    service = ConsolidationReceiptService(repo)
+    monkeypatch.setattr(repo, "related", lambda _: (_ for _ in ()).throw(RuntimeError("index unavailable")))
+
+    with pytest.raises(RuntimeError, match="index unavailable"):
+        service.fingerprint("claim_relation_fingerprint_failure")
+    receipt = service.consolidate("claim_relation_fingerprint_failure")
+    assert receipt["status"] == "failed"
+    assert receipt["consolidation_fingerprint"] == {}
+    assert service.valid_for("claim_relation_fingerprint_failure") is None
+
+
+def test_legacy_contradiction_excerpt_creates_candidate_without_contesting_trusted(repo: Repository) -> None:
+    path, source_a = write_m8_claim(repo, "claim_legacy_contradiction")
+    ConsolidationReceiptService(repo).consolidate("claim_legacy_contradiction")
+    assert PromotionService(repo).promote_trusted("claim_legacy_contradiction", automatic=True)["promoted"]
+    source_b = CaptureService(repo).capture_text("Contrary result", title="Contrary evidence")
+
+    result = KnowledgeEvolutionService(repo).apply(
+        "claim_legacy_contradiction",
+        {"source_ids": [source_b.source_id], "evidence": [{
+            "source_id": source_b.source_id, "stance": "contradicts", "location": "body",
+            "excerpt": "Contrary result", "reason": "legacy excerpt only",
+        }]},
+        read_document(path)[1], change_type="contradict", reason="legacy evidence requires review",
+        trigger_source=source_b.source_id,
+    )
+
+    current, _ = read_document(path)
+    assert result["action"] == "contradiction_candidate"
+    assert current["epistemic_status"] != "contested"
+    exception = next(item for item in ExceptionService(repo).list() if item["id"] == result["exception_id"])
+    assert exception["exception_kind"] == "contradiction_candidate"
+
+
+def test_force_contest_requires_source_and_preserves_unverified_boundary(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_forced_contradiction")
+    ConsolidationReceiptService(repo).consolidate("claim_forced_contradiction")
+    assert PromotionService(repo).promote_trusted("claim_forced_contradiction", automatic=True)["promoted"]
+    source = CaptureService(repo).capture_text("Contrary observation", title="Forced contrary evidence")
+
+    result = KnowledgeEvolutionService(repo).apply(
+        "claim_forced_contradiction",
+        {"source_ids": [source.source_id], "evidence": [{
+            "source_id": source.source_id, "stance": "contradicts", "location": "body",
+            "excerpt": "Contrary observation", "reason": "human escalation of legacy excerpt",
+        }]},
+        read_document(path)[1], change_type="contradict", reason="human reviewed and forced contest",
+        trigger_source=source.source_id, force_contest=True,
+    )
+
+    current, _ = read_document(path)
+    assert result["action"] == "contradict"
+    assert current["epistemic_status"] == "contested"
+    exceptions = ExceptionService(repo).list()
+    assert [item["exception_kind"] for item in exceptions] == ["forced_contradiction"]
+    assert exceptions[0]["context"]["verification"] == "not_verified"
+
+
+def test_promotion_requires_receipt_semantic_check_details(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_receipt_semantics")
+    receipt = ConsolidationReceiptService(repo).consolidate("claim_receipt_semantics")
+    assert receipt["check_details"]["evidence_entailment_rechecked"]["semantic_recheck_performed"] is True
+    assert PromotionService(repo).evaluate("claim_receipt_semantics").eligible is True
+    promoted = PromotionService(repo).promote_trusted("claim_receipt_semantics", automatic=True)
+    assert promoted["promoted"] is True
+
+    # A current-looking Receipt without the semantic proof must not promote a claim.
+    receipt_path, receipt_metadata, receipt_body = ConsolidationReceiptService(repo).load(promoted["receipt_id"])
+    receipt_metadata["check_details"]["evidence_entailment_rechecked"]["semantic_recheck_performed"] = False
+    receipt_path.write_text(render_document(receipt_metadata, receipt_body), encoding="utf-8")
+    assert PromotionService(repo).evaluate("claim_receipt_semantics").eligible is False
+    strict = ContextPackService(repo).build(
+        "Bounded evidence", 1200, profiles=["execution"], strict_execution=True,
+    ).as_dict()
+    assert "claim_receipt_semantics" not in {item["id"] for item in strict["items"]}
+    assert ProjectMetricsService(repo).collect()["trusted_v3_qualified"] == 0
+
+
 def test_context_strict_execution_reports_receipt_policy(repo: Repository) -> None:
     path, _ = write_m8_claim(repo, "claim_m81_context")
     ConsolidationReceiptService(repo).consolidate("claim_m81_context")
@@ -3191,15 +3375,63 @@ def test_governed_recovery_finalizes_receipt_completed_event_once(repo: Reposito
     )
     path.write_bytes(staged.encode("utf-8"))
     recovery.checkpoint(journal, "staged")
-    recovery.checkpoint(journal, "receipt_completed", "consolidation_fixture")
+    receipt = ConsolidationReceiptService(repo).consolidate(
+        "claim_m81_recovery_finalize", result="supported", rebuild_index=False,
+    )
+    recovery.checkpoint(journal, "receipt_completed", receipt["consolidation_id"])
 
     result = recovery.recover_all()
 
     assert result["blocked"] == [] and result["recovered"][0]["status"] == "finalized"
-    assert path.read_bytes() == staged.encode("utf-8")
+    assert sha256_bytes(path.read_bytes()) == receipt["object_sha256_after"]
     events = (repo.root / "system/logs/memory-events.jsonl").read_text(encoding="utf-8")
     assert events.count(f'"recovery_operation_id": "{operation_id}"') == 1
     assert recovery.pending() == []
+
+
+def test_governed_recovery_rolls_forward_receipt_written_before_checkpoint(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_m812_receipt_before_checkpoint")
+    before = path.read_bytes()
+    metadata, body = read_document(path)
+    metadata["comment"] = "durable committed mutation"
+    staged = render_document(metadata, body)
+    operation_id = "support_m812_missing_checkpoint"
+    event = {"event": "knowledge-support", "object_id": "claim_m812_receipt_before_checkpoint"}
+    recovery = TrustedPromotionRecoveryManager(repo)
+    journal = recovery.prepare(operation_id, path, before, staged, operation="trusted_support", event=event)
+    path.write_bytes(staged.encode("utf-8"))
+    recovery.checkpoint(journal, "staged")
+    receipt = ConsolidationReceiptService(repo).consolidate(
+        "claim_m812_receipt_before_checkpoint", result="supported", rebuild_index=False,
+    )
+
+    result = recovery.recover_all()
+
+    assert result["blocked"] == []
+    assert result["recovered"][0]["status"] == "rolled_forward_after_missing_checkpoint"
+    assert path.read_bytes() != before
+    assert ConsolidationReceiptService(repo).valid_for("claim_m812_receipt_before_checkpoint")["consolidation_id"] == receipt["consolidation_id"]
+    events = (repo.root / "system/logs/memory-events.jsonl").read_text(encoding="utf-8")
+    assert events.count(f'"recovery_operation_id": "{operation_id}"') == 1
+
+
+def test_governed_recovery_blocks_fake_or_stale_receipt(repo: Repository) -> None:
+    path, _ = write_m8_claim(repo, "claim_m812_recovery_fake_receipt")
+    before = path.read_bytes()
+    metadata, body = read_document(path)
+    metadata["comment"] = "staged without matching receipt"
+    staged = render_document(metadata, body)
+    recovery = TrustedPromotionRecoveryManager(repo)
+    journal = recovery.prepare("support_m812_fake", path, before, staged, operation="trusted_support")
+    path.write_bytes(staged.encode("utf-8"))
+    recovery.checkpoint(journal, "staged")
+    recovery.checkpoint(journal, "receipt_completed", "consolidation_missing")
+
+    result = recovery.recover_all()
+
+    assert result["recovered"] == [] and result["blocked"]
+    assert path.read_bytes() == staged.encode("utf-8")
+    assert journal.exists()
 
 
 def test_m81_test_functions_do_not_reference_object_id_before_assignment() -> None:
@@ -3281,6 +3513,10 @@ def test_m8_tier_and_epistemic_status_are_orthogonal(repo: Repository) -> None:
         promoted, _ = read_document(path)
         assert promoted["memory_tier"] == "trusted"
         assert promoted["epistemic_status"] == epistemic
+        assert promoted["qualification_scope"] == {
+            "question": "durable_question", "hypothesis": "exploratory_hypothesis",
+            "analogy": "exploratory_analogy",
+        }[object_type]
     assert truth_layer({"type": "claim", "status": "mystery"}) == "unknown"
 
 
@@ -3315,7 +3551,9 @@ def test_m8_trusted_support_revision_conflict_and_demotion_are_explicit(repo: Re
     conflict = KnowledgeEvolutionService(repo).apply(
         "claim_m8_evolve", {"source_ids": [source_b.source_id], "evidence": [{
             "source_id": source_b.source_id, "stance": "contradicts", "location": "body",
-            "excerpt": "Independent support conflicts with the previous scope", "reason": "primary evidence conflicts",
+            "evidence_id": "evidence_typed_conflict", "evidence_kind": "paraphrase",
+            "verification_status": "verified", "input_sha256": "fixture", "section": "results",
+            "interpretation": "Independent support conflicts with the previous scope", "reason": "primary evidence conflicts",
         }]}, trusted_body,
         change_type="contradict", reason="primary evidence conflicts", trigger_source=source_b.source_id,
     )
@@ -3344,7 +3582,9 @@ def test_canonical_evolution_always_creates_proposal_without_direct_write(
     if change_type == "contradict":
         incoming["evidence"] = [{
             "source_id": source_id, "stance": "contradicts", "location": "body",
-            "excerpt": "bounded contradictory evidence", "reason": "fixture conflict",
+            "evidence_id": "evidence_canonical_conflict", "evidence_kind": "paraphrase",
+            "verification_status": "verified", "input_sha256": "fixture", "section": "results",
+            "interpretation": "bounded contradictory evidence", "reason": "fixture conflict",
         }]
 
     result = KnowledgeEvolutionService(repo).apply(
@@ -3373,7 +3613,9 @@ def test_m8_incremental_a_b_c_and_execution_context(repo: Repository) -> None:
     c = KnowledgeEvolutionService(repo).apply(
         "claim_m8_abc", {"source_ids": [source_c.source_id], "evidence": [{
             "source_id": source_c.source_id, "stance": "contradicts", "location": "body",
-            "excerpt": "C contradicts A", "reason": "C limitation",
+            "evidence_id": "evidence_abc_conflict", "evidence_kind": "paraphrase",
+            "verification_status": "verified", "input_sha256": "fixture", "section": "results",
+            "interpretation": "C contradicts A", "reason": "C limitation",
         }]}, read_document(path)[1],
         change_type="contradict", reason="C limitation", trigger_source=source_c.source_id,
     )

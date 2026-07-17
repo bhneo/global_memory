@@ -4,7 +4,7 @@ type: "hypothesis"
 status: "trusted"
 title: "显式不变量可能提高技能跨形态迁移"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:39:06+08:00"
+updated_at: "2026-07-17T22:40:06+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 6
-last_consolidated_at: "2026-07-17T18:39:06+08:00"
+consolidation_count: 7
+last_consolidated_at: "2026-07-17T22:40:06+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -33,7 +33,7 @@ origin_candidate_sha256: "61eeff5045ad8e0b4473b459cca07856348a78bebc5085b92a45bb
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "hypothetical"
-last_consolidation_id: "consolidation_9cb2908618dae153d6ddb7b9"
+last_consolidation_id: "consolidation_7b9ec75a95e28575d24c5829"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:38:59+08:00"

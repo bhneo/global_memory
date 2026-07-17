@@ -4,7 +4,7 @@ type: "analogy"
 status: "trusted"
 title: "遍历性 ↔ 离线数据对部署轨迹的覆盖"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:36:37+08:00"
+updated_at: "2026-07-17T22:39:53+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -22,8 +22,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 4
-last_consolidated_at: "2026-07-17T18:36:37+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T22:39:53+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -37,7 +37,7 @@ origin_candidate_sha256: "9e909acf5e852cc0c6be3eaba40416d6f8b37bc609d50970b39d44
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "exploratory_analogy"
-last_consolidation_id: "consolidation_a885d44473dfc4167b68c268"
+last_consolidation_id: "consolidation_23f7607997c0481a20eb3d75"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:36:31+08:00"

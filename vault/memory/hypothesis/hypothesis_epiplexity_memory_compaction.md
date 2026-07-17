@@ -4,7 +4,7 @@ type: "hypothesis"
 status: "trusted"
 title: "Epiplexity 可能帮助评价有限上下文中的记忆压缩"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:38:41+08:00"
+updated_at: "2026-07-17T22:40:04+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 5
-last_consolidated_at: "2026-07-17T18:38:41+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T22:40:04+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -33,7 +33,7 @@ origin_candidate_sha256: "19b190f50cd8f105aab2bc94166504804570437f7e0d53840e76ba
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "hypothetical"
-last_consolidation_id: "consolidation_d3e5913c44f48ddf0aa219a3"
+last_consolidation_id: "consolidation_8067f6d85d2a8910cd703b77"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:38:34+08:00"

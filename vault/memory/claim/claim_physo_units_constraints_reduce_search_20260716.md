@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "Φ-SO 在生成过程中施加物理单位约束以排除不一致表达式并缩小搜索空间"
 created_at: "2026-07-15T18:45:00+08:00"
-updated_at: "2026-07-17T18:38:06+08:00"
+updated_at: "2026-07-17T22:39:59+08:00"
 aliases: []
 tags: ["PhySO", "symbolic-regression", "units-constraints"]
 domains: ["machine-learning", "physics"]
@@ -30,8 +30,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 5
-last_consolidated_at: "2026-07-17T18:38:06+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T22:39:59+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
@@ -45,7 +45,7 @@ origin_candidate_sha256: "56500a927a1c126a26835ecf986c44f78e52905531151233eb82fb
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_ab64107c8fcbbfea21a28bd1"
+last_consolidation_id: "consolidation_d7cd7d382e58bbb22f7f07a4"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:37:59+08:00"

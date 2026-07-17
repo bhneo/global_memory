@@ -35,7 +35,7 @@ from .repository import Repository, sha256_bytes
 from .receipts import ReceiptService
 from .triage import DailyTriageService
 from .works import WorkService
-from .governance import PromotionService, TrustedPromotionRecoveryManager
+from .governance import CanonicalPromotionRecoveryManager, PromotionService, TrustedPromotionRecoveryManager
 
 
 PROPOSAL_STATUSES = {"pending", "deferred", "migrated", "superseded", "published", "approved", "rejected"}
@@ -280,6 +280,7 @@ def build_parser() -> argparse.ArgumentParser:
     evolve.add_argument("--from-file", required=True)
     evolve.add_argument("--reason", required=True)
     evolve.add_argument("--trigger-source")
+    evolve.add_argument("--force-contest", action="store_true", help="explicitly mark a sourced legacy contradiction contested; creates a must-confirm Exception")
     commands.add_parser("weekly-report", help="运行 weekly consolidation 并输出 digest")
 
     search = commands.add_parser("search", help="全文检索来源和 canonical knowledge")
@@ -307,7 +308,8 @@ def build_parser() -> argparse.ArgumentParser:
     context.add_argument("--format", choices=["json", "markdown"], default="json")
     obsidian = commands.add_parser("obsidian", help="构建可重建的 Obsidian 导航视图")
     obsidian_commands = obsidian.add_subparsers(dest="obsidian_command", required=True)
-    obsidian_commands.add_parser("build")
+    obsidian_build = obsidian_commands.add_parser("build")
+    obsidian_build.add_argument("--graph-profile", choices=["trusted", "frontier", "all"], default="trusted")
     receipt = commands.add_parser("receipt", help="创建 session receipt 并通过 proposal 写回")
     receipt_commands = receipt.add_subparsers(dest="receipt_command", required=True)
     receipt_create = receipt_commands.add_parser("create")
@@ -442,7 +444,7 @@ def doctor(repository: Repository) -> dict[str, object]:
     except Exception as exc:
         indexed_count = None
         issues.append(f"索引不可用: {exc}")
-    recovery_journals = [*ApprovalRecoveryManager(repository).pending(), *BundleRecoveryManager(repository).pending(), *TrustedPromotionRecoveryManager(repository).pending()]
+    recovery_journals = [*ApprovalRecoveryManager(repository).pending(), *BundleRecoveryManager(repository).pending(), *TrustedPromotionRecoveryManager(repository).pending(), *CanonicalPromotionRecoveryManager(repository).pending()]
     for journal in recovery_journals:
         issues.append(f"存在未完成 approval recovery journal: {repository.rel(journal)}")
     lifecycle = SourceLifecycleService(repository).check()
@@ -1126,6 +1128,7 @@ def run(args: argparse.Namespace) -> int:
         _print(KnowledgeEvolutionService(repository).apply(
             args.object_id, candidate, body, change_type=args.change_type,
             reason=args.reason, trigger_source=args.trigger_source,
+            force_contest=args.force_contest,
         ))
     elif args.command == "weekly-report":
         result = ConsolidationService(repository).weekly()
@@ -1167,7 +1170,7 @@ def run(args: argparse.Namespace) -> int:
         )
         _print(pack.as_markdown() if args.format == "markdown" else pack.as_dict())
     elif args.command == "obsidian":
-        _print(ObsidianViewService(repository).build())
+        _print(ObsidianViewService(repository).build(graph_profile=args.graph_profile))
     elif args.command == "receipt":
         service = ReceiptService(repository)
         if args.receipt_command == "create":
@@ -1264,7 +1267,7 @@ def run(args: argparse.Namespace) -> int:
                 state: len(proposals.list(state))
                 for state in ("pending", "deferred", "migrated", "superseded", "published", "approved", "rejected")
             },
-            "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()) + len(BundleRecoveryManager(repository).pending()) + len(TrustedPromotionRecoveryManager(repository).pending()),
+            "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()) + len(BundleRecoveryManager(repository).pending()) + len(TrustedPromotionRecoveryManager(repository).pending()) + len(CanonicalPromotionRecoveryManager(repository).pending()),
             "source_processing_states": state_counts,
             "metrics": ProjectMetricsService(repository).collect(),
         }
@@ -1357,9 +1360,10 @@ def run(args: argparse.Namespace) -> int:
         approval = ApprovalRecoveryManager(repository).recover_all()
         bundle = BundleRecoveryManager(repository).recover_all()
         trusted = TrustedPromotionRecoveryManager(repository).recover_all()
+        canonical = CanonicalPromotionRecoveryManager(repository).recover_all()
         result = {
-            "recovered": [*approval["recovered"], *bundle["recovered"], *trusted["recovered"]],
-            "blocked": [*approval["blocked"], *bundle["blocked"], *trusted["blocked"]],
+            "recovered": [*approval["recovered"], *bundle["recovered"], *trusted["recovered"], *canonical["recovered"]],
+            "blocked": [*approval["blocked"], *bundle["blocked"], *trusted["blocked"], *canonical["blocked"]],
         }
         _print(result)
         return 1 if result["blocked"] else 0

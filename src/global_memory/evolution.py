@@ -82,10 +82,15 @@ class KnowledgeEvolutionService:
             temporary.unlink(missing_ok=True)
         exception_id = None
         if change_type == "contradict":
+            forced = bool(incoming.get("_forced_contest"))
             exception_id = self.exceptions.create(
-                "canonical-conflict", f"Contradiction: {current.get('title', object_id)}",
+                "forced_contradiction" if forced else "canonical-conflict",
+                f"Contradiction: {current.get('title', object_id)}",
                 [reason.strip()], object_id=object_id, source_ids=incoming_sources,
-                severity="must_confirm", context={"change": record, "proposal_id": proposal.proposal_id},
+                severity="must_confirm", context={
+                    "change": record, "proposal_id": proposal.proposal_id,
+                    "verification": "not_verified" if forced else "verified_typed_evidence",
+                },
             )
         return {
             "action": "canonical_proposal", "object_id": object_id, "memory_tier": "canonical",
@@ -112,6 +117,7 @@ class KnowledgeEvolutionService:
     def apply(
         self, object_id: str, incoming: dict[str, Any], body: str, *,
         change_type: str, reason: str, trigger_source: str | None = None,
+        force_contest: bool = False,
     ) -> dict[str, Any]:
         if change_type not in CHANGE_TYPES:
             raise ValueError(f"unsupported knowledge change type: {change_type}")
@@ -126,13 +132,40 @@ class KnowledgeEvolutionService:
         incoming_evidence = [item for item in incoming.get("evidence", []) if isinstance(item, dict)]
         evidence_ids = [str(item.get("evidence_id")) for item in incoming_evidence if item.get("evidence_id")]
         if change_type == "contradict":
-            contradiction_evidence = [
-                item for item in incoming_evidence
-                if item.get("stance") == "contradicts" and item.get("source_id")
-                and item.get("excerpt") and item.get("reason")
-            ]
-            if not contradiction_evidence:
-                raise ValueError("contradict requires source-linked contradictory evidence with excerpt and reason")
+            contradiction_evidence = [item for item in incoming_evidence if item.get("stance") == "contradicts"]
+            typed_contradictions = [item for item in contradiction_evidence if item.get("evidence_kind") in {"quote", "paraphrase", "table_value", "figure"}]
+            typed_valid = bool(typed_contradictions)
+            if typed_valid:
+                try:
+                    for item in typed_contradictions:
+                        self.repository._validate_typed_evidence(item, path)
+                except Exception as exc:
+                    raise ValueError(f"contradict typed evidence is not verifiable: {exc}") from exc
+            if not typed_valid and not force_contest:
+                # A legacy excerpt can still be useful review material, but cannot
+                # silently change the epistemic state of Trusted/Canonical memory.
+                candidate_id = self.exceptions.create(
+                    "contradiction_candidate", f"Unverified contradiction candidate: {current.get('title', object_id)}",
+                    [reason.strip()], object_id=object_id, source_ids=incoming_sources,
+                    severity="must_confirm", context={
+                        "legacy_evidence": contradiction_evidence,
+                        "required": "verified typed quote/paraphrase/table/figure evidence",
+                        "trigger_source": trigger_source,
+                    },
+                )
+                return {
+                    "action": "contradiction_candidate", "object_id": object_id,
+                    "memory_tier": tier, "epistemic_status": epistemic,
+                    "exception_id": candidate_id, "updated_object_count": 0,
+                    "knowledge_reuse_count": 1,
+                }
+            if not typed_valid:
+                if not contradiction_evidence or not incoming_sources:
+                    raise ValueError("--force-contest still requires contrary evidence and a source link")
+                # Explicit human escalation never pretends that a legacy excerpt
+                # was verified. The single conflict Exception records that fact.
+                incoming = dict(incoming)
+                incoming["_forced_contest"] = True
 
         if tier == "canonical":
             return self._propose_canonical_evolution(
@@ -221,11 +254,15 @@ class KnowledgeEvolutionService:
             updated["updated_by"] = "knowledge-evolution-v1"
             updated["change_history"] = [*current.get("change_history", []), record]
             record["changed_fields"] = ["epistemic_status", "source_ids", "evidence", "unresolved_contradictions"]
+            forced = bool(incoming.get("_forced_contest"))
             exception_id = self.exceptions.create(
-                "canonical-conflict" if tier == "canonical" else "trusted-conflict",
+                "forced_contradiction" if forced else ("canonical-conflict" if tier == "canonical" else "trusted-conflict"),
                 f"Contradiction: {current.get('title', object_id)}",
                 [reason.strip()], object_id=object_id, source_ids=incoming_sources,
-                severity="must_confirm", context={"change": record, "previous_version": previous_version},
+                severity="must_confirm", context={
+                    "change": record, "previous_version": previous_version,
+                    "verification": "not_verified" if forced else "verified_typed_evidence",
+                },
             )
             new_body = current_body
             result = "contradicted"

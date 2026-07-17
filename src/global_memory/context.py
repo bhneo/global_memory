@@ -6,6 +6,7 @@ from typing import Any
 
 from .errors import ValidationError
 from .epistemics import infer_epistemic_status, infer_tier, truth_layer
+from .governance import POLICY_VERSION
 from .extraction import ExtractionService
 from .markdown import read_document
 from .repository import Repository, sha256_bytes
@@ -19,7 +20,7 @@ PROFILE_PRIORITIES = {
     "execution": {
         "project": 100, "goal": 95, "architecture": 90, "decision": 88,
         "failure": 86, "experiment": 82, "opportunity": 75, "question": 70,
-        "tension": 68, "claim": 55, "source": 30,
+        "tension": 68, "concept": 60, "claim": 55, "source": 30,
     },
     "research": {
         "concept": 100, "claim": 95, "synthesis": 90, "question": 86,
@@ -415,6 +416,21 @@ class ContextPackService:
             epistemic = infer_epistemic_status(metadata, tier)
             current_receipt = None if object_type == "source" else receipt_service.valid_for(str(metadata["id"]))
             receipt_state = "not_applicable" if object_type == "source" else ("current_v2" if current_receipt else "missing_or_stale")
+            semantic_failures = [] if object_type == "source" else receipt_service.semantic_qualification_failures(object_type, current_receipt)
+            policy_version = metadata.get("trust_policy_version") if object_type != "source" else None
+            policy_qualified = bool(
+                tier == "trusted" and policy_version == POLICY_VERSION
+                and not metadata.get("needs_policy_requalification") and current_receipt is not None
+                and not semantic_failures and epistemic != "contested" and not metadata.get("high_risk_drift")
+            )
+            qualification_failures = [] if object_type == "source" else [
+                *([] if policy_version == POLICY_VERSION else ["policy_version_not_current"]),
+                *([] if not metadata.get("needs_policy_requalification") else ["awaiting_requalification"]),
+                *([] if current_receipt is not None else ["receipt_missing_or_stale"]),
+                *semantic_failures,
+                *([] if epistemic != "contested" else ["contested"]),
+                *([] if not metadata.get("high_risk_drift") else ["high_risk_drift"]),
+            ]
             if statuses is None and object_type not in {"source", "proposal"} and status != "archived":
                 visible = False
                 if "research" in profiles:
@@ -437,11 +453,24 @@ class ContextPackService:
                     omitted.append({"id": str(metadata["id"]), "reason": "profile trust policy excluded this memory tier"})
                     continue
             if strict_execution and "execution" in profiles and object_type != "source" and tier in {"trusted", "canonical"}:
+                try:
+                    has_relation_contradiction = any(
+                        relation.get("relation_type") == "contradicts"
+                        for relation in self.repository.related(str(metadata["id"]))
+                    )
+                except Exception:
+                    has_relation_contradiction = True
+                if has_relation_contradiction:
+                    omitted.append({"id": str(metadata["id"]), "reason": "strict execution excludes unresolved incoming or outgoing contradiction relations"})
+                    continue
                 if metadata.get("needs_policy_requalification"):
                     omitted.append({"id": str(metadata["id"]), "reason": "strict execution excludes Trusted memory awaiting policy requalification"})
                     continue
                 if current_receipt is None:
                     omitted.append({"id": str(metadata["id"]), "reason": "strict execution requires current Receipt v2"})
+                    continue
+                if semantic_failures:
+                    omitted.append({"id": str(metadata["id"]), "reason": "strict execution requires type-specific semantic Receipt qualification"})
                     continue
             if updated_since and str(metadata.get("updated_at", "")) < updated_since:
                 omitted.append({"id": str(metadata["id"]), "reason": "早于 updated_since filter"})
@@ -500,6 +529,19 @@ class ContextPackService:
                     "unresolved_contradictions": metadata.get("unresolved_contradictions", []),
                     "last_consolidated_at": metadata.get("last_consolidated_at"),
                     "receipt_state": receipt_state,
+                    "receipt_current": current_receipt is not None if object_type != "source" else None,
+                    "policy_version": policy_version,
+                    "policy_qualified": policy_qualified,
+                    "execution_safe": bool(
+                        object_type == "source" or policy_qualified or (
+                            tier == "canonical" and current_receipt is not None and not semantic_failures
+                            and epistemic not in {"contested", "hypothetical", "exploratory_analogy", "unknown"}
+                            and not metadata.get("high_risk_drift")
+                        )
+                    ),
+                    "qualification_reasons": ["current policy and Receipt v2"] if policy_qualified else [],
+                    "qualification_failures": qualification_failures,
+                    "qualification_scope": metadata.get("qualification_scope"),
                     "policy_state": "execution_strict" if strict_execution and "execution" in profiles else "default",
                     "proposal_id": str(metadata["id"]) if object_type == "proposal" else None,
                     "title": str(metadata["title"]),

@@ -4,7 +4,7 @@ type: "hypothesis"
 status: "trusted"
 title: "Kelly 式约束可能改善创新项目组合的长期存续"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:39:13+08:00"
+updated_at: "2026-07-17T22:40:07+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 6
-last_consolidated_at: "2026-07-17T18:39:13+08:00"
+consolidation_count: 7
+last_consolidated_at: "2026-07-17T22:40:07+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -33,7 +33,7 @@ origin_candidate_sha256: "a0d7d8e6820708048cf5ddc19cc8c766397ad817364c2e8996bcdd
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "hypothetical"
-last_consolidation_id: "consolidation_10556b3e03ed26ce775fb1a2"
+last_consolidation_id: "consolidation_f001f56623937a69252d77f2"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:39:07+08:00"

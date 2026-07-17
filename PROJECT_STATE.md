@@ -4,6 +4,14 @@
 
 M8.1.1 — Correctness Recovery is implemented and locally accepted. Legacy Trusted state is preserved during policy upgrades, Receipt v2 is bound to the complete current environment, governed writes use a recoverable state machine, and Canonical remains an explicit proposal/approval decision.
 
+## M8.1.2 update (2026-07-17)
+
+- Receipt v2 now fingerprints incoming and outgoing relation state. Earlier receipts remain preserved but are safely stale until an explicit re-consolidation; no real knowledge object was bulk-rewritten to improve metrics.
+- Canonical approval is a recoverable multi-file transaction: it keeps exact Trusted/Card pre-images and rolls forward only with a complete `canonical_approved` Receipt v2 bound to final Canonical bytes.
+- Receipt check details distinguish execution from validation outcome; only typed evidence may automatically contest a Trusted object. Exploratory qualifications are governance scope, not factual reliability.
+- 30 Trusted objects were re-consolidated without modifying their knowledge bodies. The sole Canonical VIA claim remains intentionally receipt-stale because its source-linked evidence entailment is not yet recheckable.
+- Promotion consumes semantic Receipt details; `evolve --force-contest` is an explicit, source-bound escalation that creates a must-confirm Exception rather than claiming verification.
+
 ## Current architecture
 
 `capture → immutable Raw/Source → bounded triage → Working → real consolidation + hash-bound receipt → narrowly eligible Trusted → promotion card → explicit Canonical approval`.

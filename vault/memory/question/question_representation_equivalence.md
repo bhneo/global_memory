@@ -4,7 +4,7 @@ type: "question"
 status: "trusted"
 title: "表征相似在什么条件下意味着机制等价？"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:39:31+08:00"
+updated_at: "2026-07-17T22:40:09+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 6
-last_consolidated_at: "2026-07-17T18:39:31+08:00"
+consolidation_count: 7
+last_consolidated_at: "2026-07-17T22:40:09+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -33,7 +33,7 @@ origin_candidate_sha256: "8365f8b39390e918fceeaf3d8f0cfa96addeb06b6ce38a336909a4
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "open_question"
-last_consolidation_id: "consolidation_192026c0bb3a221c30de5b07"
+last_consolidation_id: "consolidation_94a7976378091027a2abc084"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:39:25+08:00"

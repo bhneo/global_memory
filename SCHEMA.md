@@ -67,6 +67,10 @@ Typed evidence 支持 quote、paraphrase、translation、table_value、figure、
 
 ## Consolidation Receipt
 
+Receipt v2 `relation_fingerprint` contains incoming, outgoing and full-neighborhood SHA-256 values. A direct contradiction in either direction invalidates a current receipt. Per-check details record `execution_status`, `validation_outcome`, and `semantic_recheck_performed`: metadata inspection is not semantic revalidation.
+
+Canonical promotion journals live under `system/recovery/canonical-promotion-*.json`. They retain exact Trusted/Card pre-images and may roll forward only when a complete `canonical_approved` Receipt v2 matches the final Canonical bytes; otherwise recovery restores the bytes exactly.
+
 Receipt 位于 `vault/receipts/consolidation/`，不可变并绑定对象前后哈希：
 
 ```yaml

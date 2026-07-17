@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "该文称 SkillEvolver 每轮显式生成 K=4 个覆盖不同高层决策轴的策略"
 created_at: "2026-07-16T11:16:00+08:00"
-updated_at: "2026-07-17T18:38:23+08:00"
+updated_at: "2026-07-17T22:40:01+08:00"
 aliases: []
 tags: ["SkillEvolver", "strategy-exploration", "CLI-agent"]
 domains: ["agent-systems", "software-engineering"]
@@ -30,8 +30,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 5
-last_consolidated_at: "2026-07-17T18:38:23+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T22:40:01+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
@@ -45,7 +45,7 @@ origin_candidate_sha256: "c84c1a8da4795812496769b1baafba62ca5b2ea1b45742cf6b7d9c
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_df224f19f67dcdc1b0ee25d0"
+last_consolidation_id: "consolidation_971d12133c354db00d644feb"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:38:15+08:00"

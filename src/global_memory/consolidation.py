@@ -80,12 +80,37 @@ class ConsolidationReceiptService:
             and bool(metadata.get("consolidation_fingerprint"))
         )
 
+    @staticmethod
+    def semantic_qualification_failures(object_type: str, receipt: dict[str, Any] | None) -> list[str]:
+        """Return type-specific semantic failures shared by write and read gates."""
+        if receipt is None:
+            return []
+        details = receipt.get("check_details", {}) if isinstance(receipt.get("check_details"), dict) else {}
+        if object_type == "claim":
+            entailment = details.get("evidence_entailment_rechecked", {})
+            if not (
+                entailment.get("validation_outcome") == "passed"
+                and entailment.get("semantic_recheck_performed") is True
+            ):
+                return ["receipt_semantic_entailment_not_passed"]
+        elif object_type == "concept":
+            independence = details.get("source_independence_checked", {})
+            if independence.get("validation_outcome") != "passed":
+                return ["receipt_logical_work_independence_not_established"]
+        return []
+
     def valid_for(self, object_id: str) -> dict[str, Any] | None:
+        try:
+            fingerprint = self.fingerprint(object_id)
+        except Exception:
+            # A receipt must never remain usable when its environment cannot be
+            # read completely (notably the relation index).
+            return None
         candidates = [
             item for item in self._current_for(object_id)
             if self.complete(item)
             and int(item.get("receipt_schema_version", 1)) >= RECEIPT_SCHEMA_VERSION
-            and item.get("consolidation_fingerprint") == self.fingerprint(object_id)
+            and item.get("consolidation_fingerprint") == fingerprint
         ]
         return sorted(candidates, key=lambda item: str(item.get("completed_at", "")))[-1] if candidates else None
 
@@ -135,6 +160,33 @@ class ConsolidationReceiptService:
                 records.append({"source_id": source_id, "missing": True})
         return records
 
+    def _relation_fingerprint(self, object_id: str) -> dict[str, Any]:
+        """Return an explainable, stable view of both directions of the relation index."""
+        relations = self.repository.related(object_id)
+        normalized = sorted(
+            [
+                {
+                    "source_id": str(item["source_id"]),
+                    "relation_type": str(item["relation_type"]),
+                    "target_id": str(item["target_id"]),
+                    "reason": str(item.get("reason", "")),
+                }
+                for item in relations
+            ],
+            key=lambda item: (
+                item["source_id"], item["relation_type"], item["target_id"], item["reason"],
+            ),
+        )
+        outgoing = [item for item in normalized if item["source_id"] == object_id]
+        incoming = [item for item in normalized if item["target_id"] == object_id]
+        return {
+            "outgoing_relations_sha256": self._digest(outgoing),
+            "incoming_relations_sha256": self._digest(incoming),
+            "full_neighborhood_sha256": self._digest(normalized),
+            "outgoing": outgoing,
+            "incoming": incoming,
+        }
+
     def fingerprint(self, object_id: str, *, metadata: dict[str, Any] | None = None, body: str | None = None) -> dict[str, Any]:
         """Hash every governed input that can invalidate a consolidation."""
         path, current, current_body = self.repository.find_document(object_id)
@@ -143,11 +195,12 @@ class ConsolidationReceiptService:
         source_ids = [str(item) for item in metadata.get("source_ids", [])]
         source_records = self._source_records(source_ids)
         evidence = [item for item in metadata.get("evidence", []) if isinstance(item, dict)]
-        relations = [item for item in metadata.get("relations", []) if isinstance(item, dict)]
-        try:
-            neighborhood = [item.__dict__ for item in self.repository.related(object_id)]
-        except Exception:
-            neighborhood = []
+        relation_fingerprint = self._relation_fingerprint(object_id)
+        contradictions = {
+            "metadata": sorted(str(item) for item in metadata.get("unresolved_contradictions", [])),
+            "outgoing": [item for item in relation_fingerprint["outgoing"] if item["relation_type"] == "contradicts"],
+            "incoming": [item for item in relation_fingerprint["incoming"] if item["relation_type"] == "contradicts"],
+        }
         return {
             "object_sha256": sha256_bytes(render_document(metadata, body).encode("utf-8")),
             "source_state_sha256": self._digest(source_records),
@@ -162,8 +215,12 @@ class ConsolidationReceiptService:
                 "source_id": item["source_id"], "work_id": item.get("work_id"),
                 "work_document_sha256": item.get("work_document_sha256"),
             } for item in source_records]),
-            "relation_neighborhood_sha256": self._digest([relations, neighborhood]),
-            "contradictions_sha256": self._digest(metadata.get("unresolved_contradictions", [])),
+            "relation_fingerprint": {
+                key: relation_fingerprint[key]
+                for key in ("outgoing_relations_sha256", "incoming_relations_sha256", "full_neighborhood_sha256")
+            },
+            "relation_neighborhood_sha256": relation_fingerprint["full_neighborhood_sha256"],
+            "contradictions_sha256": self._digest(contradictions),
             "receipt_schema_version": RECEIPT_SCHEMA_VERSION,
             "memory_schema_version": metadata.get("memory_schema_version", 1),
             "consolidator_version": CONSOLIDATOR_VERSION,
@@ -208,7 +265,7 @@ class ConsolidationReceiptService:
 
     def _search_checks(
         self, metadata: dict[str, Any],
-    ) -> tuple[dict[str, bool], list[str], dict[str, list[str]]]:
+    ) -> tuple[dict[str, bool], list[str], dict[str, list[str]], dict[str, Any]]:
         checks = {
             "duplicate_search_completed": False,
             "related_object_search_completed": False,
@@ -220,6 +277,10 @@ class ConsolidationReceiptService:
             "related_object_search_completed": [],
             "contradiction_search_completed": [],
         }
+        contradiction_search: dict[str, Any] = {
+            "execution_status": "failed", "outgoing": [], "incoming": [],
+            "unresolved_count": 0, "validation_outcome": "needs_review",
+        }
         try:
             results = self.repository.search(str(metadata.get("title", metadata["id"])), 20)
             checks["duplicate_search_completed"] = True
@@ -230,29 +291,35 @@ class ConsolidationReceiptService:
         except Exception as exc:
             warnings.append(f"duplicate search failed: {exc}")
         try:
-            related = self.repository.related(str(metadata["id"]))
+            relation_fingerprint = self._relation_fingerprint(str(metadata["id"]))
+            related = [*relation_fingerprint["outgoing"], *relation_fingerprint["incoming"]]
             checks["related_object_search_completed"] = True
             findings["related_object_search_completed"] = [
                 f"relation index inspected; {len(related)} related objects found",
                 *[f"related:{item.get('id', item.get('target_id', 'unknown'))}" for item in related[:5]],
             ]
-            # A completed search can legitimately find zero contradictions.
-            _ = [
-                relation for relation in metadata.get("relations", [])
-                if isinstance(relation, dict) and relation.get("type") == "contradicts"
+            outgoing = [
+                item for item in relation_fingerprint["outgoing"]
+                if item["relation_type"] == "contradicts"
+            ]
+            incoming = [
+                item for item in relation_fingerprint["incoming"]
+                if item["relation_type"] == "contradicts"
             ]
             checks["contradiction_search_completed"] = True
-            contradictions = [
-                str(relation.get("target_id")) for relation in metadata.get("relations", [])
-                if isinstance(relation, dict) and relation.get("type") == "contradicts"
-            ]
+            contradiction_search = {
+                "execution_status": "completed", "outgoing": outgoing, "incoming": incoming,
+                "unresolved_count": len(outgoing) + len(incoming),
+                "validation_outcome": "clear" if not outgoing and not incoming else "contested",
+            }
             findings["contradiction_search_completed"] = [
-                f"contradiction relations inspected; {len(contradictions)} found",
-                *[f"contradicts:{target_id}" for target_id in contradictions],
+                f"contradiction relations inspected; {len(outgoing) + len(incoming)} found",
+                *[f"outgoing_contradicts:{item['target_id']}" for item in outgoing],
+                *[f"incoming_contradicts:{item['source_id']}" for item in incoming],
             ]
         except Exception as exc:
             warnings.append(f"relation search failed: {exc}")
-        return checks, warnings, findings
+        return checks, warnings, findings, contradiction_search
 
     def consolidate(
         self, object_id: str, *, result: str | None = None,
@@ -272,7 +339,7 @@ class ConsolidationReceiptService:
         before_sha = hashlib.sha256(before_bytes).hexdigest()
         source_ids = [str(item) for item in metadata.get("source_ids", [])]
         source_hashes, raw_available, warnings = self._source_state(source_ids)
-        search_checks, search_warnings, search_findings = self._search_checks(metadata)
+        search_checks, search_warnings, search_findings, contradiction_search = self._search_checks(metadata)
         warnings.extend(search_warnings)
         object_type = str(metadata.get("type"))
         evidence = [item for item in metadata.get("evidence", []) if isinstance(item, dict)]
@@ -308,7 +375,15 @@ class ConsolidationReceiptService:
         resolved_result = result or ("unchanged" if receipt_complete else "failed")
         if resolved_result == "promotion_candidate" and not receipt_complete:
             resolved_result = "failed"
-        environment_fingerprint = self.fingerprint(object_id, metadata=metadata, body=body)
+        try:
+            environment_fingerprint = self.fingerprint(object_id, metadata=metadata, body=body)
+        except Exception as exc:
+            warnings.append(f"relation fingerprint failed: {exc}")
+            checks["related_object_search_completed"] = False
+            checks["contradiction_search_completed"] = False
+            receipt_complete = False
+            resolved_result = "failed"
+            environment_fingerprint = {}
         failed_attempt_index = sum(
             1 for receipt_path in self.documents()
             for receipt_metadata, _ in [read_document(receipt_path)]
@@ -334,9 +409,18 @@ class ConsolidationReceiptService:
             updated["updated_by"] = CONSOLIDATOR_VERSION
         after_text = render_document(updated, body)
         after_sha = sha256_bytes(after_text.encode("utf-8")) if receipt_complete else before_sha
-        fingerprint = self.fingerprint(object_id, metadata=updated if receipt_complete else metadata, body=body)
+        try:
+            fingerprint = self.fingerprint(object_id, metadata=updated if receipt_complete else metadata, body=body)
+        except Exception as exc:
+            warnings.append(f"final relation fingerprint failed: {exc}")
+            receipt_complete = False
+            resolved_result = "failed"
+            fingerprint = {}
         source_records = self._source_records(source_ids)
-        work_ids = sorted({str(item.get("work_id")) for item in source_records if item.get("work_id")})
+        work_ids = sorted({
+            *{str(item.get("work_id")) for item in source_records if item.get("work_id")},
+            *{str(item) for item in metadata.get("reuse_work_ids", []) if item},
+        })
         detail_findings: dict[str, list[str]] = {
             "schema_validated": [f"validated:{self.repository.rel(path)}"] if schema_validated else [],
             "raw_available": [
@@ -368,9 +452,40 @@ class ConsolidationReceiptService:
             ],
             **search_findings,
         }
+        semantic_entailment_passed = (
+            object_type != "claim" or (
+                metadata.get("quote_verification") == "exact"
+                and bool(evidence)
+                and all(item.get("evidence_kind") == "quote" for item in evidence)
+            )
+        )
+        validation_outcomes = {
+            key: ("passed" if value else "blocked") for key, value in checks.items()
+        }
+        validation_outcomes["evidence_entailment_rechecked"] = (
+            "not_applicable" if object_type != "claim"
+            else "passed" if semantic_entailment_passed
+            else "needs_review" if entailment_rechecked else "blocked"
+        )
+        validation_outcomes["source_independence_checked"] = (
+            "passed" if object_type == "concept" and len(work_ids) >= 2
+            else "not_established" if object_type == "concept"
+            else "not_applicable"
+        )
+        validation_outcomes["contradiction_search_completed"] = contradiction_search["validation_outcome"]
         check_details = {
             key: {
-                "status": "passed" if value else "failed",
+                "check_name": key,
+                "execution_status": "completed" if value else "failed",
+                "validation_outcome": validation_outcomes[key],
+                "method": (
+                    "declared-metadata-inspection" if key == "evidence_entailment_rechecked" else
+                    "logical-work-identity-count" if key == "source_independence_checked" else
+                    "relation-index-query" if key == "contradiction_search_completed" else
+                    "deterministic repository check"
+                ),
+                "semantic_recheck_performed": semantic_entailment_passed if key == "evidence_entailment_rechecked" else None,
+                "declared_value": metadata.get("evidence_entailment") if key == "evidence_entailment_rechecked" else None,
                 "findings": detail_findings.get(key, []),
                 "warnings": [] if value else [warning for warning in warnings if key.split("_")[0] in warning]
                     or [f"{key} did not pass"],
@@ -404,6 +519,7 @@ class ConsolidationReceiptService:
             "model_version": model_version,
             "checks": checks,
             "check_details": check_details,
+            "contradiction_search": contradiction_search,
             "consolidation_fingerprint": fingerprint,
             "drift_policy_version": DRIFT_POLICY_VERSION,
             "result": resolved_result,

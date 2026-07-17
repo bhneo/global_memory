@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "A symmetry-group orbit consists of transformed parameters and lies within one loss level set"
 created_at: "2026-07-16T19:30:00+08:00"
-updated_at: "2026-07-17T18:37:58+08:00"
+updated_at: "2026-07-17T22:39:57+08:00"
 confidence: "medium"
 source_ids: ["source_6ae6c4bef52010f96ddb3dbf", "source_dbfef5ee180346812d6d9a99"]
 relations: [{"type": "derived_from", "target_id": "source_dbfef5ee180346812d6d9a99", "reason": "Primary survey states that a symmetry orbit lies in one loss level set", "confidence": "high", "created_by": "primary-quote-verification-v1", "status": "working"}]
@@ -27,8 +27,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 6
-last_consolidated_at: "2026-07-17T18:37:58+08:00"
+consolidation_count: 7
+last_consolidated_at: "2026-07-17T22:39:57+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
@@ -42,7 +42,7 @@ origin_candidate_sha256: "2e021b8ae58b74ce0329029d16eaae38f00427c1ff630068f8ff19
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_5142eb42828503c355b1e505"
+last_consolidation_id: "consolidation_b6c76254a53dddffff68091b"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:37:51+08:00"

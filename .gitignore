@@ -23,6 +23,9 @@ data/backups/*
 
 # Rebuildable full-text Obsidian reader pages stay local.
 vault/views/readers/
+# Semantic graph nodes are a local, rebuildable projection. Shared source code
+# and graph settings define the view; real vault objects remain authoritative.
+vault/views/graph/
 
 # Per-user Obsidian window/layout state is not shared configuration.
 vault/.obsidian/workspace.json

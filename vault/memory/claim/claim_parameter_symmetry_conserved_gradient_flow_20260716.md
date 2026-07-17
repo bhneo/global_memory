@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "Parameter-space symmetry implies conserved quantities in gradient flow"
 created_at: "2026-07-16T19:30:00+08:00"
-updated_at: "2026-07-17T18:36:55+08:00"
+updated_at: "2026-07-17T22:39:55+08:00"
 confidence: "medium"
 source_ids: ["source_6ae6c4bef52010f96ddb3dbf", "source_dbfef5ee180346812d6d9a99"]
 relations: [{"type": "derived_from", "target_id": "source_dbfef5ee180346812d6d9a99", "reason": "Primary survey directly states the symmetry-to-conservation relation", "confidence": "high", "created_by": "primary-quote-verification-v1", "status": "working"}]
@@ -27,8 +27,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 4
-last_consolidated_at: "2026-07-17T18:36:55+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T22:39:55+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
@@ -42,7 +42,7 @@ origin_candidate_sha256: "d4cd7102193a2c2d6f0a21bee7ba9f4e9966ec3cd7f4ea6f0ab4bc
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_fcc4cbca4838c4dd620641f8"
+last_consolidation_id: "consolidation_a2d86cddfe1816f76d157f39"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:36:50+08:00"

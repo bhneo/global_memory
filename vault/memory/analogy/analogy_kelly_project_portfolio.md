@@ -4,7 +4,7 @@ type: "analogy"
 status: "trusted"
 title: "Kelly Criterion ↔ 创新项目组合与资源下注"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:36:39+08:00"
+updated_at: "2026-07-17T22:39:53+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -22,8 +22,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 4
-last_consolidated_at: "2026-07-17T18:36:39+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T22:39:53+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -37,7 +37,7 @@ origin_candidate_sha256: "7e1e96fdf949ea33aa7aaafa6aa0abd2d843fec718c134287a1366
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "exploratory_analogy"
-last_consolidation_id: "consolidation_aedba69d670c96b969dc421f"
+last_consolidation_id: "consolidation_ce7ac99f8d3f441d3dcea0a4"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:36:33+08:00"

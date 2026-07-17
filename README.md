@@ -1,5 +1,11 @@
 # Global Memory
 
+## M8.1.2 trust boundary
+
+- Receipt v2 fingerprints incoming and outgoing relations; a stale receipt is excluded from strict execution until explicitly re-consolidated.
+- Canonical promotion writes a recoverable journal and requires a new `canonical_approved` Receipt v2 for final Canonical bytes.
+- Generated Obsidian graph projections remain local/ignored; they are not Git truth-layer artifacts.
+
 Global Memory 是本地优先、用户拥有、模型无关的长期记忆系统。Markdown、不可变 Raw 与治理记录是真相层；SQLite、Context Pack 和 Obsidian 页面都是可删除、可重建的派生层。
 
 当前里程碑是 **M8.1.1 — Correctness Recovery**：Working 可以低成本演化；Trusted 保留历史接受状态并单独显示当前策略资格，所有 Trusted 变化必须有 Receipt v2 与恢复日志；Canonical 只允许 Proposal/Exception + 用户明确批准。

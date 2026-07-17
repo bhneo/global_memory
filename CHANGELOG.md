@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased] — M8.1.2 Final Trust Boundary (in progress)
+
+### Changed
+
+- Receipt environments now fingerprint incoming and outgoing relation neighborhoods; Strict Execution excludes unresolved indexed contradictions.
+- Recovery verifies Receipt v2 identity, current bytes, fingerprint and operation result before roll-forward.
+- Canonical approval creates a Receipt for final Canonical bytes; legacy contradiction excerpts become review candidates; Receipt checks distinguish execution from validation outcome.
+- Trusted promotion now consumes Receipt semantic check details. An explicit `evolve --force-contest` remains source-bound, records unverified legacy evidence, and creates a must-confirm Exception.
+- Revalidated the real Trusted set under the incoming/outgoing relation fingerprint without rewriting knowledge bodies; the VIA Canonical claim remains safely blocked pending a real evidence-entailment recheck.
+- Obsidian semantic graph is a local rebuildable `trusted|frontier|all` projection and is no longer tracked as Vault content.
+
 ## [Unreleased] — M8.1.1 Correctness Recovery
 
 ### Fixed

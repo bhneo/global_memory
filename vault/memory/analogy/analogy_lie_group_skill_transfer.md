@@ -4,7 +4,7 @@ type: "analogy"
 status: "trusted"
 title: "李群与不变量 ↔ 技能组合和形态迁移"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:36:43+08:00"
+updated_at: "2026-07-17T22:39:54+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -22,8 +22,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 4
-last_consolidated_at: "2026-07-17T18:36:43+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-17T22:39:54+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -37,7 +37,7 @@ origin_candidate_sha256: "4f6261005fc6aed685c375ee2806e73cb41eddd9a12d7e72211451
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "exploratory_analogy"
-last_consolidation_id: "consolidation_5001954b2afb2c2ec0faed50"
+last_consolidation_id: "consolidation_a7ae4bfca4d642594d755333"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:36:37+08:00"

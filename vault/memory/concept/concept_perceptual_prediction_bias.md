@@ -4,7 +4,7 @@ type: "concept"
 status: "trusted"
 title: "感知预测偏差"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:38:56+08:00"
+updated_at: "2026-07-17T22:40:03+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 5
-last_consolidated_at: "2026-07-17T18:38:56+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T22:40:03+08:00"
 last_verified_at: null
 trust_score: 66
 trust_reasons: ["completed consolidation review", "concept reused by independent material"]
@@ -33,7 +33,7 @@ origin_candidate_sha256: "1bfd61e8b370c8cb159b4004a938954cd63b03e9f4ffa7caf38807
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_5f922ec8333dbf0b2db503dc"
+last_consolidation_id: "consolidation_a49487cc3ecc33abcba6d513"
 needs_policy_requalification: true
 trust_policy_version: "trusted-promotion-v1"
 last_policy_qualified_at: "2026-07-17T12:03:13+08:00"

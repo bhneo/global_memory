@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "该文称 SkillEvolver 的 silent-bypass 审计检查下游 Agent 是否实际调用技能脚本"
 created_at: "2026-07-16T11:16:00+08:00"
-updated_at: "2026-07-17T18:38:31+08:00"
+updated_at: "2026-07-17T22:40:01+08:00"
 aliases: []
 tags: ["SkillEvolver", "auditor", "silent-bypass"]
 domains: ["agent-systems", "software-engineering"]
@@ -30,8 +30,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 5
-last_consolidated_at: "2026-07-17T18:38:31+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T22:40:01+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
@@ -45,7 +45,7 @@ origin_candidate_sha256: "f5cf0a8d70d8c7d7fa874cde4b7814c986300c8724003f88534530
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_5882e2c6da5154cd9481ac87"
+last_consolidation_id: "consolidation_86b11868864abff7263e40f5"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:38:24+08:00"

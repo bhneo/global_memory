@@ -4,7 +4,7 @@ type: "claim"
 status: "trusted"
 title: "Φ-SO 使用深度强化学习训练 RNN 生成符号表达式"
 created_at: "2026-07-15T18:45:00+08:00"
-updated_at: "2026-07-17T18:37:21+08:00"
+updated_at: "2026-07-17T22:39:58+08:00"
 aliases: []
 tags: ["PhySO", "symbolic-regression", "reinforcement-learning", "rnn"]
 domains: ["machine-learning", "physics"]
@@ -30,8 +30,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 5
-last_consolidated_at: "2026-07-17T18:37:21+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-17T22:39:58+08:00"
 last_verified_at: null
 trust_score: 100
 trust_reasons: ["valid consolidation receipt matches current object", "atomic claim", "full evidence coverage", "full evidence entailment", "good extraction", "primary or official authority", "explicit applicability", "supporting evidence exists", "drift audit has no high risk"]
@@ -45,7 +45,7 @@ origin_candidate_sha256: "02a8b5565a847f329f026166d1151e5bdcd7d92047cff276ca0d9a
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "supported"
-last_consolidation_id: "consolidation_9fe9386a210cd253c2549596"
+last_consolidation_id: "consolidation_f5bfee800cf0b5b4619ee651"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:37:14+08:00"
