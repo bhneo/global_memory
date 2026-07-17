@@ -4,7 +4,7 @@
 
 - P0 six-platform CI, independent diagnostics and artifacts: implemented and publicly green.
 - Orthogonal Memory Tier / Epistemic Status, explicit Context mapping and migration: implemented and verified on the real vault.
-- Hash-bound Consolidation Receipts and narrow Claim/Concept Promotion: implemented.
+- Receipt v2 full fingerprint, strict execution reads and recoverable Trusted promotion: implemented locally; requalification remains dry-run until user approves the real-vault batch.
 - Trusted support, Working Revision, conflict/Exception and explicit Demotion Event: implemented.
 - Sequential A→B→C support/contradict acceptance and semantic drift interface: implemented in deterministic fixtures.
 - Weekly report and generated metrics: implemented; final real-vault counts are generated, not hand-maintained.

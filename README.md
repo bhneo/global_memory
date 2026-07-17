@@ -103,7 +103,7 @@ python -m pytest
 python scripts\ci_acceptance.py setup --root .ci-vault --output artifacts\fixture.json
 ```
 
-GitHub Actions 固定覆盖 Ubuntu/Windows × Python 3.11/3.12/3.13，并独立运行 pytest、doctor、schema/state/raw、migration、promotion、weekly、incremental、drift 和 Context truth-layer 验收。
+GitHub Actions 固定覆盖 Ubuntu/Windows × Python 3.11/3.12/3.13，并独立运行 pytest、doctor、schema/state/raw、migration、promotion、weekly、provider-driven incremental A→B→C、drift 和 Context truth-layer / strict-execution 验收。
 
 ## 安全边界
 

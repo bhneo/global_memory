@@ -29,6 +29,8 @@ GitHub Actions CI #7 for M8 commit `928404f` passed all six jobs: Ubuntu/Windows
 
 ## What is working
 
+- M8.1 Trust Hardening（本地待推送）：Receipt v2 fingerprint、weekly high-drift exception、显式增量 change classification、provider-driven A→B→C、strict execution context、Trusted promotion recovery journal。
+
 - Immutable raw capture, source/extraction validation and rebuildable SQLite/Obsidian views.
 - Real Consolidation Receipts bound to the current object and source hashes.
 - Explicit support/refine/limit/contradict/supersede/metadata-only evolution semantics.
