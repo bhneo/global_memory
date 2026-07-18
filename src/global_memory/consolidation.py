@@ -333,6 +333,8 @@ class ConsolidationReceiptService:
         path, metadata, body = self.repository.find_document(object_id)
         if not self.repository.rel(path).startswith(("vault/memory/", "vault/knowledge/", "vault/frontier/", "vault/action/")):
             raise ValueError("only governed knowledge objects can be consolidated")
+        if metadata.get("memory_tier") == "historical" or metadata.get("status") in {"archived", "superseded"}:
+            raise ValidationError("historical object is excluded from routine consolidation")
         valid = self.valid_for(object_id)
         if valid is not None and result is None and not changes and not metadata.get("needs_policy_requalification"):
             return {**valid, "reused": True}
@@ -649,7 +651,7 @@ class ConsolidationService:
         flagged: list[dict[str, Any]] = []
         source_lengths: dict[str, int] = {}
         source_has_markers: dict[str, bool] = {}
-        for path in self.repository.memory_documents():
+        for path in self.repository.active_memory_documents():
             metadata, _ = read_document(path)
             if metadata.get("memory_tier") != "working":
                 continue
@@ -691,7 +693,7 @@ class ConsolidationService:
                     "recommended_action": "recompile_or_source_only",
                 })
         return {
-            "checked": sum(1 for _ in self.repository.memory_documents()),
+            "checked": sum(1 for _ in self.repository.active_memory_documents()),
             "flagged": flagged, "flagged_count": len(flagged), "writes": 0,
         }
 
@@ -732,7 +734,13 @@ class ConsolidationService:
         return {"mode": "daily-consolidation", "triage": triage, "compiled": compiled, "canonical_writes": 0}
 
     def weekly(self) -> dict[str, Any]:
-        before = list(self.repository.memory_documents())
+        historical = list(self.repository.memory_documents())
+        before = list(self.repository.active_memory_documents())
+        historical_ids_skipped = []
+        for path in historical:
+            metadata, _ = read_document(path)
+            if path not in before:
+                historical_ids_skipped.append(str(metadata.get("id")))
         receipts: list[dict[str, Any]] = []
         scanned_only: list[str] = []
         for path in before:
@@ -749,7 +757,7 @@ class ConsolidationService:
                 )
         self.repository.rebuild_index()
         requalified, requalification_blocked = [], []
-        for path in list(self.repository.memory_documents()):
+        for path in list(self.repository.active_memory_documents()):
             metadata, _ = read_document(path)
             if metadata.get("status") != "trusted" or not metadata.get("needs_policy_requalification"):
                 continue
@@ -763,7 +771,7 @@ class ConsolidationService:
                 })
         self.repository.rebuild_index()
         promoted, retained = [], []
-        for path in list(self.repository.memory_documents()):
+        for path in list(self.repository.active_memory_documents()):
             metadata, _ = read_document(path)
             if metadata.get("status") != "working":
                 continue
@@ -784,7 +792,7 @@ class ConsolidationService:
                 object_id=issue["object_id"], context=issue,
             )
         canonical_candidates = []
-        for path in self.repository.memory_documents():
+        for path in self.repository.active_memory_documents():
             metadata, _ = read_document(path)
             if (
                 metadata.get("status") == "trusted"
@@ -794,8 +802,8 @@ class ConsolidationService:
                 canonical_candidates.append(self.promotions.recommend_canonical(str(metadata["id"]), "high-impact trusted memory"))
         exceptions = self.exceptions.list({"open", "deferred"})
         raw_count = len(list(self.repository.source_documents()))
-        working_count = sum(read_document(path)[0].get("status") == "working" for path in self.repository.memory_documents())
-        trusted_count = sum(read_document(path)[0].get("status") == "trusted" for path in self.repository.memory_documents())
+        working_count = sum(read_document(path)[0].get("status") == "working" for path in self.repository.active_memory_documents())
+        trusted_count = sum(read_document(path)[0].get("status") == "trusted" for path in self.repository.active_memory_documents())
         review_items = len(exceptions) + len(canonical_candidates)
         original_review = max(1, raw_count)
         retention_reasons = Counter(
@@ -806,6 +814,9 @@ class ConsolidationService:
             "mode": "weekly-consolidation", "raw_item_count": raw_count,
             "sources_processed": raw_count,
             "objects_considered": len(before),
+            "active_objects_considered": len(before),
+            "historical_objects_skipped": len(historical_ids_skipped),
+            "historical_ids_skipped": historical_ids_skipped,
             "receipts_completed": sum(item.get("status") == "complete" for item in receipts),
             "receipts_failed": sum(item.get("status") != "complete" for item in receipts) + len(scanned_only),
             "objects_unchanged": sum(item.get("result") == "unchanged" for item in receipts),
@@ -858,6 +869,212 @@ class WorkingQualityMigration:
     def __init__(self, repository: Repository):
         self.repository = repository
 
+    def _manifest_path(self, migration_id: str) -> Path:
+        return self.repository.root / "data" / "backups" / migration_id / "manifest.json"
+
+    def _write_manifest(self, path: Path, manifest: dict[str, Any]) -> None:
+        atomic_write_text(path, json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+
+    def _canonical_hashes(self) -> dict[str, str]:
+        return {
+            self.repository.rel(path): sha256_bytes(path.read_bytes())
+            for path in sorted(self.repository.canonical_documents())
+        }
+
+    def _event_exists(self, migration_id: str, object_id: str, event: str) -> bool:
+        path = self.repository.root / "system" / "logs" / "memory-events.jsonl"
+        if not path.exists():
+            return False
+        for line in path.read_text(encoding="utf-8").splitlines():
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (
+                record.get("event") == event
+                and record.get("operation_id") == migration_id
+                and record.get("object_id") == object_id
+            ):
+                return True
+        return False
+
+    def _source_raw_valid(self, source_ids: list[Any]) -> bool:
+        for source_id in source_ids:
+            try:
+                _, source, _ = self.repository.find_document(str(source_id))
+                raw_path = self.repository.resolve_inside(str(source["raw_content_path"]))
+            except Exception:
+                return False
+            if not raw_path.exists():
+                return False
+        return True
+
+    def _incomplete_manifest(self) -> tuple[Path, dict[str, Any]] | None:
+        root = self.repository.root / "data" / "backups"
+        matches: list[tuple[Path, dict[str, Any]]] = []
+        for path in sorted(root.glob("working_quality_*/manifest.json")) if root.exists() else []:
+            manifest = json.loads(path.read_text(encoding="utf-8"))
+            if manifest.get("policy") == self.POLICY and manifest.get("phase") in {"prepared", "applying", "blocked"}:
+                matches.append((path, manifest))
+        if len(matches) > 1:
+            raise ValidationError("multiple incomplete working quality migrations; resolve one manifest explicitly")
+        return matches[0] if matches else None
+
+    def _restore_revision_conflicts(self, object_id: str) -> list[str]:
+        conflicts: list[str] = []
+        for path in self.repository.memory_documents():
+            metadata, _ = read_document(path)
+            if str(metadata.get("id")) == object_id:
+                continue
+            if metadata.get("revision_of") == object_id and metadata.get("status") not in {"archived", "superseded"}:
+                conflicts.append(f"new working revision exists: {metadata.get('id')}")
+        for path in self.repository.canonical_documents():
+            metadata, _ = read_document(path)
+            if str(metadata.get("id")) == object_id:
+                conflicts.append(f"canonical promotion exists: {object_id}")
+                continue
+            for relation in metadata.get("relations", []):
+                if isinstance(relation, dict) and relation.get("target_id") == object_id:
+                    conflicts.append(f"canonical successor exists: {metadata.get('id')}")
+                    break
+        return conflicts
+
+    def upgrade_legacy_manifest(self, migration_id: str) -> dict[str, Any]:
+        """Add missing post-image fields to an older, already-completed manifest.
+
+        This does not retroactively claim an original migration-time proof.  It
+        creates an explicit safety baseline from which future Verify/Restore
+        checks are hash-bound.
+        """
+        path = self._manifest_path(migration_id)
+        if not path.exists():
+            raise ValidationError(f"working quality migration manifest not found: {migration_id}")
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        if manifest.get("policy") != self.POLICY:
+            raise ValidationError(f"unexpected working quality migration policy: {migration_id}")
+        upgraded: list[str] = []
+        for item in manifest.get("objects", []):
+            object_id = str(item["object_id"])
+            target_path = self.repository.resolve_inside(str(item["path"]))
+            metadata, _ = read_document(target_path)
+            if (
+                metadata.get("quality_migration_id") != migration_id
+                or metadata.get("status") != "archived"
+                or metadata.get("memory_tier") != "historical"
+            ):
+                raise ValidationError(f"cannot baseline changed historical object: {object_id}")
+            snapshot = (
+                self.repository.root / "vault" / "archive" / "versions" / object_id
+                / f"{item['sha256_before']}.md"
+            )
+            if not snapshot.exists() or sha256_bytes(snapshot.read_bytes()) != item["sha256_before"]:
+                raise ValidationError(f"cannot baseline missing or invalid snapshot: {object_id}")
+            if not self._source_raw_valid(list(metadata.get("source_ids", []))):
+                raise ValidationError(f"cannot baseline missing source/raw: {object_id}")
+            if not self._event_exists(migration_id, object_id, "working-quality-archived"):
+                raise ValidationError(f"cannot baseline missing archive event: {object_id}")
+            item.update({
+                "sha256_after": sha256_bytes(target_path.read_bytes()),
+                "snapshot_path": self.repository.rel(snapshot), "status": "applied",
+            })
+            upgraded.append(object_id)
+        manifest.update({
+            "phase": "completed", "canonical_sha256": self._canonical_hashes(),
+            "legacy_safety_baseline_at": now_iso(),
+            "legacy_safety_baseline_note": "post-image and canonical hashes baselined after legacy migration; not retrospective proof",
+        })
+        self._write_manifest(path, manifest)
+        return {"ok": True, "migration_id": migration_id, "upgraded_objects": upgraded, "legacy_safety_baseline": True}
+
+    def verify(self, migration_id: str) -> dict[str, Any]:
+        path = self._manifest_path(migration_id)
+        if not path.exists():
+            raise ValidationError(f"working quality migration manifest not found: {migration_id}")
+        manifest = json.loads(path.read_text(encoding="utf-8"))
+        conflicts: list[str] = []
+        checked: list[dict[str, Any]] = []
+        canonical_before = manifest.get("canonical_sha256")
+        canonical_unchanged: bool | None = None
+        if isinstance(canonical_before, dict):
+            canonical_unchanged = canonical_before == self._canonical_hashes()
+            if not canonical_unchanged:
+                conflicts.append("canonical state changed since migration preparation")
+        else:
+            # Pre-M9.0.1 manifests did not persist this baseline.  Do not
+            # claim proof that cannot be reconstructed after the fact.
+            canonical_unchanged = None
+        for item in manifest.get("objects", []):
+            object_id = str(item["object_id"])
+            backup_path = self.repository.resolve_inside(item["backup_path"])
+            backup_valid = backup_path.exists() and sha256_bytes(backup_path.read_bytes()) == item.get("sha256_before")
+            metadata: dict[str, Any] | None = None
+            try:
+                target_path = self.repository.resolve_inside(str(item["path"]))
+                metadata, _ = read_document(target_path)
+                current_sha = sha256_bytes(target_path.read_bytes())
+                current_valid = (
+                    metadata.get("quality_migration_id") == migration_id
+                    and metadata.get("status") == "archived"
+                    and metadata.get("memory_tier") == "historical"
+                    and current_sha == item.get("sha256_after")
+                )
+            except Exception:
+                current_sha, current_valid = "", False
+            snapshot_path = item.get("snapshot_path") or self.repository.rel(
+                self.repository.root / "vault" / "archive" / "versions" / object_id / f"{item['sha256_before']}.md"
+            )
+            snapshots_valid = bool(snapshot_path) and self.repository.resolve_inside(str(snapshot_path)).exists()
+            events_valid = self._event_exists(migration_id, object_id, "working-quality-archived")
+            source_raw_valid = self._source_raw_valid(list(metadata.get("source_ids", []))) if metadata is not None else False
+            if not backup_valid:
+                conflicts.append(f"backup invalid: {object_id}")
+            if not current_valid:
+                conflicts.append(f"current state or SHA invalid: {object_id}")
+            if not snapshots_valid:
+                conflicts.append(f"snapshot missing: {object_id}")
+            if not events_valid:
+                conflicts.append(f"archive event missing: {object_id}")
+            if not source_raw_valid:
+                conflicts.append(f"source/raw missing: {object_id}")
+            checked.append({"object_id": object_id, "backup_valid": backup_valid, "current_sha256": current_sha, "current_state_valid": current_valid, "snapshots_valid": snapshots_valid, "events_valid": events_valid, "source_raw_valid": source_raw_valid})
+        return {"ok": not conflicts, "migration_id": migration_id, "objects": checked, "conflicts": conflicts, "canonical_unchanged": canonical_unchanged}
+
+    def restore(self, migration_id: str, *, dry_run: bool = False) -> dict[str, Any]:
+        verified = self.verify(migration_id)
+        if not verified["ok"]:
+            return {**verified, "dry_run": dry_run, "restored": [], "blocked": True}
+        manifest = json.loads(self._manifest_path(migration_id).read_text(encoding="utf-8"))
+        restore_plan: list[tuple[Path, Path, str]] = []
+        conflicts: list[str] = []
+        for item in manifest["objects"]:
+            object_id = str(item["object_id"])
+            target_path = self.repository.resolve_inside(str(item["path"]))
+            metadata, _ = read_document(target_path)
+            if metadata.get("quality_migration_id") != migration_id or metadata.get("status") != "archived" or metadata.get("memory_tier") != "historical":
+                conflicts.append(f"restore blocked by changed object: {object_id}")
+                continue
+            if sha256_bytes(target_path.read_bytes()) != item.get("sha256_after"):
+                conflicts.append(f"restore blocked by changed post-migration bytes: {object_id}")
+                continue
+            conflicts.extend(self._restore_revision_conflicts(object_id))
+            restore_plan.append((target_path, self.repository.resolve_inside(item["backup_path"]), object_id))
+        if conflicts or dry_run:
+            return {**verified, "dry_run": dry_run, "restore_candidates": [object_id for _, _, object_id in restore_plan], "restored": [], "conflicts": [*verified["conflicts"], *conflicts], "blocked": bool(conflicts)}
+        restored: list[str] = []
+        for target_path, backup_path, object_id in restore_plan:
+            atomic_write_text(target_path, backup_path.read_text(encoding="utf-8"))
+            if not self._event_exists(migration_id, object_id, "working-quality-restored"):
+                self.repository.append_event("memory-events", {"event": "working-quality-restored", "operation_id": migration_id, "object_id": object_id})
+            restored.append(object_id)
+        manifest["phase"] = "restored"
+        manifest["restored_at"] = now_iso()
+        for item in manifest["objects"]:
+            if str(item["object_id"]) in restored:
+                item["status"] = "restored"
+        self._write_manifest(self._manifest_path(migration_id), manifest)
+        self.repository.rebuild_index()
+        return {**verified, "dry_run": False, "restored": restored, "canonical_writes": 0}
+
     def plan(self) -> dict[str, Any]:
         review = ConsolidationService(self.repository).review_working_quality()
         object_ids = sorted(item["object_id"] for item in review["flagged"])
@@ -871,15 +1088,17 @@ class WorkingQualityMigration:
         }
 
     def apply(self) -> dict[str, Any]:
-        plan = self.plan()
-        migration_id = str(plan["migration_id"])
-        backup = self.repository.root / "data" / "backups" / migration_id
-        backup.mkdir(parents=True, exist_ok=True)
-        manifest_path = backup / "manifest.json"
-        if not manifest_path.exists():
+        resumed = self._incomplete_manifest()
+        if resumed is None:
+            plan = self.plan()
+            migration_id = str(plan["migration_id"])
+            backup = self.repository.root / "data" / "backups" / migration_id
+            backup.mkdir(parents=True, exist_ok=True)
+            manifest_path = backup / "manifest.json"
             manifest = {
                 "migration_id": migration_id, "policy": self.POLICY,
-                "created_at": now_iso(), "objects": [],
+                "created_at": now_iso(), "phase": "prepared", "objects": [],
+                "canonical_sha256": self._canonical_hashes(),
             }
             for item in plan["candidates"]:
                 path, metadata, _ = self.repository.find_document(str(item["object_id"]))
@@ -888,21 +1107,60 @@ class WorkingQualityMigration:
                 self.repository.immutable_write(snapshot, data)
                 manifest["objects"].append({
                     "object_id": item["object_id"], "path": self.repository.rel(path),
-                    "sha256_before": sha256_bytes(data),
+                    "sha256_before": sha256_bytes(data), "status": "pending",
                     "backup_path": self.repository.rel(snapshot), "reasons": item["reasons"],
                 })
-            atomic_write_text(manifest_path, json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            self._write_manifest(manifest_path, manifest)
+        else:
+            manifest_path, manifest = resumed
+            migration_id = str(manifest["migration_id"])
+            backup = manifest_path.parent
+            plan = {
+                "dry_run": False, "migration_id": migration_id, "policy": self.POLICY,
+                "candidate_count": len(manifest.get("objects", [])),
+                "candidates": [], "canonical_writes": 0, "resumed": True,
+            }
+        manifest["phase"] = "applying"
+        self._write_manifest(manifest_path, manifest)
         archived: list[str] = []
         unchanged: list[str] = []
         for item in manifest["objects"]:
-            path = self.repository.resolve_inside(item["path"])
+            path = self.repository.resolve_inside(str(item["path"]))
             metadata, body = read_document(path)
             if metadata.get("quality_migration_id") == migration_id:
+                current_hash = sha256_bytes(path.read_bytes())
+                if item.get("sha256_after") and current_hash != item["sha256_after"]:
+                    item.update({"status": "blocked", "error": "post-migration bytes changed"})
+                    manifest["phase"] = "blocked"
+                    self._write_manifest(manifest_path, manifest)
+                    raise ValidationError(f"working quality migration blocked by changed object: {item['object_id']}")
+                item["status"] = "applied"
+                item.setdefault("sha256_after", current_hash)
+                if not item.get("snapshot_path"):
+                    recovered_snapshot = (
+                        self.repository.root / "vault" / "archive" / "versions"
+                        / str(metadata["id"]) / f"{item['sha256_before']}.md"
+                    )
+                    if not recovered_snapshot.exists():
+                        item.update({"status": "blocked", "error": "snapshot missing after interrupted archive"})
+                        manifest["phase"] = "blocked"
+                        self._write_manifest(manifest_path, manifest)
+                        raise ValidationError(f"working quality migration snapshot missing: {item['object_id']}")
+                    item["snapshot_path"] = self.repository.rel(recovered_snapshot)
+                if not self._event_exists(migration_id, str(metadata["id"]), "working-quality-archived"):
+                    self.repository.append_event("memory-events", {
+                        "event": "working-quality-archived", "operation_id": migration_id,
+                        "object_id": metadata["id"], "snapshot_path": item.get("snapshot_path"),
+                        "reason": metadata.get("change_reason", "legacy deterministic fallback archived as source-only"),
+                    })
+                self._write_manifest(manifest_path, manifest)
                 unchanged.append(str(metadata["id"]))
                 continue
             current_hash = sha256_bytes(path.read_bytes())
             if current_hash != item["sha256_before"]:
+                item.update({"status": "blocked", "error": "pre-migration bytes changed"})
+                manifest["phase"] = "blocked"
+                self._write_manifest(manifest_path, manifest)
                 raise ValidationError(
                     f"working quality migration blocked by changed object: {item['object_id']}"
                 )
@@ -923,12 +1181,21 @@ class WorkingQualityMigration:
                 "change_reason": "legacy deterministic fallback archived as source-only",
             })
             atomic_write_text(path, render_document(metadata, body))
-            self.repository.append_event("memory-events", {
-                "event": "working-quality-archived", "operation_id": migration_id,
-                "object_id": metadata["id"], "snapshot_path": self.repository.rel(version_path),
-                "reason": metadata["change_reason"],
+            if not self._event_exists(migration_id, str(metadata["id"]), "working-quality-archived"):
+                self.repository.append_event("memory-events", {
+                    "event": "working-quality-archived", "operation_id": migration_id,
+                    "object_id": metadata["id"], "snapshot_path": self.repository.rel(version_path),
+                    "reason": metadata["change_reason"],
+                })
+            item.update({
+                "status": "applied", "sha256_after": sha256_bytes(path.read_bytes()),
+                "snapshot_path": self.repository.rel(version_path),
             })
+            self._write_manifest(manifest_path, manifest)
             archived.append(str(metadata["id"]))
+        manifest["phase"] = "completed"
+        manifest["completed_at"] = now_iso()
+        self._write_manifest(manifest_path, manifest)
         self.repository.rebuild_index()
         return {
             **plan, "dry_run": False, "backup_path": self.repository.rel(backup),

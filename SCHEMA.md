@@ -49,6 +49,10 @@ coactivated_ids: []
 
 Context Pack 增加 `route_trace`：`explicit_project`、`selected_project`、`project_candidates`、`selected_domains`、`seed_objects`、`relation_expansions`、`annotation_matches`、`fallback_used`、`raw_opened` 和 `selection_reasons`。它是只读解释信息，不是知识对象。
 
+M9.0.1 中，Annotation 的 supersession 链保留全部 Markdown 历史，但默认消费 `active()` 返回的当前叶节点。Context 中的 Annotation payload 必须标为 `truth_layer: user_annotation`、`execution_safe: false` 和 `receipt_state: not_applicable`。
+
+`source_only` 是 terminal compile disposition：它保留 Source/Raw/Extraction，不创建受治理知识对象，也不表示导入失败。
+
 所有真相层对象是 UTF-8 Markdown + YAML Frontmatter。实现输出 JSON-compatible YAML；稳定 ID 不依赖标题或路径。
 
 ## 基础字段

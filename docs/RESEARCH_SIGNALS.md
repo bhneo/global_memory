@@ -17,6 +17,7 @@ Annotation 的 `truth_layer` 是 `user_annotation`。用户原文与 `agent_inte
 .\scripts\gm.ps1 research note --text "..." --target <object-id> --project scientific-memory
 .\scripts\gm.ps1 feedback <object-id> --label interesting --note "..."
 .\scripts\gm.ps1 annotations <target-id>
+.\scripts\gm.ps1 annotations <target-id> --history
 .\scripts\gm.ps1 feedback summary
 .\scripts\gm.ps1 research signals
 ```

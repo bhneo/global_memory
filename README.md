@@ -4,6 +4,13 @@
 
 M9.0 adds append-only research annotations, connection feedback, explainable Project/Domain routing, explicit Activation, and local Research Digest/Map views. These signals describe attention, use and research value; they never change Trust, Epistemic Status, Receipt validity or Canonical. See `docs/RESEARCH_SIGNALS.md` and `docs/RESEARCH_ROUTING.md`.
 
+## M9.0.1 quality closure
+
+Routine Weekly maintenance consumes active Working/Trusted memory only. Historical
+objects remain auditable but are excluded from routine consolidation. Unmarked web,
+PDF and automated captures complete as searchable `source_only` records; only
+bounded personal notes may use deterministic paragraph fallback. See ADR 0056.
+
 ## M8.1.2 trust boundary
 
 - Receipt v2 fingerprints incoming and outgoing relations; a stale receipt is excluded from strict execution until explicitly re-consolidated.

@@ -79,6 +79,9 @@ jobs:
       - name: Research derived-view acceptance
         if: always()
         run: python -m pytest tests/test_global_memory.py -k "m90_research_digest_and_map" --junitxml=artifacts/research-derived-view.xml
+      - name: M9.0.1 quality-closure acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "weekly_excludes_archived or source_only_status or daily_keeps_unmarked_web or annotation_active_history or working_quality_migration" --junitxml=artifacts/m901-quality-closure.xml
       - name: M8 trust-boundary regression
         if: always()
         run: python -m pytest tests/test_global_memory.py -k "m8_ or receipt_v2 or governed_recovery or canonical_evolution" --junitxml=artifacts/m8-trust-boundary-regression.xml

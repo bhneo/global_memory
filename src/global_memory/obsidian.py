@@ -7,6 +7,7 @@ from typing import Any
 
 from .extraction import ExtractionService
 from .markdown import atomic_write_text, read_document
+from .quality import SourceQualityService
 from .repository import Repository
 
 
@@ -85,8 +86,10 @@ class ObsidianViewService:
         self,
         documents: list[tuple[Path, dict[str, Any]]],
         sources: list[tuple[Path, dict[str, Any], str]],
+        high_quality_source_ids: set[str] | None = None,
     ) -> dict[str, str]:
         """Render a human-labelled graph mirror from structured relations/source_ids."""
+        high_quality_source_ids = high_quality_source_ids or set()
         rendered: dict[str, str] = {}
         locations: dict[str, str] = {}
         metadata_by_id: dict[str, dict[str, Any]] = {}
@@ -130,7 +133,8 @@ class ObsidianViewService:
         for _, metadata, _ in sources:
             item_id = str(metadata["id"])
             display_titles[item_id] = source_title(metadata)
-            locations[item_id] = allocate(item_id, display_titles[item_id], "sources")
+            category = "high-confidence-sources" if item_id in high_quality_source_ids else "sources"
+            locations[item_id] = allocate(item_id, display_titles[item_id], category)
             metadata_by_id[item_id] = metadata
         for _, metadata in documents:
             item_id = str(metadata["id"])
@@ -163,6 +167,9 @@ class ObsidianViewService:
             if metadata.get("memory_tier") or metadata.get("status"):
                 lines.append(f"- 状态：`{metadata.get('memory_tier') or metadata.get('status')}`\n")
             links: list[tuple[str, str]] = []
+            if item_id in high_quality_source_ids:
+                lines.append("- Graph role: `high-quality original source (not Trusted knowledge)`\n")
+                links.append(("__high_quality_sources_hub__", "source group"))
             for source_id in metadata.get("source_ids", []):
                 source_id = str(source_id)
                 if source_id in locations and source_id != item_id:
@@ -182,11 +189,47 @@ class ObsidianViewService:
                     if target_id in seen_links:
                         continue
                     seen_links.add(target_id)
-                    target = locations[target_id].removeprefix("vault/").removesuffix(".md")
-                    target_title = display_titles[target_id]
+                    if target_id == "__high_quality_sources_hub__":
+                        target = "views/graph/hubs/高质量原始资料"
+                        target_title = "高质量原始资料"
+                    else:
+                        target = locations[target_id].removeprefix("vault/").removesuffix(".md")
+                        target_title = display_titles[target_id]
                     lines.append(f"- `{relation_type}` → [[{target}|{target_title}]]\n")
             rendered[relative] = "".join(lines)
+        if high_quality_source_ids:
+            hub = [self._header(
+                "高质量原始资料",
+                "来源权威性与提取质量合格的原始资料；进入本图不代表其中的陈述已成为 Trusted 知识。",
+            )]
+            hub.append("## Sources\n\n")
+            for source_id in sorted(high_quality_source_ids, key=lambda item: display_titles.get(item, item)):
+                if source_id not in locations:
+                    continue
+                target = locations[source_id].removeprefix("vault/").removesuffix(".md")
+                hub.append(f"- [[{target}|{display_titles[source_id]}]]\n")
+            rendered["vault/views/graph/hubs/高质量原始资料.md"] = "".join(hub)
         return rendered
+
+    def _high_quality_source_ids(
+        self, sources: list[tuple[Path, dict[str, Any], str]]
+    ) -> set[str]:
+        """Select display-worthy sources without changing any knowledge tier."""
+        quality = SourceQualityService(self.repository)
+        selected: set[str] = set()
+        for _, metadata, _ in sources:
+            source_id = str(metadata["id"])
+            assessment = quality.load(source_id)
+            if (
+                assessment
+                and metadata.get("source_kind") != "personal-notes"
+                and assessment.source_authority in {"primary", "official", "peer_reviewed", "preprint"}
+                and assessment.extraction_quality == "good"
+                and assessment.availability_status == "available"
+                and assessment.content_quality == "valid"
+            ):
+                selected.add(source_id)
+        return selected
 
     def _extraction(self, source_id: str) -> tuple[dict[str, Any] | None, str]:
         try:
@@ -242,10 +285,13 @@ class ObsidianViewService:
             str(source_id) for _, metadata in graph_documents
             for source_id in metadata.get("source_ids", [])
         }
+        high_quality_source_ids = self._high_quality_source_ids(sources)
+        if graph_profile != "all":
+            graph_source_ids.update(high_quality_source_ids)
         graph_sources = sources if graph_profile == "all" else [
             item for item in sources if str(item[1]["id"]) in graph_source_ids
         ]
-        rendered.update(self._semantic_graph(graph_documents, graph_sources))
+        rendered.update(self._semantic_graph(graph_documents, graph_sources, high_quality_source_ids))
 
         by_type: dict[str, list[tuple[Path, dict[str, Any]]]] = defaultdict(list)
         partial: list[tuple[Path, dict[str, Any]]] = []
@@ -263,6 +309,29 @@ class ObsidianViewService:
             if metadata.get("status") in {"pending", "deferred"}:
                 pending.append((metadata, path))
         pending.sort(key=lambda item: str(item[0].get("created_at") or item[0].get("id") or ""), reverse=True)
+        source_only = []
+        for path in self.repository.proposal_documents():
+            metadata, _ = read_document(path)
+            if metadata.get("status") == "source_only" or metadata.get("compile_disposition") == "source_only":
+                source_only.append((metadata, path))
+        source_only.sort(key=lambda item: str(item[0].get("created_at") or item[0].get("id") or ""), reverse=True)
+
+        source_only_lines = [self._header("Source-only 资料", "已成功保存、可检索，但尚未安全编译为知识对象的原始资料。")]
+        for metadata, path in source_only:
+            source_id = next(iter(metadata.get("source_only_source_ids", metadata.get("source_ids", []))), None)
+            if source_id:
+                try:
+                    _, source_metadata, _ = self.repository.find_document(str(source_id))
+                    title = self._reader_link(source_metadata)
+                except Exception:
+                    title = str(source_id)
+            else:
+                title = str(metadata.get("title", metadata.get("id")))
+            reason = "; ".join(map(str, metadata.get("low_value_items_not_proposed", []))) or str(metadata.get("review_reason", ""))
+            source_only_lines.append(f"- {title} — {reason or 'source-only'}\n")
+        if not source_only:
+            source_only_lines.append("- 暂无 source-only 资料。\n")
+        rendered["vault/views/Source-only 资料.md"] = "".join(source_only_lines)
 
         exceptions = []
         exception_dir = self.repository.root / "vault" / "exceptions"

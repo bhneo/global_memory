@@ -1,6 +1,21 @@
 # Current State
 
-## M9.0 update (2026-07-18)
+## M9.0.1 Quality Closure update (2026-07-18)
+
+- Working-quality migration Verify/Restore now compares exact post-migration
+  bytes, binds snapshots/events/source Raw and Canonical hashes, blocks later
+  Working/Canonical successors, and resumes incomplete manifests under the same
+  migration ID. The original 37-object manifest was explicitly safety-baselined;
+  this is a forward-looking protection, not a retrospective claim.
+- Annotation consumers validate supersession over the complete graph before
+  filtering by target, so multi-target corrections remain queryable.
+
+- The default trusted Obsidian Graph includes available, valid, well-extracted
+  official, peer-reviewed, preprint and non-note primary sources in a separately
+  colored source layer. A generated High Quality Sources hub keeps these nodes
+  connected without any Working, Trusted or Canonical promotion.
+- Personal notes and Agent receipts are excluded from that source layer even
+  when the generic quality classifier labels them primary.
 
 M9.0 — Research Signals and Progressive Routing is implemented locally on top of the frozen M8.1.2 trust boundary.
 
@@ -40,6 +55,26 @@ M9.0 — Research Signals and Progressive Routing is implemented and locally acc
 Memory Tier (`working`, `trusted`, `canonical`, `historical`) is independent from Epistemic Status. Trusted semantic edits create Working Revisions; contradictions retain both evidence sides, mark the object contested and create an Exception; demotions create immutable version and event records.
 
 ## Current metrics
+
+<!-- GENERATED_METRICS_START -->
+- Generated at: 2026-07-18T20:38:29+08:00
+- Working / Trusted / Canonical / Historical: 60 / 30 / 1 / 37
+- Source-only compile records / sources / historical objects: 0 / 0 / 37
+- Trusted current policy / receipt / qualified: 28 / 30 / 23
+- Trusted awaiting / stale receipt / contested / high-risk drift: 2 / 0 / 0 / 0
+- Trusted factual / exploration; Canonical with current Receipt: 11 / 19 / 0
+- Contested: 0
+- Working revisions: 0
+- Open exceptions: 10
+- Promotion candidates: 0
+- Consolidation receipts / failed: 443 / 42
+- Receipt schema versions: {'v1': 113, 'v2': 330}
+- Objects with current valid Receipt v2: 82
+- Pending recovery journals: 0
+- Drift warnings / high severity: 2 / 0
+- Corpus sources / knowledge objects: 62 / 128
+- Research annotations total / active / superseded: 0 / 0 / 0
+<!-- GENERATED_METRICS_END -->
 
 Generated from the real vault after the M8.1.1 recovery pass on 2026-07-17:
 

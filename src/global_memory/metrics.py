@@ -86,7 +86,9 @@ class ProjectMetricsService:
         recovery_directory = self.repository.root / "system" / "recovery"
         recovery_journals = len(list(recovery_directory.glob("*.json"))) if recovery_directory.exists() else 0
         drift = DriftAuditService(self.repository).run()
-        annotations = ResearchAnnotationService(self.repository).all()
+        annotation_service = ResearchAnnotationService(self.repository)
+        annotation_history = annotation_service.all()
+        annotations = annotation_service.active()
         capture_intents = [item for item in annotations if item.get("annotation_kind") == "capture_intent"]
         feedback = [item for item in annotations if item.get("annotation_kind") == "connection_feedback"]
         annotated_sources = {
@@ -102,6 +104,14 @@ class ProjectMetricsService:
             for target in item.get("target_ids", []) if str(target).startswith("source_")
         }
         activation_events = ActivationService(self.repository).events()
+        source_only_records = []
+        for path in self.repository.proposal_documents():
+            metadata, _ = read_document(path)
+            if metadata.get("status") == "source_only" or metadata.get("compile_disposition") == "source_only":
+                source_only_records.append(metadata)
+        source_only_source_ids = {
+            str(source_id) for item in source_only_records for source_id in item.get("source_only_source_ids", item.get("source_ids", []))
+        }
         return {
             "generated_at": now_iso(),
             "working": tier_counts["working"],
@@ -119,6 +129,13 @@ class ProjectMetricsService:
             "canonical": tier_counts["canonical"],
             "canonical_with_current_receipt": canonical_current_receipt,
             "historical": tier_counts["historical"],
+            "source_only_compile_records": len(source_only_records),
+            "sources_completed_source_only": len(source_only_source_ids),
+            "historical_source_only_objects": sum(
+                infer_tier(read_document(path)[0], path) == "historical"
+                and read_document(path)[0].get("quality_review_status") == "source_only"
+                for path in self.repository.memory_documents()
+            ),
             "contested": epistemic_counts["contested"],
             "working_revisions": revisions,
             "exceptions": len(exceptions),
@@ -137,6 +154,9 @@ class ProjectMetricsService:
             },
             "ci_status": "unavailable-locally",
             "research_annotations": len(annotations),
+            "research_annotations_total": len(annotation_history),
+            "research_annotations_active": len(annotations),
+            "research_annotations_superseded": len(annotation_history) - len(annotations),
             "capture_intent_annotations": len(capture_intents),
             "research_notes": sum(item.get("annotation_kind") == "research_note" for item in annotations),
             "connection_feedback": len(feedback),
@@ -167,6 +187,7 @@ class ProjectMetricsService:
             start,
             f"- Generated at: {metrics['generated_at']}",
             f"- Working / Trusted / Canonical / Historical: {metrics['working']} / {metrics['trusted']} / {metrics['canonical']} / {metrics['historical']}",
+            f"- Source-only compile records / sources / historical objects: {metrics['source_only_compile_records']} / {metrics['sources_completed_source_only']} / {metrics['historical_source_only_objects']}",
             f"- Trusted current policy / receipt / qualified: {metrics['trusted_current_policy']} / {metrics['trusted_current_receipt']} / {metrics['trusted_v3_qualified']}",
             f"- Trusted awaiting / stale receipt / contested / high-risk drift: {metrics['trusted_awaiting_requalification']} / {metrics['trusted_stale_receipt']} / {metrics['trusted_contested']} / {metrics['trusted_high_risk_drift']}",
             f"- Trusted factual / exploration; Canonical with current Receipt: {metrics['trusted_factual']} / {metrics['trusted_exploration']} / {metrics['canonical_with_current_receipt']}",
@@ -180,6 +201,7 @@ class ProjectMetricsService:
             f"- Pending recovery journals: {metrics['recovery_journals']}",
             f"- Drift warnings / high severity: {metrics['drift_warnings']} / {metrics['high_severity_drift']}",
             f"- Corpus sources / knowledge objects: {metrics['corpus']['sources']} / {metrics['corpus']['knowledge_objects']}",
+            f"- Research annotations total / active / superseded: {metrics['research_annotations_total']} / {metrics['research_annotations_active']} / {metrics['research_annotations_superseded']}",
             end,
         ]
         block = "\n".join(rows)

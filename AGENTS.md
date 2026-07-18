@@ -9,6 +9,14 @@
 - Route Project/Domain first, use bounded FTS and relation expansion, retain Global fallback when confidence is insufficient, and return Route Trace.
 - Feedback labels research value (`obvious|forced|interesting|actionable`), not truth. Do not auto-delete, promote, generate hypotheses or create Canonical from Feedback.
 - Research Digest/Map are rebuildable local observations, never truth layers. Borrow external capabilities through read-only adapters while keeping local Raw/Markdown authoritative.
+- Routine maintenance consumes active Working/Trusted memory only. Historical,
+  archived and superseded objects are audit material, not Weekly inputs.
+- `source_only` is a successful source terminal state. Unmarked automated
+  captures remain source-only; deterministic paragraph fallback is limited to
+  bounded, sentence-like personal notes.
+- Working-quality Restore is an explicit, hash-bound operation. Never run it
+  from Daily or Weekly maintenance; Verify first, and treat a changed
+  post-image, successor revision or Canonical successor as a hard block.
 
 ## M8 non-negotiable trust protocol
 

@@ -1,9 +1,21 @@
 # Changelog
 
+## Unreleased
+
+- Hardened Working Quality Migration Verify/Restore with post-image SHA checks,
+  exact event matching, source/Raw and Canonical baselines, successor guards,
+  and resumable incomplete manifests. Existing migration `working_quality_b327d9decb846ba2b8f594bf`
+  received an explicit non-retrospective safety baseline.
+- Fixed Annotation active/history filtering to validate the complete
+  supersession graph before applying a target filter.
+
 ## [Unreleased] — M9.0 Research Signals and Progressive Routing
 
 ### Added
 
+- M9.0.1 Quality Closure: active-memory Weekly selection, first-class
+  `source_only` CLI/metrics/Obsidian visibility, structured active Annotation
+  payloads, and verified Working Quality migration restore support.
 - Append-only, user-owned Capture Intent, Research Note and Connection Feedback annotations with correction lineage and stable content IDs.
 - `annotate`, `annotations`, `feedback`, `research note|signals|route|digest|build`, and `activation record|show|top` CLI surfaces.
 - Explainable Project/Domain-first `ResearchRouterService` and Context Pack Route Trace with bounded relation expansion and Global fallback.
@@ -13,6 +25,15 @@
 
 ### Fixed
 
+- Historical/archived objects no longer participate in routine consolidation,
+  promotion or Weekly counts. Unmarked automated captures now stay source-only
+  regardless of length; deterministic fallback is restricted to personal notes.
+- The default trusted Obsidian Graph no longer hides high-quality source-only
+  papers and official projects merely because they are not referenced by a
+  Trusted object. A distinct color group and generated hub make them visible
+  without changing their truth layer or knowledge tier.
+- Personal notes and Agent receipts are excluded from the high-quality source
+  group so operational artifacts do not pollute the human graph.
 - `consolidate weekly` now performs a bounded Daily admission catch-up before
   reviewing Working/Trusted memory, preventing recently captured sources from
   being silently omitted when a Daily run was missed. Review-only runs may use

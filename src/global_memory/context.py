@@ -92,7 +92,14 @@ class ContextPack:
             lines.append(f"- Sources: {', '.join(item.get('source_ids', [])) or 'none'}\n")
             if item.get("truth_layer") == "user_annotation":
                 lines.append(f"- User authored: `{str(item.get('user_authored', False)).lower()}`\n")
-                lines.append(f"- Annotation (intent/value signal, not fact): `{item.get('annotation')}`\n")
+                annotation = item.get("annotation") or {}
+                lines.append(f"- Annotation kind: `{annotation.get('annotation_kind')}`\n")
+                lines.append(f"- Targets: {', '.join(annotation.get('target_ids', [])) or 'none'}\n")
+                lines.append(f"- Why saved: {annotation.get('why_saved') or 'none'}\n")
+                lines.append(f"- Surprised by: {annotation.get('what_surprised_me') or 'none'}\n")
+                lines.append(f"- Possible connections: {', '.join(annotation.get('possible_connections', [])) or 'none'}\n")
+                lines.append(f"- Salience: `{annotation.get('personal_salience')}`\n")
+                lines.append("- Epistemic note: user intent/value signal, not factual claim\n")
             if item.get("evidence"):
                 lines.append(f"- Evidence: `{item['evidence']}`\n")
             if item.get("verification"):
@@ -400,6 +407,8 @@ class ContextPackService:
         activation_by_id = {
             item["object_id"]: item for item in ActivationService(self.repository).aggregate()
         }
+        from .research import ResearchAnnotationService
+        active_annotation_ids = {item["id"] for item in ResearchAnnotationService(self.repository).active()}
 
         latest_source_ids = self._latest_source_ids()
         archived_only_source_ids = self._archived_only_source_ids()
@@ -465,6 +474,9 @@ class ContextPackService:
             path, metadata, body = self.repository.find_document(result.id)
             object_type = str(metadata.get("type"))
             if object_type not in allowed_types:
+                continue
+            if object_type == "annotation" and str(metadata.get("id")) not in active_annotation_ids:
+                omitted.append({"id": str(metadata["id"]), "reason": "superseded annotation is excluded by default"})
                 continue
             status = str(metadata.get("status"))
             tier = infer_tier(metadata, path)
@@ -602,7 +614,7 @@ class ContextPackService:
                     "receipt_current": current_receipt is not None if not non_governed else None,
                     "policy_version": policy_version,
                     "policy_qualified": policy_qualified,
-                    "execution_safe": bool(
+                    "execution_safe": False if object_type == "annotation" else bool(
                         object_type == "source" or policy_qualified or (
                             tier == "canonical" and current_receipt is not None and not semantic_failures
                             and epistemic not in {"contested", "hypothetical", "exploratory_analogy", "unknown"}
@@ -621,6 +633,24 @@ class ContextPackService:
                     "raw_content_sha256": metadata.get("content_sha256") if object_type == "source" else None,
                     "source_version": int(metadata.get("version_number", 1)) if object_type == "source" else None,
                     "source_authority": self._source_authority(metadata),
+                    "user_authored": metadata.get("user_authored") if object_type == "annotation" else None,
+                    "annotation": ({
+                        "annotation_id": metadata.get("id"),
+                        "annotation_kind": metadata.get("annotation_kind"),
+                        "target_ids": metadata.get("target_ids", []),
+                        "unresolved_target_ids": metadata.get("unresolved_target_ids", []),
+                        "why_saved": metadata.get("why_saved"),
+                        "what_surprised_me": metadata.get("what_surprised_me"),
+                        "possible_connections": metadata.get("possible_connections", []),
+                        "research_projects": metadata.get("research_projects", []),
+                        "domains": metadata.get("domains", []),
+                        "personal_salience": metadata.get("personal_salience"),
+                        "note": metadata.get("note"),
+                        "feedback_label": metadata.get("feedback_label"),
+                        "feedback_note": metadata.get("feedback_note"),
+                        "supersedes_annotation_id": metadata.get("supersedes_annotation_id"),
+                        "created_at": metadata.get("created_at"),
+                    } if object_type == "annotation" else None),
                     "verification": {
                         "quote_verification": metadata.get("quote_verification", "not_applicable"),
                         "extraction_quality": metadata.get("extraction_quality", "unknown"),

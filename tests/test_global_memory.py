@@ -2653,6 +2653,36 @@ def test_obsidian_semantic_graph_uses_readable_names_and_materializes_source_edg
     assert "[[views/graph/sources/Readable Evidence|Readable Evidence]]" in text
 
 
+def test_obsidian_trusted_graph_includes_high_quality_source_without_promoting_it(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Primary research evidence. " * 20, title="High Quality Preprint")
+    source_path = repo.root / captured.source_path
+    metadata, body = read_document(source_path)
+    metadata["source_authority"] = "preprint"
+    metadata["source_kind"] = "web"
+    source_path.write_text(render_document(metadata, body), encoding="utf-8")
+    SourceQualityService(repo).assess(captured.source_id)
+
+    ObsidianViewService(repo).build(graph_profile="trusted")
+
+    node = repo.root / "vault/views/graph/high-confidence-sources/High Quality Preprint.md"
+    hub = repo.root / "vault/views/graph/hubs/高质量原始资料.md"
+    assert node.exists() and hub.exists()
+    node_text = node.read_text(encoding="utf-8")
+    assert "not Trusted knowledge" in node_text
+    assert "[[views/graph/hubs/高质量原始资料|高质量原始资料]]" in node_text
+    assert "High Quality Preprint" in hub.read_text(encoding="utf-8")
+    assert not list((repo.root / "vault/memory").rglob(f"*{captured.source_id}*"))
+
+
+def test_obsidian_trusted_graph_excludes_primary_personal_notes(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Session receipt details. " * 20, title="Agent Receipt")
+    SourceQualityService(repo).assess(captured.source_id)
+
+    ObsidianViewService(repo).build(graph_profile="trusted")
+
+    assert not (repo.root / "vault/views/graph/high-confidence-sources/Agent Receipt.md").exists()
+
+
 def test_repository_obsidian_graph_is_semantically_grouped_and_hides_navigation_hubs() -> None:
     graph_path = Path(__file__).parents[1] / "vault/.obsidian/graph.json"
     config = json.loads(graph_path.read_text(encoding="utf-8"))
@@ -2664,6 +2694,8 @@ def test_repository_obsidian_graph_is_semantically_grouped_and_hides_navigation_
     assert any('views/graph/concepts' in query for query in queries)
     assert any('views/graph/questions' in query for query in queries)
     assert any('views/graph/sources' in query for query in queries)
+    assert any('views/graph/high-confidence-sources' in query for query in queries)
+    assert any('views/graph/hubs' in query for query in queries)
     assert config["textFadeMultiplier"] > 0 and config["lineSizeMultiplier"] < 1
 
 
@@ -2958,6 +2990,44 @@ def test_m90_research_annotation_is_append_only_and_preserves_user_chinese(repo:
     assert any(item.id == first["id"] for item in repo.search("可逆失效条件", 10))
     assert doctor(repo)["ok"] is True
     assert lint(repo)["ok"] is True
+
+
+def test_annotation_active_history_and_context_use_only_current_version(repo: Repository) -> None:
+    captured = capture_web_bytes(repo, "https://example.com/annotation-active")
+    service = ResearchAnnotationService(repo)
+    first = service.create(
+        "capture_intent", target_ids=[captured.source_id], why_saved="old intent",
+        research_projects=["memory"], possible_connections=["old connection"], personal_salience="high",
+    )
+    second = service.create(
+        "capture_intent", target_ids=[captured.source_id], why_saved="current intent",
+        research_projects=["memory"], supersedes_annotation_id=first["id"],
+    )
+
+    assert [item["id"] for item in service.active()] == [second["id"]]
+    assert {item["id"] for item in service.history(annotation_id=first["id"])} == {first["id"], second["id"]}
+    with pytest.raises(ValidationError, match="already has an active correction"):
+        service.create("capture_intent", target_ids=[captured.source_id], why_saved="parallel", supersedes_annotation_id=first["id"])
+    pack = ContextPackService(repo).build("current intent", profiles=["research"])
+    annotation = next(item for item in pack.items if item["id"] == second["id"])
+    assert annotation["execution_safe"] is False
+    assert annotation["annotation"]["why_saved"] == "current intent"
+    assert annotation["annotation"]["annotation_id"] == second["id"]
+    assert first["id"] not in {item["id"] for item in pack.items}
+
+
+def test_annotation_active_builds_chain_before_target_filter(repo: Repository) -> None:
+    first_target = capture_web_bytes(repo, "https://example.com/annotation-first-target")
+    second_target = capture_web_bytes(repo, "https://example.com/annotation-second-target")
+    service = ResearchAnnotationService(repo)
+    first = service.create("capture_intent", target_ids=[first_target.source_id], why_saved="first")
+    second = service.create(
+        "capture_intent", target_ids=[first_target.source_id, second_target.source_id],
+        why_saved="corrected", supersedes_annotation_id=first["id"],
+    )
+
+    assert [item["id"] for item in service.active(target_id=second_target.source_id)] == [second["id"]]
+    assert [item["id"] for item in service.history(target_id=second_target.source_id, annotation_id=first["id"])] == [second["id"]]
 
 
 def test_m90_annotation_id_normalizes_list_order(repo: Repository, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -3318,6 +3388,30 @@ def test_m7_weekly_never_writes_canonical_and_drift_is_read_only(repo: Repositor
     assert audit["writes"] == 0
 
 
+def test_weekly_excludes_archived_historical_memory_from_consolidation(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Concept: routine maintenance candidate.", title="Active memory")
+    active = write_m8_memory(
+        repo, "concept_active_memory", "concept", "Active memory", "Active body.", [captured.source_id]
+    )
+    historical = write_m8_memory(
+        repo, "claim_historical_memory", "claim", "Historical memory", "Historical body.", [captured.source_id]
+    )
+    historical_metadata, historical_body = read_document(historical)
+    historical_metadata.update({"memory_tier": "historical", "status": "archived"})
+    historical.write_text(render_document(historical_metadata, historical_body), encoding="utf-8")
+    historical_before = historical.read_bytes()
+
+    report = ConsolidationService(repo).weekly()
+
+    assert str(historical_metadata["id"]) in report["historical_ids_skipped"]
+    assert report["historical_objects_skipped"] == 1
+    assert report["active_objects_considered"] == 1
+    assert historical.read_bytes() == historical_before
+    with pytest.raises(ValidationError, match="excluded from routine consolidation"):
+        ConsolidationReceiptService(repo).consolidate(str(historical_metadata["id"]))
+    assert active.exists()
+
+
 def test_consolidate_weekly_admits_capture_only_sources_before_review(
     repo: Repository, capsys: pytest.CaptureFixture[str]
 ) -> None:
@@ -3362,6 +3456,34 @@ def test_daily_keeps_long_unstructured_fallback_source_only(repo: Repository) ->
     assert proposal["bundle_items"] == []
 
 
+def test_daily_keeps_unmarked_web_capture_source_only_even_when_short(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "A short extracted web abstract with a complete sentence. " * 4, title="Short web page"
+    )
+    source_path = repo.root / captured.source_path
+    metadata, body = read_document(source_path)
+    metadata["source_kind"] = "web"
+    source_path.write_text(render_document(metadata, body), encoding="utf-8")
+
+    result = BundleCompiler(repo).compile(captured.source_id)
+
+    assert result.compile_disposition == "source_only"
+    assert list(repo.memory_documents()) == []
+
+
+def test_source_only_status_is_exposed_by_cli_and_metrics(repo: Repository, capsys: pytest.CaptureFixture[str]) -> None:
+    captured = CaptureService(repo).capture_text("Unstructured article title and metadata. " * 120, title="Source-only record")
+    ConsolidationService(repo).daily(limit=5)
+    args = build_parser().parse_args(["--root", str(repo.root), "proposals", "--status", "source_only"])
+
+    assert run(args) == 0
+    proposals = json.loads(capsys.readouterr().out)
+    metrics = ProjectMetricsService(repo).collect()
+    assert len(proposals) == 1 and proposals[0]["status"] == "source_only"
+    assert metrics["source_only_compile_records"] == 1
+    assert metrics["sources_completed_source_only"] == 1
+
+
 def test_working_quality_review_flags_legacy_long_fallback(
     repo: Repository, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -3404,7 +3526,11 @@ def test_working_quality_migration_archives_with_snapshot_and_is_idempotent(
     assert first["remaining_flagged"] == 0
     assert second["archived_count"] == 0
     assert second["candidate_count"] == 0
-    assert (repo.root / first["backup_path"] / "manifest.json").exists()
+    manifest_path = repo.root / first["backup_path"] / "manifest.json"
+    assert manifest_path.exists()
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    assert manifest["phase"] == "completed"
+    assert all(item["status"] == "applied" and item["sha256_after"] for item in manifest["objects"])
     for object_id in first["archived_ids"]:
         _, metadata, _ = repo.find_document(object_id)
         assert metadata["status"] == "archived"
@@ -3413,6 +3539,109 @@ def test_working_quality_migration_archives_with_snapshot_and_is_idempotent(
         assert list((repo.root / "vault/archive/versions" / object_id).glob("*.md"))
     assert list(repo.canonical_documents()) == canonical_before
     assert lint(repo)["ok"] is True
+
+
+def test_working_quality_migration_verify_and_restore_are_guarded(repo: Repository, monkeypatch: pytest.MonkeyPatch) -> None:
+    CaptureService(repo).capture_text("Legacy fallback body. " * 120, title="Restore migration")
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 10000)
+    ConsolidationService(repo).daily(limit=5)
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 2000)
+    migration = WorkingQualityMigration(repo)
+    applied = migration.apply()
+    object_id = applied["archived_ids"][0]
+
+    verified = migration.verify(applied["migration_id"])
+    preview = migration.restore(applied["migration_id"], dry_run=True)
+    restored = migration.restore(applied["migration_id"])
+
+    assert verified["ok"] is True
+    assert preview["restore_candidates"] == applied["archived_ids"]
+    assert object_id in restored["restored"]
+    _, metadata, _ = repo.find_document(object_id)
+    assert metadata["memory_tier"] == "working" and metadata["status"] == "working"
+    assert migration.restore(applied["migration_id"])["blocked"] is True
+
+
+def test_working_quality_migration_detects_post_image_change_and_resumes_same_manifest(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    CaptureService(repo).capture_text("Legacy resume body. " * 120, title="Resume migration")
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 10000)
+    ConsolidationService(repo).daily(limit=5)
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 2000)
+    migration = WorkingQualityMigration(repo)
+    original_append = repo.append_event
+    calls = 0
+
+    def interrupted_append(name: str, payload: dict[str, object]) -> None:
+        nonlocal calls
+        if payload.get("event") == "working-quality-archived":
+            calls += 1
+            if calls == 1:
+                raise RuntimeError("injected interruption")
+        original_append(name, payload)
+
+    monkeypatch.setattr(repo, "append_event", interrupted_append)
+    with pytest.raises(RuntimeError, match="injected interruption"):
+        migration.apply()
+    manifests = list((repo.root / "data" / "backups").glob("working_quality_*/manifest.json"))
+    assert len(manifests) == 1
+
+    monkeypatch.setattr(repo, "append_event", original_append)
+    resumed = migration.apply()
+    assert resumed["migration_id"] == json.loads(manifests[0].read_text(encoding="utf-8"))["migration_id"]
+    assert resumed["archived_count"] == 0
+    assert migration.verify(resumed["migration_id"])["ok"] is True
+
+    object_id = json.loads(manifests[0].read_text(encoding="utf-8"))["objects"][0]["object_id"]
+    path, metadata, body = repo.find_document(object_id)
+    metadata["updated_by"] = "manual-edit"
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    assert migration.verify(resumed["migration_id"])["ok"] is False
+    assert migration.restore(resumed["migration_id"])["blocked"] is True
+
+
+def test_working_quality_migration_legacy_manifest_requires_explicit_safety_baseline(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    CaptureService(repo).capture_text("Legacy baseline body. " * 120, title="Legacy baseline")
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 10000)
+    ConsolidationService(repo).daily(limit=5)
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 2000)
+    migration = WorkingQualityMigration(repo)
+    applied = migration.apply()
+    manifest_path = repo.root / applied["backup_path"] / "manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest.pop("canonical_sha256")
+    for item in manifest["objects"]:
+        item.pop("sha256_after")
+        item.pop("snapshot_path")
+    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    assert migration.verify(applied["migration_id"])["ok"] is False
+    upgraded = migration.upgrade_legacy_manifest(applied["migration_id"])
+    assert upgraded["legacy_safety_baseline"] is True
+    assert migration.verify(applied["migration_id"])["ok"] is True
+
+
+def test_working_quality_restore_refuses_new_working_revision(repo: Repository, monkeypatch: pytest.MonkeyPatch) -> None:
+    captured = CaptureService(repo).capture_text("Legacy revision body. " * 120, title="Revision guard")
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 10000)
+    ConsolidationService(repo).daily(limit=5)
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 2000)
+    migration = WorkingQualityMigration(repo)
+    applied = migration.apply()
+    object_id = applied["archived_ids"][0]
+    revision = write_m8_memory(
+        repo, "revision_restore_guard", "claim", "New revision", "A later revision.", [captured.source_id]
+    )
+    revision_metadata, revision_body = read_document(revision)
+    revision_metadata["revision_of"] = object_id
+    revision.write_text(render_document(revision_metadata, revision_body), encoding="utf-8")
+
+    restored = migration.restore(applied["migration_id"], dry_run=True)
+    assert restored["blocked"] is True
+    assert any("new working revision exists" in conflict for conflict in restored["conflicts"])
 
 
 def test_m7_cli_surface_parses_governance_commands() -> None:

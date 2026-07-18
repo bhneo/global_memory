@@ -153,6 +153,16 @@ class Repository:
         if path.exists():
             yield from path.rglob("*.md")
 
+    def active_memory_documents(self) -> Iterable[Path]:
+        """Return routine-maintenance memory, preserving historical files for audit only."""
+        for path in self.memory_documents():
+            metadata, _ = read_document(path)
+            if metadata.get("memory_tier") not in {"working", "trusted"}:
+                continue
+            if metadata.get("status") in {"archived", "superseded"}:
+                continue
+            yield path
+
     def archive_documents(self) -> Iterable[Path]:
         path = self.root / "vault" / "archive"
         if path.exists():

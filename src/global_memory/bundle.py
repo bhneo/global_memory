@@ -267,6 +267,19 @@ class BundleCompiler:
             "source_only", quality.as_dict(),
         )
 
+    def _deterministic_fallback_allowed(self, source: dict[str, Any], text: str, specs: list[dict[str, Any]]) -> bool:
+        """Allow paragraph fallback only for deliberate, sentence-like user notes."""
+        if any(bool(spec.get("explicit_marker")) for spec in specs):
+            return True
+        if source.get("source_kind") != "personal-notes":
+            return False
+        normalized = " ".join(text.split())
+        if len(normalized) < 40 or len(normalized) > self.UNSTRUCTURED_FALLBACK_MAX_CHARS:
+            return False
+        if normalized == str(source.get("title", "")).strip():
+            return False
+        return any(mark in normalized for mark in (".", "?", "!", "。", "？", "！"))
+
     def compile(self, source_id: str) -> BundleResult:
         source_path, source, _ = self.repository.find_document(source_id)
         if source.get("type") != "source":
@@ -292,16 +305,12 @@ class BundleCompiler:
                 source_id, source, extraction, quality,
                 reason="compiler provider produced no governed knowledge candidates",
             )
-        if (
-            isinstance(self.provider, DeterministicCompilerProvider)
-            and len(text) > self.UNSTRUCTURED_FALLBACK_MAX_CHARS
-            and not any(bool(spec.get("explicit_marker")) for spec in specs)
-        ):
+        if isinstance(self.provider, DeterministicCompilerProvider) and not self._deterministic_fallback_allowed(source, text, specs):
             return self._record_source_only(
                 source_id, source, extraction, quality,
                 reason=(
-                    "long unstructured source has no explicit Claim/Concept/etc. markers; "
-                    "deterministic first-paragraph fallback is not knowledge-safe"
+                    "unmarked capture is source-only by default; deterministic paragraph fallback "
+                    "is reserved for bounded, sentence-like personal notes"
                 ),
             )
         expanded_specs: list[dict[str, Any]] = []

@@ -42,7 +42,7 @@ from .works import WorkService
 from .governance import CanonicalPromotionRecoveryManager, PromotionService, TrustedPromotionRecoveryManager
 
 
-PROPOSAL_STATUSES = {"pending", "deferred", "migrated", "superseded", "published", "approved", "rejected"}
+PROPOSAL_STATUSES = {"pending", "deferred", "migrated", "superseded", "published", "approved", "rejected", "source_only"}
 WIKILINK_PATTERN = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
 
 
@@ -115,6 +115,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     annotations = commands.add_parser("annotations", help="查看 append-only Research Annotation")
     annotations.add_argument("target_id", nargs="?")
+    annotations.add_argument("--history", action="store_true")
 
     feedback = commands.add_parser("feedback", help="记录或汇总跨领域连接质量反馈")
     feedback.add_argument("object_id", nargs="?")
@@ -204,7 +205,7 @@ def build_parser() -> argparse.ArgumentParser:
     model_propose.add_argument("--reason", required=True)
     proposals = commands.add_parser("proposals", help="列出 proposals")
     proposals.add_argument(
-        "--status", choices=["pending", "deferred", "migrated", "superseded", "published", "approved", "rejected"]
+        "--status", choices=sorted(PROPOSAL_STATUSES)
     )
     review = commands.add_parser("review", help="以 Source Bundle 为主要审阅单位")
     review_commands = review.add_subparsers(dest="review_command", required=True)
@@ -447,6 +448,10 @@ def build_parser() -> argparse.ArgumentParser:
     repair_requalification.add_argument("--dry-run", action="store_true")
     working_quality = migrate_commands.add_parser("working-quality")
     working_quality.add_argument("--dry-run", action="store_true")
+    working_quality_mode = working_quality.add_mutually_exclusive_group()
+    working_quality_mode.add_argument("--verify")
+    working_quality_mode.add_argument("--restore")
+    working_quality_mode.add_argument("--upgrade-legacy-manifest")
     runs = commands.add_parser("runs", help="查看或清理可重建的 system/runs")
     runs_commands = runs.add_subparsers(dest="runs_command", required=True)
     runs_commands.add_parser("list")
@@ -1020,7 +1025,8 @@ def run(args: argparse.Namespace) -> int:
             allow_unresolved=args.allow_unresolved,
         ))
     elif args.command == "annotations":
-        _print(ResearchAnnotationService(repository).all(target_id=args.target_id))
+        service = ResearchAnnotationService(repository)
+        _print(service.history(target_id=args.target_id) if args.history else service.active(target_id=args.target_id))
     elif args.command == "feedback":
         service = ResearchAnnotationService(repository)
         if args.summary or args.object_id == "summary":
@@ -1423,7 +1429,7 @@ def run(args: argparse.Namespace) -> int:
             "root": str(repository.root), "objects_by_type": repository.count_by_type(),
             "inbox": len(proposals.inbox()), "proposals_by_status": {
                 state: len(proposals.list(state))
-                for state in ("pending", "deferred", "migrated", "superseded", "published", "approved", "rejected")
+                for state in sorted(PROPOSAL_STATUSES)
             },
             "pending_recovery_journals": len(ApprovalRecoveryManager(repository).pending()) + len(BundleRecoveryManager(repository).pending()) + len(TrustedPromotionRecoveryManager(repository).pending()) + len(CanonicalPromotionRecoveryManager(repository).pending()),
             "source_processing_states": state_counts,
@@ -1466,8 +1472,16 @@ def run(args: argparse.Namespace) -> int:
     elif args.command == "migrate":
         if args.migrate_command == "working-quality":
             migration = WorkingQualityMigration(repository)
-            _print(migration.plan() if args.dry_run else migration.apply())
-            return 0
+            if args.verify:
+                result = migration.verify(args.verify)
+            elif args.restore:
+                result = migration.restore(args.restore, dry_run=args.dry_run)
+            elif args.upgrade_legacy_manifest:
+                result = migration.upgrade_legacy_manifest(args.upgrade_legacy_manifest)
+            else:
+                result = migration.plan() if args.dry_run else migration.apply()
+            _print(result)
+            return 0 if result.get("ok", True) else 1
         if args.migrate_command == "trust-requalification":
             migration = TrustPolicyRequalificationMigration(repository)
             result = migration.verify() if args.verify else migration.plan() if args.dry_run else migration.apply()

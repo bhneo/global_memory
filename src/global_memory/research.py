@@ -59,7 +59,64 @@ class ResearchAnnotationService:
             if kind and metadata.get("annotation_kind") != kind:
                 continue
             records.append({**metadata, "body": body, "path": self.repository.rel(path)})
-        return records
+        return sorted(records, key=lambda item: (str(item.get("created_at", "")), str(item.get("id", ""))))
+
+    def active(self, *, target_id: str | None = None, kind: str | None = None) -> list[dict[str, Any]]:
+        # Build and validate the complete graph before applying a consumer
+        # filter.  A correction is allowed to share only *one* target with its
+        # predecessor, so filtering first can hide a valid predecessor and
+        # falsely report it as missing.
+        records = self.all()
+        by_id = {str(item["id"]): item for item in records}
+        superseded_by: dict[str, list[str]] = defaultdict(list)
+        for item in records:
+            previous = item.get("supersedes_annotation_id")
+            if previous:
+                if str(previous) not in by_id:
+                    raise ValidationError(f"annotation supersession target missing: {previous}")
+                superseded_by[str(previous)].append(str(item["id"]))
+        conflicts = {previous: successors for previous, successors in superseded_by.items() if len(successors) > 1}
+        if conflicts:
+            raise ValidationError(f"annotation supersession conflict: {conflicts}")
+        for start in by_id:
+            seen: set[str] = set()
+            current = start
+            while current in superseded_by:
+                if current in seen:
+                    raise ValidationError(f"annotation supersession cycle: {start}")
+                seen.add(current)
+                current = superseded_by[current][0]
+        active = [item for item in records if str(item["id"]) not in superseded_by]
+        if target_id:
+            active = [item for item in active if target_id in item.get("target_ids", [])]
+        if kind:
+            active = [item for item in active if item.get("annotation_kind") == kind]
+        return active
+
+    def history(self, *, target_id: str | None = None, annotation_id: str | None = None) -> list[dict[str, Any]]:
+        # Keep the full chain available for audit, then apply the requested
+        # target filter to the final result.
+        records = self.all()
+        if annotation_id is None:
+            return [item for item in records if not target_id or target_id in item.get("target_ids", [])]
+        related = {annotation_id}
+        changed = True
+        while changed:
+            changed = False
+            for item in records:
+                item_id = str(item["id"])
+                previous = str(item.get("supersedes_annotation_id") or "")
+                if item_id in related or previous in related:
+                    if item_id not in related:
+                        related.add(item_id)
+                        changed = True
+                    if previous and previous not in related:
+                        related.add(previous)
+                        changed = True
+        return [
+            item for item in records
+            if str(item["id"]) in related and (not target_id or target_id in item.get("target_ids", []))
+        ]
 
     def _validate_targets(self, target_ids: list[str], allow_unresolved: bool) -> list[str]:
         unresolved: list[str] = []
@@ -127,8 +184,15 @@ class ResearchAnnotationService:
             if previous.get("annotation_kind") != kind:
                 raise ValidationError("correction 必须 supersede 同一种 annotation kind")
             previous_targets = set(map(str, previous.get("target_ids", [])))
+            if not targets:
+                targets = sorted(previous_targets)
             if targets and previous_targets and not (set(targets) & previous_targets):
                 raise ValidationError("correction 必须与被 supersede annotation 共享 target")
+
+        if supersedes_annotation_id and any(
+            item.get("supersedes_annotation_id") == supersedes_annotation_id for item in self.all()
+        ):
+            raise ValidationError("annotation already has an active correction")
 
         user_fields = {
             "why_saved": (why_saved or "").strip(),
@@ -207,7 +271,7 @@ class ResearchAnnotationService:
         return {"id": annotation_id, "path": self.repository.rel(path), "annotation_kind": kind}
 
     def feedback_summary(self) -> dict[str, Any]:
-        feedback = self.all(kind="connection_feedback")
+        feedback = self.active(kind="connection_feedback")
         labels = Counter(str(item.get("feedback_label")) for item in feedback)
         by_type: Counter[str] = Counter()
         by_project: Counter[str] = Counter()
@@ -239,7 +303,7 @@ class ResearchAnnotationService:
         }
 
     def signal_summary(self) -> dict[str, Any]:
-        annotations = self.all()
+        annotations = self.active()
         by_project: dict[str, list[str]] = defaultdict(list)
         by_domain: dict[str, list[str]] = defaultdict(list)
         for item in annotations:
@@ -452,7 +516,7 @@ class ResearchRouterService:
         selected_domains = _clean_list(domains)
         annotation_matches: list[str] = []
         seed_objects: list[str] = []
-        for annotation in self.annotations.all():
+        for annotation in self.annotations.active():
             projects = set(map(str, annotation.get("research_projects", [])))
             annotation_domains = set(map(str, annotation.get("domains", [])))
             if (selected_project and selected_project in projects) or (set(selected_domains) & annotation_domains):
@@ -511,7 +575,7 @@ class ResearchDigestService:
     def collect(self) -> dict[str, Any]:
         week_start = (datetime.now(TZ) - timedelta(days=7)).isoformat(timespec="seconds")
         annotations = [
-            item for item in self.annotations.all()
+            item for item in self.annotations.active()
             if str(item.get("created_at", "")) >= week_start
         ]
         feedback_items = [item for item in annotations if item.get("annotation_kind") == "connection_feedback"]
