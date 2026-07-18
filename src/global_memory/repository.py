@@ -258,8 +258,10 @@ class Repository:
         if relative.startswith("vault/memory/"):
             if metadata.get("status") not in MEMORY_STATUSES:
                 raise ValidationError(f"{relative} 使用非法 memory status: {metadata.get('status')}")
-            if metadata.get("memory_tier") not in {"working", "trusted"}:
+            if metadata.get("memory_tier") not in {"working", "trusted", "historical"}:
                 raise ValidationError(f"{relative} 缺少有效 memory_tier")
+            if metadata.get("memory_tier") == "historical" and metadata.get("status") not in {"archived", "superseded"}:
+                raise ValidationError(f"{relative} historical memory must be archived or superseded")
             if metadata.get("epistemic_status") not in EPISTEMIC_STATUSES:
                 raise ValidationError(f"{relative} missing valid epistemic_status")
             for key in ("created_by", "updated_by", "consolidation_count", "promotion_history"):

@@ -1,17 +1,17 @@
 ---
 id: "claim_e2f86d4a5a367ae1dc8a5e1f"
 type: "claim"
-status: "working"
+status: "archived"
 title: "2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z"
 created_at: "2026-07-17T12:17:01+08:00"
-updated_at: "2026-07-18T16:02:52+08:00"
+updated_at: "2026-07-18T17:06:05+08:00"
 aliases: []
 tags: []
 domains: []
 confidence: "low"
 source_ids: ["source_30d6af4423a7ecb5e51c4a08"]
 relations: [{"type": "derived_from", "target_id": "source_30d6af4423a7ecb5e51c4a08", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "deterministic-bounded-bundle-v1", "status": "working"}]
-change_reason: "compile bundle from source_30d6af4423a7ecb5e51c4a08"
+change_reason: "legacy deterministic fallback archived as source-only"
 evidence: [{"evidence_id": "evidence_072cd6e33ffa64542877", "evidence_kind": "paraphrase", "source_id": "source_30d6af4423a7ecb5e51c4a08", "content_id": "content_0e115846512fe0242569c86bef41cb1d7c28064d769f0194cafe7b524bbf4fbe", "extraction_id": "extraction_a052ee853af7bae9742a71b3", "span_start": -1, "span_end": 306, "original_text": "2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Zhang4 Hao Wen5 Xiangyu Li5 Weijun Wang5 Kun Li5 Yunxin Liu5 Haipeng Dai1 Wei Wang1 Ting Cao5‡ 1 Nanjing University 2 Huazhong University of Science", "interpretation": "2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Zhang4 Hao Wen5 Xiangyu Li5 Weijun Wang5 Kun Li5 Yunxin Liu5 Haipeng Dai1 Wei Wang1 Ting Cao5‡ 1 Nanjing University 2 Huazhong University of Science", "section": "deterministic extracted block", "page": null, "stance": "context", "verification_status": "derived", "input_sha256": "0e115846512fe0242569c86bef41cb1d7c28064d769f0194cafe7b524bbf4fbe", "extractor": "pypdf", "extractor_version": "1.0", "reason": "确定性 fallback 只确认逐字位置，不自动判断支持或反对。"}]
 applicability: []
 uncertainty: "确定性 fallback 能力有限；该原文尚未经过语义事实核验。"
@@ -25,9 +25,9 @@ epistemic_source_authority: "primary"
 evidence_entailment: "none"
 claim_confidence: "low"
 publication_gate: "needs_review"
-memory_tier: "working"
+memory_tier: "historical"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "trustworthy-consolidation-v2"
+updated_by: "working-quality-source-only-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
@@ -47,6 +47,11 @@ memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_c1cfe8aa205e7e125d73f45e"
+quality_review_status: "source_only"
+quality_review_policy: "working-quality-source-only-v1"
+quality_review_reasons: ["unknown epistemic status", "no semantic evidence entailment", "missing applicability"]
+quality_migration_id: "working_quality_b327d9decb846ba2b8f594bf"
+archived_at: "2026-07-18T17:06:05+08:00"
 ---
 
 # 2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z

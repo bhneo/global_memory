@@ -11,6 +11,13 @@ M9.0 — Research Signals and Progressive Routing is implemented locally on top 
 - `consolidate weekly` now admits up to 25 capture-only sources through the
   normal Daily Working gate before Weekly review; `--skip-daily-admission`
   preserves an explicit review-only mode.
+- Deterministic compilation now keeps long unstructured articles source-only
+  unless they contain explicit typed markers. Weekly surfaces legacy low-quality
+  fallback objects as `recompile_or_source_only` findings without silently
+  deleting or rewriting them.
+- The first real Working-quality migration archived 37 confirmed legacy
+  first-paragraph fallback Claims with exact backups and version snapshots;
+  three explicit-marker objects were retained and Canonical writes remained 0.
 - Seven M9-specific CI acceptance steps were added to the Ubuntu/Windows × Python 3.11–3.13 matrix.
 - M8 governance, Canonical gate, Receipt v2 and recovery state machines were not changed.
 

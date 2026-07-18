@@ -11,7 +11,7 @@ from .backups import RawBackupService
 from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from .capture import CaptureService
 from .context import ContextPackService
-from .consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration
+from .consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration, WorkingQualityMigration
 from .distillation import CorpusDistillationService
 from .errors import GlobalMemoryError
 from .extraction import ExtractionService
@@ -445,6 +445,8 @@ def build_parser() -> argparse.ArgumentParser:
     trust_requalification_mode.add_argument("--verify", action="store_true")
     repair_requalification = migrate_commands.add_parser("repair-trust-requalification")
     repair_requalification.add_argument("--dry-run", action="store_true")
+    working_quality = migrate_commands.add_parser("working-quality")
+    working_quality.add_argument("--dry-run", action="store_true")
     runs = commands.add_parser("runs", help="查看或清理可重建的 system/runs")
     runs_commands = runs.add_subparsers(dest="runs_command", required=True)
     runs_commands.add_parser("list")
@@ -1462,6 +1464,10 @@ def run(args: argparse.Namespace) -> int:
         _print(result)
         return 0 if result["ok"] else 1
     elif args.command == "migrate":
+        if args.migrate_command == "working-quality":
+            migration = WorkingQualityMigration(repository)
+            _print(migration.plan() if args.dry_run else migration.apply())
+            return 0
         if args.migrate_command == "trust-requalification":
             migration = TrustPolicyRequalificationMigration(repository)
             result = migration.verify() if args.verify else migration.plan() if args.dry_run else migration.apply()

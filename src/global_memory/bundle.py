@@ -178,6 +178,8 @@ class BundleRecoveryManager:
 
 
 class BundleCompiler:
+    UNSTRUCTURED_FALLBACK_MAX_CHARS = 2000
+
     def __init__(self, repository: Repository, provider: CompilerProvider | None = None):
         self.repository = repository
         self.provider = provider or DeterministicCompilerProvider()
@@ -222,6 +224,49 @@ class BundleCompiler:
             )
         return path, metadata, body
 
+    def _record_source_only(
+        self, source_id: str, source: dict[str, Any], extraction: dict[str, Any],
+        quality: Any, *, reason: str,
+    ) -> BundleResult:
+        digest = hashlib.sha256(
+            f"source-only\n{source_id}\n{extraction['input_sha256']}\n{self.provider.name}\n{reason}".encode("utf-8")
+        ).hexdigest()
+        proposal_id = f"proposal_bundle_{digest[:20]}"
+        proposal_path = self.repository.root / "vault" / "proposals" / f"proposal-{proposal_id}.md"
+        if not proposal_path.exists():
+            timestamp = now_iso()
+            proposal = {
+                "id": proposal_id, "type": "proposal", "status": "source_only",
+                "title": f"Source-only compile: {source.get('title', source_id)}",
+                "created_at": timestamp, "updated_at": timestamp,
+                "aliases": [], "tags": [], "domains": [], "confidence": "unknown",
+                "source_ids": [source_id], "relations": [],
+                "proposal_kind": "compile_bundle", "processor": self.provider.name,
+                "review_unit": "source_bundle", "compile_disposition": "source_only",
+                "source_summary": str(source.get("title", source_id)),
+                "source_authority": quality.source_authority,
+                "availability_status": quality.availability_status,
+                "content_quality": quality.content_quality,
+                "extraction_quality": quality.extraction_quality,
+                "extraction_id": extraction["extraction_id"],
+                "input_sha256": extraction["input_sha256"],
+                "bundle_items": [], "source_only_source_ids": [source_id],
+                "low_value_items_not_proposed": [reason],
+                "reviewed_at": timestamp, "review_reason": reason,
+            }
+            body = (
+                f"# {proposal['title']}\n\n"
+                "No governed knowledge object was materialized. The immutable source and extraction remain searchable.\n\n"
+                f"- Reason: {reason}\n- Provider: `{self.provider.name}`\n"
+            )
+            self.repository.immutable_write(
+                proposal_path, render_document(proposal, body).encode("utf-8")
+            )
+        return BundleResult(
+            proposal_id, self.repository.rel(proposal_path), 0, [],
+            "source_only", quality.as_dict(),
+        )
+
     def compile(self, source_id: str) -> BundleResult:
         source_path, source, _ = self.repository.find_document(source_id)
         if source.get("type") != "source":
@@ -243,7 +288,22 @@ class BundleCompiler:
         if not isinstance(specs, list):
             raise ValidationError("compiler provider 必须返回 bundle item 列表")
         if not specs:
-            return BundleResult(None, None, 0, [], "source_only", quality.as_dict())
+            return self._record_source_only(
+                source_id, source, extraction, quality,
+                reason="compiler provider produced no governed knowledge candidates",
+            )
+        if (
+            isinstance(self.provider, DeterministicCompilerProvider)
+            and len(text) > self.UNSTRUCTURED_FALLBACK_MAX_CHARS
+            and not any(bool(spec.get("explicit_marker")) for spec in specs)
+        ):
+            return self._record_source_only(
+                source_id, source, extraction, quality,
+                reason=(
+                    "long unstructured source has no explicit Claim/Concept/etc. markers; "
+                    "deterministic first-paragraph fallback is not knowledge-safe"
+                ),
+            )
         expanded_specs: list[dict[str, Any]] = []
         for spec in specs:
             if not isinstance(spec, dict):

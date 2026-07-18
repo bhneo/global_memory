@@ -56,6 +56,19 @@ by default), then reviews the resulting Working/Trusted set. Use
 audit-only review of already admitted memory. The catch-up preserves the same
 Working-only and zero-Canonical-write boundaries as `consolidate daily`.
 
+Long unstructured sources without explicit `Claim:`, `Concept:`, `Question:` or
+other typed markers do not use the deterministic first-paragraph fallback.
+They remain searchable as immutable sources and receive a terminal
+`source_only` compile record. Weekly also emits a read-only
+`working_quality_review` for legacy deterministic fallbacks; remediation must
+use an explicit recompile or governed source-only migration.
+
+Use `gm migrate working-quality --dry-run` to inspect the deterministic set and
+`gm migrate working-quality` to apply it. Apply stores exact pre-images under
+`data/backups/`, adds immutable version snapshots, marks affected Working
+objects `historical + archived`, and appends audit events. It never edits Raw or
+Canonical.
+
 Weekly 报告区分真正完成 Receipt、仅扫描、复核失败、语义变化、Promotion、Demotion、Conflict、Exception 和 Drift Warning。核心字段包括 sources processed、objects considered、receipts completed/failed、unchanged/supported/refined/limited/contradicted/superseded、promotions/demotions、canonical exceptions、working revisions、review time。
 
 ## Drift

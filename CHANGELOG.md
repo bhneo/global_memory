@@ -17,6 +17,13 @@
   reviewing Working/Trusted memory, preventing recently captured sources from
   being silently omitted when a Daily run was missed. Review-only runs may use
   `--skip-daily-admission`.
+- Long unstructured sources without explicit typed markers no longer use the
+  deterministic first-paragraph fallback to manufacture Working objects. They
+  receive an auditable `source_only` compile record instead, and Weekly reports
+  legacy fallback objects through a read-only Working quality review.
+- Added the reversible `migrate working-quality` path. It snapshots exact
+  pre-images, archives confirmed legacy fallbacks as Historical/source-only,
+  records audit events, and leaves Canonical untouched.
 
 ### Boundaries
 

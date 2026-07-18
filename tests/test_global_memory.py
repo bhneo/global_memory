@@ -26,7 +26,7 @@ from global_memory.markdown import read_document, render_document
 from global_memory.maintenance import MaintenanceService
 from global_memory.memory import ExceptionService, WorkingMemoryService
 from global_memory.governance import PromotionService, TrustedPromotionRecoveryManager
-from global_memory.consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration, REQUIRED_RECEIPT_CHECKS
+from global_memory.consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration, REQUIRED_RECEIPT_CHECKS, WorkingQualityMigration
 from global_memory.epistemics import truth_layer
 from global_memory.evolution import KnowledgeEvolutionService
 from global_memory.migration import EpistemicStatusMigration, TrustPolicyRequalificationMigration, TrustRequalificationRepairMigration
@@ -3336,6 +3336,83 @@ def test_consolidate_weekly_admits_capture_only_sources_before_review(
     assert output["daily_catchup"]["compiled"][0]["status"] == "working"
     assert output["objects_considered"] == 1
     assert output["canonical_writes"] == 0
+
+
+def test_daily_keeps_long_unstructured_fallback_source_only(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Paper title and author affiliation header. " * 120,
+        title="Long unstructured paper",
+    )
+
+    result = ConsolidationService(repo).daily(limit=5)
+
+    assert result["compiled"] == [{
+        "source_id": captured.source_id,
+        "status": "source_only",
+        "proposal_id": result["compiled"][0]["proposal_id"],
+        "reason": "no knowledge-safe deterministic candidate",
+    }]
+    assert result["compiled"][0]["proposal_id"]
+    assert list(repo.memory_documents()) == []
+    assert ProposalService(repo).inbox() == []
+    proposal_path, proposal, _ = repo.find_document(result["compiled"][0]["proposal_id"])
+    assert proposal_path.parent.name == "proposals"
+    assert proposal["status"] == "source_only"
+    assert proposal["compile_disposition"] == "source_only"
+    assert proposal["bundle_items"] == []
+
+
+def test_working_quality_review_flags_legacy_long_fallback(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    CaptureService(repo).capture_text(
+        "Paper title and author affiliation header. " * 120,
+        title="Legacy fallback paper",
+    )
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 10000)
+    result = ConsolidationService(repo).daily(limit=5)
+    assert result["compiled"][0]["status"] == "working"
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 2000)
+
+    review = ConsolidationService(repo).review_working_quality()
+
+    assert review["flagged_count"] >= 1
+    assert review["writes"] == 0
+    assert review["flagged"][0]["recommended_action"] == "recompile_or_source_only"
+    assert "no semantic evidence entailment" in review["flagged"][0]["reasons"]
+
+
+def test_working_quality_migration_archives_with_snapshot_and_is_idempotent(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    CaptureService(repo).capture_text(
+        "Paper title and author affiliation header. " * 120,
+        title="Legacy migration paper",
+    )
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 10000)
+    ConsolidationService(repo).daily(limit=5)
+    monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 2000)
+    migration = WorkingQualityMigration(repo)
+    plan = migration.plan()
+    canonical_before = list(repo.canonical_documents())
+
+    assert plan["candidate_count"] >= 1
+    first = migration.apply()
+    second = migration.apply()
+
+    assert first["archived_count"] == plan["candidate_count"]
+    assert first["remaining_flagged"] == 0
+    assert second["archived_count"] == 0
+    assert second["candidate_count"] == 0
+    assert (repo.root / first["backup_path"] / "manifest.json").exists()
+    for object_id in first["archived_ids"]:
+        _, metadata, _ = repo.find_document(object_id)
+        assert metadata["status"] == "archived"
+        assert metadata["memory_tier"] == "historical"
+        assert metadata["quality_review_status"] == "source_only"
+        assert list((repo.root / "vault/archive/versions" / object_id).glob("*.md"))
+    assert list(repo.canonical_documents()) == canonical_before
+    assert lint(repo)["ok"] is True
 
 
 def test_m7_cli_surface_parses_governance_commands() -> None:

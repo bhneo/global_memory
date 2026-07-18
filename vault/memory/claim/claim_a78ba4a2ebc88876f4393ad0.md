@@ -1,17 +1,17 @@
 ---
 id: "claim_a78ba4a2ebc88876f4393ad0"
 type: "claim"
-status: "working"
+status: "archived"
 title: "Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensin"
 created_at: "2026-07-17T12:17:07+08:00"
-updated_at: "2026-07-18T16:02:45+08:00"
+updated_at: "2026-07-18T17:06:05+08:00"
 aliases: []
 tags: []
 domains: []
 confidence: "low"
 source_ids: ["source_b85c7e35189fedbd359efa94"]
 relations: [{"type": "derived_from", "target_id": "source_b85c7e35189fedbd359efa94", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "deterministic-bounded-bundle-v1", "status": "working"}]
-change_reason: "compile bundle from source_b85c7e35189fedbd359efa94"
+change_reason: "legacy deterministic fallback archived as source-only"
 evidence: [{"evidence_id": "evidence_9cdc1ea25f68e2cde12e", "evidence_kind": "paraphrase", "source_id": "source_b85c7e35189fedbd359efa94", "content_id": "content_895c64ddb9204adf2853a7feb87d4315de7bdc656230361c5dc5ee249d4481bf", "extraction_id": "extraction_f7743ab92a554c94f10a12cd", "span_start": -1, "span_end": 208, "original_text": "Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensington, WA 6155, Australia (Received March 03, 2023", "interpretation": "Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensington, WA 6155, Australia (Received March 03, 2023", "section": "deterministic extracted block", "page": null, "stance": "context", "verification_status": "derived", "input_sha256": "895c64ddb9204adf2853a7feb87d4315de7bdc656230361c5dc5ee249d4481bf", "extractor": "pypdf", "extractor_version": "1.0", "reason": "确定性 fallback 只确认逐字位置，不自动判断支持或反对。"}]
 applicability: []
 uncertainty: "确定性 fallback 能力有限；该原文尚未经过语义事实核验。"
@@ -25,9 +25,9 @@ epistemic_source_authority: "primary"
 evidence_entailment: "none"
 claim_confidence: "low"
 publication_gate: "needs_review"
-memory_tier: "working"
+memory_tier: "historical"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "trustworthy-consolidation-v2"
+updated_by: "working-quality-source-only-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
@@ -47,6 +47,11 @@ memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_b308feb004e6add4ba1de5d6"
+quality_review_status: "source_only"
+quality_review_policy: "working-quality-source-only-v1"
+quality_review_reasons: ["unknown epistemic status", "no semantic evidence entailment", "missing applicability"]
+quality_migration_id: "working_quality_b327d9decb846ba2b8f594bf"
+archived_at: "2026-07-18T17:06:05+08:00"
 ---
 
 # Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensin

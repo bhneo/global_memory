@@ -6,7 +6,9 @@ from collections import Counter
 from pathlib import Path
 from typing import Any, TypedDict
 
-from .bundle import BundleCompiler
+from .bundle import BundleCompiler, DeterministicCompilerProvider
+from .extraction import ExtractionService
+from .errors import ValidationError
 from .governance import POLICY_VERSION, PromotionService
 from .markdown import atomic_write_text, read_document, render_document
 from .memory import ExceptionService, WorkingMemoryService
@@ -642,6 +644,57 @@ class ConsolidationService:
         self.promotions = PromotionService(repository)
         self.receipts = ConsolidationReceiptService(repository)
 
+    def review_working_quality(self) -> dict[str, Any]:
+        """Identify unsafe deterministic fallbacks without mutating memory."""
+        flagged: list[dict[str, Any]] = []
+        source_lengths: dict[str, int] = {}
+        source_has_markers: dict[str, bool] = {}
+        for path in self.repository.memory_documents():
+            metadata, _ = read_document(path)
+            if metadata.get("memory_tier") != "working":
+                continue
+            if metadata.get("compiler_version") != "deterministic-bounded-bundle-v1":
+                continue
+            source_ids = [str(item) for item in metadata.get("source_ids", [])]
+            long_sources: list[str] = []
+            for source_id in source_ids:
+                if source_id not in source_lengths:
+                    try:
+                        _, _, text = ExtractionService(self.repository).latest_for_source(source_id)
+                        source_lengths[source_id] = len(text)
+                        source_has_markers[source_id] = any(
+                            pattern.match(line.strip().lstrip("#*- ").strip())
+                            for line in text.splitlines()
+                            for pattern in DeterministicCompilerProvider.MARKERS.values()
+                        )
+                    except Exception:
+                        source_lengths[source_id] = 0
+                        source_has_markers[source_id] = False
+                if (
+                    source_lengths[source_id] > BundleCompiler.UNSTRUCTURED_FALLBACK_MAX_CHARS
+                    and not source_has_markers[source_id]
+                ):
+                    long_sources.append(source_id)
+            if not long_sources:
+                continue
+            reasons: list[str] = []
+            if metadata.get("epistemic_status") == "unknown":
+                reasons.append("unknown epistemic status")
+            if metadata.get("type") == "claim" and metadata.get("evidence_entailment") == "none":
+                reasons.append("no semantic evidence entailment")
+            if not metadata.get("applicability") and metadata.get("type") == "claim":
+                reasons.append("missing applicability")
+            if reasons:
+                flagged.append({
+                    "object_id": str(metadata["id"]), "title": str(metadata.get("title", "")),
+                    "source_ids": long_sources, "reasons": reasons,
+                    "recommended_action": "recompile_or_source_only",
+                })
+        return {
+            "checked": sum(1 for _ in self.repository.memory_documents()),
+            "flagged": flagged, "flagged_count": len(flagged), "writes": 0,
+        }
+
     def daily(self, *, limit: int = 25) -> dict[str, Any]:
         triage = DailyTriageService(self.repository).run(limit=limit)
         compiled = []
@@ -657,6 +710,13 @@ class ConsolidationService:
                 continue
             try:
                 result = BundleCompiler(self.repository).compile(source_id)
+                if result.compile_disposition == "source_only":
+                    compiled.append({
+                        "source_id": source_id, "status": "source_only",
+                        "proposal_id": result.proposal_id,
+                        "reason": "no knowledge-safe deterministic candidate",
+                    })
+                    continue
                 if result.proposal_id:
                     written = WorkingMemoryService(self.repository).ingest_bundle(
                         result.proposal_id, rebuild_index=False
@@ -741,6 +801,7 @@ class ConsolidationService:
         retention_reasons = Counter(
             reason for item in retained for reason in item["failed_conditions"]
         )
+        working_quality_review = self.review_working_quality()
         report = {
             "mode": "weekly-consolidation", "raw_item_count": raw_count,
             "sources_processed": raw_count,
@@ -780,12 +841,102 @@ class ConsolidationService:
             "receipt_ids": [item["consolidation_id"] for item in receipts],
             "scanned_only_ids": scanned_only,
             "estimated_review_time": review_items * 3,
+            "working_quality_review": working_quality_review,
         }
         report_id = "weekly_" + hashlib.sha256(now_iso()[:10].encode()).hexdigest()[:16]
         report_path = self.repository.root / "system" / "reports" / f"generated-{report_id}.md"
         atomic_write_text(report_path, "# Weekly Consolidation Digest\n\n" + "\n".join(f"- {key}: {value}" for key, value in report.items() if not isinstance(value, (list, dict))) + "\n")
         report["report_path"] = self.repository.rel(report_path)
         return report
+
+
+class WorkingQualityMigration:
+    """Archive unsafe legacy deterministic fallbacks with reversible snapshots."""
+
+    POLICY = "working-quality-source-only-v1"
+
+    def __init__(self, repository: Repository):
+        self.repository = repository
+
+    def plan(self) -> dict[str, Any]:
+        review = ConsolidationService(self.repository).review_working_quality()
+        object_ids = sorted(item["object_id"] for item in review["flagged"])
+        migration_id = "working_quality_" + hashlib.sha256(
+            (self.POLICY + "\n" + "\n".join(object_ids)).encode("utf-8")
+        ).hexdigest()[:24]
+        return {
+            "dry_run": True, "migration_id": migration_id, "policy": self.POLICY,
+            "candidate_count": len(object_ids), "candidates": review["flagged"],
+            "canonical_writes": 0,
+        }
+
+    def apply(self) -> dict[str, Any]:
+        plan = self.plan()
+        migration_id = str(plan["migration_id"])
+        backup = self.repository.root / "data" / "backups" / migration_id
+        backup.mkdir(parents=True, exist_ok=True)
+        manifest_path = backup / "manifest.json"
+        if not manifest_path.exists():
+            manifest = {
+                "migration_id": migration_id, "policy": self.POLICY,
+                "created_at": now_iso(), "objects": [],
+            }
+            for item in plan["candidates"]:
+                path, metadata, _ = self.repository.find_document(str(item["object_id"]))
+                data = path.read_bytes()
+                snapshot = backup / path.name
+                self.repository.immutable_write(snapshot, data)
+                manifest["objects"].append({
+                    "object_id": item["object_id"], "path": self.repository.rel(path),
+                    "sha256_before": sha256_bytes(data),
+                    "backup_path": self.repository.rel(snapshot), "reasons": item["reasons"],
+                })
+            atomic_write_text(manifest_path, json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        archived: list[str] = []
+        unchanged: list[str] = []
+        for item in manifest["objects"]:
+            path = self.repository.resolve_inside(item["path"])
+            metadata, body = read_document(path)
+            if metadata.get("quality_migration_id") == migration_id:
+                unchanged.append(str(metadata["id"]))
+                continue
+            current_hash = sha256_bytes(path.read_bytes())
+            if current_hash != item["sha256_before"]:
+                raise ValidationError(
+                    f"working quality migration blocked by changed object: {item['object_id']}"
+                )
+            version_path = (
+                self.repository.root / "vault" / "archive" / "versions"
+                / str(metadata["id"]) / f"{current_hash}.md"
+            )
+            self.repository.immutable_write(version_path, path.read_bytes())
+            timestamp = now_iso()
+            metadata.update({
+                "status": "archived", "memory_tier": "historical",
+                "quality_review_status": "source_only",
+                "quality_review_policy": self.POLICY,
+                "quality_review_reasons": list(item["reasons"]),
+                "quality_migration_id": migration_id,
+                "archived_at": timestamp, "updated_at": timestamp,
+                "updated_by": self.POLICY,
+                "change_reason": "legacy deterministic fallback archived as source-only",
+            })
+            atomic_write_text(path, render_document(metadata, body))
+            self.repository.append_event("memory-events", {
+                "event": "working-quality-archived", "operation_id": migration_id,
+                "object_id": metadata["id"], "snapshot_path": self.repository.rel(version_path),
+                "reason": metadata["change_reason"],
+            })
+            archived.append(str(metadata["id"]))
+        self.repository.rebuild_index()
+        return {
+            **plan, "dry_run": False, "backup_path": self.repository.rel(backup),
+            "archived_count": len(archived), "archived_ids": archived,
+            "unchanged_count": len(unchanged), "unchanged_ids": unchanged,
+            "remaining_flagged": ConsolidationService(self.repository).review_working_quality()["flagged_count"],
+            "canonical_writes": 0,
+        }
 
 
 class ProposalGateMigration:
