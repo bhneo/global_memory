@@ -33,6 +33,10 @@ from .review import SourceBundleReviewService
 from .runs import BatchArtifactMigrator, RunArtifactService
 from .repository import Repository, sha256_bytes
 from .receipts import ReceiptService
+from .research import (
+    ActivationService, ResearchAnnotationService, ResearchDigestService,
+    ResearchMapService, ResearchRouterService,
+)
 from .triage import DailyTriageService
 from .works import WorkService
 from .governance import CanonicalPromotionRecoveryManager, PromotionService, TrustedPromotionRecoveryManager
@@ -97,6 +101,62 @@ def build_parser() -> argparse.ArgumentParser:
     source_annotate.add_argument("source_id")
     source_annotate.add_argument("--why-saved")
     source_annotate.add_argument("--salience", choices=["low", "medium", "high", "unknown"])
+
+    annotate = commands.add_parser("annotate", help="追加用户拥有的科研保存意图")
+    annotate.add_argument("target_id")
+    annotate.add_argument("--why-saved")
+    annotate.add_argument("--surprised-by")
+    annotate.add_argument("--possible-connection", action="append", default=[])
+    annotate.add_argument("--project", action="append", default=[])
+    annotate.add_argument("--domain", action="append", default=[])
+    annotate.add_argument("--salience", choices=["low", "medium", "high", "unknown"], default="unknown")
+    annotate.add_argument("--supersedes")
+    annotate.add_argument("--allow-unresolved", action="store_true")
+
+    annotations = commands.add_parser("annotations", help="查看 append-only Research Annotation")
+    annotations.add_argument("target_id", nargs="?")
+
+    feedback = commands.add_parser("feedback", help="记录或汇总跨领域连接质量反馈")
+    feedback.add_argument("object_id", nargs="?")
+    feedback.add_argument("--label", choices=["obvious", "forced", "interesting", "actionable"])
+    feedback.add_argument("--note")
+    feedback.add_argument("--project", action="append", default=[])
+    feedback.add_argument("--domain", action="append", default=[])
+    feedback.add_argument("--supersedes")
+    feedback.add_argument("--summary", action="store_true")
+
+    research = commands.add_parser("research", help="科研信号、路由、摘要与派生视图")
+    research_commands = research.add_subparsers(dest="research_command", required=True)
+    research_note = research_commands.add_parser("note")
+    research_note.add_argument("--text", required=True)
+    research_note.add_argument("--target", action="append", default=[])
+    research_note.add_argument("--project", action="append", default=[])
+    research_note.add_argument("--domain", action="append", default=[])
+    research_note.add_argument("--salience", choices=["low", "medium", "high", "unknown"], default="unknown")
+    research_note.add_argument("--supersedes")
+    research_note.add_argument("--allow-unresolved", action="store_true")
+    research_route = research_commands.add_parser("route")
+    research_route.add_argument("query")
+    research_route.add_argument("--project")
+    research_route.add_argument("--domain", action="append", default=[])
+    research_route.add_argument("--relation-depth", type=int, default=1)
+    research_commands.add_parser("signals")
+    research_commands.add_parser("digest")
+    research_commands.add_parser("build")
+
+    activation = commands.add_parser("activation", help="显式记录和查看与 Trust 正交的使用信号")
+    activation_commands = activation.add_subparsers(dest="activation_command", required=True)
+    activation_record = activation_commands.add_parser("record")
+    activation_record.add_argument("object_id")
+    activation_record.add_argument("--kind", choices=["selected", "opened", "used", "cited", "coactivated"], required=True)
+    activation_record.add_argument("--project")
+    activation_record.add_argument("--reason", default="")
+    activation_record.add_argument("--coactivated", action="append", default=[])
+    activation_record.add_argument("--event-id")
+    activation_show = activation_commands.add_parser("show")
+    activation_show.add_argument("object_id")
+    activation_top = activation_commands.add_parser("top")
+    activation_top.add_argument("--project")
     quality = commands.add_parser("quality", help="运行 source availability/content quality gate")
     quality.add_argument("source_id")
     extract = commands.add_parser("extract", help="从 immutable raw 创建可重建的 derived extraction")
@@ -271,7 +331,15 @@ def build_parser() -> argparse.ArgumentParser:
     consolidate_commands = consolidate.add_subparsers(dest="consolidate_command", required=True)
     consolidate_daily = consolidate_commands.add_parser("daily")
     consolidate_daily.add_argument("--limit", type=int, default=25)
-    consolidate_commands.add_parser("weekly")
+    consolidate_weekly = consolidate_commands.add_parser("weekly")
+    consolidate_weekly.add_argument(
+        "--admit-limit", type=int, default=25,
+        help="bounded Daily admission catch-up before Weekly review",
+    )
+    consolidate_weekly.add_argument(
+        "--skip-daily-admission", action="store_true",
+        help="review existing Working/Trusted memory without admitting capture-only sources",
+    )
     consolidate_object = consolidate_commands.add_parser("object")
     consolidate_object.add_argument("object_id")
     evolve = commands.add_parser("evolve")
@@ -304,6 +372,8 @@ def build_parser() -> argparse.ArgumentParser:
     context.add_argument("--include-proposals", action="store_true")
     context.add_argument("--relation-depth", type=int, default=1)
     context.add_argument("--strict-execution", action="store_true", help="execution profile requires current Receipt v2")
+    context.add_argument("--route-trace", action="store_true", help="显示 Project/Domain 渐进式路由轨迹")
+    context.add_argument("--record-use", action="store_true", help="显式记录本次 Context Pack 选中对象的 Activation")
     context.add_argument("--token-budget", type=int, default=1200)
     context.add_argument("--format", choices=["json", "markdown"], default="json")
     obsidian = commands.add_parser("obsidian", help="构建可重建的 Obsidian 导航视图")
@@ -937,6 +1007,64 @@ def run(args: argparse.Namespace) -> int:
             _print(lifecycle.history(args.source_id))
         else:
             _print({"path": SourceAnnotationService(repository).annotate(args.source_id, why_saved=args.why_saved, salience=args.salience)})
+    elif args.command == "annotate":
+        _print(ResearchAnnotationService(repository).create(
+            "capture_intent", target_ids=[args.target_id], why_saved=args.why_saved,
+            what_surprised_me=args.surprised_by,
+            possible_connections=args.possible_connection,
+            research_projects=args.project, domains=args.domain,
+            personal_salience=args.salience,
+            supersedes_annotation_id=args.supersedes,
+            allow_unresolved=args.allow_unresolved,
+        ))
+    elif args.command == "annotations":
+        _print(ResearchAnnotationService(repository).all(target_id=args.target_id))
+    elif args.command == "feedback":
+        service = ResearchAnnotationService(repository)
+        if args.summary or args.object_id == "summary":
+            _print(service.feedback_summary())
+        else:
+            if not args.object_id or not args.label or not args.note:
+                raise GlobalMemoryError("feedback 记录需要 object_id、--label 和 --note")
+            _print(service.create(
+                "connection_feedback", target_ids=[args.object_id],
+                feedback_label=args.label, feedback_note=args.note,
+                research_projects=args.project, domains=args.domain,
+                supersedes_annotation_id=args.supersedes,
+            ))
+    elif args.command == "research":
+        annotations_service = ResearchAnnotationService(repository)
+        if args.research_command == "note":
+            _print(annotations_service.create(
+                "research_note", target_ids=args.target, note=args.text,
+                research_projects=args.project, domains=args.domain,
+                personal_salience=args.salience,
+                supersedes_annotation_id=args.supersedes,
+                allow_unresolved=args.allow_unresolved,
+            ))
+        elif args.research_command == "route":
+            _print(ResearchRouterService(repository).plan(
+                args.query, project=args.project, domains=args.domain,
+                relation_depth=args.relation_depth,
+            ).as_dict())
+        elif args.research_command == "signals":
+            _print(annotations_service.signal_summary())
+        elif args.research_command == "digest":
+            _print(ResearchDigestService(repository).write())
+        else:
+            _print(ResearchMapService(repository).build())
+    elif args.command == "activation":
+        service = ActivationService(repository)
+        if args.activation_command == "record":
+            _print(service.record(
+                args.object_id, kind=args.kind, project_id=args.project,
+                reason=args.reason, coactivated_ids=args.coactivated,
+                event_id=args.event_id,
+            ))
+        elif args.activation_command == "show":
+            _print(service.aggregate(object_id=args.object_id))
+        else:
+            _print(service.aggregate(project_id=args.project))
     elif args.command == "quality":
         _print(quality_service.assess(args.source_id, persist=True).as_dict())
     elif args.command == "extract":
@@ -1113,7 +1241,13 @@ def run(args: argparse.Namespace) -> int:
         if args.consolidate_command == "daily":
             result = service.daily(limit=args.limit)
         elif args.consolidate_command == "weekly":
+            daily_catchup = None
+            if not args.skip_daily_admission:
+                daily_catchup = service.daily(limit=args.admit_limit)
             result = service.weekly()
+            result["daily_catchup"] = daily_catchup
+            result["research_digest"] = ResearchDigestService(repository).write()
+            result["research_map"] = ResearchMapService(repository).build()
         else:
             result = ConsolidationReceiptService(repository).consolidate(args.object_id)
         obsidian_result = ObsidianViewService(repository).build()
@@ -1132,6 +1266,8 @@ def run(args: argparse.Namespace) -> int:
         ))
     elif args.command == "weekly-report":
         result = ConsolidationService(repository).weekly()
+        result["research_digest"] = ResearchDigestService(repository).write()
+        result["research_map"] = ResearchMapService(repository).build()
         obsidian_result = ObsidianViewService(repository).build()
         result["obsidian"] = {
             "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
@@ -1168,6 +1304,19 @@ def run(args: argparse.Namespace) -> int:
             include_proposals=args.include_proposals, relation_depth=args.relation_depth,
             strict_execution=args.strict_execution,
         )
+        if args.record_use:
+            context_pack_id = "context_pack_" + sha256_bytes(os.urandom(32))[:24]
+            selected_ids = [str(item["id"]) for item in pack.items]
+            activation_service = ActivationService(repository)
+            for object_id in selected_ids:
+                activation_service.record(
+                    object_id, kind="selected", project_id=args.project,
+                    query=question, context_pack_id=context_pack_id,
+                    reason="selected into an explicitly recorded Context Pack",
+                    source="context_pack",
+                    coactivated_ids=[item for item in selected_ids if item != object_id],
+                    event_id="activation_" + sha256_bytes(f"{context_pack_id}:{object_id}:selected".encode("utf-8"))[:24],
+                )
         _print(pack.as_markdown() if args.format == "markdown" else pack.as_dict())
     elif args.command == "obsidian":
         _print(ObsidianViewService(repository).build(graph_profile=args.graph_profile))
@@ -1183,6 +1332,7 @@ def run(args: argparse.Namespace) -> int:
             rebuilt = {
                 "indexed_documents": repository.rebuild_index(),
                 "obsidian": ObsidianViewService(repository).build(),
+                "research_map": ResearchMapService(repository).build(),
             }
         doctor_result = doctor(repository)
         lint_result = lint(repository)
@@ -1206,11 +1356,15 @@ def run(args: argparse.Namespace) -> int:
             limit=args.triage_limit, recheck=args.recheck
         )
         consolidation_result = ConsolidationService(repository).weekly()
+        research_digest = ResearchDigestService(repository).write()
+        research_map = None
         rebuilt = None
         if not args.no_rebuild_derived:
+            research_map = ResearchMapService(repository).build()
             rebuilt = {
                 "indexed_documents": repository.rebuild_index(),
                 "obsidian": ObsidianViewService(repository).build(),
+                "research_map": research_map,
             }
         doctor_result = doctor(repository)
         lint_result = lint(repository)
@@ -1229,6 +1383,8 @@ def run(args: argparse.Namespace) -> int:
             "mode": "weekly-maintenance",
             "triage": triage_result,
             "consolidation": consolidation_result,
+            "research_digest": research_digest,
+            "research_map": research_map,
             "integrity": {
                 "doctor": doctor_result,
                 "lint": lint_result,

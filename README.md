@@ -1,5 +1,9 @@
 # Global Memory
 
+## M9.0 research signals
+
+M9.0 adds append-only research annotations, connection feedback, explainable Project/Domain routing, explicit Activation, and local Research Digest/Map views. These signals describe attention, use and research value; they never change Trust, Epistemic Status, Receipt validity or Canonical. See `docs/RESEARCH_SIGNALS.md` and `docs/RESEARCH_ROUTING.md`.
+
 ## M8.1.2 trust boundary
 
 - Receipt v2 fingerprints incoming and outgoing relations; a stale receipt is excluded from strict execution until explicitly re-consolidated.
@@ -8,7 +12,7 @@
 
 Global Memory 是本地优先、用户拥有、模型无关的长期记忆系统。Markdown、不可变 Raw 与治理记录是真相层；SQLite、Context Pack 和 Obsidian 页面都是可删除、可重建的派生层。
 
-当前里程碑是 **M8.1.1 — Correctness Recovery**：Working 可以低成本演化；Trusted 保留历史接受状态并单独显示当前策略资格，所有 Trusted 变化必须有 Receipt v2 与恢复日志；Canonical 只允许 Proposal/Exception + 用户明确批准。
+当前里程碑是 **M9.0 — Research Signals and Progressive Routing**。它建立在冻结的 M8.1.2 信任边界之上：Working 可以低成本演化；所有 Trusted 变化仍必须有 Receipt v2 与恢复日志；Canonical 仍只允许 Proposal/Exception + 用户明确批准。
 
 ## 当前工作流
 
@@ -65,6 +69,12 @@ python -m pip install -e ".[test,pdf]"
 .\scripts\gm.ps1 promotion approve <promotion-id> --lock
 .\scripts\gm.ps1 recover
 ```
+
+`consolidate weekly` first performs a bounded Daily admission catch-up (25
+sources by default), so recently captured and triaged material is not silently
+omitted when a Daily run was missed. Use `--admit-limit N` to change the bound,
+or `--skip-daily-admission` for a review-only run. The catch-up may write
+Working memory but never writes Canonical.
 
 外部 provider 更新既有对象时必须返回 `action: "update"`、稳定 `target_id` 和明确 `change_type`。标题只用于展示，不再作为更新身份。Canonical 的 `support`、`metadata_only`、`refine`、`limit`、`contradict`、`supersede` 全部只生成 update Proposal；不会原地修改 Canonical。
 

@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_993", "evidence_kind": "quote", "source_id": "sou
 type: "claim"
 status: "working"
 created_at: "2026-07-16T00:26:00+08:00"
-updated_at: "2026-07-17T18:35:40+08:00"
+updated_at: "2026-07-18T16:02:58+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:40+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:02:58+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "01ac6df00aef4cfc7121df1f2d076ce3558b1020864e7fad253761
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_120ba4dd41d78d862e43ea4b"
+last_consolidation_id: "consolidation_dfd1916dccd875eab1cca21b"
 ---
 
 # 跨模态对齐

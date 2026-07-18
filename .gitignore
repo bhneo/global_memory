@@ -8,6 +8,7 @@ dist/
 build/
 *.egg-info/
 .ci-vault*/
+.ci-m9-vault/
 artifacts/
 artifacts-local/
 
@@ -26,6 +27,7 @@ vault/views/readers/
 # Semantic graph nodes are a local, rebuildable projection. Shared source code
 # and graph settings define the view; real vault objects remain authoritative.
 vault/views/graph/
+vault/views/research/
 
 # Per-user Obsidian window/layout state is not shared configuration.
 vault/.obsidian/workspace.json

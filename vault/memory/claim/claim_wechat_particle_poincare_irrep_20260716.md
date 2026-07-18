@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "该文介绍维格纳观点：粒子可由庞加莱群的不可约表示定义"
 created_at: "2026-07-16T10:48:00+08:00"
-updated_at: "2026-07-17T18:35:50+08:00"
+updated_at: "2026-07-18T16:03:08+08:00"
 aliases: []
 tags: ["Wigner", "Poincare-group", "particle"]
 domains: ["physics", "mathematics"]
@@ -30,8 +30,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:50+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:08+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -45,7 +45,7 @@ origin_candidate_sha256: "2c7f4b055db9ffcdc19247fd5a3cc89a8579d7499e18731dba18ed
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_d594d571a53451d9d9942043"
+last_consolidation_id: "consolidation_0f83353962cd24459700c07d"
 ---
 
 该文介绍维格纳观点：粒子可由庞加莱群的不可约表示定义。

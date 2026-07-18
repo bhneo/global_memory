@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_28", "evidence_kind": "quote", "source_id": "sour
 type: "claim"
 status: "working"
 created_at: "2026-07-16T01:19:00+08:00"
-updated_at: "2026-07-17T18:35:42+08:00"
+updated_at: "2026-07-18T16:03:00+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:42+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:00+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "ca0155942939d34bf42ae69cbe5d1f8e24b18d1453ed56382b0300
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_33335b91bf3f152251115acd"
+last_consolidation_id: "consolidation_cf0e7bc0e35bcc3ffbe7db79"
 ---
 
 # 结构 vs 数量

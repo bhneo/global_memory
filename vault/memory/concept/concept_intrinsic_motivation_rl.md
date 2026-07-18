@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "内在动机强化学习"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:35:54+08:00"
+updated_at: "2026-07-18T16:03:12+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:54+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:12+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "902ed6b8bc0f879aa0356f0b4772eb7c3c86a4a1c9ff6513e75a07
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_7c1662723fb343d555d7a9de"
+last_consolidation_id: "consolidation_13a8f63dcebe5d25b0114ba4"
 ---
 
 # 内在动机强化学习

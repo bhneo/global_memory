@@ -10,6 +10,7 @@ from .markdown import atomic_write_text, read_document
 from .memory import ExceptionService
 from .repository import Repository, now_iso
 from .governance import POLICY_VERSION
+from .research import ActivationService, ResearchAnnotationService
 
 
 class ProjectMetricsService:
@@ -85,6 +86,22 @@ class ProjectMetricsService:
         recovery_directory = self.repository.root / "system" / "recovery"
         recovery_journals = len(list(recovery_directory.glob("*.json"))) if recovery_directory.exists() else 0
         drift = DriftAuditService(self.repository).run()
+        annotations = ResearchAnnotationService(self.repository).all()
+        capture_intents = [item for item in annotations if item.get("annotation_kind") == "capture_intent"]
+        feedback = [item for item in annotations if item.get("annotation_kind") == "connection_feedback"]
+        annotated_sources = {
+            str(target) for item in capture_intents if item.get("why_saved")
+            for target in item.get("target_ids", []) if str(target).startswith("source_")
+        }
+        all_source_ids = {
+            str(read_document(path)[0]["id"]) for path in self.repository.source_documents()
+        }
+        high_salience_unannotated = {
+            str(target) for item in capture_intents
+            if item.get("personal_salience") == "high" and not item.get("why_saved")
+            for target in item.get("target_ids", []) if str(target).startswith("source_")
+        }
+        activation_events = ActivationService(self.repository).events()
         return {
             "generated_at": now_iso(),
             "working": tier_counts["working"],
@@ -119,6 +136,25 @@ class ProjectMetricsService:
                 "language_document_counts": dict(sorted(languages.items())),
             },
             "ci_status": "unavailable-locally",
+            "research_annotations": len(annotations),
+            "capture_intent_annotations": len(capture_intents),
+            "research_notes": sum(item.get("annotation_kind") == "research_note" for item in annotations),
+            "connection_feedback": len(feedback),
+            "feedback_obvious": sum(item.get("feedback_label") == "obvious" for item in feedback),
+            "feedback_forced": sum(item.get("feedback_label") == "forced" for item in feedback),
+            "feedback_interesting": sum(item.get("feedback_label") == "interesting" for item in feedback),
+            "feedback_actionable": sum(item.get("feedback_label") == "actionable" for item in feedback),
+            "sources_with_why_saved": len(annotated_sources),
+            "sources_without_why_saved": len(all_source_ids - annotated_sources),
+            "high_salience_unannotated_sources": len(high_salience_unannotated),
+            "projects_with_activity": len({
+                str(project) for item in annotations for project in item.get("research_projects", [])
+            }),
+            "activation_events": len(activation_events),
+            "objects_used": len({event["object_id"] for event in activation_events if event.get("event_kind") == "used"}),
+            "objects_cited": len({event["object_id"] for event in activation_events if event.get("event_kind") == "cited"}),
+            "objects_opened": len({event["object_id"] for event in activation_events if event.get("event_kind") == "opened"}),
+            "objects_coactivated": len({event["object_id"] for event in activation_events if event.get("event_kind") == "coactivated" or event.get("coactivated_ids")}),
         }
 
     def write_project_state(self, metrics: dict[str, Any] | None = None) -> dict[str, Any]:

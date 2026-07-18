@@ -7,18 +7,29 @@
 ## Pending proposals (0)
 
 
-## Partial evidence (32)
+## Partial evidence (41)
 
 - [[memory/claim/claim_e2f86d4a5a367ae1dc8a5e1f|2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z]]
+- [[memory/claim/claim_b93f2824932425f11bf3d80c|2026-7-17 GigaWorld-Policy-0.5: A Faster]]
+- [[memory/claim/claim_f18f73fad2499635f142ede5|AUTOMATION LETTERS. PREPRINT VERSION. SUBMITTED JULY , 2026 1 Human-Robot Interaction in GenAI Architectures via the Agent-Client Protocol Jesus Moncada-Ramirez]]
 - [[memory/claim/claim_54cac5c21565eb6d274a5383|Accepted October 06, 2023) S]]
 - [[memory/claim/claim_b035b6de75ccf5819d0e89fa|Draft version October 10, 2023 Typeset using LATEX twocolumn style in AASTeX63 Deep symbolic regression for physics guided by units constraints: toward the auto]]
 - [[memory/claim/claim_ea6b984ae4bdd1dfdf5288a1|Evolving Intrinsic Motivations for Altruistic Behavior Jane X. Wang, Edward Hughes, Chrisantha Fernando, Wojciech M. Czarnecki, Edgar A. Duéñez-Guzmán, & Joel Z]]
 - [[memory/claim/claim_a78ba4a2ebc88876f4393ad0|Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensin]]
 - [[memory/claim/claim_ad8c28d32a7d55ab2806574d|From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence Marc Finzi∗1 Shikai Qiu∗2 Yiding Jiang∗1 Pavel Izmailov2 J. Zico Kol]]
+- [[memory/claim/claim_de218ebcf16d288520ce4d0e|Javier Gonzalez-Jimenez 1 Abstract—Recent advances in Generative Artificial Intelligence (GenAI), particularly Large Language Models (LLMs), are driv- ing robot]]
 - [[memory/claim/claim_499470a2d077fe16b177bd1e|Preprint. SKILLEVOLVER: SKILLLEARNING AS AMETA-SKILL Genrui Zhang2∗ Erle Zhu1∗ Jinfeng Zhou1 Caiyan Jia2 Hongning Wang1† 1Tsinghua University 2Beijing Jiaotong]]
+- [[memory/claim/claim_ce6495dab9cd14e0068546af|SAFERELBENCH: A Spatial-Relation-Aware Benchmark for Process-Level Safety in VLM-Driven Embodied Agents Huaigang Yang1,2, Ya Li1, Min Ren 1, Bo Dai 2, Zhenliang]]
+- [[memory/claim/claim_ece3b21b134d0b944b46b8fd|Stronger WAM Empowered by AutoResearch GigaAI Tsinghua University Project Page: https://open-gigaai.github.io/giga-world-policy/ Alphabetical Order:Angen Ye, An]]
 - [[memory/claim/claim_d9476033c30cbb2c7b1f3f51|Technology of China 4 Microsoft Research 5 Institute for AI Industry Research (AIR), Tsinghua University Embodied agents can benefit from skills that]]
+- [[memory/claim/claim_3d3342246519ef132c0d22f7|Telecommunications, Beijing, China 2State Key Laboratory of General Artificial Intelligence, BIGAI, Beijing, China Correspondence:daibo@bigai.ai, zhaofenghe@bup]]
+- [[memory/claim/claim_e3413acb534ee28753a420ba|Towards Human-like Physical Intelligence: Lifelong Vision-Language-Action Learning for Robotic Manipulation Yao He1, Gan Sun ∗1, Wenqi Liang 2, Fazeng Li1]]
+- [[memory/claim/claim_56dfdf2b9ba924226087b5a4|Yang Cong 1 1South China University of Technology 2University of Trento Abstract Similar to the natural capabilities of humans to sequentially learn new tasks,]]
 - [[memory/claim/claim_080bdc5349e0e08fa8882e97|then consumed unchanged, with no mechanism to improve from real use. We proposeSkillEvolver, a lightweight, plug-and-play solution foronline skill learning, in]]
 - [[memory/claim/claim_c7f06719c78cc576410dded2|useful information be constructed from merely applying deterministic transformations to existing data? Can the learnable content in data be evaluated without co]]
+- [[memory/claim/claim_9e31e4b4eddc1ce8ee21db0f|来源原文：2026-7-17
+RoboTTT: Context Scaling for Robot Policies
+Yunfan Jiang1,2, Yevgen Ch]]
 - [[memory/claim/claim_0c81697b0e302dcee8d96199|来源原文：Published in Transactions on Machine Learning Research (12/2025)
 Symmetry in Neu]]
 - [[memory/claim/claim_23283adb0c3baf33a884cdac|来源原文：嘉宾｜李弘扬，香港大学助理教授、香港大学计算与数据科学学院助理院长、上海创智学院全时导师、OpenDriveLab创始人兼负责人、源策智能创始人

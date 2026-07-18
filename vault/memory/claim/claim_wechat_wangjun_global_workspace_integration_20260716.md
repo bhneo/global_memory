@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_4371", "evidence_kind": "quote", "source_id": "so
 type: "claim"
 status: "working"
 created_at: "2026-07-16T01:30:00+08:00"
-updated_at: "2026-07-17T18:35:52+08:00"
+updated_at: "2026-07-18T16:03:10+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:52+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:10+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "c8314e2f21c8011aee46e7b5139f3fe0e1ab34f65c40cd7246b7f8
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_dda70694ff3f81099756718d"
+last_consolidation_id: "consolidation_ab7e9781213c11ee0d53d78d"
 ---
 
 # Global workspace

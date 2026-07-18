@@ -4,7 +4,7 @@ type: "experiment"
 status: "working"
 title: "Codex M7 真实读取与 receipt 回写验收"
 created_at: "2026-07-16T21:57:20+08:00"
-updated_at: "2026-07-17T18:36:01+08:00"
+updated_at: "2026-07-18T16:03:19+08:00"
 aliases: []
 tags: ["m7", "agent-acceptance", "codex"]
 domains: ["global-memory"]
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:36:01+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:19+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "90b64a245da2cdb633df33e8597ccddeacccb7d917acca9cf20f11
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_a0e076f63f0c1220ba187dc6"
+last_consolidation_id: "consolidation_4be69f60a0c3b26de48d7a22"
 ---
 
 # Codex M7 真实读取与 receipt 回写验收

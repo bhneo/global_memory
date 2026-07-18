@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z"
 created_at: "2026-07-17T12:17:01+08:00"
-updated_at: "2026-07-17T18:35:32+08:00"
+updated_at: "2026-07-18T16:02:52+08:00"
 aliases: []
 tags: []
 domains: []
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T18:35:32+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-18T16:02:52+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "e5f7d8dd72a4637eed63aae5d658d9d48fb04b9547d026798cc5e0
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_a177ff70fc70fc075035751b"
+last_consolidation_id: "consolidation_c1cfe8aa205e7e125d73f45e"
 ---
 
 # 2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z

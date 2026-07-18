@@ -22,7 +22,7 @@ OBJECT_TYPES = {
     "source", "intuition", "entity", "concept", "claim", "question",
     "tension", "analogy", "anomaly", "hypothesis", "project", "goal", "architecture", "decision",
     "experiment", "failure", "opportunity", "synthesis", "work", "proposal", "followup",
-    "exception", "promotion",
+    "exception", "promotion", "annotation",
 }
 RELATION_TYPES = {
     "supports", "contradicts", "refines", "analogous_to", "derived_from",
@@ -95,6 +95,7 @@ class Repository:
             "vault/archive", "data/imports", "data/derived", "data/indexes", "data/backups",
             "system/logs", "system/reports", "system/error-book",
             "system/recovery", "system/runs", "vault/followups", "vault/annotations",
+            "vault/annotations/research", "vault/views/research",
             "vault/views", "vault/receipts",
             "data/derived/extractions", "data/derived/quality",
         ]
@@ -167,10 +168,16 @@ class Repository:
         if path.exists():
             yield from path.glob("followup-*.md")
 
+    def annotation_documents(self) -> Iterable[Path]:
+        path = self.root / "vault" / "annotations" / "research"
+        if path.exists():
+            yield from path.glob("annotation-*.md")
+
     def all_indexed_documents(self) -> Iterable[Path]:
         yield from self.source_documents()
         yield from self.memory_documents()
         yield from self.canonical_documents()
+        yield from self.annotation_documents()
 
     def _schema(self, connection: sqlite3.Connection) -> None:
         connection.executescript(
@@ -199,6 +206,24 @@ class Repository:
             );
             CREATE VIRTUAL TABLE documents_fts USING fts5(
                 id UNINDEXED, title, aliases, tags, domains, body, tokenize='unicode61'
+            );
+            CREATE TABLE activation_events (
+                event_id TEXT PRIMARY KEY,
+                object_id TEXT NOT NULL,
+                event_kind TEXT NOT NULL,
+                project_id TEXT,
+                created_at TEXT NOT NULL,
+                payload TEXT NOT NULL
+            );
+            CREATE TABLE activation_aggregates (
+                object_id TEXT PRIMARY KEY,
+                selected_count INTEGER NOT NULL,
+                opened_count INTEGER NOT NULL,
+                used_count INTEGER NOT NULL,
+                cited_count INTEGER NOT NULL,
+                coactivated_count INTEGER NOT NULL,
+                last_used_at TEXT,
+                projects TEXT NOT NULL
             );
             """
         )
@@ -244,6 +269,15 @@ class Repository:
             raise ValidationError(f"{relative} 使用非法 exception status")
         elif metadata.get("type") == "promotion" and metadata.get("status") not in {"pending", "approved", "rejected", "deferred"}:
             raise ValidationError(f"{relative} 使用非法 promotion status")
+        if metadata.get("type") == "annotation":
+            if metadata.get("status") != "active":
+                raise ValidationError(f"{relative} annotation status 必须是 active")
+            if metadata.get("annotation_kind") not in {"capture_intent", "connection_feedback", "research_note"}:
+                raise ValidationError(f"{relative} annotation_kind 非法")
+            if metadata.get("user_authored") is not True:
+                raise ValidationError(f"{relative} annotation 必须保留 user_authored=true")
+            if not isinstance(metadata.get("target_ids", []), list):
+                raise ValidationError(f"{relative} target_ids 必须是列表")
         if metadata.get("confidence") not in CONFIDENCE_LEVELS:
             raise ValidationError(f"{self.rel(path)} 使用非法 confidence: {metadata.get('confidence')}")
         source_ids = metadata.get("source_ids", [])
@@ -410,6 +444,48 @@ class Repository:
                             (metadata["id"], relation["type"], relation["target_id"], relation["reason"]),
                         )
                     count += 1
+                activation_path = self.root / "system" / "logs" / "activation-events.jsonl"
+                activation_totals: dict[str, dict[str, Any]] = {}
+                if activation_path.exists():
+                    for line in activation_path.read_text(encoding="utf-8").splitlines():
+                        if not line.strip():
+                            continue
+                        try:
+                            event = json.loads(line)
+                        except json.JSONDecodeError:
+                            continue
+                        if not isinstance(event, dict) or not event.get("event_id") or not event.get("object_id"):
+                            continue
+                        connection.execute(
+                            "INSERT OR IGNORE INTO activation_events VALUES (?, ?, ?, ?, ?, ?)",
+                            (
+                                event["event_id"], event["object_id"], event.get("event_kind", ""),
+                                event.get("project_id"), event.get("created_at", ""),
+                                json.dumps(event, ensure_ascii=False, sort_keys=True),
+                            ),
+                        )
+                        aggregate = activation_totals.setdefault(str(event["object_id"]), {
+                            "selected": 0, "opened": 0, "used": 0, "cited": 0, "coactivated": 0,
+                            "last": None, "projects": {},
+                        })
+                        kind = str(event.get("event_kind", ""))
+                        if kind in {"selected", "opened", "used", "cited", "coactivated"}:
+                            aggregate[kind] += 1
+                        created = str(event.get("created_at", ""))
+                        if kind in {"selected", "opened", "used", "cited"}:
+                            aggregate["last"] = max(aggregate["last"] or "", created)
+                        if event.get("project_id"):
+                            project_id = str(event["project_id"])
+                            aggregate["projects"][project_id] = aggregate["projects"].get(project_id, 0) + 1
+                for object_id, aggregate in activation_totals.items():
+                    connection.execute(
+                        "INSERT INTO activation_aggregates VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                        (
+                            object_id, aggregate["selected"], aggregate["opened"], aggregate["used"],
+                            aggregate["cited"], aggregate["coactivated"], aggregate["last"],
+                            json.dumps(aggregate["projects"], ensure_ascii=False, sort_keys=True),
+                        ),
+                    )
                 connection.commit()
             os.replace(temp_path, self.index_path)
             return count

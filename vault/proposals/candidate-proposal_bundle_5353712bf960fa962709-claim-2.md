@@ -1,0 +1,32 @@
+---
+id: "claim_ece3b21b134d0b944b46b8fd"
+type: "claim"
+status: "proposal"
+title: "Stronger WAM Empowered by AutoResearch GigaAI Tsinghua University Project Page: https://open-gigaai.github.io/giga-world-policy/ Alphabetical Order:Angen Ye, An"
+created_at: "2026-07-18T16:30:48+08:00"
+updated_at: "2026-07-18T16:30:48+08:00"
+aliases: []
+tags: []
+domains: []
+confidence: "low"
+source_ids: ["source_e2614742b0c3ee7cf985d616"]
+relations: [{"type": "derived_from", "target_id": "source_e2614742b0c3ee7cf985d616", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "deterministic-bounded-bundle-v1", "status": "proposal"}]
+change_reason: "compile bundle from source_e2614742b0c3ee7cf985d616"
+evidence: [{"evidence_id": "evidence_31499c0ec37b786bd09d", "evidence_kind": "paraphrase", "source_id": "source_e2614742b0c3ee7cf985d616", "content_id": "content_1745ce117de5b359f955d1da910a830661d5d80a2781c7dd50cf67fb3fe43990", "extraction_id": "extraction_9b4583595ba685f207389410", "span_start": -1, "span_end": 453, "original_text": "Stronger WAM Empowered by AutoResearch GigaAI Tsinghua University Project Page: https://open-gigaai.github.io/giga-world-policy/ Alphabetical Order:Angen Ye, Angyuan Ma, Boyuan Wang, Chaojun Ni, Fangzheng Ye, Guan Huang, Guo Li, Guosheng Zhao, Haodong Yan, Hengtao Li, Jiwen Lu, Kai Wang, Mingming Yu, Qitang Hu, Qiuping Deng, Songling Liu, Xiaoyu Tian, Xiaofeng Wang, Xinyu Zhou, Xiuwei Xu, Xinze Chen, Yang Wang, Yejun Zeng, Yifan Chang, Yun Ye, Zhenyu", "interpretation": "Stronger WAM Empowered by AutoResearch GigaAI Tsinghua University Project Page: https://open-gigaai.github.io/giga-world-policy/ Alphabetical Order:Angen Ye, Angyuan Ma, Boyuan Wang, Chaojun Ni, Fangzheng Ye, Guan Huang, Guo Li, Guosheng Zhao, Haodong Yan, Hengtao Li, Jiwen Lu, Kai Wang, Mingming Yu, Qitang Hu, Qiuping Deng, Songling Liu, Xiaoyu Tian, Xiaofeng Wang, Xinyu Zhou, Xiuwei Xu, Xinze Chen, Yang Wang, Yejun Zeng, Yifan Chang, Yun Ye, Zhenyu", "section": "deterministic extracted block", "page": null, "stance": "context", "verification_status": "derived", "input_sha256": "1745ce117de5b359f955d1da910a830661d5d80a2781c7dd50cf67fb3fe43990", "extractor": "pypdf", "extractor_version": "1.0", "reason": "确定性 fallback 只确认逐字位置，不自动判断支持或反对。"}]
+applicability: []
+uncertainty: "确定性 fallback 能力有限；该原文尚未经过语义事实核验。"
+atomicity_status: "atomic"
+evidence_coverage: "partial"
+split_from: "2026-7-17\nGigaWorld-Policy-0.5: A Faster and Stronger WAM\nEmpowered by AutoResearch\nGigaAI\nTsinghua University\nProject Page: https://open-gigaai.github.io/giga-world-policy/\nAlphabetical Order:Angen Ye, Angyuan Ma, Boyuan Wang, Chaojun Ni, Fangzheng Ye, Guan Huang, Guo Li, Guosheng Zhao,\nHaodong Yan, Hengtao Li, Jiwen Lu, Kai Wang, Mingming Yu, Qitang Hu, Qiuping Deng, Songling Liu, Xiaoyu Tian, Xiaofeng Wang,\nXinyu Zhou, Xiuwei Xu, Xinze Chen, Yang Wang, Yejun Zeng, Yifan Chang, Yun Ye, Zhenyu "
+split_reason: "multiple independently testable clauses"
+quote_verification: "failed"
+extraction_quality: "good"
+epistemic_source_authority: "primary"
+evidence_entailment: "none"
+claim_confidence: "low"
+publication_gate: "needs_review"
+---
+
+# Stronger WAM Empowered by AutoResearch GigaAI Tsinghua University Project Page: https://open-gigaai.github.io/giga-world-policy/ Alphabetical Order:Angen Ye, An
+
+Stronger WAM Empowered by AutoResearch GigaAI Tsinghua University Project Page: https://open-gigaai.github.io/giga-world-policy/ Alphabetical Order:Angen Ye, Angyuan Ma, Boyuan Wang, Chaojun Ni, Fangzheng Ye, Guan Huang, Guo Li, Guosheng Zhao, Haodong Yan, Hengtao Li, Jiwen Lu, Kai Wang, Mingming Yu, Qitang Hu, Qiuping Deng, Songling Liu, Xiaoyu Tian, Xiaofeng Wang, Xinyu Zhou, Xiuwei Xu, Xinze Chen, Yang Wang, Yejun Zeng, Yifan Chang, Yun Ye, Zhenyu

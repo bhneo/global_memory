@@ -1,5 +1,16 @@
 # Roadmap
 
+## M9 — Scientific Cognition
+
+- M9.0 Research Signals and Progressive Routing: implemented locally; remote six-job CI awaits the user's unified push.
+- M9.1 Evaluation and Read-only Integrations: MemoryBench Provider, Khoj read-only UI experiment, retrieval/governance baselines.
+- M9.2 Mechanism Compiler: compile sources into Phenomenon, Mechanism, Objective, Constraint, Invariant, Feedback, Failure Mode and Prediction.
+- M9.3 Structural Analogy Engine: require topical distance, mechanism similarity and explicit differences.
+- M9.4 Hypothesis Lab: Connection → Conjecture → Competing Hypotheses → Prediction → Falsifier → Smallest Experiment.
+- M9.5 Experiment Loop: write code, simulation, experiment, failure, anomaly and result back into the research graphs.
+
+M9.1–M9.5 are documentation-only future stages. M9.0 does not implement them early.
+
 ## M8 — Trustworthy Consolidation and Incremental Knowledge Evolution
 
 - M8.1.1 correctness recovery: implemented locally. The wrong bulk demotion was repaired from immutable backup; 28/30 restored Trusted objects currently satisfy Policy v3 and 2 remain explicitly awaiting independent-work evidence.

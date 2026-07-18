@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "来源原文：[2601.03220] From Entropy to Epiplexity: Rethinking Information for Computationa"
 created_at: "2026-07-17T12:11:47+08:00"
-updated_at: "2026-07-17T18:35:30+08:00"
+updated_at: "2026-07-18T16:02:50+08:00"
 aliases: []
 tags: []
 domains: []
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T18:35:30+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-18T16:02:50+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "ac80ce6afe5c10dcbd0dbbc05d47c6f519ee63074f495e45e25922
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_fe76429903fca65f63cb5028"
+last_consolidation_id: "consolidation_bb1412cf9bd7f1ffed67ce53"
 ---
 
 # 来源原文：[2601.03220] From Entropy to Epiplexity: Rethinking Information for Computationa

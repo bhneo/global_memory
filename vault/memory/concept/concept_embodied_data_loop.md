@@ -4,7 +4,7 @@ type: "concept"
 status: "trusted"
 title: "具身数据闭环"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T22:40:02+08:00"
+updated_at: "2026-07-18T16:32:46+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 6
-last_consolidated_at: "2026-07-17T22:40:02+08:00"
+consolidation_count: 8
+last_consolidated_at: "2026-07-18T16:32:46+08:00"
 last_verified_at: null
 trust_score: 66
 trust_reasons: ["completed consolidation review", "concept reused by independent material"]
@@ -33,7 +33,7 @@ origin_candidate_sha256: "d11d97a36dac2ee96d62d2401d19f3909f968fad33082923d307a5
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_29416235697d86c1975d0658"
+last_consolidation_id: "consolidation_ef9c17e5ca95436f9c094efc"
 needs_policy_requalification: true
 trust_policy_version: "trusted-promotion-v1"
 last_policy_qualified_at: "2026-07-17T12:03:05+08:00"

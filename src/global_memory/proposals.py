@@ -125,7 +125,11 @@ class ProposalService:
             raise ValidationError("candidate 必须保留 canonical created_at")
         if candidate.get("type") == "claim" and not candidate.get("source_ids"):
             raise ValidationError("claim update 必须保留至少一个 source_id")
-        self.repository._validate_metadata(candidate, input_path)
+        # Validate a canonical update in the target truth-layer context. The
+        # caller may stage the candidate under system/tmp, but inherited quote
+        # evidence is still allowed to fall back to source/raw provenance when
+        # its rebuildable extraction has been removed.
+        self.repository._validate_metadata(candidate, target_path)
 
         base_bytes = target_path.read_bytes()
         base_hash = sha256_bytes(base_bytes)

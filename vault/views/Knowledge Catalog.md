@@ -14,7 +14,9 @@
 ## claim
 
 - [[memory/claim/claim_e2f86d4a5a367ae1dc8a5e1f|2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z]] · `working`
+- [[memory/claim/claim_b93f2824932425f11bf3d80c|2026-7-17 GigaWorld-Policy-0.5: A Faster]] · `working`
 - [[memory/claim/claim_parameter_symmetry_orbit_level_set_20260716|A symmetry-group orbit consists of transformed parameters and lies within one loss level set]] · `trusted`
+- [[memory/claim/claim_f18f73fad2499635f142ede5|AUTOMATION LETTERS. PREPRINT VERSION. SUBMITTED JULY , 2026 1 Human-Robot Interaction in GenAI Architectures via the Agent-Client Protocol Jesus Moncada-Ramirez]] · `working`
 - [[memory/claim/claim_54cac5c21565eb6d274a5383|Accepted October 06, 2023) S]] · `working`
 - [[memory/claim/claim_agentic_vla_one_shot_20260715|Agentic-VLA 在 LIBERO one-shot 设定下平均成功率 70.5%，相对 OpenVLA-OFT SFT 基线提升 26.9 个百分点]] · `working`
 - [[memory/claim/claim_agentic_vla_libero_main_20260715|Agentic-VLA 在 LIBERO 上报告平均成功率 97.8%，Long 套件相对 SFT 基线提升 12.3 个百分点]] · `working`
@@ -25,7 +27,9 @@
 - [[memory/claim/claim_ea6b984ae4bdd1dfdf5288a1|Evolving Intrinsic Motivations for Altruistic Behavior Jane X. Wang, Edward Hughes, Chrisantha Fernando, Wojciech M. Czarnecki, Edgar A. Duéñez-Guzmán, & Joel Z]] · `working`
 - [[memory/claim/claim_a78ba4a2ebc88876f4393ad0|Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensin]] · `working`
 - [[memory/claim/claim_ad8c28d32a7d55ab2806574d|From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence Marc Finzi∗1 Shikai Qiu∗2 Yiding Jiang∗1 Pavel Izmailov2 J. Zico Kol]] · `working`
+- [[memory/claim/claim_22f24b48f35fd93994db4200|IEEE ROBOTICS]] · `working`
 - [[memory/claim/claim_conserved_quantity_small_network_correlations_20260716|In small two-layer networks, conserved quantities were observed to correlate with convergence and minima sharpness]] · `trusted`
+- [[memory/claim/claim_de218ebcf16d288520ce4d0e|Javier Gonzalez-Jimenez 1 Abstract—Recent advances in Generative Artificial Intelligence (GenAI), particularly Large Language Models (LLMs), are driv- ing robot]] · `working`
 - [[memory/claim/claim_parameter_symmetry_loss_invariant_group_20260716|Loss-invariant bijective parameter transformations form a group under composition]] · `trusted`
 - [[memory/claim/claim_parameter_symmetry_conserved_gradient_flow_20260716|Parameter-space symmetry implies conserved quantities in gradient flow]] · `trusted`
 - [[memory/claim/claim_play2perfect_realworld_tight_insertion_20260715|Play2Perfect 仿真微调策略可零样本迁移到真实世界紧配合插入，0.5 mm 间隙成功率 6/10]] · `working`
@@ -34,14 +38,23 @@
 - [[memory/claim/claim_play2perfect_finetuning_necessary_20260715|Play2Perfect 表明仅 play 预训练不足以完成 tight-clearance 装配，装配专用 RL 微调仍然必要]] · `working`
 - [[memory/claim/claim_499470a2d077fe16b177bd1e|Preprint. SKILLEVOLVER: SKILLLEARNING AS AMETA-SKILL Genrui Zhang2∗ Erle Zhu1∗ Jinfeng Zhou1 Caiyan Jia2 Hongning Wang1† 1Tsinghua University 2Beijing Jiaotong]] · `working`
 - [[memory/claim/claim_45e2c33254979ebece6a7502|Revised October 06 2023]] · `working`
+- [[memory/claim/claim_ce6495dab9cd14e0068546af|SAFERELBENCH: A Spatial-Relation-Aware Benchmark for Process-Level Safety in VLM-Driven Embodied Agents Huaigang Yang1,2, Ya Li1, Min Ren 1, Bo Dai 2, Zhenliang]] · `working`
+- [[memory/claim/claim_ece3b21b134d0b944b46b8fd|Stronger WAM Empowered by AutoResearch GigaAI Tsinghua University Project Page: https://open-gigaai.github.io/giga-world-policy/ Alphabetical Order:Angen Ye, An]] · `working`
 - [[memory/claim/claim_0b690c465600b65a6f2a3652|Technology 3 University of Science]] · `working`
 - [[memory/claim/claim_d9476033c30cbb2c7b1f3f51|Technology of China 4 Microsoft Research 5 Institute for AI Industry Research (AIR), Tsinghua University Embodied agents can benefit from skills that]] · `working`
+- [[memory/claim/claim_3d3342246519ef132c0d22f7|Telecommunications, Beijing, China 2State Key Laboratory of General Artificial Intelligence, BIGAI, Beijing, China Correspondence:daibo@bigai.ai, zhaofenghe@bup]] · `working`
+- [[memory/claim/claim_e3413acb534ee28753a420ba|Towards Human-like Physical Intelligence: Lifelong Vision-Language-Action Learning for Robotic Manipulation Yao He1, Gan Sun ∗1, Wenqi Liang 2, Fazeng Li1]] · `working`
 - [[knowledge/claims/claim_via_interface_first_robot_control_20260715-via-表明稳定的视觉工具界面可让通用-agent-在限定仿真任务中零样本闭环控制机器人|VIA 表明通用视觉 Agent 可在限定仿真任务中通过工具界面零样本闭环控制机器人]] · `canonical`
+- [[memory/claim/claim_56dfdf2b9ba924226087b5a4|Yang Cong 1 1South China University of Technology 2University of Trento Abstract Similar to the natural capabilities of humans to sequentially learn new tasks,]] · `working`
 - [[memory/claim/claim_92804ba3893e52d0c5696e45|humans are able to overcome t]] · `working`
 - [[memory/claim/claim_080bdc5349e0e08fa8882e97|then consumed unchanged, with no mechanism to improve from real use. We proposeSkillEvolver, a lightweight, plug-and-play solution foronline skill learning, in]] · `working`
 - [[memory/claim/claim_c7f06719c78cc576410dded2|useful information be constructed from merely applying deterministic transformations to existing data? Can the learnable content in data be evaluated without co]] · `working`
 - [[memory/claim/claim_physo_rnn_reinforcement_learning_method_20260716|Φ-SO 使用深度强化学习训练 RNN 生成符号表达式]] · `trusted`
 - [[memory/claim/claim_physo_units_constraints_reduce_search_20260716|Φ-SO 在生成过程中施加物理单位约束以排除不一致表达式并缩小搜索空间]] · `trusted`
+- [[memory/claim/claim_9e31e4b4eddc1ce8ee21db0f|来源原文：2026-7-17
+RoboTTT: Context Scaling for Robot Policies
+Yunfan Jiang1,2, Yevgen Ch]] · `working`
+- [[memory/claim/claim_94bf842d253465db4d4f07fa|来源原文：GitHub - Tencent-Hunyuan/HY-Embodied: HY-Embodied: Embodied Foundation Models fo]] · `working`
 - [[memory/claim/claim_a13acc3bcafaf6b69954a0c9|来源原文：GitHub - WassimTenachi/PhySO: Physical Symbolic Optimization · GitHub]] · `working`
 - [[memory/claim/claim_e65d29cd493432e151cd8b45|来源原文：GitHub - Xbotics-Embodied-AI-club/Xbotics-Embodied-AI-Job: Xbotics具身智能社区全网工作汇总 ·]] · `working`
 - [[memory/claim/claim_a1bf006b4174d98d1d8108c5|来源原文：GitHub - Xbotics-Embodied-AI-club/Xbotics-Embodied-Guide: Xbotics 社区具身智能学习指南：我们把]] · `working`
@@ -54,6 +67,7 @@ Symmetry in Neu]] · `working`
 - [[memory/claim/claim_d3c1dc84377e8ab740cf0f2b|来源原文：[2601.03220] From Entropy to Epiplexity: Rethinking Information for Computationa]] · `working`
 - [[memory/claim/claim_e5379e4b954671b9e870a05b|来源原文：[2605.10332] EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agen]] · `working`
 - [[memory/claim/claim_4766d041f4bbb95d5823e5dd|来源原文：[2605.10500] SkillEvolver: Skill Learning as a Meta-Skill]] · `working`
+- [[memory/claim/claim_018cc53e4436ec3feebfa809|来源原文：[2607.12894] Hy-Embodied-VLM-1.0: Efficient Physical-World Agents]] · `working`
 - [[memory/claim/claim_23283adb0c3baf33a884cdac|来源原文：嘉宾｜李弘扬，香港大学助理教授、香港大学计算与数据科学学院助理院长、上海创智学院全时导师、OpenDriveLab创始人兼负责人、源策智能创始人
 访谈｜东寰、刘]] · `working`
 - [[memory/claim/claim_wechat_embodied_data_structure_not_volume_20260716|该文主张机器人瓶颈不只是数据量，而是把数据转化为能力的结构与 recipe]] · `working`
@@ -84,6 +98,7 @@ Symmetry in Neu]] · `working`
 - [[memory/concept/concept_epiplexity|Epiplexity]] · `working`
 - [[memory/concept/concept_kelly_criterion|Kelly Criterion]] · `working`
 - [[memory/concept/concept_sim_to_real_scene_infrastructure|Sim-to-Real 场景基础设施]] · `working`
+- [[memory/concept/concept_a25076aa1f135c515237fa48|the expansion function𝑓𝐺′(𝑠). This generalizes a notion from additive number theory.]] · `working`
 - [[memory/concept/concept_world_model_evaluation|世界模型评价]] · `working`
 - [[memory/concept/concept_embodied_data_loop|具身数据闭环]] · `trusted`
 - [[memory/concept/concept_intrinsic_motivation_rl|内在动机强化学习]] · `working`
@@ -95,6 +110,10 @@ Symmetry in Neu]] · `working`
 - [[memory/concept/concept_symbolic_regression|符号回归]] · `working`
 - [[memory/concept/concept_representation_convergence|表征收敛]] · `working`
 - [[memory/concept/concept_ergodicity|遍历性与非遍历性]] · `working`
+
+## decision
+
+- [[memory/decision/decision_7c8f2f94e62bbb5e37e7732b|the prompt asks the model to answerYES or NO first, and the loop treatsYES as a pass andNO as a fail]] · `working`
 
 ## experiment
 

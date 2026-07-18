@@ -17,8 +17,8 @@
 
 ## 当前概况
 
-- 资料：53 篇
-- Working：83 条
+- 资料：62 篇
+- Working：97 条
 - Trusted：30 条
 - Canonical：1 条
 - 开放例外：10 项
@@ -26,11 +26,11 @@
 
 ## 最近收录
 
-- [[views/readers/source_fbe623b6e75223f553071d03|对话李弘扬：从端到端 UniAD 之后，重新寻找机器智能的源点｜What's Next]] · 2026-05-29
-- [[views/readers/source_113d589e6dadf14b5fa8edea|Session receipt: M7 Cursor real acceptance]] · 2026-07-16
-- [[views/readers/source_46d0aad5afd18dd21899796f|Session receipt: M7 Codex real acceptance]] · 2026-07-16
-- [[views/readers/source_ff5ce793c0efda7112e73c86|GitHub - Xbotics-Embodied-AI-club/Xbotics-Embodied-Guide: Xbotics 社区具身智能学习指南：我们把“具身综述→学习路线→仿真学习→开源实物→人物访谈→公司图谱”串起来，帮助新手和实战者快速定位路径、落地项目与参与开源。 · GitHub]] · 2026-07-16
-- [[views/readers/source_956ae2aa178f0606fb84f943|GitHub - Xbotics-Embodied-AI-club/Xbotics-Embodied-AI-Job: Xbotics具身智能社区全网工作汇总 · GitHub]] · 2026-07-16
-- [[views/readers/source_62389152cf0723e2f3a753c1|arxiv.org]] · 2026-07-16
-- [[views/readers/source_08e53bb30d37610610477e01|[1811.05931] Evolving intrinsic motivations for altruistic behavior]] · 2026-07-16
-- [[views/readers/source_c019c0a492cc659d7858134d|arxiv.org]] · 2026-07-16
+- [[views/readers/source_e2614742b0c3ee7cf985d616|arxiv.org]] · 2026-07-18
+- [[views/readers/source_5e14510061220db7f2344913|arxiv.org]] · 2026-07-18
+- [[views/readers/source_a0c7811ba12c9cf80bfd26c9|arxiv.org]] · 2026-07-18
+- [[views/readers/source_bd08e368730960f4f6ce19ca|[2607.12894] Hy-Embodied-VLM-1.0: Efficient Physical-World Agents]] · 2026-07-18
+- [[views/readers/source_ffef0c68258ab78320bbe42f|GitHub - Tencent-Hunyuan/HY-Embodied: HY-Embodied: Embodied Foundation Models for Real-World Agents · GitHub]] · 2026-07-18
+- [[views/readers/source_b470fe87f9d09df2b7d3b5fd|arxiv.org]] · 2026-07-18
+- [[views/readers/source_04477c8679bc779d8389a22e|arxiv.org]] · 2026-07-18
+- [[views/readers/source_79475aef7849b08664b51a4e|arxiv.org]] · 2026-07-18

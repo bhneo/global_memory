@@ -1,5 +1,15 @@
 # Global Memory Agent Protocol
 
+## M9.0 research-signal protocol
+
+- Research Annotation is append-only user-owned truth under `vault/annotations/research/`; never rewrite user fields or merge them with Agent interpretation.
+- Annotation and Feedback never change target bytes, Memory Tier, Epistemic Status, Trust Score, Receipt validity or Canonical.
+- Activation is an explicit local operational signal. Default Context and every read-only MCP call must remain write-free; only `--record-use` or `activation record` may append events.
+- Activation, recency and frequency must not enter trust or the default ranking formula in M9.0.
+- Route Project/Domain first, use bounded FTS and relation expansion, retain Global fallback when confidence is insufficient, and return Route Trace.
+- Feedback labels research value (`obvious|forced|interesting|actionable`), not truth. Do not auto-delete, promote, generate hypotheses or create Canonical from Feedback.
+- Research Digest/Map are rebuildable local observations, never truth layers. Borrow external capabilities through read-only adapters while keeping local Raw/Markdown authoritative.
+
 ## M8 non-negotiable trust protocol
 
 - Treat `memory_tier` and `epistemic_status` as independent. A Trusted Question remains `open_question`; a Trusted Analogy remains `exploratory_analogy`; `contested` is never a synonym for Canonical.

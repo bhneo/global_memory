@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensin"
 created_at: "2026-07-17T12:17:07+08:00"
-updated_at: "2026-07-17T18:35:25+08:00"
+updated_at: "2026-07-18T16:02:45+08:00"
 aliases: []
 tags: []
 domains: []
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T18:35:25+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-18T16:02:45+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "39c5426a02c2e2f199929125279ef8676b6eebcbd542e3cdc8dd71
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_a2ad8e8c08d5c4fea8d52438"
+last_consolidation_id: "consolidation_b308feb004e6add4ba1de5d6"
 ---
 
 # Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensin

@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_457", "evidence_kind": "quote", "source_id": "sou
 type: "claim"
 status: "working"
 created_at: "2026-07-16T00:59:00+08:00"
-updated_at: "2026-07-17T18:35:46+08:00"
+updated_at: "2026-07-18T16:03:04+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:46+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:04+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "5423b95735a24edba4d255267554abf07a9a8e58da30d56b9091a8
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_910cc80f05459439514c891f"
+last_consolidation_id: "consolidation_db2042b827c3a05092885d5c"
 ---
 
 # Sim-to-real

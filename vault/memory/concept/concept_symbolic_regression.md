@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "符号回归"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:35:59+08:00"
+updated_at: "2026-07-18T16:03:17+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:59+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:17+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "cf5b242c95375d3804ed7e0c7120b78da5d6eb4f2e9fd9c4bc0a08
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_b0b576c5237cbd2ed209e687"
+last_consolidation_id: "consolidation_4cf848a4ad43c16c60c76b1b"
 ---
 
 # 符号回归

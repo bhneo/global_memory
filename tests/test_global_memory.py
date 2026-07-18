@@ -9,6 +9,7 @@ from contextlib import closing
 from pathlib import Path
 
 import pytest
+import global_memory.research as research_module
 
 from global_memory.capture import CaptureService, canonicalize_url
 from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
@@ -38,10 +39,33 @@ from global_memory.recovery import ApprovalRecoveryManager
 from global_memory.raw_store import RawStoreService
 from global_memory.quality import SourceQualityService, normalize_primary_locator
 from global_memory.review import SourceBundleReviewService
+from global_memory.research import (
+    ActivationService, ResearchAnnotationService, ResearchDigestService,
+    ResearchMapService, ResearchRouterService,
+)
 from global_memory.runs import BatchArtifactMigrator, RunArtifactService
 from global_memory.repository import Repository, sha256_bytes
 from global_memory.triage import DailyTriageService
 from global_memory.works import WorkService
+
+
+def write_research_fixture_object(
+    repo: Repository, object_id: str, object_type: str, title: str, body: str,
+    *, relations: list[dict[str, str]] | None = None, domains: list[str] | None = None,
+) -> Path:
+    root = "action/projects" if object_type == "project" else "frontier/questions"
+    path = repo.root / "vault" / root / f"{object_id}.md"
+    timestamp = "2026-07-18T12:00:00+08:00"
+    metadata = {
+        "id": object_id, "type": object_type, "status": "confirmed", "title": title,
+        "created_at": timestamp, "updated_at": timestamp, "aliases": [], "tags": [],
+        "domains": domains or [], "confidence": "unknown", "source_ids": [],
+        "relations": relations or [],
+    }
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+    return path
 
 
 @pytest.fixture()
@@ -2904,6 +2928,213 @@ def test_mcp_cli_arguments() -> None:
     assert http.allowed_origin == ["https://chatgpt.com"]
 
 
+def test_m90_research_annotation_is_append_only_and_preserves_user_chinese(repo: Repository) -> None:
+    captured = capture_web_bytes(repo, "https://example.com/research-signal")
+    source_path, _, _ = repo.find_document(captured.source_id)
+    source_hash = sha256_bytes(source_path.read_bytes())
+    service = ResearchAnnotationService(repo)
+
+    first = service.create(
+        "capture_intent", target_ids=[captured.source_id],
+        why_saved="它可能解释技能如何沉淀。", what_surprised_me="可逆失效条件很重要。",
+        possible_connections=["人类习惯形成", "数据库物化视图"],
+        research_projects=["embodied-agent"], domains=["具身智能"],
+        personal_salience="high",
+    )
+    second = service.create(
+        "capture_intent", target_ids=[captured.source_id], why_saved="第二次独立记录。",
+        supersedes_annotation_id=first["id"],
+    )
+
+    assert first["id"] != second["id"]
+    assert len(service.all(target_id=captured.source_id)) == 2
+    _, first_metadata, first_body = repo.find_document(first["id"])
+    assert first_metadata["user_authored"] is True
+    assert first_metadata["truth_layer"] == "user_annotation"
+    assert "可逆失效条件很重要" in first_body
+    assert sha256_bytes(source_path.read_bytes()) == source_hash
+    repo.index_path.unlink()
+    repo.rebuild_index()
+    assert any(item.id == first["id"] for item in repo.search("可逆失效条件", 10))
+    assert doctor(repo)["ok"] is True
+    assert lint(repo)["ok"] is True
+
+
+def test_m90_annotation_id_normalizes_list_order(repo: Repository, monkeypatch: pytest.MonkeyPatch) -> None:
+    captured = capture_web_bytes(repo, "https://example.com/annotation-id")
+    monkeypatch.setattr(research_module, "_event_time", lambda: "2026-07-18T12:00:00.000000+08:00")
+    service = ResearchAnnotationService(repo)
+    first = service.create(
+        "capture_intent", target_ids=[captured.source_id], why_saved="稳定事件",
+        possible_connections=["B", "A"], research_projects=["p2", "p1"],
+        domains=["d2", "d1"],
+    )
+    repeated = service.create(
+        "capture_intent", target_ids=[captured.source_id], why_saved="稳定事件",
+        possible_connections=["A", "B"], research_projects=["p1", "p2"],
+        domains=["d1", "d2"],
+    )
+    assert first["id"] == repeated["id"]
+    assert len(service.documents()) == 1
+
+
+def test_m90_annotation_rejects_empty_and_requires_explicit_unresolved(repo: Repository) -> None:
+    service = ResearchAnnotationService(repo)
+    with pytest.raises(ValidationError, match="至少需要"):
+        service.create("research_note")
+    with pytest.raises(ValidationError, match="allow-unresolved"):
+        service.create("research_note", target_ids=["question_missing"], note="保留这个问题")
+    created = service.create(
+        "research_note", target_ids=["question_missing"], note="保留这个问题",
+        allow_unresolved=True,
+    )
+    _, metadata, _ = repo.find_document(created["id"])
+    assert metadata["unresolved_target_ids"] == ["question_missing"]
+
+
+def test_m90_connection_feedback_is_value_signal_not_truth_mutation(repo: Repository) -> None:
+    question_path = write_research_fixture_object(
+        repo, "question_feedback", "question", "技能固化边界", "技能何时应该固化？"
+    )
+    before = sha256_bytes(question_path.read_bytes())
+    service = ResearchAnnotationService(repo)
+    for label in ("obvious", "forced", "interesting", "actionable"):
+        service.create(
+            "connection_feedback", target_ids=["question_feedback"],
+            feedback_label=label, feedback_note=f"{label} 的用户判断",
+            research_projects=["embodied-agent"], domains=["learning"],
+        )
+    with pytest.raises(ValidationError, match="feedback label"):
+        service.create(
+            "connection_feedback", target_ids=["question_feedback"],
+            feedback_label="good", feedback_note="invalid",
+        )
+    summary = service.feedback_summary()
+    assert summary["total"] == 4
+    assert all(summary[label] == 1 for label in ("obvious", "forced", "interesting", "actionable"))
+    assert summary["by_project"] == {"embodied-agent": 4}
+    assert sha256_bytes(question_path.read_bytes()) == before
+
+
+def test_m90_router_prefers_explicit_project_and_has_global_fallback(repo: Repository) -> None:
+    write_research_fixture_object(
+        repo, "project_embodied_agent", "project", "embodied-agent", "具身智能研究项目",
+        domains=["robotics"],
+    )
+    router = ResearchRouterService(repo)
+    explicit = router.plan("技能何时固化", project="embodied-agent", domains=["robotics"])
+    automatic = router.plan("embodied-agent 下一步")
+    fallback = router.plan("完全不存在的词汇组合")
+    assert explicit.selected_project == "embodied-agent"
+    assert explicit.explicit_project == "embodied-agent"
+    assert explicit.fallback_used is False
+    assert explicit.selected_domains == ["robotics"]
+    assert automatic.selected_project == "project_embodied_agent"
+    assert fallback.fallback_used is True
+    with pytest.raises(ValidationError, match="0..2"):
+        router.plan("技能", relation_depth=3)
+
+
+def test_m90_activation_is_explicit_idempotent_and_trust_orthogonal(repo: Repository) -> None:
+    target = write_research_fixture_object(
+        repo, "question_activation", "question", "Activation 边界", "使用不等于正确。"
+    )
+    before = sha256_bytes(target.read_bytes())
+    service = ActivationService(repo)
+    first = service.record(
+        "question_activation", kind="used", project_id="scientific-memory",
+        reason="用于架构决策", event_id="activation_test_fixed",
+    )
+    duplicate = service.record(
+        "question_activation", kind="used", project_id="scientific-memory",
+        reason="用于架构决策", event_id="activation_test_fixed",
+    )
+    assert first["written"] is True
+    assert duplicate["duplicate"] is True
+    aggregate = service.aggregate(object_id="question_activation")[0]
+    assert aggregate["used_count"] == 1
+    assert sha256_bytes(target.read_bytes()) == before
+    repo.rebuild_index()
+    with closing(sqlite3.connect(repo.index_path)) as connection:
+        assert connection.execute(
+            "SELECT used_count FROM activation_aggregates WHERE object_id=?",
+            ("question_activation",),
+        ).fetchone()[0] == 1
+
+
+def test_m90_context_is_read_only_by_default_and_route_trace_is_explainable(repo: Repository) -> None:
+    captured = capture_web_bytes(
+        repo, "https://example.com/context-research", b"skill consolidation signal " * 20
+    )
+    service = ResearchAnnotationService(repo)
+    service.create(
+        "capture_intent", target_ids=[captured.source_id],
+        why_saved="技能固化研究", research_projects=["embodied-agent"],
+    )
+    activation_path = repo.root / "system" / "logs" / "activation-events.jsonl"
+    before = activation_path.read_bytes() if activation_path.exists() else b""
+    pack = ContextPackService(repo).build(
+        "技能固化研究", profiles=["research"], project="embodied-agent",
+    )
+    after = activation_path.read_bytes() if activation_path.exists() else b""
+    assert before == after
+    assert pack.route_trace["explicit_project"] == "embodied-agent"
+    assert pack.route_trace["selection_reasons"]
+    annotation_items = [item for item in pack.items if item["type"] == "annotation"]
+    assert annotation_items and annotation_items[0]["truth_layer"] == "user_annotation"
+    assert annotation_items[0]["execution_safe"] is False
+    assert any(item["id"] == captured.source_id for item in pack.items)
+    assert pack.route_trace["annotation_matches"]
+    run(build_parser().parse_args([
+        "--root", str(repo.root), "context", "技能固化研究", "--profile", "research",
+        "--project", "embodied-agent", "--record-use",
+    ]))
+    assert ActivationService(repo).events()
+
+
+def test_m90_research_digest_and_map_are_idempotent_derived_outputs(repo: Repository) -> None:
+    captured = capture_web_bytes(repo, "https://example.com/digest")
+    capture_web_bytes(repo, "https://example.com/digest-unannotated")
+    ResearchAnnotationService(repo).create(
+        "capture_intent", target_ids=[captured.source_id],
+        why_saved="用于每周研究复盘", research_projects=["scientific-memory"],
+        personal_salience="high",
+    )
+    digest_service = ResearchDigestService(repo)
+    first_digest = digest_service.write()
+    second_digest = digest_service.write()
+    assert first_digest["path"] == second_digest["path"]
+    assert first_digest["digest"]["sources_with_why_saved"] == 1
+    assert first_digest["digest"]["new_sources"] == 2
+    view_service = ResearchMapService(repo)
+    first_view = view_service.build()
+    assert len(first_view["written"]) == 7
+    user_page = repo.root / "vault" / "views" / "research" / "研究项目.md"
+    user_page.write_text(render_document({
+        "id": "user_research_view", "type": "view", "status": "manual",
+        "title": "我的研究项目", "created_at": "2026-07-18T00:00:00+08:00",
+        "updated_at": "2026-07-18T00:00:00+08:00", "generated_by": "user",
+    }, "用户手写内容"), encoding="utf-8")
+    stale = repo.root / "vault" / "views" / "research" / "旧生成页.md"
+    stale.write_text(render_document({
+        "id": "old_generated", "type": "view", "status": "generated",
+        "title": "旧生成页", "created_at": "2026-07-18T00:00:00+08:00",
+        "updated_at": "2026-07-18T00:00:00+08:00",
+        "generated_by": ResearchMapService.GENERATED_BY,
+    }, "stale"), encoding="utf-8")
+    second_view = view_service.build()
+    assert repo.rel(user_page) in second_view["skipped_non_generated"]
+    assert len(second_view["unchanged"]) == 6
+    assert user_page.read_text(encoding="utf-8").endswith("用户手写内容\n")
+    assert repo.rel(stale) in second_view["removed_stale_generated"]
+    assert not stale.exists()
+    metrics = ProjectMetricsService(repo).collect()
+    assert metrics["research_annotations"] == 1
+    assert metrics["sources_with_why_saved"] == 1
+    assert metrics["sources_without_why_saved"] == 1
+    assert "system/reports/generated-*" in (Path.cwd() / ".gitignore").read_text(encoding="utf-8")
+
+
 def test_m7_compile_materializes_working_without_canonical_write(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text(
         "Concept: Working memory is usable before canonical promotion.", title="M7 working fixture"
@@ -3087,8 +3318,31 @@ def test_m7_weekly_never_writes_canonical_and_drift_is_read_only(repo: Repositor
     assert audit["writes"] == 0
 
 
+def test_consolidate_weekly_admits_capture_only_sources_before_review(
+    repo: Repository, capsys: pytest.CaptureFixture[str]
+) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Concept: Weekly catch-up candidate.", title="Weekly catch-up"
+    )
+    args = build_parser().parse_args(
+        ["--root", str(repo.root), "consolidate", "weekly", "--admit-limit", "5"]
+    )
+
+    assert run(args) == 0
+    output = json.loads(capsys.readouterr().out)
+
+    assert output["daily_catchup"]["mode"] == "daily-consolidation"
+    assert output["daily_catchup"]["compiled"][0]["source_id"] == captured.source_id
+    assert output["daily_catchup"]["compiled"][0]["status"] == "working"
+    assert output["objects_considered"] == 1
+    assert output["canonical_writes"] == 0
+
+
 def test_m7_cli_surface_parses_governance_commands() -> None:
     assert build_parser().parse_args(["consolidate", "daily"]).consolidate_command == "daily"
+    weekly_args = build_parser().parse_args(["consolidate", "weekly"])
+    assert weekly_args.admit_limit == 25
+    assert weekly_args.skip_daily_admission is False
     assert build_parser().parse_args(["audit", "drift"]).audit_command == "drift"
     assert build_parser().parse_args(["migrate", "proposal-gate-to-promotion", "--dry-run"]).dry_run
     assert build_parser().parse_args(["promote", "concept_x", "--to", "canonical", "--reason", "important"]).to == "canonical"
@@ -3152,6 +3406,41 @@ def write_m8_claim(repo: Repository, object_id: str = "claim_m8") -> tuple[Path,
     path.write_text(render_document(metadata, body), encoding="utf-8")
     repo.rebuild_index()
     return path, captured.source_id
+
+
+def test_m90_annotation_and_activation_do_not_invalidate_receipt_or_trust(repo: Repository) -> None:
+    target, _ = write_m8_claim(repo, "claim_m90_receipt")
+    receipt_service = ConsolidationReceiptService(repo)
+    receipt = receipt_service.consolidate("claim_m90_receipt")
+    assert receipt["status"] == "complete"
+    current = receipt_service.valid_for("claim_m90_receipt")
+    assert current is not None
+    target_hash = sha256_bytes(target.read_bytes())
+    annotation = ResearchAnnotationService(repo).create(
+        "research_note", target_ids=["claim_m90_receipt"], note="用户研究方向，不是答案。",
+        research_projects=["scientific-memory"],
+    )
+    ActivationService(repo).record(
+        "claim_m90_receipt", kind="used", project_id="scientific-memory",
+        reason="边界测试", event_id="activation_m90_receipt_boundary",
+    )
+    assert annotation["id"]
+    assert sha256_bytes(target.read_bytes()) == target_hash
+    assert receipt_service.valid_for("claim_m90_receipt") is not None
+    _, metadata, _ = repo.find_document("claim_m90_receipt")
+    assert metadata["memory_tier"] == "working"
+    assert metadata["epistemic_status"] == "provisional"
+    assert metadata["trust_score"] == 0
+
+
+def test_m90_agent_cannot_overwrite_user_annotation_fields(repo: Repository) -> None:
+    captured = capture_web_bytes(repo, "https://example.com/user-field-boundary")
+    with pytest.raises(ValidationError, match="Agent interpretation"):
+        ResearchAnnotationService(repo).create(
+            "capture_intent", target_ids=[captured.source_id], why_saved="agent rewrite",
+            created_by="agent",
+        )
+    assert ResearchAnnotationService(repo).documents() == []
 
 
 def test_m8_consolidation_receipt_is_real_and_hash_bound(repo: Repository) -> None:

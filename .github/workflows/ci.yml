@@ -61,6 +61,30 @@ jobs:
       - name: M8.1.1 correctness recovery acceptance
         if: always()
         run: python -m pytest tests/test_global_memory.py -k "receipt_v1 or receipt_v2 or requalification or governed_recovery or canonical_evolution or external_provider_update" --junitxml=artifacts/m811-correctness-recovery.xml
+      - name: Research annotation acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "m90_research_annotation or m90_annotation_rejects" --junitxml=artifacts/research-annotation.xml
+      - name: Connection feedback acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "m90_connection_feedback" --junitxml=artifacts/connection-feedback.xml
+      - name: Research router acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "m90_router or m90_context_is_read_only" --junitxml=artifacts/research-router.xml
+      - name: Activation no-trust-side-effect acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "m90_activation" --junitxml=artifacts/activation-no-trust-side-effect.xml
+      - name: Research digest acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "m90_research_digest" --junitxml=artifacts/research-digest.xml
+      - name: Research derived-view acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "m90_research_digest_and_map" --junitxml=artifacts/research-derived-view.xml
+      - name: M8 trust-boundary regression
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "m8_ or receipt_v2 or governed_recovery or canonical_evolution" --junitxml=artifacts/m8-trust-boundary-regression.xml
+      - name: M9 synthetic research scenario
+        if: always()
+        run: python scripts/m9_acceptance_demo.py --root .ci-m9-vault --output artifacts/m9-research-scenario.json
       - name: Promotion policy validation
         if: always()
         run: python scripts/ci_acceptance.py promotion --root .ci-vault --output artifacts/promotion.json

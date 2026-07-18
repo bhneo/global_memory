@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "该文称标准模型通常以对称群 SU(3)×SU(2)×U(1) 表示"
 created_at: "2026-07-16T10:48:00+08:00"
-updated_at: "2026-07-17T18:35:51+08:00"
+updated_at: "2026-07-18T16:03:09+08:00"
 aliases: []
 tags: ["standard-model", "SU(3)", "SU(2)", "U(1)"]
 domains: ["physics", "mathematics"]
@@ -30,8 +30,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:51+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:09+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -45,7 +45,7 @@ origin_candidate_sha256: "65cac6eea4f878a58f929ec78c9689edd27fd1668519434f730901
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_a2efd7dc0a72dd69dae70849"
+last_consolidation_id: "consolidation_cea101f80e9d1c42940fdc9b"
 ---
 
 该文称标准模型通常以对称群 SU(3)×SU(2)×U(1) 表示。

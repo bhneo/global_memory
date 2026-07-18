@@ -7,16 +7,52 @@
   "showOrphans": false,
   "collapse-color-groups": true,
   "colorGroups": [
-    {"query": "path:\"views/graph/claims\"", "color": {"a": 1, "rgb": 5011711}},
-    {"query": "path:\"views/graph/concepts\" OR path:\"views/graph/works\"", "color": {"a": 1, "rgb": 2142890}},
-    {"query": "path:\"views/graph/questions\" OR path:\"views/graph/tensions\"", "color": {"a": 1, "rgb": 16096779}},
-    {"query": "path:\"views/graph/hypotheses\" OR path:\"views/graph/analogies\"", "color": {"a": 1, "rgb": 10182117}},
-    {"query": "path:\"views/graph/projects\" OR path:\"views/graph/experiments\" OR path:\"views/graph/opportunities\"", "color": {"a": 1, "rgb": 3126084}},
-    {"query": "path:\"views/graph/sources\"", "color": {"a": 1, "rgb": 8421504}}
+    {
+      "query": "path:\"views/graph/claims\"",
+      "color": {
+        "a": 1,
+        "rgb": 5011711
+      }
+    },
+    {
+      "query": "path:\"views/graph/concepts\" OR path:\"views/graph/works\"",
+      "color": {
+        "a": 1,
+        "rgb": 2142890
+      }
+    },
+    {
+      "query": "path:\"views/graph/questions\" OR path:\"views/graph/tensions\"",
+      "color": {
+        "a": 1,
+        "rgb": 16096779
+      }
+    },
+    {
+      "query": "path:\"views/graph/hypotheses\" OR path:\"views/graph/analogies\"",
+      "color": {
+        "a": 1,
+        "rgb": 10182117
+      }
+    },
+    {
+      "query": "path:\"views/graph/projects\" OR path:\"views/graph/experiments\" OR path:\"views/graph/opportunities\"",
+      "color": {
+        "a": 1,
+        "rgb": 3126084
+      }
+    },
+    {
+      "query": "path:\"views/graph/sources\"",
+      "color": {
+        "a": 1,
+        "rgb": 8421504
+      }
+    }
   ],
   "collapse-display": true,
   "showArrow": false,
-  "textFadeMultiplier": 0.45,
+  "textFadeMultiplier": 0.5,
   "nodeSizeMultiplier": 0.9,
   "lineSizeMultiplier": 0.8,
   "collapse-forces": true,
@@ -24,6 +60,6 @@
   "repelStrength": 11,
   "linkStrength": 0.8,
   "linkDistance": 170,
-  "scale": 0.8,
+  "scale": 0.37182256187003443,
   "close": false
 }

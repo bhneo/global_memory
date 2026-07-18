@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass
 from typing import Any
@@ -9,7 +10,7 @@ from .epistemics import infer_epistemic_status, infer_tier, truth_layer
 from .governance import POLICY_VERSION
 from .extraction import ExtractionService
 from .markdown import read_document
-from .repository import Repository, sha256_bytes
+from .repository import Repository, SearchResult, sha256_bytes
 from .quality import SourceQualityService
 
 
@@ -20,15 +21,15 @@ PROFILE_PRIORITIES = {
     "execution": {
         "project": 100, "goal": 95, "architecture": 90, "decision": 88,
         "failure": 86, "experiment": 82, "opportunity": 75, "question": 70,
-        "tension": 68, "concept": 60, "claim": 55, "source": 30,
+        "tension": 68, "concept": 60, "claim": 55, "source": 30, "annotation": 20,
     },
     "research": {
         "concept": 100, "claim": 95, "synthesis": 90, "question": 86,
-        "tension": 84, "hypothesis": 78, "work": 72, "source": 60,
+        "tension": 84, "hypothesis": 78, "work": 72, "annotation": 68, "source": 60,
     },
     "exploration": {
         "intuition": 100, "tension": 95, "analogy": 92, "anomaly": 90,
-        "hypothesis": 88, "question": 82, "concept": 65, "claim": 45,
+        "hypothesis": 88, "question": 82, "annotation": 80, "concept": 65, "claim": 45,
     },
 }
 
@@ -42,6 +43,7 @@ class ContextPack:
     omitted: list[dict[str, Any]]
     profiles: list[str]
     filters: dict[str, Any]
+    route_trace: dict[str, Any]
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -53,6 +55,7 @@ class ContextPack:
             "omitted": self.omitted,
             "profiles": self.profiles,
             "filters": self.filters,
+            "route_trace": self.route_trace,
             "truncation_report": {
                 "selected_items": len(self.items),
                 "omitted_items": len(self.omitted),
@@ -77,6 +80,7 @@ class ContextPack:
             f"- Query: {self.query}\n- Profiles: {', '.join(self.profiles)}\n",
             f"- Token budget: {self.token_budget}\n- Estimated tokens: {self.estimated_tokens}\n\n",
         ]
+        lines.append("## Route trace\n\n```json\n" + json.dumps(self.route_trace, ensure_ascii=False, indent=2) + "\n```\n\n")
         for item in self.items:
             lines.append(f"## {item.get('title', item.get('id'))}\n\n")
             lines.append(f"- ID: `{item.get('id')}`\n- Type/status: `{item.get('type')}` / `{item.get('knowledge_status')}`\n")
@@ -86,10 +90,15 @@ class ContextPack:
                 f"- Truth layer: `{item.get('truth_layer')}`\n- Path: `{item.get('path')}`\n"
             )
             lines.append(f"- Sources: {', '.join(item.get('source_ids', [])) or 'none'}\n")
+            if item.get("truth_layer") == "user_annotation":
+                lines.append(f"- User authored: `{str(item.get('user_authored', False)).lower()}`\n")
+                lines.append(f"- Annotation (intent/value signal, not fact): `{item.get('annotation')}`\n")
             if item.get("evidence"):
                 lines.append(f"- Evidence: `{item['evidence']}`\n")
             if item.get("verification"):
                 lines.append(f"- Verification: `{item['verification']}`\n")
+            if item.get("activation"):
+                lines.append(f"- Activation (usage only, not trust): `{item['activation']}`\n")
             lines.append(f"- Selection: {item.get('selection_reason', item.get('match_reason', 'ranked match'))}\n\n")
             lines.append(str(item.get("content", item.get("snippet", ""))).strip() + "\n\n")
         report = data["truncation_report"]
@@ -266,6 +275,18 @@ class ContextPackService:
                     "path": self.repository.rel(candidate_path),
                     "document_sha256": sha256_bytes(candidate_path.read_bytes()),
                     "source_ids": source_ids,
+                    "user_authored": metadata.get("user_authored") if object_type == "annotation" else None,
+                    "annotation": ({
+                        "annotation_kind": metadata.get("annotation_kind"),
+                        "why_saved": metadata.get("why_saved"),
+                        "what_surprised_me": metadata.get("what_surprised_me"),
+                        "possible_connections": metadata.get("possible_connections", []),
+                        "research_projects": metadata.get("research_projects", []),
+                        "domains": metadata.get("domains", []),
+                        "personal_salience": metadata.get("personal_salience"),
+                        "feedback_label": metadata.get("feedback_label"),
+                        "note": metadata.get("note"),
+                    } if object_type == "annotation" else None),
                     "raw_content_sha256": None,
                     "source_version": None,
                     "source_authority": self._source_authority(candidate),
@@ -354,13 +375,20 @@ class ContextPackService:
         invalid_profiles = set(profiles) - PROFILE_PRIORITIES.keys()
         if invalid_profiles:
             raise ValidationError(f"未知 Context Pack profile: {', '.join(sorted(invalid_profiles))}")
+        from .research import ResearchRouterService
+        route = ResearchRouterService(self.repository).plan(
+            query, project=project, domains=domains, relation_depth=min(relation_depth, 2)
+        )
+        effective_project = project or route.selected_project
+        if domains is None and route.selected_domains:
+            domains = set(route.selected_domains)
         allowed_types = set().union(*(PROFILE_PRIORITIES[profile].keys() for profile in profiles))
         if object_types:
             allowed_types &= object_types
         if include_proposals:
             allowed_types.add("proposal")
         filter_report = {
-            "project": project, "domains": sorted(domains or []),
+            "project": effective_project, "domains": sorted(domains or []),
             "object_types": sorted(object_types or []), "statuses": sorted(statuses or []),
             "updated_since": updated_since, "source_kinds": sorted(source_kinds or []),
             "include_proposals": include_proposals, "relation_depth": relation_depth,
@@ -368,6 +396,10 @@ class ContextPackService:
         }
         from .consolidation import ConsolidationReceiptService
         receipt_service = ConsolidationReceiptService(self.repository)
+        from .research import ActivationService
+        activation_by_id = {
+            item["object_id"]: item for item in ActivationService(self.repository).aggregate()
+        }
 
         latest_source_ids = self._latest_source_ids()
         archived_only_source_ids = self._archived_only_source_ids()
@@ -378,6 +410,29 @@ class ContextPackService:
             object_types=allowed_types, statuses=statuses, include_proposals=include_proposals,
             domains=domains, source_kinds=source_kinds,
         )
+        seen_result_ids = {result.id for result in results}
+        for seed_id in route.seed_objects[:20]:
+            if seed_id in seen_result_ids:
+                continue
+            try:
+                seed_path, seed_metadata, seed_body = self.repository.find_document(seed_id)
+            except Exception:
+                continue
+            seed_type = str(seed_metadata.get("type", ""))
+            seed_status = str(seed_metadata.get("status", ""))
+            if seed_type not in allowed_types or (statuses and seed_status not in statuses):
+                continue
+            if domains and not (domains & set(map(str, seed_metadata.get("domains", [])))) and seed_type != "source":
+                continue
+            seed_sources = [str(item) for item in seed_metadata.get("source_ids", [])]
+            if seed_type == "source":
+                seed_sources = [seed_id]
+            results.append(SearchResult(
+                id=seed_id, type=seed_type, title=str(seed_metadata.get("title", seed_id)),
+                path=self.repository.rel(seed_path), status=seed_status, source_ids=seed_sources,
+                snippet=seed_body[:240], match_reason="research route seed from Project/Domain/Annotation",
+            ))
+            seen_result_ids.add(seed_id)
         if not any(result.type not in {"source", "proposal"} for result in results):
             fallback_terms = []
             for term in query.split():
@@ -414,16 +469,17 @@ class ContextPackService:
             status = str(metadata.get("status"))
             tier = infer_tier(metadata, path)
             epistemic = infer_epistemic_status(metadata, tier)
-            current_receipt = None if object_type == "source" else receipt_service.valid_for(str(metadata["id"]))
-            receipt_state = "not_applicable" if object_type == "source" else ("current_v2" if current_receipt else "missing_or_stale")
-            semantic_failures = [] if object_type == "source" else receipt_service.semantic_qualification_failures(object_type, current_receipt)
-            policy_version = metadata.get("trust_policy_version") if object_type != "source" else None
+            non_governed = object_type in {"source", "annotation"}
+            current_receipt = None if non_governed else receipt_service.valid_for(str(metadata["id"]))
+            receipt_state = "not_applicable" if non_governed else ("current_v2" if current_receipt else "missing_or_stale")
+            semantic_failures = [] if non_governed else receipt_service.semantic_qualification_failures(object_type, current_receipt)
+            policy_version = metadata.get("trust_policy_version") if not non_governed else None
             policy_qualified = bool(
                 tier == "trusted" and policy_version == POLICY_VERSION
                 and not metadata.get("needs_policy_requalification") and current_receipt is not None
                 and not semantic_failures and epistemic != "contested" and not metadata.get("high_risk_drift")
             )
-            qualification_failures = [] if object_type == "source" else [
+            qualification_failures = [] if non_governed else [
                 *([] if policy_version == POLICY_VERSION else ["policy_version_not_current"]),
                 *([] if not metadata.get("needs_policy_requalification") else ["awaiting_requalification"]),
                 *([] if current_receipt is not None else ["receipt_missing_or_stale"]),
@@ -475,12 +531,17 @@ class ContextPackService:
             if updated_since and str(metadata.get("updated_at", "")) < updated_since:
                 omitted.append({"id": str(metadata["id"]), "reason": "早于 updated_since filter"})
                 continue
-            if project:
+            if effective_project:
                 related_projects = {
                     str(metadata.get("project_id", "")), str(metadata.get("id", "")),
+                    *(str(item) for item in metadata.get("research_projects", [])),
                     *(str(relation.get("target_id")) for relation in metadata.get("relations", []) if isinstance(relation, dict)),
                 }
-                if project not in related_projects and project.casefold() not in str(metadata.get("title", "")).casefold():
+                if (
+                    effective_project not in related_projects
+                    and str(metadata.get("id")) not in route.seed_objects
+                    and effective_project.casefold() not in str(metadata.get("title", "")).casefold()
+                ):
                     omitted.append({"id": str(metadata["id"]), "reason": "不满足 project filter"})
                     continue
             if object_type != "source" and metadata.get("status") == "archived":
@@ -513,6 +574,15 @@ class ContextPackService:
             source_ids = [str(item) for item in metadata.get("source_ids", [])]
             if object_type == "source":
                 source_ids = [str(metadata["id"])]
+            activation_record = activation_by_id.get(str(metadata["id"]), {})
+            activation_view = {
+                "use_count": int(activation_record.get("used_count", 0)),
+                "last_used_at": activation_record.get("last_used_at"),
+                "project_use_count": int(
+                    activation_record.get("projects", {}).get(effective_project, 0)
+                    if effective_project else 0
+                ),
+            }
             ranked.append((
                 -(1_000 - search_rank + self._type_priority(object_type, profiles, str(metadata.get("status")))),
                 search_rank,
@@ -521,15 +591,15 @@ class ContextPackService:
                     "type": object_type,
                     "knowledge_status": str(metadata.get("status")),
                     "truth_layer": truth_layer(metadata, path),
-                    "memory_tier": None if object_type == "source" else tier,
-                    "epistemic_status": "unknown" if object_type == "source" else epistemic,
+                    "memory_tier": None if non_governed else tier,
+                    "epistemic_status": "user_annotation" if object_type == "annotation" else ("unknown" if object_type == "source" else epistemic),
                     "confidence": metadata.get("claim_confidence", metadata.get("confidence", "unknown")),
                     "evidence_coverage": metadata.get("evidence_coverage"),
                     "evidence_entailment": metadata.get("evidence_entailment", "unknown"),
                     "unresolved_contradictions": metadata.get("unresolved_contradictions", []),
                     "last_consolidated_at": metadata.get("last_consolidated_at"),
                     "receipt_state": receipt_state,
-                    "receipt_current": current_receipt is not None if object_type != "source" else None,
+                    "receipt_current": current_receipt is not None if not non_governed else None,
                     "policy_version": policy_version,
                     "policy_qualified": policy_qualified,
                     "execution_safe": bool(
@@ -560,6 +630,7 @@ class ContextPackService:
                         "atomicity_status": metadata.get("atomicity_status"),
                         "evidence_coverage": metadata.get("evidence_coverage"),
                     },
+                    "activation": activation_view,
                     "evidence": self._evidence_view(metadata) if object_type == "claim" else [],
                     "match_reason": result.match_reason,
                     "content": content,
@@ -600,7 +671,8 @@ class ContextPackService:
             metadata_text = " ".join(
                 [item["id"], item["title"], item["path"], *item["source_ids"],
                  item["truth_layer"], item["source_authority"],
-                 item["selection_reason"], str(item["verification"]), str(item["evidence"])]
+                 item["selection_reason"], str(item["verification"]), str(item["evidence"]),
+                 str(item.get("annotation")), str(item.get("activation"))]
             )
             metadata_tokens = self._estimate_tokens(metadata_text)
             remaining = available - used - metadata_tokens
@@ -614,4 +686,10 @@ class ContextPackService:
                 continue
             selected.append({**item, "content": content, "estimated_tokens": estimated_tokens})
             used += estimated_tokens
-        return ContextPack(query, token_budget, used, selected, omitted, profiles, filter_report)
+        trace = route.as_dict()
+        trace["raw_opened"] = [item["id"] for item in selected if item.get("type") == "source"]
+        trace["selection_reasons"] = [
+            *trace.get("selection_reasons", []),
+            *(f"{item['id']}: {item.get('selection_reason', '')}" for item in selected),
+        ]
+        return ContextPack(query, token_budget, used, selected, omitted, profiles, filter_report, trace)

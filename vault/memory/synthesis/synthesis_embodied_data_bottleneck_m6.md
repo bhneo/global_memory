@@ -4,7 +4,7 @@ type: "synthesis"
 status: "working"
 title: "具身智能中的数据瓶颈：规模、结构、闭环与评价"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:36:11+08:00"
+updated_at: "2026-07-18T16:03:25+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:36:11+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:25+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "b04545c35f47469e56f2d25a055b8203216e6a0cf7c30cee5f67d8
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_4ebada0303364046d62fd21b"
+last_consolidation_id: "consolidation_43166f9bff620ef9808b77a1"
 ---
 
 # 具身智能中的数据瓶颈：规模、结构、闭环与评价

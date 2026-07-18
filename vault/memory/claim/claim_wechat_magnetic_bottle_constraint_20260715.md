@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_1184", "evidence_kind": "quote", "source_id": "so
 type: "claim"
 status: "working"
 created_at: "2026-07-15T20:30:00+08:00"
-updated_at: "2026-07-17T18:35:48+08:00"
+updated_at: "2026-07-18T16:03:07+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:48+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:07+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "4717215495802c42af41c211fabdf37aef39080999f0fd9ce3891b
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_0992b387cb3eded6d770149a"
+last_consolidation_id: "consolidation_8eda3ba96643152f1392473b"
 ---
 
 # 磁瓶约束

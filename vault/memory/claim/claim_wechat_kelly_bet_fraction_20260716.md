@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_1835", "evidence_kind": "quote", "source_id": "so
 type: "claim"
 status: "working"
 created_at: "2026-07-16T00:36:00+08:00"
-updated_at: "2026-07-17T18:35:46+08:00"
+updated_at: "2026-07-18T16:03:05+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:46+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:05+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "15aeae31c82fed4c67bc4ee8cdb3453fe3077766bb2540f95e9840
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_bcbdd7dd117b862c4e808f2a"
+last_consolidation_id: "consolidation_2e6d4961d1f808050d127159"
 ---
 
 # 凯利 37.5%

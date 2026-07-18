@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "Draft version October 10, 2023 Typeset using LATEX twocolumn style in AASTeX63 Deep symbolic regression for physics guided by units constraints: toward the auto"
 created_at: "2026-07-17T12:17:07+08:00"
-updated_at: "2026-07-17T18:35:28+08:00"
+updated_at: "2026-07-18T16:02:48+08:00"
 aliases: []
 tags: []
 domains: []
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
-consolidation_count: 2
-last_consolidated_at: "2026-07-17T18:35:28+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-18T16:02:48+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "546ff9225184643c50c2985466be9f6c12b0109d42965814f9f406
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_7d8e55cdcd4db40e117ce3fe"
+last_consolidation_id: "consolidation_fde16fa24fd0ce08a2f9cf8c"
 ---
 
 # Draft version October 10, 2023 Typeset using LATEX twocolumn style in AASTeX63 Deep symbolic regression for physics guided by units constraints: toward the auto

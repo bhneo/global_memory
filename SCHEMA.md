@@ -1,4 +1,53 @@
-# Global Memory Schema v0.24
+# Global Memory Schema v0.25
+
+## M9.0 Research Annotation
+
+```yaml
+id: annotation_<stable-hash>
+type: annotation
+status: active
+annotation_kind: capture_intent # capture_intent | connection_feedback | research_note
+target_ids: []
+unresolved_target_ids: []
+created_at:
+created_by: user
+user_authored: true
+truth_layer: user_annotation
+why_saved:
+what_surprised_me:
+possible_connections: []
+research_projects: []
+domains: []
+personal_salience: unknown # low | medium | high | unknown
+note:
+feedback_label: null # obvious | forced | interesting | actionable
+feedback_note:
+supersedes_annotation_id: null
+agent_interpretation: null
+```
+
+Annotation 是 append-only 用户信号，不参与 Trusted/Canonical Promotion，也不进入 Consolidation Receipt 指纹。修正必须创建新文件并引用旧 ID。
+
+## M9.0 Activation Event
+
+```yaml
+event_id: activation_<stable-hash>
+object_id:
+event_kind: used # selected | opened | used | cited | coactivated
+project_id:
+query_hash:
+context_pack_id:
+reason:
+created_at:
+source: cli # cli | user | context_pack
+coactivated_ids: []
+```
+
+事件位于本地 `system/logs/activation-events.jsonl`；SQLite `activation_events` 和 `activation_aggregates` 可重建。Activation 不改变知识 Markdown、Trust、Epistemic Status 或 Receipt。
+
+## M9.0 Route Trace
+
+Context Pack 增加 `route_trace`：`explicit_project`、`selected_project`、`project_candidates`、`selected_domains`、`seed_objects`、`relation_expansions`、`annotation_matches`、`fallback_used`、`raw_opened` 和 `selection_reasons`。它是只读解释信息，不是知识对象。
 
 所有真相层对象是 UTF-8 Markdown + YAML Frontmatter。实现输出 JSON-compatible YAML；稳定 ID 不依赖标题或路径。
 

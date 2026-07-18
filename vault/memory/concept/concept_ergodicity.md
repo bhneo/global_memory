@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "遍历性与非遍历性"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:35:54+08:00"
+updated_at: "2026-07-18T16:03:12+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:54+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:12+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "cea4a9d8938ef98a4d89e855f558e2b769649bfcd9c95d4650a87c
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_b0e4ad6183c3ca3628f44153"
+last_consolidation_id: "consolidation_551d34194f20ecd390c38ca4"
 ---
 
 # 遍历性与非遍历性

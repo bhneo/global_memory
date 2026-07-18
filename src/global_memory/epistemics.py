@@ -78,6 +78,8 @@ def truth_layer(metadata: dict[str, Any], path: Path | None = None) -> str:
         return "source_capture"
     if object_type == "proposal":
         return "proposal"
+    if object_type == "annotation":
+        return "user_annotation"
     explicit = str(metadata.get("memory_tier", ""))
     legacy = str(metadata.get("status", ""))
     recognized_legacy = MEMORY_TIERS | {"confirmed", "provisional", "contested", "archived", "superseded"}

@@ -1,5 +1,28 @@
 # Changelog
 
+## [Unreleased] — M9.0 Research Signals and Progressive Routing
+
+### Added
+
+- Append-only, user-owned Capture Intent, Research Note and Connection Feedback annotations with correction lineage and stable content IDs.
+- `annotate`, `annotations`, `feedback`, `research note|signals|route|digest|build`, and `activation record|show|top` CLI surfaces.
+- Explainable Project/Domain-first `ResearchRouterService` and Context Pack Route Trace with bounded relation expansion and Global fallback.
+- Explicit local Activation events plus rebuildable SQLite aggregates; default Context and read-only MCP remain write-free.
+- Deterministic weekly Research Digest, rebuildable Obsidian Research Map, research-use metrics and seven independent CI acceptance steps.
+- Scientific Cognition Vision, External Capability Map, research-signal/routing/activation guides, and ADR 0055.
+
+### Fixed
+
+- `consolidate weekly` now performs a bounded Daily admission catch-up before
+  reviewing Working/Trusted memory, preventing recently captured sources from
+  being silently omitted when a Daily run was missed. Review-only runs may use
+  `--skip-daily-admission`.
+
+### Boundaries
+
+- M9.0 does not change Trusted/Canonical policy, Receipt fingerprints, evidence governance or default Context ranking.
+- No embeddings, vector/graph database, external Agent runtime, Web UI, write MCP, automatic analogy/hypothesis/experiment generation, or automatic Canonical were added.
+
 ## [Unreleased] — M8.1.2 Final Trust Boundary (in progress)
 
 ### Changed

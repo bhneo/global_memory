@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_1267", "evidence_kind": "quote", "source_id": "so
 type: "claim"
 status: "working"
 created_at: "2026-07-16T10:42:00+08:00"
-updated_at: "2026-07-17T18:35:45+08:00"
+updated_at: "2026-07-18T16:03:04+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:45+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:04+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "247c7975604462aa77f25d9f87b8d59a85f0a79543f05e64e661d4
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_328f18a84b41cb0e1130e773"
+last_consolidation_id: "consolidation_ef170e9b4aff819fb59dc825"
 ---
 
 # RL 统一奖励

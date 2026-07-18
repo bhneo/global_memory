@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_75", "evidence_kind": "quote", "source_id": "sour
 type: "claim"
 status: "working"
 created_at: "2026-07-15T21:00:00+08:00"
-updated_at: "2026-07-17T18:35:47+08:00"
+updated_at: "2026-07-18T16:03:05+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:47+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:05+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "c58044a5b43232c329cb266cdfae7d3f94fb95c929382b41123e2a
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_6ae9634e31ed4e9e0926aab5"
+last_consolidation_id: "consolidation_bb1bf2597657e38cbeaff377"
 ---
 
 # 李群与连续对称

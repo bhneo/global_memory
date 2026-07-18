@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "Sim-to-Real 场景基础设施"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T18:35:58+08:00"
+updated_at: "2026-07-18T16:03:16+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:58+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:03:16+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "25c8e701224442d5b29a6f5148eaefd692278f5bcda1aae09cb2cd
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_32c8086c0b0e7c25ab5fbb83"
+last_consolidation_id: "consolidation_a770c8792af2c5143a20b620"
 ---
 
 # Sim-to-Real 场景基础设施

@@ -50,6 +50,12 @@ Claim 额外复核 atomicity、coverage、entailment、extraction、authority、
 .\scripts\gm.ps1 consolidate weekly
 ```
 
+`consolidate weekly` first runs a bounded Daily admission catch-up (25 sources
+by default), then reviews the resulting Working/Trusted set. Use
+`--admit-limit N` to change the bound or `--skip-daily-admission` for an
+audit-only review of already admitted memory. The catch-up preserves the same
+Working-only and zero-Canonical-write boundaries as `consolidate daily`.
+
 Weekly 报告区分真正完成 Receipt、仅扫描、复核失败、语义变化、Promotion、Demotion、Conflict、Exception 和 Drift Warning。核心字段包括 sources processed、objects considered、receipts completed/failed、unchanged/supported/refined/limited/contradicted/superseded、promotions/demotions、canonical exceptions、working revisions、review time。
 
 ## Drift

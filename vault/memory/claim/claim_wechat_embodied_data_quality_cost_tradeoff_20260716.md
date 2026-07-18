@@ -10,7 +10,7 @@ evidence: [{"evidence_id": "ev_266", "evidence_kind": "quote", "source_id": "sou
 type: "claim"
 status: "working"
 created_at: "2026-07-16T01:11:00+08:00"
-updated_at: "2026-07-17T18:35:41+08:00"
+updated_at: "2026-07-18T16:02:59+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
@@ -31,8 +31,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 3
-last_consolidated_at: "2026-07-17T18:35:41+08:00"
+consolidation_count: 4
+last_consolidated_at: "2026-07-18T16:02:59+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -46,7 +46,7 @@ origin_candidate_sha256: "f589aa52dcd13b45ac0b1e242ac6fb49b2e4b78ef37f29e5fbf75e
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_0638ddca5b695f31d17093ca"
+last_consolidation_id: "consolidation_88ecf5b5b16768df41f0291e"
 ---
 
 # 质量 vs 成本

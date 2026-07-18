@@ -1,8 +1,22 @@
 # Current State
 
+## M9.0 update (2026-07-18)
+
+M9.0 — Research Signals and Progressive Routing is implemented locally on top of the frozen M8.1.2 trust boundary.
+
+- Append-only Capture Intent, Research Note and Connection Feedback live under `vault/annotations/research/` and are independently indexed.
+- Context Pack includes a bounded Route Trace; explicit Project/Domain wins and uncertain matching retains Global fallback.
+- Activation events are explicit and local, with rebuildable SQLite aggregates. Default Context and read-only MCP do not write.
+- Research Digest and Research Map are deterministic local outputs; research-use metrics remain separate from Trust metrics.
+- `consolidate weekly` now admits up to 25 capture-only sources through the
+  normal Daily Working gate before Weekly review; `--skip-daily-admission`
+  preserves an explicit review-only mode.
+- Seven M9-specific CI acceptance steps were added to the Ubuntu/Windows × Python 3.11–3.13 matrix.
+- M8 governance, Canonical gate, Receipt v2 and recovery state machines were not changed.
+
 ## Current milestone
 
-M8.1.1 — Correctness Recovery is implemented and locally accepted. Legacy Trusted state is preserved during policy upgrades, Receipt v2 is bound to the complete current environment, governed writes use a recoverable state machine, and Canonical remains an explicit proposal/approval decision.
+M9.0 — Research Signals and Progressive Routing is implemented and locally accepted. M8.1.2 remains the frozen trust foundation: Receipt v2 is bound to the complete current environment, governed writes remain recoverable, and Canonical remains an explicit proposal/approval decision.
 
 ## M8.1.2 update (2026-07-17)
 
