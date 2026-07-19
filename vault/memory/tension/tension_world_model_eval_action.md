@@ -4,7 +4,7 @@ type: "tension"
 status: "trusted"
 title: "更好的世界模型评价 vs 直接优化动作结果"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T22:40:14+08:00"
+updated_at: "2026-07-19T03:06:21+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -22,8 +22,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 7
-last_consolidated_at: "2026-07-17T22:40:14+08:00"
+consolidation_count: 8
+last_consolidated_at: "2026-07-19T03:06:21+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -37,7 +37,7 @@ origin_candidate_sha256: "f9842dd588e05f7d45a20033b0c7d7c5359a41f2d0c4a117918327
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_7232c1c7516f64452c851379"
+last_consolidation_id: "consolidation_58ccb5e0f49b61def68c5293"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:40:55+08:00"

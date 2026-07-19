@@ -38,7 +38,8 @@ Claim 额外复核 atomicity、coverage、entailment、extraction、authority、
 
 ## Trusted 更新
 
-- `support` / `metadata_only`：保留 Trusted、合并来源/Evidence、保留 trust、创建版本快照与新 Receipt。
+- `support`：保留 Trusted、合并来源/Evidence、保留 trust、创建版本快照与新 Receipt。
+- `metadata_only`：仅合并白名单检索元数据（aliases/tags/domains）和来源，不改正文、Evidence 或 epistemic 状态；仍记录变更与 Receipt。
 - `refine` / `limit` / `supersede`：原 Trusted 文件保持不变；创建 Working Revision、对象级 diff 与 `needs_revalidation`。
 - `contradict`：保留原对象和双方 Evidence；tier 不变，`epistemic_status: contested`；创建 Exception 和 Receipt；暂停自动晋升。
 - `demote`：只允许显式用户操作，必须产生 Demotion Event 和旧版本快照。

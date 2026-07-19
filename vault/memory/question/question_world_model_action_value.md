@@ -4,7 +4,7 @@ type: "question"
 status: "trusted"
 title: "世界模型评价如何预测动作价值？"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-17T22:40:11+08:00"
+updated_at: "2026-07-19T03:06:19+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 7
-last_consolidated_at: "2026-07-17T22:40:11+08:00"
+consolidation_count: 8
+last_consolidated_at: "2026-07-19T03:06:19+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -33,7 +33,7 @@ origin_candidate_sha256: "49bc936c1b4332bb5fd1adbcf82e4f309c7f8aeabebfbbdba55141
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "open_question"
-last_consolidation_id: "consolidation_3bd8342f96915d6e8bc58783"
+last_consolidation_id: "consolidation_fd9adcd3a52f30bc22af28f6"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:39:32+08:00"

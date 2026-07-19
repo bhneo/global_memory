@@ -222,7 +222,7 @@ class KnowledgeEvolutionService:
         updated = dict(current)
         record = self._record(change_type, current_body, body, reason, trigger_source, evidence_ids, [])
         exception_id: str | None = None
-        if change_type in {"support", "metadata_only"}:
+        if change_type == "support":
             updated["source_ids"] = list(dict.fromkeys([*current.get("source_ids", []), *incoming_sources]))
             existing_evidence = [item for item in current.get("evidence", []) if isinstance(item, dict)]
             known = {item.get("evidence_id") for item in existing_evidence}
@@ -237,7 +237,32 @@ class KnowledgeEvolutionService:
             updated["epistemic_status"] = epistemic
             record["changed_fields"] = ["source_ids", "evidence", "last_verified_at"]
             new_body = current_body
-            result = "supported" if change_type == "support" else "unchanged"
+            result = "supported"
+        elif change_type == "metadata_only":
+            changed_fields: list[str] = []
+            for field in ("aliases", "tags", "domains"):
+                if field not in incoming:
+                    continue
+                merged = list(dict.fromkeys([
+                    *[str(item) for item in current.get(field, [])],
+                    *[str(item) for item in incoming.get(field, [])],
+                ]))
+                if merged != list(current.get(field, [])):
+                    updated[field] = merged
+                    changed_fields.append(field)
+            merged_sources = list(dict.fromkeys([*current.get("source_ids", []), *incoming_sources]))
+            if merged_sources != list(current.get("source_ids", [])):
+                updated["source_ids"] = merged_sources
+                changed_fields.append("source_ids")
+            updated["change_history"] = [*current.get("change_history", []), record]
+            updated["updated_at"] = now_iso()
+            updated["updated_by"] = "knowledge-evolution-v1"
+            updated["status"] = tier
+            updated["memory_tier"] = tier
+            updated["epistemic_status"] = epistemic
+            record["changed_fields"] = changed_fields
+            new_body = current_body
+            result = "metadata_updated" if changed_fields else "unchanged"
         elif change_type == "contradict":
             updated["memory_tier"] = tier
             updated["status"] = tier

@@ -219,6 +219,12 @@ class ExtractionService:
         text, extractor, page_count, warnings, status, encoding = self._extract_payload(
             payload, mime, content_type, source_kind=str(source.get("source_kind", ""))
         )
+        if re.search(r"[\ud800-\udfff]", text):
+            # Some PDF extractors can return invalid Unicode scalar values.  Raw
+            # bytes remain immutable; only this rebuildable text view is made
+            # valid UTF-8 so downstream triage can record the extraction result.
+            text = re.sub(r"[\ud800-\udfff]", "\ufffd", text)
+            warnings.append("Extraction contained unpaired Unicode surrogates; replaced with U+FFFD in the derived view")
         digest = hashlib.sha256(
             f"{source_id}\n{input_sha}\n{extractor}\n{EXTRACTOR_VERSION}".encode("utf-8")
         ).hexdigest()

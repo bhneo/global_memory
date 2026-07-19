@@ -651,6 +651,7 @@ class ConsolidationService:
         flagged: list[dict[str, Any]] = []
         source_lengths: dict[str, int] = {}
         source_has_markers: dict[str, bool] = {}
+        source_kinds: dict[str, str] = {}
         for path in self.repository.active_memory_documents():
             metadata, _ = read_document(path)
             if metadata.get("memory_tier") != "working":
@@ -662,8 +663,10 @@ class ConsolidationService:
             for source_id in source_ids:
                 if source_id not in source_lengths:
                     try:
+                        _, source_metadata, _ = self.repository.find_document(source_id)
                         _, _, text = ExtractionService(self.repository).latest_for_source(source_id)
                         source_lengths[source_id] = len(text)
+                        source_kinds[source_id] = str(source_metadata.get("source_kind") or "unknown")
                         source_has_markers[source_id] = any(
                             pattern.match(line.strip().lstrip("#*- ").strip())
                             for line in text.splitlines()
@@ -672,14 +675,20 @@ class ConsolidationService:
                     except Exception:
                         source_lengths[source_id] = 0
                         source_has_markers[source_id] = False
+                        source_kinds[source_id] = "unknown"
                 if (
                     source_lengths[source_id] > BundleCompiler.UNSTRUCTURED_FALLBACK_MAX_CHARS
-                    and not source_has_markers[source_id]
+                    and (
+                        not source_has_markers[source_id]
+                        or source_kinds[source_id] != "personal-notes"
+                    )
                 ):
                     long_sources.append(source_id)
             if not long_sources:
                 continue
             reasons: list[str] = []
+            if any(source_has_markers[item] and source_kinds[item] != "personal-notes" for item in long_sources):
+                reasons.append("automatic article marker misclassified as an Agent instruction")
             if metadata.get("epistemic_status") == "unknown":
                 reasons.append("unknown epistemic status")
             if metadata.get("type") == "claim" and metadata.get("evidence_entailment") == "none":

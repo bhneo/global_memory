@@ -2,6 +2,21 @@
 
 ## M9.0.1 Quality Closure update (2026-07-18)
 
+- Daily/Weekly now have an explicit Agent semantic-distillation stage. The
+  read-only `gm semantic queue` exposes bounded Source-only material; Agent
+  JSON Bundles may add validated typed relations and still enter Working only.
+  Automatic Web/PDF article text can no longer trigger deterministic knowledge
+  creation merely because a paper contains `Question:` or similar headings.
+- Semantic bundles can link explicitly named objects created in the same batch,
+  add bilingual aliases through governed `metadata_only` updates, and defer
+  Obsidian work with `compile --skip-obsidian` until one final rebuild.
+- Context Pack broad-query expansion now evaluates active lexical knowledge
+  independently from archived hits and route seeds, expands multiple bounded
+  terms, and rewards multi-term governed matches over long raw-source bodies.
+
+- Derived extraction now replaces unpaired Unicode surrogates with U+FFFD and
+  records a warning, so malformed extractor output cannot block bounded Daily
+  admission; immutable Raw remains unchanged.
 - Working-quality migration Verify/Restore now compares exact post-migration
   bytes, binds snapshots/events/source Raw and Canonical hashes, blocks later
   Working/Canonical successors, and resumes incomplete manifests under the same
@@ -10,12 +25,11 @@
 - Annotation consumers validate supersession over the complete graph before
   filtering by target, so multi-target corrections remain queryable.
 
-- The default trusted Obsidian Graph includes available, valid, well-extracted
-  official, peer-reviewed, preprint and non-note primary sources in a separately
-  colored source layer. A generated High Quality Sources hub keeps these nodes
-  connected without any Working, Trusted or Canonical promotion.
-- Personal notes and Agent receipts are excluded from that source layer even
-  when the generic quality classifier labels them primary.
+- The default `knowledge` Obsidian Graph now exposes active Working, Trusted,
+  and Canonical semantic objects and their validated typed relations. Raw Source
+  nodes remain in library/reader views and the explicit `--graph-profile all`
+  audit graph; `--graph-profile trusted` keeps the stricter trust-only view.
+  This is a disposable projection and changes no trust tier.
 
 M9.0 — Research Signals and Progressive Routing is implemented locally on top of the frozen M8.1.2 trust boundary.
 
@@ -57,9 +71,9 @@ Memory Tier (`working`, `trusted`, `canonical`, `historical`) is independent fro
 ## Current metrics
 
 <!-- GENERATED_METRICS_START -->
-- Generated at: 2026-07-18T20:38:29+08:00
-- Working / Trusted / Canonical / Historical: 60 / 30 / 1 / 37
-- Source-only compile records / sources / historical objects: 0 / 0 / 37
+- Generated at: 2026-07-19T01:49:18+08:00
+- Working / Trusted / Canonical / Historical: 63 / 30 / 1 / 37
+- Source-only compile records / sources / historical objects: 42 / 42 / 37
 - Trusted current policy / receipt / qualified: 28 / 30 / 23
 - Trusted awaiting / stale receipt / contested / high-risk drift: 2 / 0 / 0 / 0
 - Trusted factual / exploration; Canonical with current Receipt: 11 / 19 / 0
@@ -67,12 +81,12 @@ Memory Tier (`working`, `trusted`, `canonical`, `historical`) is independent fro
 - Working revisions: 0
 - Open exceptions: 10
 - Promotion candidates: 0
-- Consolidation receipts / failed: 443 / 42
-- Receipt schema versions: {'v1': 113, 'v2': 330}
-- Objects with current valid Receipt v2: 82
+- Consolidation receipts / failed: 456 / 50
+- Receipt schema versions: {'v1': 113, 'v2': 343}
+- Objects with current valid Receipt v2: 85
 - Pending recovery journals: 0
 - Drift warnings / high severity: 2 / 0
-- Corpus sources / knowledge objects: 62 / 128
+- Corpus sources / knowledge objects: 107 / 131
 - Research annotations total / active / superseded: 0 / 0 / 0
 <!-- GENERATED_METRICS_END -->
 

@@ -4,4 +4,45 @@
 
 > 已成功保存、可检索，但尚未安全编译为知识对象的原始资料。
 
-- 暂无 source-only 资料。
+- [[views/readers/source_ff90ad99bd47043e812cce9e|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_fe986df678d73ef2b6234f0c|2607.11643v1.pdf]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_f9128ff3463cfaa7fa41ee7e|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_f4bd7390e1b485ab773f1446|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_ef80ef223077ef0855660839|2607.13017v1.pdf]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_e8cc1290fdb80e80f77ba2c2|2607.09218v2.pdf]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_d83bb2c45bcaf70906e9ac96|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_d75524a9040845cdc76db35c|GitHub - physical-superintelligence-lab/SIMPLE: Welcome to SIMPLE, a full-stack simulation environment for humanoid loco-manipulation, built on AMO/SONIC, with integrated support for mainstream VLAs s]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_c46b1e0305ec5c9adba634f1|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_be9781ec8ca637c5dfd8fabb|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_ba057c2c11df2a5eba107870|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_b7444ef42015f4f3b6f51032|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_b64b4a539b8c17d0cfe662ba|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_b1f4ea371eb10f3bc7a0f532|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_9a6e63428ed93e1a99ea4c4d|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_951559714c0383331b1b30ac|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_91072aa553af99e6ab97c6cd|Simple-to-Complex Structured Demonstrations for Vision-Language-Action Learning]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_8aa5e06bac422cb3319b94e6|Implicit-Behavior Coordination from Unlabeled Sub-Task Demonstrations for Rearrangement Tasks]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_886372de22c708b28cd11e4b|Robostral Navigate: single-camera AI navigation | Mistral AI]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_6fb6f0a30a013fd1ada42b57|GitHub - graph-robots/graph-as-policy: gap — graph as policy: compile language instructions into typed, verified robot skill graphs and execute them on simulators or real robots · GitHub]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_691f3acc1fe3382639690f59|Ψ₀: An Open Foundation Model Towards Universal Humanoid Loco-Manipulation]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_650f616f1e641912e73115b1|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_61f3045b170e78e4adb2422c|2607.08436v1.pdf]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_5d8306b5caf7371feeacbc09|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_5b8c57a9bef3348109f3b7bb|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_570c26541066c02080dd8de5|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_54c9a7922f348a245d17efaf|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_531bafa56ff63468797ac69e|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_513a527cb4d410e4f94a9bb5|DemoBridge: A Simulation-in-the-Loop Toolkit for Single-View Human Demonstration Retargeting]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_4df1017326dd7cc4786f4218|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_4bff03c9d5adb3463b34f947|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_4b25f596c34869693b9b8151|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_4ac7cf9f4fce43551683a04b|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_3e845794fed758f1dda5248e|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_37fe3c1f9d9fb7daa262fa91|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_34d6513b0522739d0b25e303|GitHub - NVIDIA/Isaac-GR00T: NVIDIA Isaac GR00T N1.7 - A Foundation Model for Generalist Robots. · GitHub]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_3093a2f57587e962f87d6277|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_2d5d59db178b1a20c9213220|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_291d6174cf92660287138f47|Training-Free Acceleration for Vision-Language-Action Models with Action Caching and Refinement]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_283911da72edc403d1b823fb|TouchWorld: A Predictive and Reactive Tactile Foundation Model for Dexterous Manipulation]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_233c4bef3a727389ddf81ae2|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_011483b15aae65e849a3772e|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes

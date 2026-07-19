@@ -1,21 +1,21 @@
 ---
 id: "decision_7c8f2f94e62bbb5e37e7732b"
 type: "decision"
-status: "working"
+status: "archived"
 title: "the prompt asks the model to answerYES or NO first, and the loop treatsYES as a pass andNO as a fail"
 created_at: "2026-07-18T16:30:37+08:00"
-updated_at: "2026-07-18T16:32:51+08:00"
+updated_at: "2026-07-19T02:54:37+08:00"
 aliases: []
 tags: []
 domains: []
 confidence: "unknown"
 source_ids: ["source_5e14510061220db7f2344913"]
 relations: [{"type": "derived_from", "target_id": "source_5e14510061220db7f2344913", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "deterministic-bounded-bundle-v1", "status": "working"}]
-change_reason: "compile bundle from source_5e14510061220db7f2344913"
-memory_tier: "working"
+change_reason: "legacy deterministic fallback archived as source-only"
+memory_tier: "historical"
 epistemic_status: "unknown"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "trustworthy-consolidation-v2"
+updated_by: "working-quality-source-only-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
@@ -33,6 +33,11 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_c07e6dacecd6e9
 origin_candidate_sha256: "e1e7228d2f0036474bcabb12ef3448890b8f3ca18381d4e40da08973cbbbe257"
 memory_schema_version: 2
 last_consolidation_id: "consolidation_1f0e54fb3ec65194423f824a"
+quality_review_status: "source_only"
+quality_review_policy: "working-quality-source-only-v1"
+quality_review_reasons: ["automatic article marker misclassified as an Agent instruction", "unknown epistemic status"]
+quality_migration_id: "working_quality_fbc924b6ca046d46b8394f65"
+archived_at: "2026-07-19T02:54:37+08:00"
 ---
 
 # the prompt asks the model to answerYES or NO first, and the loop treatsYES as a pass andNO as a fail

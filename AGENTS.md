@@ -17,6 +17,11 @@
 - Working-quality Restore is an explicit, hash-bound operation. Never run it
   from Daily or Weekly maintenance; Verify first, and treat a changed
   post-image, successor revision or Canonical successor as a hard block.
+- Daily and Weekly are semantic Agent workflows, not command-only cron jobs.
+  Daily must use its model on a bounded `semantic queue` before stopping at
+  Source-only; Weekly must use its stronger model for cross-source reuse and
+  typed relations before Receipt/trust review. Follow
+  `docs/SEMANTIC_DISTILLATION.md`; model bundles enter Working only.
 
 ## M8 non-negotiable trust protocol
 

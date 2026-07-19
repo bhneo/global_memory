@@ -7,7 +7,6 @@ from typing import Any
 
 from .extraction import ExtractionService
 from .markdown import atomic_write_text, read_document
-from .quality import SourceQualityService
 from .repository import Repository
 
 
@@ -86,10 +85,8 @@ class ObsidianViewService:
         self,
         documents: list[tuple[Path, dict[str, Any]]],
         sources: list[tuple[Path, dict[str, Any], str]],
-        high_quality_source_ids: set[str] | None = None,
     ) -> dict[str, str]:
         """Render a human-labelled graph mirror from structured relations/source_ids."""
-        high_quality_source_ids = high_quality_source_ids or set()
         rendered: dict[str, str] = {}
         locations: dict[str, str] = {}
         metadata_by_id: dict[str, dict[str, Any]] = {}
@@ -133,8 +130,7 @@ class ObsidianViewService:
         for _, metadata, _ in sources:
             item_id = str(metadata["id"])
             display_titles[item_id] = source_title(metadata)
-            category = "high-confidence-sources" if item_id in high_quality_source_ids else "sources"
-            locations[item_id] = allocate(item_id, display_titles[item_id], category)
+            locations[item_id] = allocate(item_id, display_titles[item_id], "sources")
             metadata_by_id[item_id] = metadata
         for _, metadata in documents:
             item_id = str(metadata["id"])
@@ -167,9 +163,6 @@ class ObsidianViewService:
             if metadata.get("memory_tier") or metadata.get("status"):
                 lines.append(f"- 状态：`{metadata.get('memory_tier') or metadata.get('status')}`\n")
             links: list[tuple[str, str]] = []
-            if item_id in high_quality_source_ids:
-                lines.append("- Graph role: `high-quality original source (not Trusted knowledge)`\n")
-                links.append(("__high_quality_sources_hub__", "source group"))
             for source_id in metadata.get("source_ids", []):
                 source_id = str(source_id)
                 if source_id in locations and source_id != item_id:
@@ -189,47 +182,11 @@ class ObsidianViewService:
                     if target_id in seen_links:
                         continue
                     seen_links.add(target_id)
-                    if target_id == "__high_quality_sources_hub__":
-                        target = "views/graph/hubs/高质量原始资料"
-                        target_title = "高质量原始资料"
-                    else:
-                        target = locations[target_id].removeprefix("vault/").removesuffix(".md")
-                        target_title = display_titles[target_id]
+                    target = locations[target_id].removeprefix("vault/").removesuffix(".md")
+                    target_title = display_titles[target_id]
                     lines.append(f"- `{relation_type}` → [[{target}|{target_title}]]\n")
             rendered[relative] = "".join(lines)
-        if high_quality_source_ids:
-            hub = [self._header(
-                "高质量原始资料",
-                "来源权威性与提取质量合格的原始资料；进入本图不代表其中的陈述已成为 Trusted 知识。",
-            )]
-            hub.append("## Sources\n\n")
-            for source_id in sorted(high_quality_source_ids, key=lambda item: display_titles.get(item, item)):
-                if source_id not in locations:
-                    continue
-                target = locations[source_id].removeprefix("vault/").removesuffix(".md")
-                hub.append(f"- [[{target}|{display_titles[source_id]}]]\n")
-            rendered["vault/views/graph/hubs/高质量原始资料.md"] = "".join(hub)
         return rendered
-
-    def _high_quality_source_ids(
-        self, sources: list[tuple[Path, dict[str, Any], str]]
-    ) -> set[str]:
-        """Select display-worthy sources without changing any knowledge tier."""
-        quality = SourceQualityService(self.repository)
-        selected: set[str] = set()
-        for _, metadata, _ in sources:
-            source_id = str(metadata["id"])
-            assessment = quality.load(source_id)
-            if (
-                assessment
-                and metadata.get("source_kind") != "personal-notes"
-                and assessment.source_authority in {"primary", "official", "peer_reviewed", "preprint"}
-                and assessment.extraction_quality == "good"
-                and assessment.availability_status == "available"
-                and assessment.content_quality == "valid"
-            ):
-                selected.add(source_id)
-        return selected
 
     def _extraction(self, source_id: str) -> tuple[dict[str, Any] | None, str]:
         try:
@@ -262,14 +219,27 @@ class ObsidianViewService:
         lines.append("\n")
         return "".join(lines)
 
-    def render(self, *, graph_profile: str = "trusted") -> dict[str, str]:
-        if graph_profile not in {"trusted", "frontier", "all"}:
-            raise ValueError("graph_profile must be trusted, frontier, or all")
+    def render(self, *, graph_profile: str = "knowledge") -> dict[str, str]:
+        if graph_profile not in {"knowledge", "trusted", "frontier", "all"}:
+            raise ValueError("graph_profile must be knowledge, trusted, frontier, or all")
         documents = self._documents()
         sources = self._sources()
         rendered: dict[str, str] = {}
         if graph_profile == "all":
             graph_documents = documents
+        elif graph_profile == "knowledge":
+            # Human default: show active semantic objects, including model-distilled
+            # Working memory, but keep raw Sources out of the graph. Provenance stays
+            # available in each projected node and in the reader/audit views.
+            graph_documents = [
+                item for item in documents
+                if item[1].get("memory_tier") != "historical"
+                and item[1].get("status") not in {"archived", "superseded"}
+                and item[1].get("type") in {
+                    "claim", "concept", "question", "tension", "hypothesis", "analogy",
+                    "architecture", "experiment", "synthesis", "opportunity",
+                }
+            ]
         elif graph_profile == "frontier":
             graph_documents = [
                 item for item in documents
@@ -285,13 +255,15 @@ class ObsidianViewService:
             str(source_id) for _, metadata in graph_documents
             for source_id in metadata.get("source_ids", [])
         }
-        high_quality_source_ids = self._high_quality_source_ids(sources)
-        if graph_profile != "all":
-            graph_source_ids.update(high_quality_source_ids)
-        graph_sources = sources if graph_profile == "all" else [
-            item for item in sources if str(item[1]["id"]) in graph_source_ids
-        ]
-        rendered.update(self._semantic_graph(graph_documents, graph_sources, high_quality_source_ids))
+        if graph_profile == "all":
+            graph_sources = sources
+        elif graph_profile == "knowledge":
+            graph_sources = []
+        else:
+            graph_sources = [
+                item for item in sources if str(item[1]["id"]) in graph_source_ids
+            ]
+        rendered.update(self._semantic_graph(graph_documents, graph_sources))
 
         by_type: dict[str, list[tuple[Path, dict[str, Any]]]] = defaultdict(list)
         partial: list[tuple[Path, dict[str, Any]]] = []
@@ -487,7 +459,7 @@ class ObsidianViewService:
             rendered[self._reader_relative(str(metadata["id"]))] = self._reader(source_path, metadata, source_body)
         return rendered
 
-    def status(self, *, graph_profile: str = "trusted") -> dict[str, Any]:
+    def status(self, *, graph_profile: str = "knowledge") -> dict[str, Any]:
         rendered = self.render(graph_profile=graph_profile)
         missing, stale = [], []
         for relative, expected in rendered.items():
@@ -498,7 +470,7 @@ class ObsidianViewService:
                 stale.append(relative)
         return {"current": not missing and not stale, "missing": missing, "stale": stale}
 
-    def build(self, *, graph_profile: str = "trusted") -> dict[str, Any]:
+    def build(self, *, graph_profile: str = "knowledge") -> dict[str, Any]:
         rendered = self.render(graph_profile=graph_profile)
         for relative, content in rendered.items():
             atomic_write_text(self.repository.root / relative, content)

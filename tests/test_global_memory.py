@@ -43,6 +43,7 @@ from global_memory.research import (
     ActivationService, ResearchAnnotationService, ResearchDigestService,
     ResearchMapService, ResearchRouterService,
 )
+from global_memory.semantic import SemanticDistillationQueue
 from global_memory.runs import BatchArtifactMigrator, RunArtifactService
 from global_memory.repository import Repository, sha256_bytes
 from global_memory.triage import DailyTriageService
@@ -130,7 +131,7 @@ def test_daily_triage_defaults_to_capture_only_and_is_incremental(repo: Reposito
     assert automatic["remaining_unprepared"] == 0
 
 
-def test_daily_triage_compiles_only_when_explicit(repo: Repository):
+def test_daily_triage_explicit_web_marker_stays_source_only(repo: Repository):
     captured = capture_web_bytes(
         repo,
         "https://example.com/important",
@@ -142,7 +143,10 @@ def test_daily_triage_compiles_only_when_explicit(repo: Repository):
     assert result["mode"] == "compile-selected"
     assert result["results"][0]["action"] == "proposal_created"
     assert result["results"][0]["proposal_id"]
-    assert result["results"][0]["state"] == "awaiting_review"
+    assert result["results"][0]["state"] == "completed"
+    proposal_path, proposal, _ = repo.find_document(result["results"][0]["proposal_id"])
+    assert proposal_path.exists()
+    assert proposal["compile_disposition"] == "source_only"
 
 
 def test_triage_cli_defaults_are_cost_bounded():
@@ -568,6 +572,28 @@ def test_pdf_optional_dependency_missing_is_graceful(
     assert (repo.root / captured.raw_content_path).read_bytes() == pdf_path.read_bytes()
 
 
+def test_extraction_replaces_unpaired_surrogates_only_in_derived_view(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured = CaptureService(repo).capture_text("raw input remains unchanged")
+    raw_before = (repo.root / captured.raw_content_path).read_bytes()
+    service = ExtractionService(repo)
+    monkeypatch.setattr(
+        service,
+        "_extract_payload",
+        lambda *args, **kwargs: (f"valid {chr(0xD835)} text", "test-extractor", None, [], "ready", "utf-8"),
+    )
+
+    result = service.extract(captured.source_id)
+    _, metadata, body = service.find(result.extraction_id)
+
+    assert result.status == "ready"
+    assert chr(0xD835) not in body
+    assert "\ufffd" in body
+    assert any("unpaired Unicode surrogates" in warning for warning in metadata["warnings"])
+    assert (repo.root / captured.raw_content_path).read_bytes() == raw_before
+
+
 def test_extraction_marks_old_input_stale(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("first extraction input")
     service = ExtractionService(repo)
@@ -802,6 +828,20 @@ def test_bundle_preserves_explicit_contradiction_candidate(repo: Repository) -> 
     assert not (repo.root / proposal["bundle_items"][0]["target_path"]).exists()
 
 
+def test_deterministic_compiler_does_not_treat_article_markers_as_agent_instructions(repo: Repository) -> None:
+    captured = capture_web_bytes(
+        repo,
+        "https://example.com/article-with-question-heading",
+        (b"Question: can this article heading trigger compilation?\n" + b"Article body remains source evidence. " * 30),
+        title="Article with an incidental marker",
+    )
+
+    result = BundleCompiler(repo).compile(captured.source_id)
+
+    assert result.compile_disposition == "source_only"
+    assert result.item_count == 0
+
+
 def test_external_json_bundle_adapter_never_writes_without_proposal(
     repo: Repository, workspace: Path
 ) -> None:
@@ -815,6 +855,113 @@ def test_external_json_bundle_adapter_never_writes_without_proposal(
     proposal, _ = read_document(repo.root / result.proposal_path)
     assert proposal["processor"] == "cursor-json-v1"
     assert not (repo.root / proposal["bundle_items"][0]["target_path"]).exists()
+
+
+def test_external_provider_can_add_typed_relation_to_existing_object(repo: Repository, workspace: Path) -> None:
+    anchor = write_m8_memory(
+        repo, "concept_semantic_anchor", "concept", "Semantic Anchor",
+        "Existing governed concept.", [],
+    )
+    captured = CaptureService(repo).capture_text("A model-derived connection grounded in this source.")
+    bundle_file = workspace / "semantic-relation.json"
+    bundle_file.write_text(json.dumps({"items": [{
+        "object_type": "concept", "title": "Connected Concept",
+        "body": "A model-derived connection grounded in this source.",
+        "relations": [{
+            "type": "related_to", "target_id": "concept_semantic_anchor",
+            "reason": "Both concepts describe the same bounded mechanism.", "confidence": "medium",
+        }],
+    }]}), encoding="utf-8")
+
+    result = BundleCompiler(repo, JsonBundleProvider(bundle_file, "agent-semantic-v1")).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / result.proposal_path)
+    candidate, _ = read_document(repo.root / proposal["bundle_items"][0]["candidate_path"])
+
+    assert anchor.exists()
+    assert any(
+        relation["type"] == "related_to" and relation["target_id"] == "concept_semantic_anchor"
+        for relation in candidate["relations"]
+    )
+
+
+def test_external_provider_can_link_objects_created_in_same_bundle(
+    repo: Repository, workspace: Path,
+) -> None:
+    captured = CaptureService(repo).capture_text("Two model-derived objects form one bounded semantic unit.")
+    bundle_file = workspace / "semantic-intra-bundle-relation.json"
+    bundle_file.write_text(json.dumps({"items": [
+        {
+            "action": "create", "target_id": "concept_bundle_anchor",
+            "object_type": "concept", "title": "Bundle Anchor",
+            "body": "The anchor is explicitly identified within the semantic bundle.",
+        },
+        {
+            "action": "create", "target_id": "claim_bundle_evidence",
+            "object_type": "claim", "title": "Bundle Evidence",
+            "body": "The evidence is interpreted in relation to the bundle anchor.",
+            "relations": [{
+                "type": "supports", "target_id": "concept_bundle_anchor",
+                "reason": "The claim supplies bounded evidence for the new concept.",
+                "confidence": "medium",
+            }],
+        },
+    ]}), encoding="utf-8")
+
+    result = BundleCompiler(repo, JsonBundleProvider(bundle_file, "agent-semantic-v1")).compile(captured.source_id)
+    proposal, _ = read_document(repo.root / result.proposal_path)
+    claim_item = next(item for item in proposal["bundle_items"] if item["target_id"] == "claim_bundle_evidence")
+    claim, _ = read_document(repo.root / claim_item["candidate_path"])
+
+    assert any(
+        relation["type"] == "supports" and relation["target_id"] == "concept_bundle_anchor"
+        for relation in claim["relations"]
+    )
+
+
+def test_compile_cli_can_defer_obsidian_rebuild_for_bounded_batch(
+    repo: Repository, workspace: Path, capsys: pytest.CaptureFixture[str],
+) -> None:
+    captured = CaptureService(repo).capture_text("Batch semantic input.")
+    bundle_file = workspace / "batch-no-obsidian.json"
+    bundle_file.write_text(json.dumps({"items": [{
+        "object_type": "concept", "title": "Batch Semantic Concept",
+        "body": "A bounded model-derived concept for batch compilation.",
+    }]}), encoding="utf-8")
+
+    exit_code = run(build_parser().parse_args([
+        "--root", str(repo.root), "compile", captured.source_id,
+        "--bundle-file", str(bundle_file), "--provider-name", "agent-semantic-test",
+        "--skip-obsidian",
+    ]))
+    output = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0 and output["obsidian"]["skipped"] is True
+    assert not (repo.root / "vault/views/graph").exists()
+
+
+def test_semantic_queue_exposes_source_only_and_closes_after_model_bundle(repo: Repository) -> None:
+    captured = capture_web_bytes(
+        repo, "https://example.com/semantic-queue",
+        b"A long unmarked research article needs model interpretation. " * 30,
+        title="Semantic Queue Article",
+    )
+    daily = ConsolidationService(repo).daily(limit=5)
+    assert daily["compiled"][0]["status"] == "source_only"
+
+    queued = SemanticDistillationQueue(repo).queue(limit=5, max_chars=1200)
+    assert queued["pending_count"] == 1
+    assert queued["items"][0]["source_id"] == captured.source_id
+    assert "model interpretation" in queued["items"][0]["excerpt"]
+
+    bundle_file = _write_json_bundle(repo, [{
+        "object_type": "concept", "title": "Model-interpreted research article",
+        "body": "The source requires semantic interpretation before knowledge admission.",
+    }])
+    compiled = BundleCompiler(repo, JsonBundleProvider(bundle_file, "agent-semantic-v1")).compile(captured.source_id)
+    WorkingMemoryService(repo).ingest_bundle(str(compiled.proposal_id))
+
+    after = SemanticDistillationQueue(repo).queue(limit=5, max_chars=1200)
+    assert after["pending_count"] == 0
 
 
 def test_external_provider_update_uses_stable_target_id_not_title(
@@ -2602,6 +2749,35 @@ def test_context_pack_relaxes_empty_natural_language_query_and_renders_status(
     assert "Type/status: `claim` / `confirmed`" in markdown
 
 
+def test_context_pack_archived_exact_hit_does_not_block_active_term_expansion(repo: Repository) -> None:
+    active = write_m8_memory(
+        repo, "concept_active_vla_term", "concept", "Active VLA Concept",
+        "A governed concept about policy caching.", [],
+    )
+    second_active = write_m8_memory(
+        repo, "concept_active_deployment_term", "concept", "Active Deployment Concept",
+        "A governed concept about real-world policy use.", [],
+    )
+    archived = write_m8_memory(
+        repo, "question_archived_exact_query", "question", "Archived exact query",
+        "VLA deployment is present only in this historical object.", [],
+    )
+    metadata, body = read_document(archived)
+    metadata.update({"status": "archived", "memory_tier": "historical"})
+    archived.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    pack = ContextPackService(repo).build(
+        "VLA deployment", profiles=["research"], token_budget=1200,
+    )
+
+    assert active.exists()
+    assert second_active.exists()
+    assert any(item["id"] == "concept_active_vla_term" for item in pack.items)
+    assert any(item["id"] == "concept_active_deployment_term" for item in pack.items)
+    assert {"VLA", "deployment"} <= set(pack.filters["query_expansion"])
+
+
 def test_obsidian_views_are_rebuildable_and_do_not_change_canonical(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Obsidian source", title="Obsidian source")
     before = (repo.root / captured.source_path).read_bytes()
@@ -2653,7 +2829,7 @@ def test_obsidian_semantic_graph_uses_readable_names_and_materializes_source_edg
     assert "[[views/graph/sources/Readable Evidence|Readable Evidence]]" in text
 
 
-def test_obsidian_trusted_graph_includes_high_quality_source_without_promoting_it(repo: Repository) -> None:
+def test_obsidian_trusted_graph_excludes_unreferenced_high_quality_source(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Primary research evidence. " * 20, title="High Quality Preprint")
     source_path = repo.root / captured.source_path
     metadata, body = read_document(source_path)
@@ -2664,13 +2840,8 @@ def test_obsidian_trusted_graph_includes_high_quality_source_without_promoting_i
 
     ObsidianViewService(repo).build(graph_profile="trusted")
 
-    node = repo.root / "vault/views/graph/high-confidence-sources/High Quality Preprint.md"
-    hub = repo.root / "vault/views/graph/hubs/高质量原始资料.md"
-    assert node.exists() and hub.exists()
-    node_text = node.read_text(encoding="utf-8")
-    assert "not Trusted knowledge" in node_text
-    assert "[[views/graph/hubs/高质量原始资料|高质量原始资料]]" in node_text
-    assert "High Quality Preprint" in hub.read_text(encoding="utf-8")
+    assert not (repo.root / "vault/views/graph/sources/High Quality Preprint.md").exists()
+    assert not (repo.root / "vault/views/graph/hubs/高质量原始资料.md").exists()
     assert not list((repo.root / "vault/memory").rglob(f"*{captured.source_id}*"))
 
 
@@ -2680,7 +2851,55 @@ def test_obsidian_trusted_graph_excludes_primary_personal_notes(repo: Repository
 
     ObsidianViewService(repo).build(graph_profile="trusted")
 
-    assert not (repo.root / "vault/views/graph/high-confidence-sources/Agent Receipt.md").exists()
+    assert not (repo.root / "vault/views/graph/sources/Agent Receipt.md").exists()
+
+
+def test_obsidian_trusted_graph_includes_only_source_referenced_by_trusted_knowledge(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Evidence body", title="Trusted Evidence")
+    write_m8_memory(
+        repo, "claim_trusted_graph", "claim", "Trusted Graph Claim",
+        "Bounded claim body.", [captured.source_id], tier="trusted", epistemic_status="provisional",
+    )
+
+    ObsidianViewService(repo).build(graph_profile="trusted")
+
+    claim = repo.root / "vault/views/graph/claims/Trusted Graph Claim.md"
+    source = repo.root / "vault/views/graph/sources/Trusted Evidence.md"
+    assert claim.exists() and source.exists()
+    assert "[[views/graph/sources/Trusted Evidence|Trusted Evidence]]" in claim.read_text(encoding="utf-8")
+    assert "[[views/graph/claims/Trusted Graph Claim|Trusted Graph Claim]]" in source.read_text(encoding="utf-8")
+
+
+def test_obsidian_default_knowledge_graph_shows_working_semantics_without_source_nodes(
+    repo: Repository,
+) -> None:
+    captured = CaptureService(repo).capture_text("Working semantic evidence", title="Audit-only Source")
+    concept = write_m8_memory(
+        repo, "concept_working_semantic_graph", "concept", "Working Semantic Concept",
+        "A model-distilled Working concept.", [captured.source_id],
+    )
+    write_m8_memory(
+        repo, "claim_working_semantic_graph", "claim", "Working Semantic Claim",
+        "A bounded Working claim.", [captured.source_id], epistemic_status="provisional",
+    )
+    metadata, body = read_document(concept)
+    metadata["relations"] = [{
+        "type": "supports", "target_id": "claim_working_semantic_graph",
+        "reason": "The Working claim is bounded support for this semantic concept.",
+        "confidence": "medium", "created_by": "agent-semantic-test", "status": "working",
+    }]
+    concept.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    result = ObsidianViewService(repo).build()
+
+    concept_node = repo.root / "vault/views/graph/concepts/Working Semantic Concept.md"
+    claim_node = repo.root / "vault/views/graph/claims/Working Semantic Claim.md"
+    source_node = repo.root / "vault/views/graph/sources/Audit-only Source.md"
+    assert result["graph_profile"] == "knowledge"
+    assert concept_node.exists() and claim_node.exists()
+    assert "[[views/graph/claims/Working Semantic Claim|Working Semantic Claim]]" in concept_node.read_text(encoding="utf-8")
+    assert not source_node.exists()
 
 
 def test_repository_obsidian_graph_is_semantically_grouped_and_hides_navigation_hubs() -> None:
@@ -2694,8 +2913,8 @@ def test_repository_obsidian_graph_is_semantically_grouped_and_hides_navigation_
     assert any('views/graph/concepts' in query for query in queries)
     assert any('views/graph/questions' in query for query in queries)
     assert any('views/graph/sources' in query for query in queries)
-    assert any('views/graph/high-confidence-sources' in query for query in queries)
-    assert any('views/graph/hubs' in query for query in queries)
+    assert not any('views/graph/high-confidence-sources' in query for query in queries)
+    assert not any('views/graph/hubs' in query for query in queries)
     assert config["textFadeMultiplier"] > 0 and config["lineSizeMultiplier"] < 1
 
 
@@ -3482,6 +3701,7 @@ def test_source_only_status_is_exposed_by_cli_and_metrics(repo: Repository, caps
     assert len(proposals) == 1 and proposals[0]["status"] == "source_only"
     assert metrics["source_only_compile_records"] == 1
     assert metrics["sources_completed_source_only"] == 1
+    assert lint(repo)["ok"] is True
 
 
 def test_working_quality_review_flags_legacy_long_fallback(
@@ -3502,6 +3722,29 @@ def test_working_quality_review_flags_legacy_long_fallback(
     assert review["writes"] == 0
     assert review["flagged"][0]["recommended_action"] == "recompile_or_source_only"
     assert "no semantic evidence entailment" in review["flagged"][0]["reasons"]
+
+
+def test_working_quality_review_flags_legacy_article_marker_false_positive(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    captured = capture_web_bytes(
+        repo, "https://example.com/legacy-marker",
+        b"Question: article prose was mistaken for an instruction.\n" + b"Long article body. " * 200,
+        title="Legacy marker article",
+    )
+    monkeypatch.setattr(
+        BundleCompiler,
+        "_deterministic_fallback_allowed",
+        lambda self, source, text, specs: any(bool(item.get("explicit_marker")) for item in specs),
+    )
+    compiled = ConsolidationService(repo).daily(limit=5)
+    assert compiled["compiled"][0]["status"] == "working"
+
+    review = ConsolidationService(repo).review_working_quality()
+
+    assert review["flagged_count"] == 1
+    assert review["flagged"][0]["source_ids"] == [captured.source_id]
+    assert "automatic article marker misclassified as an Agent instruction" in review["flagged"][0]["reasons"]
 
 
 def test_working_quality_migration_archives_with_snapshot_and_is_idempotent(
@@ -4157,6 +4400,36 @@ def test_m8_trusted_support_revision_conflict_and_demotion_are_explicit(repo: Re
     assert conflict["exception_id"]
     demotion = PromotionService(repo).demote_working("claim_m8_evolve", "user-approved demotion")
     assert demotion["demotion_id"] and (repo.root / demotion["event_path"]).exists()
+
+
+def test_working_metadata_only_update_merges_retrieval_metadata_without_body_change(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Alias provenance", title="Alias source")
+    path = write_m8_memory(
+        repo, "concept_metadata_aliases", "concept", "跨语言概念",
+        "The governed semantic body remains unchanged.", [captured.source_id],
+    )
+    before, before_body = read_document(path)
+    before["aliases"] = ["existing alias"]
+    path.write_text(render_document(before, before_body), encoding="utf-8")
+    repo.rebuild_index()
+
+    result = KnowledgeEvolutionService(repo).apply(
+        "concept_metadata_aliases",
+        {
+            "aliases": ["existing alias", "cross-language concept"],
+            "tags": ["retrieval"], "domains": ["knowledge-systems"],
+            "source_ids": [captured.source_id],
+        },
+        "This candidate body must not replace the governed statement.",
+        change_type="metadata_only", reason="add bilingual retrieval metadata",
+        trigger_source=captured.source_id,
+    )
+    updated, updated_body = read_document(path)
+
+    assert result["change"]["changed_fields"] == ["aliases", "tags", "domains"]
+    assert updated["aliases"] == ["existing alias", "cross-language concept"]
+    assert updated["tags"] == ["retrieval"] and updated["domains"] == ["knowledge-systems"]
+    assert updated_body == before_body and updated["memory_tier"] == "working"
 
 
 @pytest.mark.parametrize("change_type", ["support", "metadata_only", "refine", "limit", "contradict", "supersede"])

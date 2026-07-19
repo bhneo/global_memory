@@ -15,7 +15,7 @@ from .followups import FollowupService
 from .markdown import atomic_write_text, read_document, render_document
 from .proposals import CANONICAL_DIRECTORIES, REVIEWABLE_PROPOSAL_STATUSES
 from .quality import SourceQualityService
-from .repository import Repository, now_iso, sha256_bytes, slugify
+from .repository import RELATION_TYPES, Repository, now_iso, sha256_bytes, slugify
 
 
 class CompilerProvider(Protocol):
@@ -269,10 +269,10 @@ class BundleCompiler:
 
     def _deterministic_fallback_allowed(self, source: dict[str, Any], text: str, specs: list[dict[str, Any]]) -> bool:
         """Allow paragraph fallback only for deliberate, sentence-like user notes."""
-        if any(bool(spec.get("explicit_marker")) for spec in specs):
-            return True
         if source.get("source_kind") != "personal-notes":
             return False
+        if any(bool(spec.get("explicit_marker")) for spec in specs):
+            return True
         normalized = " ".join(text.split())
         if len(normalized) < 40 or len(normalized) > self.UNSTRUCTURED_FALLBACK_MAX_CHARS:
             return False
@@ -329,6 +329,13 @@ class BundleCompiler:
                 continue
             seen_specs.add(key)
             specs.append(spec)
+        planned_create_ids = {
+            str(spec.get("target_id") or (spec.get("metadata") or {}).get("id") or "").strip()
+            for spec in specs
+            if str(spec.get("action") or "create").strip().lower() == "create"
+            and isinstance(spec.get("metadata") or {}, dict)
+            and str(spec.get("target_id") or (spec.get("metadata") or {}).get("id") or "").strip()
+        }
         timestamp = now_iso()
         prepared: list[dict[str, Any]] = []
         for index, spec in enumerate(specs, start=1):
@@ -409,6 +416,32 @@ class BundleCompiler:
             # compilation is not allowed to silently turn new text into support.
             if action == "update":
                 candidate["change_type"] = str(spec.get("change_type") or "needs_review")
+            provider_relations = spec.get("relations", [])
+            if provider_relations is not None and not isinstance(provider_relations, list):
+                raise ValidationError("compiler provider item.relations 必须是列表")
+            for relation in provider_relations or []:
+                if not isinstance(relation, dict):
+                    raise ValidationError("compiler provider relation 必须是对象")
+                relation_type = str(relation.get("type") or "")
+                relation_target = str(relation.get("target_id") or "")
+                relation_reason = str(relation.get("reason") or "").strip()
+                if relation_type not in RELATION_TYPES or relation_type in {"derived_from", "supersedes"}:
+                    raise ValidationError(f"compiler provider relation type is not allowed: {relation_type}")
+                if not relation_target or relation_target == target_id or not relation_reason:
+                    raise ValidationError("compiler provider relation requires a non-self target_id and reason")
+                # A semantic bundle is an atomic proposal unit.  Explicitly named
+                # objects created elsewhere in the same bundle are valid relation
+                # targets even though they do not exist in the repository yet.
+                if relation_target not in planned_create_ids:
+                    self.repository.find_document(relation_target)
+                relations.append({
+                    "type": relation_type,
+                    "target_id": relation_target,
+                    "reason": relation_reason,
+                    "confidence": str(relation.get("confidence") or "medium"),
+                    "created_by": self.provider.name,
+                    "status": "proposal",
+                })
             extra_metadata = spec.get("metadata", {}) or {}
             protected = {"id", "type", "status", "created_at", "updated_at", "source_ids", "relations"}
             for key, value in extra_metadata.items():

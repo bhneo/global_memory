@@ -17,20 +17,20 @@
 
 ## 当前概况
 
-- 资料：62 篇
-- Working：60 条
+- 资料：107 篇
+- Working：91 条
 - Trusted：30 条
 - Canonical：1 条
-- 开放例外：10 项
+- 开放例外：12 项
 - 待确认晋升：0 项
 
 ## 最近收录
 
-- [[views/readers/source_e2614742b0c3ee7cf985d616|arxiv.org]] · 2026-07-18
-- [[views/readers/source_5e14510061220db7f2344913|arxiv.org]] · 2026-07-18
-- [[views/readers/source_a0c7811ba12c9cf80bfd26c9|arxiv.org]] · 2026-07-18
-- [[views/readers/source_bd08e368730960f4f6ce19ca|[2607.12894] Hy-Embodied-VLM-1.0: Efficient Physical-World Agents]] · 2026-07-18
-- [[views/readers/source_ffef0c68258ab78320bbe42f|GitHub - Tencent-Hunyuan/HY-Embodied: HY-Embodied: Embodied Foundation Models for Real-World Agents · GitHub]] · 2026-07-18
-- [[views/readers/source_b470fe87f9d09df2b7d3b5fd|arxiv.org]] · 2026-07-18
-- [[views/readers/source_04477c8679bc779d8389a22e|arxiv.org]] · 2026-07-18
-- [[views/readers/source_79475aef7849b08664b51a4e|arxiv.org]] · 2026-07-18
+- [[views/readers/source_691f3acc1fe3382639690f59|Ψ₀: An Open Foundation Model Towards Universal Humanoid Loco-Manipulation]] · 2026-07-19
+- [[views/readers/source_d75524a9040845cdc76db35c|GitHub - physical-superintelligence-lab/SIMPLE: Welcome to SIMPLE, a full-stack simulation environment for humanoid loco-manipulation, built on AMO/SONIC, with integrated support for mainstream VLAs s]] · 2026-07-19
+- [[views/readers/source_8aa5e06bac422cb3319b94e6|Implicit-Behavior Coordination from Unlabeled Sub-Task Demonstrations for Rearrangement Tasks]] · 2026-07-19
+- [[views/readers/source_54c9a7922f348a245d17efaf|arxiv.org]] · 2026-07-19
+- [[views/readers/source_233c4bef3a727389ddf81ae2|arxiv.org]] · 2026-07-19
+- [[views/readers/source_291d6174cf92660287138f47|Training-Free Acceleration for Vision-Language-Action Models with Action Caching and Refinement]] · 2026-07-19
+- [[views/readers/source_91072aa553af99e6ab97c6cd|Simple-to-Complex Structured Demonstrations for Vision-Language-Action Learning]] · 2026-07-19
+- [[views/readers/source_650f616f1e641912e73115b1|arxiv.org]] · 2026-07-19

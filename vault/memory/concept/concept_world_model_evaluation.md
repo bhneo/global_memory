@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "世界模型评价"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-18T16:03:18+08:00"
+updated_at: "2026-07-19T03:06:12+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 4
-last_consolidated_at: "2026-07-18T16:03:18+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-19T03:06:12+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_candidate_sha256: "cfb665b35eb0b61f32f0af402cfaab840a2d9b978e5e8c95767189
 memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
-last_consolidation_id: "consolidation_011e686848e64ef6ecd893da"
+last_consolidation_id: "consolidation_9c3470e7c36f1c39ec635af0"
 ---
 
 # 世界模型评价

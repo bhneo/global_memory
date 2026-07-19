@@ -1,20 +1,20 @@
 ---
 id: "question_1e0121d4bdc2f58cea1ca426"
 type: "question"
-status: "working"
+status: "archived"
 title: "“How would j’s action change if I had acted"
 created_at: "2026-07-17T12:11:41+08:00"
-updated_at: "2026-07-18T16:03:23+08:00"
+updated_at: "2026-07-19T02:54:37+08:00"
 aliases: []
 tags: []
 domains: []
 confidence: "unknown"
 source_ids: ["source_c019c0a492cc659d7858134d"]
 relations: [{"type": "derived_from", "target_id": "source_c019c0a492cc659d7858134d", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "deterministic-bounded-bundle-v1", "status": "working"}]
-change_reason: "compile bundle from source_c019c0a492cc659d7858134d"
-memory_tier: "working"
+change_reason: "legacy deterministic fallback archived as source-only"
+memory_tier: "historical"
 created_by: "deterministic-bounded-bundle-v1"
-updated_by: "trustworthy-consolidation-v2"
+updated_by: "working-quality-source-only-v1"
 model_provider: null
 model_version: null
 compiler_version: "deterministic-bounded-bundle-v1"
@@ -34,6 +34,11 @@ memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "open_question"
 last_consolidation_id: "consolidation_78f818e66398966407ee7fd9"
+quality_review_status: "source_only"
+quality_review_policy: "working-quality-source-only-v1"
+quality_review_reasons: ["automatic article marker misclassified as an Agent instruction"]
+quality_migration_id: "working_quality_fbc924b6ca046d46b8394f65"
+archived_at: "2026-07-19T02:54:37+08:00"
 ---
 
 # “How would j’s action change if I had acted

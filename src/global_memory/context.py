@@ -419,6 +419,24 @@ class ContextPackService:
             object_types=allowed_types, statuses=statuses, include_proposals=include_proposals,
             domains=domains, source_kinds=source_kinds,
         )
+
+        def has_active_governed_result(items: list[SearchResult]) -> bool:
+            """Archived search hits must not suppress broad-query expansion."""
+            for item in items:
+                if item.type in {"source", "proposal"}:
+                    continue
+                try:
+                    _, candidate, _ = self.repository.find_document(item.id)
+                except Exception:
+                    continue
+                if candidate.get("status") in {"archived", "superseded"}:
+                    continue
+                if candidate.get("memory_tier") == "historical":
+                    continue
+                return True
+            return False
+
+        has_active_lexical_result = has_active_governed_result(results)
         seen_result_ids = {result.id for result in results}
         for seed_id in route.seed_objects[:20]:
             if seed_id in seen_result_ids:
@@ -442,7 +460,9 @@ class ContextPackService:
                 snippet=seed_body[:240], match_reason="research route seed from Project/Domain/Annotation",
             ))
             seen_result_ids.add(seed_id)
-        if not any(result.type not in {"source", "proposal"} for result in results):
+        # Route seeds add useful context, but they are not evidence that the
+        # literal query was satisfied. Only lexical hits may suppress expansion.
+        if not has_active_lexical_result:
             fallback_terms = []
             for term in query.split():
                 cleaned = term.strip("，。！？；：,.!?;:()[]{}\"'")
@@ -452,9 +472,12 @@ class ContextPackService:
                     fallback_terms.append(cleaned)
             expanded_by = []
             seen_result_ids = {result.id for result in results}
+            # Expand every bounded term, not only the first term that happens to
+            # produce a governed hit. Multi-topic research questions need a fair
+            # chance to retrieve concepts matching later terms as well.
             for term in fallback_terms[:4]:
                 expanded = self.repository.search_with_relations(
-                    term, SEARCH_LIMIT, max_depth=relation_depth, max_nodes=SEARCH_LIMIT,
+                    term, 12, max_depth=relation_depth, max_nodes=12,
                     object_types=allowed_types, statuses=statuses,
                     include_proposals=include_proposals, domains=domains,
                     source_kinds=source_kinds,
@@ -464,12 +487,14 @@ class ContextPackService:
                     results.extend(new_results)
                     seen_result_ids.update(item.id for item in new_results)
                     expanded_by.append(term)
-                if any(result.type not in {"source", "proposal"} for result in results):
-                    break
             if expanded_by:
                 filter_report["query_expansion"] = expanded_by
                 if len(results) == len(new_results):
                     filter_report["query_fallback"] = expanded_by[0]
+        ranking_terms = [
+            term.casefold() for term in re.findall(r"[\w\u3400-\u9fff-]+", query)
+            if len(term.strip()) >= 2
+        ]
         for search_rank, result in enumerate(results, start=1):
             path, metadata, body = self.repository.find_document(result.id)
             object_type = str(metadata.get("type"))
@@ -595,8 +620,24 @@ class ContextPackService:
                     if effective_project else 0
                 ),
             }
+            ranking_haystack = " ".join([
+                str(metadata.get("title", "")), body[:4_000],
+                *map(str, metadata.get("aliases", [])), *map(str, metadata.get("tags", [])),
+                *map(str, metadata.get("domains", [])),
+            ]).casefold()
+            matched_term_count = sum(term in ranking_haystack for term in ranking_terms)
+            coverage_bonus = (
+                min(75, matched_term_count * 25)
+                if object_type not in {"source", "proposal"}
+                else min(12, matched_term_count * 3)
+            )
+            metadata_bonus = 8 if result.match_reason.startswith("metadata:") else 0
             ranked.append((
-                -(1_000 - search_rank + self._type_priority(object_type, profiles, str(metadata.get("status")))),
+                -(
+                    1_000 - search_rank
+                    + self._type_priority(object_type, profiles, str(metadata.get("status")))
+                    + coverage_bonus + metadata_bonus
+                ),
                 search_rank,
                 {
                     "id": str(metadata["id"]),

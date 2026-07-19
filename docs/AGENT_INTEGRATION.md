@@ -58,13 +58,13 @@ Open the repository's `vault/` directory as an Obsidian vault. Run `gm obsidian 
 - `vault/views/readers/`: one readable, provenance-linked page per source;
 - `vault/views/Knowledge Catalog.md` and `Review Queues.md`: stable technical compatibility entries.
 
-These files use ordinary Markdown and path-based wikilinks. They are generated views, not a second database or a truth layer. Reader pages reuse existing extraction text and never invent summaries or topics. CLI capture and daily/weekly maintenance refresh them automatically; `gm obsidian build` remains the manual repair command. The default graph hides audit paths and orphan nodes, but the filter can be cleared for an audit. No plugin is required.
+These files use ordinary Markdown and path-based wikilinks. They are generated views, not a second database or a truth layer. Reader pages reuse existing extraction text and never invent summaries or topics. CLI capture and daily/weekly maintenance refresh them automatically; `gm obsidian build` remains the manual repair command. The default `knowledge` graph shows active Working, Trusted, and Canonical semantic objects plus their validated typed relations; raw Source nodes stay in reader/audit views so the human graph is not dominated by articles. Use `--graph-profile trusted` for the stricter trust-only projection and `--graph-profile all` for the complete source-oriented audit graph. No plugin is required.
 
 ## Maintenance
 
-For routine article ingestion, `gm triage [source-id ...] --limit 25` remains the cheapest extraction/quality preparation step. `gm consolidate daily` then compiles prepared sources into Working without per-article approval; expensive verification is deferred until use, conflict or promotion.
+For routine article ingestion, `gm triage [source-id ...] --limit 25` remains the cheapest extraction/quality preparation step. `gm consolidate daily` establishes the safe deterministic boundary; the Daily Agent must then consume a bounded `gm semantic queue` and submit model-produced JSON Bundles into Working. Source-only is safe staging, not proof that semantic maintenance is complete. See `SEMANTIC_DISTILLATION.md`.
 
-Run `gm consolidate weekly` for Working review, Trusted policy, drift audit, exception routing, promotion recommendations and the review-compression digest. It never writes Canonical automatically.
+The Weekly Agent first performs cross-source semantic integration, then runs `gm consolidate weekly --skip-daily-admission` for Working review, Trusted policy, drift audit, exception routing, promotion recommendations and the review-compression digest. It never writes Canonical automatically.
 
 Run `gm maintain` for the normal read-only health and backlog report. It also reports whether generated Obsidian views are missing or stale. Run `gm maintain --rebuild-derived` only when an explicit refresh is wanted; it rebuilds SQLite and all generated Obsidian views, but never raw, proposal, receipt, or canonical content.
 

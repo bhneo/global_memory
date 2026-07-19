@@ -37,6 +37,7 @@ from .research import (
     ActivationService, ResearchAnnotationService, ResearchDigestService,
     ResearchMapService, ResearchRouterService,
 )
+from .semantic import SemanticDistillationQueue
 from .triage import DailyTriageService
 from .works import WorkService
 from .governance import CanonicalPromotionRecoveryManager, PromotionService, TrustedPromotionRecoveryManager
@@ -176,6 +177,15 @@ def build_parser() -> argparse.ArgumentParser:
     compile_parser.add_argument("source_id")
     compile_parser.add_argument("--bundle-file", help="外部 provider 生成的本地 JSON items；核心不调用模型")
     compile_parser.add_argument("--provider-name", default="external-json-bundle-v1")
+    compile_parser.add_argument(
+        "--skip-obsidian", action="store_true",
+        help="batch mode: defer disposable Obsidian rebuild until final maintain",
+    )
+    semantic = commands.add_parser("semantic", help="为外部 Agent 模型提供有界 Source-only 消化队列")
+    semantic_commands = semantic.add_subparsers(dest="semantic_command", required=True)
+    semantic_queue = semantic_commands.add_parser("queue")
+    semantic_queue.add_argument("--limit", type=int, default=5)
+    semantic_queue.add_argument("--max-chars", type=int, default=6000)
     synthesize = commands.add_parser("synthesize", help="从多个 canonical claim 生成待审综合 proposal")
     synthesize.add_argument("claim_ids", nargs="+")
     discover = commands.add_parser("discover", help="兼容别名：related-content（词汇/metadata 关联候选）")
@@ -380,7 +390,9 @@ def build_parser() -> argparse.ArgumentParser:
     obsidian = commands.add_parser("obsidian", help="构建可重建的 Obsidian 导航视图")
     obsidian_commands = obsidian.add_subparsers(dest="obsidian_command", required=True)
     obsidian_build = obsidian_commands.add_parser("build")
-    obsidian_build.add_argument("--graph-profile", choices=["trusted", "frontier", "all"], default="trusted")
+    obsidian_build.add_argument(
+        "--graph-profile", choices=["knowledge", "trusted", "frontier", "all"], default="knowledge"
+    )
     receipt = commands.add_parser("receipt", help="创建 session receipt 并通过 proposal 写回")
     receipt_commands = receipt.add_subparsers(dest="receipt_command", required=True)
     receipt_create = receipt_commands.add_parser("create")
@@ -735,6 +747,19 @@ def lint(repository: Repository) -> dict[str, object]:
             continue
         if proposal_kind in {"compile_bundle", "source_bundle", "corpus_distillation"}:
             items = proposal.get("bundle_items")
+            if status == "source_only":
+                if items != []:
+                    errors.append(f"source-only compile record 必须使用空 bundle_items: {repository.rel(path)}")
+                if proposal.get("compile_disposition") != "source_only":
+                    errors.append(f"source-only compile record 缺少 disposition: {repository.rel(path)}")
+                source_only_ids = proposal.get("source_only_source_ids")
+                if not isinstance(source_only_ids, list) or not source_only_ids:
+                    errors.append(f"source-only compile record 缺少 source ids: {repository.rel(path)}")
+                else:
+                    for source_id in source_only_ids:
+                        if source_id not in sources:
+                            errors.append(f"source-only compile record 引用不存在: {repository.rel(path)} -> {source_id}")
+                continue
             if not isinstance(items, list) or not items:
                 errors.append(f"compile bundle 缺少 bundle_items: {repository.rel(path)}")
                 continue
@@ -1097,13 +1122,18 @@ def run(args: argparse.Namespace) -> int:
         result = {"compile": compiled.__dict__, "working": None, "canonical_writes": 0}
         if compiled.proposal_id:
             result["working"] = WorkingMemoryService(repository).ingest_bundle(compiled.proposal_id).__dict__
-        obsidian_result = ObsidianViewService(repository).build()
-        result["obsidian"] = {
-            "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
-            "sources": obsidian_result["sources"], "written_count": len(obsidian_result["written"]),
-            "removed": obsidian_result["removed"],
-        }
+        if args.skip_obsidian:
+            result["obsidian"] = {"skipped": True, "reason": "batch rebuild deferred"}
+        else:
+            obsidian_result = ObsidianViewService(repository).build()
+            result["obsidian"] = {
+                "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
+                "sources": obsidian_result["sources"], "written_count": len(obsidian_result["written"]),
+                "removed": obsidian_result["removed"],
+            }
         _print(result)
+    elif args.command == "semantic":
+        _print(SemanticDistillationQueue(repository).queue(limit=args.limit, max_chars=args.max_chars))
     elif args.command == "synthesize":
         _print(proposals.synthesize(args.claim_ids).__dict__)
     elif args.command in {"discover", "related-content"}:

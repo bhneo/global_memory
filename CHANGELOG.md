@@ -8,6 +8,20 @@
   received an explicit non-retrospective safety baseline.
 - Fixed Annotation active/history filtering to validate the complete
   supersession graph before applying a target filter.
+- Fixed lint so a terminal `source_only` compile record is required to have an
+  empty, source-bound bundle instead of being rejected for having no knowledge
+  candidates.
+- Restored a knowledge-first default Obsidian Graph: active Working, Trusted and
+  Canonical semantic objects are visible with typed edges, while raw Source
+  nodes and synthetic grouping hubs stay out of the human default. The
+  `trusted` and `all` profiles remain available for stricter/audit projections.
+- Added the Agent semantic-distillation queue and typed model relations, blocked
+  incidental article headings from deterministic compilation, and made Daily
+  and Weekly model reasoning an explicit maintenance requirement.
+- Added intra-bundle semantic relations, functional `metadata_only` alias/tag/domain
+  updates, bilingual retrieval aliases, multi-term Context expansion that ignores
+  archived/route-only false positives, and `compile --skip-obsidian` for bounded
+  model batches with one final derived-view rebuild.
 
 ## [Unreleased] — M9.0 Research Signals and Progressive Routing
 
