@@ -4,7 +4,7 @@ type: "question"
 status: "trusted"
 title: "Agent 何时应将显式推理固化为技能？"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-19T03:06:18+08:00"
+updated_at: "2026-07-19T12:20:34+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
@@ -18,8 +18,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
-consolidation_count: 8
-last_consolidated_at: "2026-07-19T03:06:18+08:00"
+consolidation_count: 9
+last_consolidated_at: "2026-07-19T12:20:34+08:00"
 last_verified_at: null
 trust_score: 58
 trust_reasons: ["valid consolidation receipt matches current object"]
@@ -33,7 +33,7 @@ origin_candidate_sha256: "6161fdf77fe161f87677d3a59824bbf7c860874bf69574fcf0e90e
 memory_schema_version: 2
 legacy_status: "trusted"
 epistemic_status: "open_question"
-last_consolidation_id: "consolidation_ce0b892792a0ff21fc07aa2e"
+last_consolidation_id: "consolidation_b3c4152922200a3ff497b780"
 needs_policy_requalification: false
 trust_policy_version: "trusted-promotion-v3-receipt-v2"
 last_policy_qualified_at: "2026-07-17T18:39:26+08:00"

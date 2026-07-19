@@ -10,6 +10,9 @@ from pathlib import Path
 from .backups import RawBackupService
 from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from .capture import CaptureService
+from .cognition import (
+    DailyDreamService, InputEpisodeService, ReflectionService, WeeklyDreamService,
+)
 from .context import ContextPackService
 from .consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration, WorkingQualityMigration
 from .distillation import CorpusDistillationService
@@ -68,6 +71,7 @@ def build_parser() -> argparse.ArgumentParser:
     capture = commands.add_parser("capture", help="捕获 URL 或本地文件")
     capture.add_argument("target")
     capture.add_argument("--comment", default="")
+    capture.add_argument("--input-type", choices=["article", "paper", "github", "conversation", "idea", "experiment", "meeting"])
     capture.add_argument(
         "--refresh", action="store_true",
         help="显式重新抓取 URL；变化时追加 source version 并生成 review proposal",
@@ -78,6 +82,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     capture_wechat.add_argument("url")
     capture_wechat.add_argument("--comment", default="")
+    capture_wechat.add_argument("--input-type", choices=["article", "paper"], default="article")
     capture_wechat.add_argument(
         "--refresh", action="store_true",
         help="显式重新抓取；内容变化时追加 source version",
@@ -86,6 +91,42 @@ def build_parser() -> argparse.ArgumentParser:
     capture_text.add_argument("--text")
     capture_text.add_argument("--title", default="人工输入")
     capture_text.add_argument("--comment", default="")
+    capture_text.add_argument("--input-type", choices=["article", "conversation", "idea", "experiment", "meeting"], default="article")
+    idea = commands.add_parser("idea", help="capture a user idea into Input plus the Reflection queue")
+    idea_commands = idea.add_subparsers(dest="idea_command", required=True)
+    idea_capture = idea_commands.add_parser("capture")
+    idea_capture.add_argument("--text", required=True)
+    idea_capture.add_argument("--title", default="User idea")
+    conversation = commands.add_parser("conversation", help="import a conversation as an Input Episode")
+    conversation_commands = conversation.add_subparsers(dest="conversation_command", required=True)
+    conversation_import = conversation_commands.add_parser("import")
+    conversation_import.add_argument("path")
+    conversation_import.add_argument("--participant", action="append", default=[])
+    conversation_import.add_argument("--topic")
+    session = commands.add_parser("session", help="import a third-party Agent session without writing Knowledge")
+    session_commands = session.add_subparsers(dest="session_command", required=True)
+    session_import = session_commands.add_parser("import")
+    session_import.add_argument("--from-file", required=True)
+    session_import.add_argument("--agent", required=True)
+    inputs = commands.add_parser("inputs", help="list or explicitly backfill Input Episodes")
+    inputs.add_argument("--backfill", action="store_true")
+    inputs.add_argument("--limit", type=int, default=25)
+    inputs.add_argument("--source-id", action="append", default=[])
+    reflection = commands.add_parser("reflection", help="queue and create non-factual Reflection objects")
+    reflection_commands = reflection.add_subparsers(dest="reflection_command", required=True)
+    reflection_queue = reflection_commands.add_parser("queue")
+    reflection_queue.add_argument("--limit", type=int, default=5)
+    reflection_queue.add_argument("--max-chars", type=int, default=6000)
+    reflection_create = reflection_commands.add_parser("create")
+    reflection_create.add_argument("input_id")
+    reflection_create.add_argument("--from-file", required=True)
+    dream = commands.add_parser("dream", help="provider-neutral Daily/Weekly cognitive consolidation")
+    dream_commands = dream.add_subparsers(dest="dream_command", required=True)
+    dream_daily = dream_commands.add_parser("daily")
+    dream_daily.add_argument("--bundle-file", required=True)
+    dream_daily.add_argument("--limit", type=int, default=5)
+    dream_weekly = dream_commands.add_parser("weekly")
+    dream_weekly.add_argument("--bundle-file", required=True)
     commands.add_parser("inbox", help="列出 derived processing state 中待 compile 的来源")
     triage = commands.add_parser("triage", aliases=["daily"], help="低成本批量准备 inbox；默认不生成 proposal")
     triage.add_argument("source_ids", nargs="*")
@@ -996,6 +1037,7 @@ def run(args: argparse.Namespace) -> int:
         return 0
     repository.ensure_initialized()
     captures = CaptureService(repository)
+    inputs = InputEpisodeService(repository)
     proposals = ProposalService(repository)
     backups = RawBackupService(repository)
     raw_store = RawStoreService(repository)
@@ -1007,6 +1049,11 @@ def run(args: argparse.Namespace) -> int:
     run_service = RunArtifactService(repository)
     if args.command == "capture":
         result = captures.capture(args.target, args.comment, refresh=args.refresh).__dict__
+        result["input"] = inputs.create_from_source(
+            result["source_id"], input_type=args.input_type,
+        ).__dict__
+        result["reflection_queued"] = True
+        repository.rebuild_index()
         obsidian_result = ObsidianViewService(repository).build()
         result["obsidian"] = {
             "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
@@ -1016,13 +1063,55 @@ def run(args: argparse.Namespace) -> int:
         _print(result)
     elif args.command == "capture-wechat":
         result = captures.capture_wechat_url(args.url, args.comment, refresh=args.refresh).__dict__
+        result["input"] = inputs.create_from_source(
+            result["source_id"], input_type=args.input_type,
+        ).__dict__
+        result["reflection_queued"] = True
+        repository.rebuild_index()
         result["obsidian"] = ObsidianViewService(repository).build()
         _print(result)
     elif args.command == "capture-text":
         text = args.text if args.text is not None else sys.stdin.read()
         result = captures.capture_text(text, args.comment, args.title).__dict__
+        result["input"] = inputs.create_from_source(
+            result["source_id"], input_type=args.input_type,
+            title=args.title, user_authored=True, submitted_by="user",
+        ).__dict__
+        result["reflection_queued"] = True
+        repository.rebuild_index()
         result["obsidian"] = ObsidianViewService(repository).build()
         _print(result)
+    elif args.command == "idea":
+        _print(inputs.capture_idea(args.text, title=args.title))
+    elif args.command == "conversation":
+        _print(inputs.import_conversation(
+            args.path, participants=args.participant, topic=args.topic,
+        ))
+    elif args.command == "session":
+        _print(inputs.import_agent_session(args.from_file, agent=args.agent))
+    elif args.command == "inputs":
+        if args.backfill:
+            _print(inputs.backfill(limit=args.limit, source_ids=args.source_id or None))
+        else:
+            _print([
+                {**read_document(path)[0], "path": repository.rel(path)}
+                for path in inputs.documents()
+            ])
+    elif args.command == "reflection":
+        service = ReflectionService(repository)
+        if args.reflection_command == "queue":
+            _print(service.queue(limit=args.limit, max_chars=args.max_chars))
+        else:
+            try:
+                payload = json.loads(Path(args.from_file).expanduser().resolve().read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise GlobalMemoryError(f"cannot read reflection JSON: {exc}") from exc
+            _print(service.create(args.input_id, payload).__dict__)
+    elif args.command == "dream":
+        if args.dream_command == "daily":
+            _print(DailyDreamService(repository).run(args.bundle_file, limit=args.limit))
+        else:
+            _print(WeeklyDreamService(repository).run(args.bundle_file))
     elif args.command == "inbox":
         _print(proposals.inbox())
     elif args.command in {"triage", "daily"}:

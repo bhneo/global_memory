@@ -1,5 +1,10 @@
 # Global Memory read-only MCP
 
+M9.1 does not add a write MCP. `memory_context` automatically exposes relevant
+Reflections and Cognitive Synthesis for research/exploration profiles through
+the shared Context Pack policy. Execution requests exclude both cognitive
+layers. Agent Session import remains an explicit local CLI capture operation.
+
 ## Tools
 
 | Tool | Purpose |

@@ -1,5 +1,53 @@
 # Current State
 
+## M9.1 Cognitive Consolidation update (2026-07-19)
+
+- Typed Input Episodes now unify article, paper, GitHub, conversation, idea,
+  experiment, meeting and third-party Agent Session capture under
+  `vault/inputs/`, while immutable Source remains authoritative.
+- Quality-gated Reflection objects under `vault/reflections/` record cognitive
+  value, changed beliefs, surprises, bounded structural connections, conflicts,
+  questions and possible mechanisms. Reflection is explicitly non-factual,
+  carries no Memory Tier/Epistemic Status, does not enter Evidence/Receipt, and
+  is never execution-safe.
+- Provider-neutral `dream daily` consumes at most five current queue items,
+  prevalidates the complete artifact, rejects Daily Hypothesis/Analogy/Synthesis,
+  resumes an identical immutable Reflection after interruption, attaches
+  `reflection_context` to explicit semantic items, and compiles them into
+  Working only.
+- Provider-neutral `dream weekly` creates non-factual Cognitive Synthesis from
+  multiple Reflections and existing Concepts. Connections require a shared
+  mechanism, boundary and difference; hypothesis candidates require supporting
+  Reflections/Sources, counterarguments, a falsifier and a possible experiment.
+- Research/Exploration Context can return labeled Reflections and Cognitive
+  Synthesis. Execution Context excludes both. The existing read-only MCP gains
+  this behavior through the shared Context Pack without a new write surface.
+- M8.1.2 governance is unchanged: model artifacts never write Trusted or
+  Canonical, both Dream pipelines assert zero Canonical writes, and third-party
+  Agents submit Experience rather than Knowledge.
+- Local regression status: 230 tests pass. GitHub's Ubuntu/Windows x Python
+  3.11-3.13 matrix has an explicit M9.1 acceptance step but is not yet verified
+  remotely for this uncommitted change set.
+
+## Operational status
+
+The M9.1 code, synthetic end-to-end scenario and first bounded real-Vault pilot
+are locally accepted. Five selected recent Sources were explicitly transitioned
+into five Input Episodes, read from their hash-bound Extractions, distilled into
+five quality-gated Reflections and five new Working Concepts, then integrated
+into one non-factual Cognitive Synthesis with one falsifiable hypothesis. The
+pilot wrote 0 Trusted and 0 Canonical objects. Historical Sources were not bulk
+migrated; bounded `inputs --backfill` remains explicit. New CLI captures enter
+the Input layer. The Codex Daily/Weekly tasks now explicitly produce and apply
+Dream JSON artifacts; deterministic `consolidate daily/weekly` remains a
+separate governance stage and does not invoke a model.
+
+## Current milestone
+
+M9.1 — Cognitive Consolidation is implemented and accepted through synthetic
+and bounded real-Input pilots on the frozen M8.1.2 trust boundary. Remote matrix
+CI remains pending the user's unified push.
+
 ## M9.0.1 Quality Closure update (2026-07-18)
 
 - Daily/Weekly now have an explicit Agent semantic-distillation stage. The
@@ -50,7 +98,7 @@ M9.0 — Research Signals and Progressive Routing is implemented locally on top 
 - Seven M9-specific CI acceptance steps were added to the Ubuntu/Windows × Python 3.11–3.13 matrix.
 - M8 governance, Canonical gate, Receipt v2 and recovery state machines were not changed.
 
-## Current milestone
+## Previous milestone
 
 M9.0 — Research Signals and Progressive Routing is implemented and locally accepted. M8.1.2 remains the frozen trust foundation: Receipt v2 is bound to the complete current environment, governed writes remain recoverable, and Canonical remains an explicit proposal/approval decision.
 
@@ -71,22 +119,22 @@ Memory Tier (`working`, `trusted`, `canonical`, `historical`) is independent fro
 ## Current metrics
 
 <!-- GENERATED_METRICS_START -->
-- Generated at: 2026-07-19T01:49:18+08:00
-- Working / Trusted / Canonical / Historical: 63 / 30 / 1 / 37
-- Source-only compile records / sources / historical objects: 42 / 42 / 37
+- Generated at: 2026-07-19T17:27:47+08:00
+- Working / Trusted / Canonical / Historical: 106 / 30 / 1 / 43
+- Source-only compile records / sources / historical objects: 42 / 42 / 43
 - Trusted current policy / receipt / qualified: 28 / 30 / 23
 - Trusted awaiting / stale receipt / contested / high-risk drift: 2 / 0 / 0 / 0
 - Trusted factual / exploration; Canonical with current Receipt: 11 / 19 / 0
 - Contested: 0
 - Working revisions: 0
-- Open exceptions: 10
+- Open exceptions: 12
 - Promotion candidates: 0
-- Consolidation receipts / failed: 456 / 50
-- Receipt schema versions: {'v1': 113, 'v2': 343}
-- Objects with current valid Receipt v2: 85
+- Consolidation receipts / failed: 557 / 66
+- Receipt schema versions: {'v1': 113, 'v2': 444}
+- Objects with current valid Receipt v2: 120
 - Pending recovery journals: 0
-- Drift warnings / high severity: 2 / 0
-- Corpus sources / knowledge objects: 107 / 131
+- Drift warnings / high severity: 4 / 2
+- Corpus sources / knowledge objects: 107 / 180
 - Research annotations total / active / superseded: 0 / 0 / 0
 <!-- GENERATED_METRICS_END -->
 

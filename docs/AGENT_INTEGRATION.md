@@ -1,5 +1,14 @@
 # Agent and Obsidian integration
 
+## M9.1 experience and reflection contract
+
+Third-party Agents submit session experience through `gm session import`; the
+result is an Input Episode queued for Reflection, never a direct Knowledge
+write. Research Context may include explicitly labeled Reflection and Cognitive
+Synthesis. Execution Context excludes both. Agents may author Daily/Weekly JSON
+artifacts, but explicit semantic items still compile into Working only and
+Canonical remains human-approved.
+
 ## M8 read and evolution contract
 
 Every assistant must preserve `memory_tier`, `epistemic_status`, confidence, source authority, evidence coverage/entailment, unresolved contradictions and last consolidation from Context Pack. Execution answers must not express hypothetical, exploratory analogy, unknown, contested or degraded material as established fact. Durable write-back that changes existing knowledge must state `support`, `refine`, `limit`, `contradict`, `supersede` or `metadata_only`; Trusted changes follow Revision/Exception governance.
@@ -62,9 +71,9 @@ These files use ordinary Markdown and path-based wikilinks. They are generated v
 
 ## Maintenance
 
-For routine article ingestion, `gm triage [source-id ...] --limit 25` remains the cheapest extraction/quality preparation step. `gm consolidate daily` establishes the safe deterministic boundary; the Daily Agent must then consume a bounded `gm semantic queue` and submit model-produced JSON Bundles into Working. Source-only is safe staging, not proof that semantic maintenance is complete. See `SEMANTIC_DISTILLATION.md`.
+For routine article ingestion, `gm triage [source-id ...] --limit 25` remains the cheapest extraction/quality preparation step. `gm consolidate daily` establishes the safe deterministic boundary; the Daily Agent must then consume a bounded `gm reflection queue`, use the matching semantic queue only for Source detail, and apply one model-produced artifact through `gm dream daily`. Source-only is safe staging, not proof that semantic maintenance is complete. See `COGNITIVE_CONSOLIDATION.md` and `SEMANTIC_DISTILLATION.md`.
 
-The Weekly Agent first performs cross-source semantic integration, then runs `gm consolidate weekly --skip-daily-admission` for Working review, Trusted policy, drift audit, exception routing, promotion recommendations and the review-compression digest. It never writes Canonical automatically.
+The Weekly Agent first applies a source- and Reflection-bound Cognitive Synthesis through `gm dream weekly`, then runs `gm consolidate weekly --skip-daily-admission` for Working review, Trusted policy, drift audit, exception routing, promotion recommendations and the review-compression digest. It never writes Canonical automatically.
 
 Run `gm maintain` for the normal read-only health and backlog report. It also reports whether generated Obsidian views are missing or stale. Run `gm maintain --rebuild-derived` only when an explicit refresh is wanted; it rebuilds SQLite and all generated Obsidian views, but never raw, proposal, receipt, or canonical content.
 

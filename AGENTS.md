@@ -1,5 +1,31 @@
 # Global Memory Agent Protocol
 
+## M9.1 cognitive-consolidation protocol
+
+- Treat Input Episode, Reflection and Cognitive Synthesis as distinct from
+  Evidence and governed Memory. Reflection and Cognitive Synthesis never enter
+  Trusted/Canonical or Execution Context.
+- Daily/Weekly Dream are external strong-model workflows over local JSON
+  artifacts. The core validates and compiles; it does not call models, execute
+  tools, run experiments or manage Agent lifecycles.
+- `consolidate daily/weekly` is governance preparation/review, not the Dream
+  stage. Daily must apply `dream daily` after a bounded Reflection queue; Weekly
+  must apply `dream weekly` before `consolidate weekly --skip-daily-admission`.
+- Daily Dream must be restartable: prevalidate the complete artifact and reuse
+  an identical immutable Reflection after interruption. Daily rejects
+  Hypothesis, Analogy and Synthesis objects.
+- Weekly knowledge updates and bundles must bind the exact supporting
+  Reflection/Source subset; never attach all weekly Reflections to every item.
+- A Reflection must explain cognitive value and contain a changed belief,
+  surprise, qualified connection or open question. Connections require shared
+  mechanism, boundary and difference; keyword overlap is invalid.
+- Hypothesis candidates require supporting Reflection/Source IDs,
+  counterarguments, a falsifier and a possible experiment. They remain
+  hypothetical and do not auto-promote.
+- Third-party Agent sessions enter through Input -> Reflection -> Dream. Never
+  let an external Agent write Knowledge directly. Follow
+  `docs/COGNITIVE_CONSOLIDATION.md` and ADR 0057.
+
 ## M9.0 research-signal protocol
 
 - Research Annotation is append-only user-owned truth under `vault/annotations/research/`; never rewrite user fields or merge them with Agent interpretation.
@@ -18,9 +44,10 @@
   from Daily or Weekly maintenance; Verify first, and treat a changed
   post-image, successor revision or Canonical successor as a hard block.
 - Daily and Weekly are semantic Agent workflows, not command-only cron jobs.
-  Daily must use its model on a bounded `semantic queue` before stopping at
-  Source-only; Weekly must use its stronger model for cross-source reuse and
-  typed relations before Receipt/trust review. Follow
+  Daily must use its model on a bounded Reflection queue (with semantic queue
+  only as the matching Source supplement) before stopping at Source-only;
+  Weekly must use its stronger model for Cognitive Synthesis, cross-source reuse
+  and typed relations before Receipt/trust review. Follow
   `docs/SEMANTIC_DISTILLATION.md`; model bundles enter Working only.
 
 ## M8 non-negotiable trust protocol

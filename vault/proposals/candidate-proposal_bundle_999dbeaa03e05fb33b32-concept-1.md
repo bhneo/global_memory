@@ -1,0 +1,22 @@
+---
+id: "concept_90d52ab5e62d9847f9529875"
+type: "concept"
+status: "proposal"
+title: "VLA 注意力泛化—动作泛化缺口"
+created_at: "2026-07-19T17:16:55+08:00"
+updated_at: "2026-07-19T22:43:32+08:00"
+aliases: ["VLA Attention-to-Action Generalization Gap", "Attention-Level Generalization", "注意力到动作缺口", "Pelican-VLA"]
+tags: []
+domains: ["embodied-ai", "vla", "generalization"]
+confidence: "medium"
+source_ids: ["source_3093a2f57587e962f87d6277"]
+relations: [{"type": "derived_from", "target_id": "source_3093a2f57587e962f87d6277", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "codex-gpt56-m91-real-daily-v1", "status": "working"}, {"type": "limits", "target_id": "concept_generalist_cross_embodiment_vla", "reason": "它指出跨本体视觉关注可先于可执行动作迁移，限制了仅凭表征或注意力证据声称通用策略成立。", "confidence": "medium", "created_by": "codex-gpt56-m91-real-daily-v1", "status": "working"}, {"type": "limits", "target_id": "concept_generalist_cross_embodiment_vla", "reason": "它指出跨本体视觉关注可先于可执行动作迁移，限制了仅凭表征或注意力证据声称通用策略成立。", "confidence": "medium", "created_by": "codex-gpt56-m91-real-daily-v1", "status": "proposal"}]
+change_reason: "compile bundle from source_3093a2f57587e962f87d6277"
+change_type: "needs_review"
+reflection_context: {"reflection_ids": ["reflection_051f1a0f00d5131171df1440"], "importance": "high", "changed_belief": "此前常把任务相关视觉表示和动作泛化合并评价；该材料要求分别测量 attention-level generalization 与 attention-to-action transfer。", "surprising": "紧凑 Bottleneck Tokens 在没有对象标注、分割或注意力监督时形成操作相关注意力，而且微调前后注意模式相似，暗示微调主要强化表示到动作的映射。", "connections": [{"shared_mechanism": "都追求跨对象、场景、任务与本体共享任务相关视觉表示", "boundary": "连接只说明视觉表征可迁移，不表示统一动作空间或跨本体动力学已经解决", "difference": "通用 VLA 概念描述端到端跨本体策略目标，Pelican 的结果把其中的注意力表示能力与最终执行能力拆开评估"}], "open_questions": ["如何设计干预实验验证 Bottleneck Tokens 的注意力是否因果改善跨本体动作泛化？"]}
+proposed_status: "working"
+---
+
+# VLA 注意力泛化—动作泛化缺口
+
+VLA 可以在未见场景或本体中形成面向操作对象与接触区域的可迁移注意力，却仍缺少把这些区域稳定映射为可执行动作的能力；因此视觉注意力泛化与动作级成功必须分开评价。

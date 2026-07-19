@@ -1,5 +1,27 @@
 # Global Memory
 
+## M9.1 cognitive consolidation
+
+M9.1 adds Input Episodes, non-factual Reflections, bounded Daily Dream, deep
+Weekly Cognitive Synthesis, falsifiable hypothesis gates, and labeled
+Reflection/Synthesis retrieval for research Context Packs. The core remains
+provider-neutral and never calls a model or executes an Agent task. Reflection
+and Cognitive Synthesis cannot enter Evidence, Trusted, or Canonical; Execution
+Context excludes both. See `docs/COGNITIVE_CONSOLIDATION.md` and ADR 0057.
+
+```powershell
+.\scripts\gm.ps1 idea capture --text "机器人技能下移可能类似编译器优化"
+.\scripts\gm.ps1 reflection queue --limit 5
+.\scripts\gm.ps1 dream daily --bundle-file .\daily-dream.json --limit 5
+.\scripts\gm.ps1 dream weekly --bundle-file .\weekly-dream.json
+```
+
+`consolidate daily/weekly` does not replace these model-driven Dream stages.
+Daily validates and applies a bounded Reflection artifact before Working;
+Weekly applies an exact Reflection/Source-bound Synthesis artifact before
+governance review. The synthetic pipeline and first bounded five-Input real
+Vault pilot are accepted locally; remote matrix CI remains pending.
+
 ## M9.0 research signals
 
 M9.0 adds append-only research annotations, connection feedback, explainable Project/Domain routing, explicit Activation, and local Research Digest/Map views. These signals describe attention, use and research value; they never change Trust, Epistemic Status, Receipt validity or Canonical. See `docs/RESEARCH_SIGNALS.md` and `docs/RESEARCH_ROUTING.md`.
@@ -19,7 +41,7 @@ bounded personal notes may use deterministic paragraph fallback. See ADR 0056.
 
 Global Memory 是本地优先、用户拥有、模型无关的长期记忆系统。Markdown、不可变 Raw 与治理记录是真相层；SQLite、Context Pack 和 Obsidian 页面都是可删除、可重建的派生层。
 
-当前里程碑是 **M9.0 — Research Signals and Progressive Routing**。它建立在冻结的 M8.1.2 信任边界之上：Working 可以低成本演化；所有 Trusted 变化仍必须有 Receipt v2 与恢复日志；Canonical 仍只允许 Proposal/Exception + 用户明确批准。
+当前里程碑是 **M9.1 — Cognitive Consolidation**。认知层内核、合成场景和首个五输入真实 Daily/Weekly Dream 试跑均已通过；远端矩阵 CI 待统一推送。它建立在冻结的 M8.1.2 信任边界之上：Working 可以低成本演化；所有 Trusted 变化仍必须有 Receipt v2 与恢复日志；Canonical 仍只允许 Proposal/Exception + 用户明确批准。
 
 ## 当前工作流
 

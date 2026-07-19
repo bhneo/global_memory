@@ -1,26 +1,36 @@
 # Agent Semantic Distillation
 
+M9.1 inserts Reflection before semantic compilation. Daily Agents consume the
+bounded `reflection queue`, create quality-gated Reflection objects, and attach
+`reflection_context` to explicit Semantic Bundle items. Weekly Agents compare
+multiple Reflections with active Concepts and emit a separate Cognitive
+Synthesis before proposing any Working knowledge update. The CLI validates
+artifacts; it does not invoke the model. See `COGNITIVE_CONSOLIDATION.md`.
+
 Daily and Weekly are Agent workflows, not aliases for deterministic CLI calls.
 The CLI enforces provenance, schemas and trust boundaries; the Agent model must
 perform the semantic reading that the deterministic core intentionally cannot.
 
 ## Daily: cheap semantic admission
 
-1. Run `gm consolidate daily --limit 25` for capture, extraction and the safe
-   deterministic boundary. Source-only is an acceptable staging result, not the
+1. Run `gm recover`, then `gm consolidate daily --limit 25` for extraction and
+   the safe deterministic boundary. Source-only is acceptable staging, not the
    end of semantic maintenance.
-2. Run `gm semantic queue --limit 5 --max-chars 6000`.
-3. For every selected source, read the bounded excerpt and its reader page. Use
+2. Run `gm reflection queue --limit 5 --max-chars 6000`. Use the bounded
+   `gm semantic queue` only as a source/extraction supplement for those selected
+   Input Episodes; do not process a separate unrelated batch.
+3. For every selected Input, read the bounded excerpt and its Source reader. Use
    Context Pack/search to find existing Concepts, Claims, Questions and
    Tensions before creating anything.
-4. Produce a local JSON Bundle with at most three high-value items per source.
-   Prefer reuse/update over duplication. Every update needs stable `target_id`
-   and typed `change_type`; every proposed relation needs a real target and a
-   reason.
-5. Apply it with `gm compile <source-id> --bundle-file <json>
-   --provider-name agent-semantic-daily-v1 --skip-obsidian`. The result enters
-   Working only. Batch runs rebuild the disposable Obsidian projection once at
-   the final `gm maintain --rebuild-derived`, rather than once per source.
+4. The Daily model produces one local Dream JSON artifact containing a
+   quality-gated `reflection` plus at most three source-grounded
+   `semantic_items` per Input. Daily semantic items are limited to Concept,
+   Claim, Question, Tension and Work; Hypothesis, Analogy and Synthesis are
+   rejected by the core.
+5. Apply the artifact with `gm dream daily --bundle-file <json> --limit 5`.
+   The command validates the entire batch before cognitive writes, reuses an
+   identical immutable Reflection after interruption, and writes Working only.
+6. Rebuild disposable views once with `gm maintain --rebuild-derived`.
 
 Daily should normally extract the source's research question, central mechanism
 or contribution, one bounded result/limitation when evidence is available, and
@@ -29,19 +39,25 @@ generic nodes merely to improve graph density.
 
 ## Weekly: cross-source integration
 
-Weekly uses the stronger Agent model to compare the week's new Working objects
-and still-pending semantic queue with existing memory.
+Weekly uses the stronger Agent model to compare the week's new Working objects,
+active Reflections and matching Source material with existing memory.
 
-1. Run a bounded semantic queue (`--limit 15 --max-chars 10000`) and process the
-   highest-value material, prioritizing repeated domains, active projects,
-   conflicts and frequently co-occurring concepts.
-2. Reuse stable nodes and propose typed `support`, `refine`, `limit`,
+1. Run `gm recover`. Finish any bounded Daily Reflection backlog before Weekly
+   integration; do not silently synthesize unreflected raw captures.
+2. The Weekly model reads the week's Sources, Reflections, Feedback, Activation
+   and active Concepts. Reuse stable nodes and propose typed `support`, `refine`, `limit`,
    `contradict`, `related_to`, `depends_on`, `tested_by`, `applied_in` or
    `part_of` relationships. A shared keyword alone is not a relation.
-3. Run `gm consolidate weekly --skip-daily-admission` only after semantic
-   bundles have entered Working, so Weekly Receipt/trust review operates on
-   actual knowledge rather than raw articles.
-4. Rebuild derived views and test at least one cross-source Context Pack query.
+3. Produce one Weekly Dream JSON artifact. Every `knowledge_update` names an
+   active input Concept, typed change, previous/proposed view, reason and its
+   supporting Reflection/Source IDs. Every `knowledge_bundle` declares the
+   exact Reflection IDs that support its Source and semantic items.
+4. Apply it with `gm dream weekly --bundle-file <json>`. Cognitive Synthesis is
+   non-factual; optional semantic bundles enter Working only.
+5. Run `gm consolidate weekly --skip-daily-admission` only after the Dream
+   artifact has entered Working, so Receipt/trust review operates on actual
+   knowledge rather than raw articles.
+6. Rebuild derived views and test at least one cross-source Context Pack query.
 
 Weekly must report semantic yield separately from governance yield:
 

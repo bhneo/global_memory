@@ -1,5 +1,18 @@
 # Data Model
 
+## M9.1 cognitive layer
+
+| Object | Location | Truth role | Trust effect |
+|---|---|---|---|
+| Input Episode | `vault/inputs/` | typed experience linked to immutable Source | none |
+| Reflection | `vault/reflections/` | Agent/user interpretation of cognitive value and change | none |
+| Cognitive Synthesis | `vault/synthesis/` | weekly patterns, tensions and falsifiable candidates | none |
+
+These objects use explicit `input_episode`, `reflection`, and
+`cognitive_synthesis` truth layers. They do not carry Memory Tier, do not enter
+Evidence or Receipts, and are never execution-safe. Semantic knowledge derived
+from them still enters only through Working Bundle compilation.
+
 ## M8 orthogonal state
 
 | Dimension | Values | Question answered |

@@ -1,5 +1,12 @@
 # Scientific Cognition Vision
 
+M9.1 adds the missing cognitive entrance to this vision: Experience becomes a
+typed Input Episode, then a non-factual Reflection that records why it matters,
+what changed, structural connections, conflicts and questions. Daily Dream
+digests; Weekly Dream creates labeled Cognitive Synthesis. These layers help a
+human reinterpret evidence without becoming Evidence themselves, and they do
+not execute tasks or experiments.
+
 Global Memory 的长期目标是一套本地、可审计、可自进化的科研认知系统。它保存直觉、组织研究、恢复项目上下文，并逐步积累跨学科类比、可证伪假设和实验闭环中的真实信号。
 
 长期架构由四张相互连接、但职责不同的图组成：

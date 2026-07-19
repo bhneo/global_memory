@@ -1,4 +1,17 @@
-# Global Memory Schema v0.25
+# Global Memory Schema v0.26
+
+## M9.1 Cognitive Objects
+
+`vault/inputs/` stores Input Episodes linked to immutable Sources.
+`vault/reflections/` stores `truth_layer: reflection` interpretations with no
+Memory Tier or Epistemic Status. `vault/synthesis/` stores
+`truth_layer: cognitive_synthesis` Weekly pattern records, also without Memory
+Tier. Neither layer is Evidence or execution-safe.
+
+Reflection connections require `shared_mechanism`, `boundary`, and `difference`.
+Candidate hypotheses require supporting Reflection/Source IDs,
+counterarguments, a falsifier, and a possible experiment; their status remains
+`hypothetical`. Full schemas are in `docs/COGNITIVE_CONSOLIDATION.md`.
 
 ## M9.0 Research Annotation
 

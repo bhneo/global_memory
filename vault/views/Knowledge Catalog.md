@@ -126,22 +126,37 @@ Symmetry in Neu]] · `archived`
 - [[memory/concept/concept_sim_to_real_scene_infrastructure|Sim-to-Real 场景基础设施]] · `working`
 - [[memory/concept/concept_vla_action_cache_refinement|VLA 动作缓存与上下文复用]] · `working`
 - [[memory/concept/concept_vla_action_evaluation_distillation|VLA 动作评估蒸馏]] · `working`
+- [[memory/concept/concept_90d52ab5e62d9847f9529875|VLA 注意力泛化—动作泛化缺口]] · `working`
 - [[memory/concept/concept_a25076aa1f135c515237fa48|the expansion function𝑓𝐺′(𝑠). This generalizes a notion from additive number theory.]] · `archived`
 - [[memory/concept/concept_world_model_evaluation|世界模型评价]] · `working`
+- [[memory/concept/concept_event_sensitive_task_progress_memory|事件敏感的任务进度记忆]] · `working`
 - [[memory/concept/concept_sensor_conditional_expert_routing|传感器条件化专家路由]] · `working`
 - [[memory/concept/concept_embodied_data_loop|具身数据闭环]] · `trusted`
 - [[memory/concept/concept_intrinsic_motivation_rl|内在动机强化学习]] · `working`
+- [[memory/concept/concept_asymmetric_frozen_vla_harness|冻结 VLA 的非对称技能编排]] · `working`
+- [[memory/concept/concept_d7111f304971448401a57f3b|冻结技能库与轻量路由适应]] · `working`
+- [[memory/concept/concept_geometry_grounded_proprioception|几何落地的本体感觉视觉融合]] · `working`
+- [[memory/concept/concept_dynamic_execution_horizon|动态动作块执行时域]] · `working`
 - [[memory/concept/concept_parameter_symmetry|参数空间对称性]] · `working`
 - [[memory/concept/concept_dual_system_world_action_model|双系统 World Action Model]] · `working`
+- [[memory/concept/concept_portable_embodied_inference_runtime|可移植具身推理运行时]] · `working`
 - [[memory/concept/concept_multitimescale_tactile_world_model|多时间尺度触觉世界模型控制]] · `working`
 - [[memory/concept/concept_staged_cross_embodiment_alignment|异构具身数据的分阶段对齐]] · `working`
 - [[memory/concept/concept_perceptual_prediction_bias|感知预测偏差]] · `trusted`
 - [[memory/concept/concept_skill_evolution|技能演化与技能下沉]] · `working`
+- [[memory/concept/concept_34abf7a170a7e0fc0492fc16|指向式视觉导航接口]] · `working`
+- [[memory/concept/concept_0c7884679bf6d4e1287ce225|控制策略的自适应潜空间推理]] · `working`
 - [[memory/concept/concept_machine_consciousness_integration|机器意识的信息整合问题]] · `working`
 - [[memory/concept/concept_lie_group|李群与连续对称性]] · `working`
+- [[memory/concept/concept_latent_space_intervention_adaptation|生成策略的潜空间干预适应]] · `working`
 - [[memory/concept/concept_progressive_vla_demonstration_curriculum|由简到繁的 VLA 示范组织]] · `working`
+- [[memory/concept/concept_real_robot_deployment_iteration_loop|真机部署评估迭代闭环]] · `working`
+- [[memory/concept/concept_end_to_end_embodied_reproducibility|端到端具身系统可复现性]] · `working`
 - [[memory/concept/concept_symbolic_regression|符号回归]] · `working`
+- [[memory/concept/concept_typed_verified_robot_skill_graph|类型化可验证机器人技能图]] · `working`
+- [[memory/concept/concept_adaptive_interleaved_multimodal_planning|自适应交错多模态规划]] · `working`
 - [[memory/concept/concept_representation_convergence|表征收敛]] · `working`
+- [[memory/concept/concept_ab253cb9064bc1b550d5e973|跨本体世界监督通道]] · `working`
 - [[memory/concept/concept_generalist_cross_embodiment_vla|跨本体通用 VLA 策略]] · `working`
 - [[memory/concept/concept_ergodicity|遍历性与非遍历性]] · `working`
 - [[memory/concept/concept_implicit_behavior_coordination|隐式行为协调]] · `working`

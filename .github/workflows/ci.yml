@@ -82,12 +82,18 @@ jobs:
       - name: M9.0.1 quality-closure acceptance
         if: always()
         run: python -m pytest tests/test_global_memory.py -k "weekly_excludes_archived or source_only_status or daily_keeps_unmarked_web or annotation_active_history or working_quality_migration" --junitxml=artifacts/m901-quality-closure.xml
+      - name: M9.1 cognitive-consolidation acceptance
+        if: always()
+        run: python -m pytest tests/test_global_memory.py -k "idea_capture or article_reflection or reflection_quality or conversation_and_agent or daily_dream or weekly_dream or weekly_hypothesis or cognitive_synthesis_identity or research_context_includes_reflection or cognitive_cli" --junitxml=artifacts/m91-cognitive-consolidation.xml
       - name: M8 trust-boundary regression
         if: always()
         run: python -m pytest tests/test_global_memory.py -k "m8_ or receipt_v2 or governed_recovery or canonical_evolution" --junitxml=artifacts/m8-trust-boundary-regression.xml
       - name: M9 synthetic research scenario
         if: always()
         run: python scripts/m9_acceptance_demo.py --root .ci-m9-vault --output artifacts/m9-research-scenario.json
+      - name: M9.1 cognitive consolidation scenario
+        if: always()
+        run: python scripts/m91_acceptance_demo.py --root .ci-m91-vault --output artifacts/m91-cognitive-scenario.json
       - name: Promotion policy validation
         if: always()
         run: python scripts/ci_acceptance.py promotion --root .ci-vault --output artifacts/promotion.json

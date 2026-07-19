@@ -21,15 +21,15 @@ PROFILE_PRIORITIES = {
     "execution": {
         "project": 100, "goal": 95, "architecture": 90, "decision": 88,
         "failure": 86, "experiment": 82, "opportunity": 75, "question": 70,
-        "tension": 68, "concept": 60, "claim": 55, "source": 30, "annotation": 20,
+        "tension": 68, "concept": 60, "claim": 55,
     },
     "research": {
-        "concept": 100, "claim": 95, "synthesis": 90, "question": 86,
+        "concept": 100, "claim": 95, "reflection": 92, "synthesis": 90, "question": 86,
         "tension": 84, "hypothesis": 78, "work": 72, "annotation": 68, "source": 60,
     },
     "exploration": {
         "intuition": 100, "tension": 95, "analogy": 92, "anomaly": 90,
-        "hypothesis": 88, "question": 82, "annotation": 80, "concept": 65, "claim": 45,
+        "hypothesis": 88, "reflection": 85, "question": 82, "annotation": 80, "concept": 65, "claim": 45,
     },
 }
 
@@ -100,6 +100,14 @@ class ContextPack:
                 lines.append(f"- Possible connections: {', '.join(annotation.get('possible_connections', [])) or 'none'}\n")
                 lines.append(f"- Salience: `{annotation.get('personal_salience')}`\n")
                 lines.append("- Epistemic note: user intent/value signal, not factual claim\n")
+            if item.get("truth_layer") == "reflection":
+                reflection = item.get("reflection") or {}
+                lines.append(f"- Why important: {reflection.get('why_important') or 'none'}\n")
+                lines.append(f"- Changed belief: {reflection.get('what_changed') or 'none'}\n")
+                lines.append(f"- Open questions: {', '.join(reflection.get('open_questions', [])) or 'none'}\n")
+                lines.append("- Epistemic note: cognitive reflection, not fact or execution-safe evidence\n")
+            if item.get("truth_layer") == "cognitive_synthesis":
+                lines.append("- Epistemic note: weekly pattern synthesis; hypotheses remain falsifiable candidates\n")
             if item.get("evidence"):
                 lines.append(f"- Evidence: `{item['evidence']}`\n")
             if item.get("verification"):
@@ -506,7 +514,10 @@ class ContextPackService:
             status = str(metadata.get("status"))
             tier = infer_tier(metadata, path)
             epistemic = infer_epistemic_status(metadata, tier)
-            non_governed = object_type in {"source", "annotation"}
+            non_governed = (
+                object_type in {"source", "annotation", "input", "reflection"}
+                or (object_type == "synthesis" and metadata.get("truth_layer") == "cognitive_synthesis")
+            )
             current_receipt = None if non_governed else receipt_service.valid_for(str(metadata["id"]))
             receipt_state = "not_applicable" if non_governed else ("current_v2" if current_receipt else "missing_or_stale")
             semantic_failures = [] if non_governed else receipt_service.semantic_qualification_failures(object_type, current_receipt)
@@ -645,7 +656,12 @@ class ContextPackService:
                     "knowledge_status": str(metadata.get("status")),
                     "truth_layer": truth_layer(metadata, path),
                     "memory_tier": None if non_governed else tier,
-                    "epistemic_status": "user_annotation" if object_type == "annotation" else ("unknown" if object_type == "source" else epistemic),
+                    "epistemic_status": (
+                        "user_annotation" if object_type == "annotation"
+                        else "reflection" if object_type == "reflection"
+                        else "cognitive_synthesis" if object_type == "synthesis" and metadata.get("truth_layer") == "cognitive_synthesis"
+                        else "unknown" if object_type in {"source", "input"} else epistemic
+                    ),
                     "confidence": metadata.get("claim_confidence", metadata.get("confidence", "unknown")),
                     "evidence_coverage": metadata.get("evidence_coverage"),
                     "evidence_entailment": metadata.get("evidence_entailment", "unknown"),
@@ -655,7 +671,7 @@ class ContextPackService:
                     "receipt_current": current_receipt is not None if not non_governed else None,
                     "policy_version": policy_version,
                     "policy_qualified": policy_qualified,
-                    "execution_safe": False if object_type == "annotation" else bool(
+                    "execution_safe": False if non_governed and object_type != "source" else bool(
                         object_type == "source" or policy_qualified or (
                             tier == "canonical" and current_receipt is not None and not semantic_failures
                             and epistemic not in {"contested", "hypothetical", "exploratory_analogy", "unknown"}
@@ -692,6 +708,30 @@ class ContextPackService:
                         "supersedes_annotation_id": metadata.get("supersedes_annotation_id"),
                         "created_at": metadata.get("created_at"),
                     } if object_type == "annotation" else None),
+                    "reflection": ({
+                        "reflection_id": metadata.get("id"),
+                        "target_ids": metadata.get("target_ids", []),
+                        "reflection_kind": metadata.get("reflection_kind"),
+                        "importance": metadata.get("importance"),
+                        "why_important": metadata.get("why_important"),
+                        "what_changed": metadata.get("what_changed"),
+                        "surprising": metadata.get("surprising"),
+                        "connections": metadata.get("connections", []),
+                        "conflicts": metadata.get("conflicts", []),
+                        "open_questions": metadata.get("open_questions", []),
+                        "possible_mechanisms": metadata.get("possible_mechanisms", []),
+                        "future_directions": metadata.get("future_directions", []),
+                        "user_authored": metadata.get("user_authored", False),
+                    } if object_type == "reflection" else None),
+                    "cognitive_synthesis": ({
+                        "period": metadata.get("period"),
+                        "input_reflections": metadata.get("input_reflections", []),
+                        "input_concepts": metadata.get("input_concepts", []),
+                        "emerging_patterns": metadata.get("emerging_patterns", []),
+                        "new_connections": metadata.get("new_connections", []),
+                        "unresolved_tensions": metadata.get("unresolved_tensions", []),
+                        "candidate_hypotheses": metadata.get("candidate_hypotheses", []),
+                    } if object_type == "synthesis" and metadata.get("truth_layer") == "cognitive_synthesis" else None),
                     "verification": {
                         "quote_verification": metadata.get("quote_verification", "not_applicable"),
                         "extraction_quality": metadata.get("extraction_quality", "unknown"),

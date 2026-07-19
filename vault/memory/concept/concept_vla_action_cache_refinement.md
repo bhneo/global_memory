@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "VLA 动作缓存与上下文复用"
 created_at: "2026-07-19T03:02:11+08:00"
-updated_at: "2026-07-19T03:38:04+08:00"
+updated_at: "2026-07-19T12:20:26+08:00"
 aliases: ["VLA action caching and refinement", "ActionCache"]
 tags: []
 domains: ["embodied-ai", "vla", "inference-efficiency"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 4
-last_consolidated_at: "2026-07-19T03:38:04+08:00"
+consolidation_count: 5
+last_consolidated_at: "2026-07-19T12:20:26+08:00"
 last_verified_at: "2026-07-19T03:28:10+08:00"
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_1f08ff1c3ffeadc964e2-concept-1.md"
 origin_candidate_sha256: "c6afce9c6035a67c01e1ee3156231b1f0032c611ee2d640c18f1780d2e9a48be"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_0fc9aac8667c09646b1cb2b7"
+last_consolidation_id: "consolidation_129dac2d7286fa5c70b89ac8"
 evidence: []
 change_history: [{"change_type": "metadata_only", "previous_statement": "# VLA 动作缓存与上下文复用\n\n为扩散或流匹配 VLA 保存带多模态上下文键的中间动作，在相似状态下检索并作为新一轮动作生成的暖启动，再通过后续生成步骤修正。", "new_statement": "# VLA 动作缓存与上下文复用\n\n为扩散或流匹配 VLA 保存带多模态上下文键的中间动作，在相似状态下检索并作为新一轮动作生成的暖启动，再通过后续生成步骤修正。", "changed_fields": ["source_ids", "evidence", "last_verified_at"], "reason": "compile bundle from source_291d6174cf92660287138f47", "trigger_source": "source_291d6174cf92660287138f47", "evidence_added": []}, {"change_type": "metadata_only", "previous_statement": "# VLA 动作缓存与上下文复用\n\n为扩散或流匹配 VLA 保存带多模态上下文键的中间动作，在相似状态下检索并作为新一轮动作生成的暖启动，再通过后续生成步骤修正。", "new_statement": "# VLA 动作缓存与上下文复用\n\n为扩散或流匹配 VLA 保存带多模态上下文键的中间动作，在相似状态下检索并作为新一轮动作生成的暖启动，再通过后续生成步骤修正。", "changed_fields": ["source_ids", "evidence", "last_verified_at"], "reason": "compile bundle from source_291d6174cf92660287138f47", "trigger_source": "source_291d6174cf92660287138f47", "evidence_added": []}, {"change_type": "metadata_only", "previous_statement": "# VLA 动作缓存与上下文复用\n\n为扩散或流匹配 VLA 保存带多模态上下文键的中间动作，在相似状态下检索并作为新一轮动作生成的暖启动，再通过后续生成步骤修正。", "new_statement": "# VLA 动作缓存与上下文复用\n\n为扩散或流匹配 VLA 保存带多模态上下文键的中间动作，在相似状态下检索并作为新一轮动作生成的暖启动，再通过后续生成步骤修正。", "changed_fields": ["aliases"], "reason": "compile bundle from source_291d6174cf92660287138f47", "trigger_source": "source_291d6174cf92660287138f47", "evidence_added": []}]
 ---

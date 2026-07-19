@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "面向真实部署的预测式 VLA"
 created_at: "2026-07-19T02:52:30+08:00"
-updated_at: "2026-07-19T03:06:04+08:00"
+updated_at: "2026-07-19T12:20:20+08:00"
 aliases: []
 tags: []
 domains: ["embodied-ai", "vla", "world-model", "robot-learning"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-daily-gpt56terra-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-19T03:06:04+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-19T12:20:20+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_7e605b3d52b545aadc55-concept-1.md"
 origin_candidate_sha256: "bed1fcdf34d7427958dbeb57c3a6f527d99366aba1947627ad0cb997815c98dd"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_7f98de7b59a27cf470c2eadd"
+last_consolidation_id: "consolidation_addb5624a16aa8aa847befd7"
 ---
 
 # 面向真实部署的预测式 VLA

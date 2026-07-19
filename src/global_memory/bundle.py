@@ -18,6 +18,40 @@ from .quality import SourceQualityService
 from .repository import RELATION_TYPES, Repository, now_iso, sha256_bytes, slugify
 
 
+def validate_bundle_reflection_context(value: Any) -> dict[str, Any]:
+    """Validate cognitive context without treating it as evidence or trust metadata."""
+    if not isinstance(value, dict):
+        raise ValidationError("reflection_context must be an object")
+    context = dict(value)
+    reflection_ids = context.get("reflection_ids", [])
+    if not isinstance(reflection_ids, list) or not all(isinstance(item, str) and item for item in reflection_ids):
+        raise ValidationError("reflection_context.reflection_ids must be a list of IDs")
+    connections = context.get("connections", [])
+    if not isinstance(connections, list):
+        raise ValidationError("reflection_context.connections must be a list")
+    for connection in connections:
+        if not isinstance(connection, dict) or not all(
+            str(connection.get(key, "")).strip()
+            for key in ("shared_mechanism", "boundary", "difference")
+        ):
+            raise ValidationError(
+                "reflection connection requires shared_mechanism, boundary, and difference"
+            )
+    open_questions = context.get("open_questions", [])
+    if not isinstance(open_questions, list) or not all(isinstance(item, str) and item.strip() for item in open_questions):
+        raise ValidationError("reflection_context.open_questions must be a text list")
+    if not any((
+        str(context.get("changed_belief", "")).strip(),
+        str(context.get("surprising", "")).strip(),
+        connections,
+        open_questions,
+    )):
+        raise ValidationError(
+            "reflection_context requires changed_belief, surprising, a qualified connection, or an open question"
+        )
+    return context
+
+
 class CompilerProvider(Protocol):
     name: str
 
@@ -104,6 +138,18 @@ class JsonBundleProvider:
         items = payload.get("items") if isinstance(payload, dict) else payload
         if not isinstance(items, list):
             raise ValidationError("external bundle JSON 必须是 item 列表或包含 items 列表")
+        if isinstance(payload, dict) and payload.get("reflection_context") is not None:
+            reflection_context = validate_bundle_reflection_context(payload["reflection_context"])
+            enriched: list[dict[str, Any]] = []
+            for item in items:
+                if not isinstance(item, dict):
+                    raise ValidationError("external bundle item must be an object")
+                candidate = dict(item)
+                metadata = dict(candidate.get("metadata") or {})
+                metadata.setdefault("reflection_context", reflection_context)
+                candidate["metadata"] = metadata
+                enriched.append(candidate)
+            items = enriched
         return items
 
 
@@ -443,6 +489,11 @@ class BundleCompiler:
                     "status": "proposal",
                 })
             extra_metadata = spec.get("metadata", {}) or {}
+            if "reflection_context" in extra_metadata:
+                extra_metadata = dict(extra_metadata)
+                extra_metadata["reflection_context"] = validate_bundle_reflection_context(
+                    extra_metadata["reflection_context"]
+                )
             protected = {"id", "type", "status", "created_at", "updated_at", "source_ids", "relations"}
             for key, value in extra_metadata.items():
                 if key not in protected:

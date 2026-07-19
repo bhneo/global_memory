@@ -17,6 +17,10 @@ from global_memory.bundle import BundleCompiler, BundleRecoveryManager, BundleRe
 from global_memory.atomicity import AtomicClaimInspector
 from global_memory.cli import build_parser, contradiction_audit, doctor, lint, run
 from global_memory.context import ContextPackService
+from global_memory.cognition import (
+    DailyDreamService, InputEpisodeService, ReflectionService, SynthesisService,
+    WeeklyDreamService,
+)
 from global_memory.distillation import CorpusDistillationService
 from global_memory.errors import ImmutableContentError, ValidationError
 from global_memory.extraction import ExtractionService
@@ -4636,3 +4640,463 @@ def test_repair_faulty_trust_requalification_restores_only_proven_state(repo: Re
     assert restored["needs_policy_requalification"] is True
     assert restored["trust_policy_version"] == "trusted-promotion-v1"
     assert restored["trust_score"] == 91 and not (repo.root / "vault/receipts/demotions").exists()
+def cognitive_reflection_payload(**overrides):
+    payload = {
+        "title": "Reflection on compiled robot skills",
+        "created_by": "agent",
+        "reflection_kind": "idea",
+        "importance": "high",
+        "why_important": "It changes how reusable robot skills can be understood as compiled representations rather than only runtime policies.",
+        "what_changed": "Previously skill transfer was treated only as policy reuse; now compilation boundaries are also relevant.",
+        "surprising": "Compression and validation may be coupled rather than separate stages.",
+        "connections": [{
+            "shared_mechanism": "expensive learning is compressed into a reusable execution form",
+            "boundary": "the analogy applies to representation reuse, not semantic equivalence",
+            "difference": "compiler outputs are deterministic while learned skills remain probabilistic",
+        }],
+        "conflicts": [],
+        "open_questions": ["Which validation contract makes a compiled skill portable?"],
+        "possible_mechanisms": ["typed preconditions and postconditions"],
+        "future_directions": ["compare skill graphs with compiler intermediate representations"],
+        "confidence": "medium",
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_idea_capture_creates_input_and_reflection_queue(repo: Repository):
+    result = InputEpisodeService(repo).capture_idea(
+        "机器人技能下移可能类似编译器优化", title="技能编译灵感",
+    )
+
+    _, episode, body = repo.find_document(result["input"]["object_id"])
+    assert episode["type"] == "input"
+    assert episode["input_type"] == "idea"
+    assert episode["truth_layer"] == "input_episode"
+    assert episode["user_authored"] is True
+    assert "memory_tier" not in episode
+    assert episode["source_id"] in body
+    queue = ReflectionService(repo).queue(limit=5)
+    assert queue["selected_count"] == 1
+    assert queue["items"][0]["input_id"] == episode["id"]
+
+
+def test_input_backfill_is_bounded_explicit_and_excludes_personal_notes(repo: Repository):
+    first = capture_web_bytes(
+        repo, "https://example.com/backfill-one", b"first backfill article", "Backfill one",
+    )
+    second = capture_web_bytes(
+        repo, "https://example.com/backfill-two", b"second backfill article", "Backfill two",
+    )
+    personal = CaptureService(repo).capture_text("operator receipt", title="Personal receipt")
+
+    selected = InputEpisodeService(repo).backfill(limit=1, source_ids=[first.source_id])
+    remaining = InputEpisodeService(repo).backfill(limit=10)
+    ExtractionService(repo).extract(first.source_id)
+    input_sources = {
+        read_document(path)[0]["source_id"]
+        for path in InputEpisodeService(repo).documents()
+    }
+    queued = ReflectionService(repo).queue(limit=10)
+    first_queue_item = next(
+        item for item in queued["items"] if item["source_ids"] == [first.source_id]
+    )
+
+    assert selected["created_count"] == 1 and selected["knowledge_writes"] == 0
+    assert remaining["created_count"] == 1
+    assert input_sources == {first.source_id, second.source_id}
+    assert personal.source_id not in input_sources
+    assert first_queue_item["excerpt_source"] == "extraction"
+    assert "first backfill article" in first_queue_item["excerpt"]
+
+
+def test_article_reflection_is_agent_authored_and_nonfactual(repo: Repository):
+    source = capture_web_bytes(
+        repo, "https://example.com/world-model-critic",
+        b"A world model can support prediction and internal evaluation.",
+        "World model critic",
+    )
+    episode = InputEpisodeService(repo).create_from_source(
+        source.source_id, input_type="article",
+    )
+    duplicate_episode = InputEpisodeService(repo).create_from_source(
+        source.source_id, input_type="article",
+    )
+    assert duplicate_episode.object_id == episode.object_id
+    assert duplicate_episode.created is False
+    reflection = ReflectionService(repo).create(
+        episode.object_id, cognitive_reflection_payload(
+            reflection_kind="article", created_by="agent",
+            why_important="It changes the role assigned to a world model from prediction alone to a possible internal evaluator.",
+        ),
+    )
+    _, metadata, _ = repo.find_document(reflection.object_id)
+    assert metadata["reflection_kind"] == "article"
+    assert metadata["created_by"] == "agent"
+    assert metadata["user_authored"] is False
+    assert metadata["truth_layer"] == "reflection"
+    duplicate_reflection = ReflectionService(repo).create(
+        episode.object_id, cognitive_reflection_payload(
+            reflection_kind="article", created_by="agent",
+            why_important="It changes the role assigned to a world model from prediction alone to a possible internal evaluator.",
+        ),
+    )
+    assert duplicate_reflection.object_id == reflection.object_id
+    assert duplicate_reflection.created is False
+
+
+def test_reflection_quality_gate_and_authorship_do_not_change_trust(repo: Repository):
+    episode = InputEpisodeService(repo).capture_idea("World models may act as critics")["input"]
+    service = ReflectionService(repo)
+
+    with pytest.raises(ValidationError, match="cognitive value"):
+        service.create(episode["object_id"], {
+            "created_by": "agent", "reflection_kind": "idea",
+            "why_important": "这篇文章介绍了世界模型。",
+            "open_questions": ["What changes?"], "confidence": "low",
+        })
+    with pytest.raises(ValidationError, match="shared_mechanism"):
+        service.create(episode["object_id"], cognitive_reflection_payload(
+            connections=[{"shared_mechanism": "both use AI"}],
+        ))
+
+    result = service.create(
+        episode["object_id"], cognitive_reflection_payload(created_by="user"),
+    )
+    _, reflection, _ = repo.find_document(result.object_id)
+    assert reflection["truth_layer"] == "reflection"
+    assert reflection["user_authored"] is True
+    assert reflection["execution_safe"] is False
+    assert "memory_tier" not in reflection
+    assert "epistemic_status" not in reflection
+    assert repo.count_by_type().get("reflection") == 1
+
+
+def test_conversation_and_agent_session_import_only_queue_reflection(repo: Repository, workspace: Path):
+    conversation = workspace / "conversation.md"
+    conversation.write_text("User: a slow embodied system may compile reusable skills.\nAssistant: define the boundary.", encoding="utf-8")
+    imported = InputEpisodeService(repo).import_conversation(
+        conversation, participants=["user", "assistant"], topic="embodied-agent",
+    )
+    _, conversation_input, _ = repo.find_document(imported["input"]["object_id"])
+    assert conversation_input["participants"] == ["user", "assistant"]
+
+    session = workspace / "session.json"
+    session.write_text(json.dumps({
+        "goal": "fix GR00T deployment", "result": "success",
+        "lesson": "N1.6 requires an explicit observation contract",
+    }), encoding="utf-8")
+    session_result = InputEpisodeService(repo).import_agent_session(session, agent="codex")
+    _, session_input, _ = repo.find_document(session_result["input"]["object_id"])
+    assert session_input["episode_kind"] == "agent_session"
+    assert session_input["session"]["lesson"].startswith("N1.6")
+    assert session_result["knowledge_writes"] == 0
+    assert not list(repo.memory_documents())
+    assert not list(repo.canonical_documents())
+
+
+def test_daily_dream_creates_reflection_and_working_but_never_canonical(repo: Repository, workspace: Path):
+    captured = InputEpisodeService(repo).capture_idea(
+        "Robot skill compilation can compress expensive planning into fast execution.",
+        title="Robot skill compilation",
+    )
+    input_id = captured["input"]["object_id"]
+    bundle_path = workspace / "daily-dream.json"
+    bundle_path.write_text(json.dumps({
+        "provider_name": "gpt-5.6-terra-light",
+        "reflections": [{
+            "input_id": input_id,
+            "reflection": cognitive_reflection_payload(),
+            "semantic_items": [{
+                "object_type": "concept",
+                "title": "Compiled robot skill representation",
+                "body": "A reusable robot skill representation compresses expensive planning into a bounded execution interface.",
+                "metadata": {"aliases": ["机器人技能编译表示"], "confidence": "medium"},
+            }],
+        }],
+    }, ensure_ascii=False), encoding="utf-8")
+
+    result = DailyDreamService(repo).run(bundle_path, limit=5)
+    assert result["inputs_processed"] == 1
+    assert result["reflections_created"] == 1
+    assert result["concepts_created"] == 1
+    assert result["canonical_writes"] == 0
+    assert not list(repo.canonical_documents())
+    working_path = repo.root / result["working_written"][0]
+    working, _ = read_document(working_path)
+    assert working["memory_tier"] == "working"
+    assert working["reflection_context"]["reflection_ids"] == result["reflection_ids"]
+
+
+def test_daily_dream_prevalidates_forbidden_types_and_resumes_existing_reflection(
+    repo: Repository, workspace: Path,
+):
+    captured = InputEpisodeService(repo).capture_idea(
+        "Robot skill compilation needs a restart-safe reflection boundary.",
+        title="Restart-safe reflection",
+    )
+    input_id = captured["input"]["object_id"]
+    payload = cognitive_reflection_payload(
+        title="Restart-safe reflection artifact",
+        why_important="It changes Daily Dream from a best-effort sequence into a restartable cognitive boundary.",
+    )
+    bundle_path = workspace / "daily-restart.json"
+    bundle = {
+        "reflections": [{
+            "input_id": input_id,
+            "reflection": payload,
+            "semantic_items": [{
+                "object_type": "hypothesis", "title": "Forbidden daily hypothesis",
+                "body": "Daily must not create this hypothesis.",
+            }],
+        }],
+    }
+    bundle_path.write_text(json.dumps(bundle), encoding="utf-8")
+
+    with pytest.raises(ValidationError, match="does not allow object_type"):
+        DailyDreamService(repo).run(bundle_path)
+    assert not ReflectionService(repo).documents()
+    assert not list(repo.memory_documents())
+
+    interrupted = ReflectionService(repo).create(input_id, payload)
+    bundle["reflections"][0]["semantic_items"] = [{
+        "object_type": "concept", "title": "Restart-safe cognitive boundary",
+        "body": "A restart-safe cognitive boundary reuses an immutable Reflection after interruption.",
+    }]
+    bundle_path.write_text(json.dumps(bundle), encoding="utf-8")
+    resumed = DailyDreamService(repo).run(bundle_path)
+    repeated = DailyDreamService(repo).run(bundle_path)
+
+    assert resumed["reflection_ids"] == [interrupted.object_id]
+    assert resumed["reflections_created"] == 0
+    assert resumed["reflections_reused"] == 1
+    assert len(resumed["working_written"]) == 1
+    assert repeated["reflections_created"] == 0
+    assert repeated["reflections_reused"] == 1
+    assert repeated["working_written"] == []
+
+
+def test_weekly_dream_creates_nonfactual_synthesis_and_hypothesis(repo: Repository, workspace: Path):
+    input_service = InputEpisodeService(repo)
+    reflection_service = ReflectionService(repo)
+    first = input_service.capture_idea("Human habits compress deliberation into fast routines.")["input"]
+    second = input_service.capture_idea("Robot skills compress planning into fast execution.")["input"]
+    first_reflection = reflection_service.create(first["object_id"], cognitive_reflection_payload(
+        title="Human habit compilation reflection",
+    ))
+    second_reflection = reflection_service.create(second["object_id"], cognitive_reflection_payload(
+        title="Robot skill compilation reflection",
+        surprising="Habit formation and robot skill caching share a compression shape.",
+    ))
+    source_ids = []
+    for reflection_id in (first_reflection.object_id, second_reflection.object_id):
+        _, metadata, _ = repo.find_document(reflection_id)
+        source_ids.extend(metadata["source_ids"])
+    target_concept_id = "concept_weekly_amortization"
+    write_m8_memory(
+        repo, target_concept_id, "concept", "Weekly amortization concept",
+        "Existing view: skill reuse is primarily action caching.", [source_ids[0]],
+    )
+    weekly = workspace / "weekly-dream.json"
+    weekly.write_text(json.dumps({
+        "provider_name": "gpt-5.6-sol-high",
+        "synthesis": {
+            "title": "Compression before fast execution",
+            "period": "2026-W29",
+            "input_reflections": [first_reflection.object_id, second_reflection.object_id],
+            "input_concepts": [target_concept_id],
+            "emerging_patterns": ["expensive computation is consolidated into a reusable fast path"],
+            "knowledge_updates": [{
+                "target_id": target_concept_id,
+                "previous": "skill reuse is primarily action caching",
+                "proposed": "skill reuse also requires a typed validation boundary",
+                "reason": "the two reflections expose a shared failure-sensitive fast path",
+                "change_type": "refine",
+                "supporting_reflections": [first_reflection.object_id, second_reflection.object_id],
+                "supporting_sources": sorted(set(source_ids)),
+            }],
+            "new_connections": [{
+                "shared_mechanism": "slow deliberation is compressed into a reusable execution path",
+                "boundary": "the pattern concerns amortization, not identical implementations",
+                "difference": "habit formation is biological while robot compilation is engineered",
+            }],
+            "unresolved_tensions": ["compression can improve speed while hiding adaptation failures"],
+            "candidate_hypotheses": [{
+                "statement": "Typed validation makes compressed robot skills more portable.",
+                "supporting_patterns": ["compression followed by fast execution"],
+                "supporting_reflections": [first_reflection.object_id, second_reflection.object_id],
+                "supporting_sources": sorted(set(source_ids)),
+                "counter_arguments": ["Portability may depend mainly on embodiment alignment."],
+                "falsifier": "Typed validation fails to improve transfer across two embodiments.",
+                "possible_experiment": "Compare transfer success with and without typed contracts.",
+            }],
+            "possible_experiments": ["measure cross-embodiment transfer under typed contracts"],
+            "confidence": "medium",
+        },
+        "knowledge_bundles": [{
+            "source_id": source_ids[0],
+            "reflection_ids": [first_reflection.object_id],
+            "items": [{
+                "object_type": "concept",
+                "title": "Consolidated fast execution path",
+                "body": "Expensive deliberation can be consolidated into a bounded reusable execution path.",
+                "metadata": {"confidence": "medium"},
+            }],
+        }],
+    }, ensure_ascii=False), encoding="utf-8")
+
+    result = WeeklyDreamService(repo).run(weekly)
+    assert result["candidate_hypotheses"] == 1
+    assert len(result["working_created"]) == 1
+    assert result["trusted_changes"] == 0
+    assert result["canonical_writes"] == 0
+    _, synthesis, _ = repo.find_document(result["synthesis_id"])
+    assert synthesis["truth_layer"] == "cognitive_synthesis"
+    assert synthesis["candidate_hypotheses"][0]["epistemic_status"] == "hypothetical"
+    assert "memory_tier" not in synthesis
+    assert "epistemic_status" not in synthesis
+    assert not list(repo.canonical_documents())
+    working, _ = read_document(repo.root / result["working_created"][0])
+    assert working["reflection_context"]["reflection_ids"] == [first_reflection.object_id]
+    repeated = WeeklyDreamService(repo).run(weekly)
+    assert repeated["synthesis_id"] == result["synthesis_id"]
+    assert repeated["synthesis_created"] is False
+    assert repeated["canonical_writes"] == 0
+
+
+def test_weekly_dream_prevalidates_bundle_provenance_before_writing_synthesis(
+    repo: Repository, workspace: Path,
+):
+    first = InputEpisodeService(repo).capture_idea("first weekly source")["input"]
+    second = InputEpisodeService(repo).capture_idea("second weekly source")["input"]
+    reflection_ids = [
+        ReflectionService(repo).create(item["object_id"], cognitive_reflection_payload()).object_id
+        for item in (first, second)
+    ]
+    _, first_reflection, _ = repo.find_document(reflection_ids[0])
+    weekly = workspace / "weekly-invalid-provenance.json"
+    weekly.write_text(json.dumps({
+        "synthesis": {
+            "period": "2026-W29", "input_reflections": reflection_ids,
+            "input_concepts": [], "emerging_patterns": ["shared pattern"],
+            "knowledge_updates": [], "new_connections": [],
+            "unresolved_tensions": [], "candidate_hypotheses": [],
+        },
+        "knowledge_bundles": [{
+            "source_id": first_reflection["source_ids"][0],
+            "reflection_ids": ["reflection_outside_synthesis"],
+            "items": [{
+                "object_type": "concept", "title": "Invalid provenance",
+                "body": "This item must be rejected before Synthesis is written.",
+            }],
+        }],
+    }), encoding="utf-8")
+
+    with pytest.raises(ValidationError, match="reflection_ids from this synthesis"):
+        WeeklyDreamService(repo).run(weekly)
+    assert not SynthesisService(repo).documents()
+
+
+def test_cognitive_synthesis_identity_covers_updates_experiments_and_provider(repo: Repository):
+    first = InputEpisodeService(repo).capture_idea("first identity source")["input"]
+    second = InputEpisodeService(repo).capture_idea("second identity source")["input"]
+    reflection_ids = [
+        ReflectionService(repo).create(item["object_id"], cognitive_reflection_payload()).object_id
+        for item in (first, second)
+    ]
+    source_ids: list[str] = []
+    for reflection_id in reflection_ids:
+        _, reflection, _ = repo.find_document(reflection_id)
+        source_ids.extend(reflection["source_ids"])
+    target_id = "concept_synthesis_identity"
+    write_m8_memory(
+        repo, target_id, "concept", "Synthesis identity target",
+        "Previous view.", sorted(set(source_ids)),
+    )
+    base = {
+        "title": "Identity-complete synthesis", "period": "2026-W29",
+        "input_reflections": reflection_ids, "input_concepts": [target_id],
+        "emerging_patterns": ["shared identity-sensitive pattern"],
+        "knowledge_updates": [{
+            "target_id": target_id, "previous": "Previous view.",
+            "proposed": "Refined view.", "reason": "two reflections support refinement",
+            "change_type": "refine", "supporting_reflections": reflection_ids,
+            "supporting_sources": sorted(set(source_ids)),
+        }],
+        "new_connections": [], "unresolved_tensions": [],
+        "candidate_hypotheses": [], "possible_experiments": ["experiment A"],
+        "confidence": "medium",
+    }
+    service = SynthesisService(repo)
+    first_write = service.create(base, provider_name="provider-a")
+    changed_experiment = json.loads(json.dumps(base))
+    changed_experiment["possible_experiments"] = ["experiment B"]
+    second_write = service.create(changed_experiment, provider_name="provider-a")
+    third_write = service.create(base, provider_name="provider-b")
+
+    assert len({first_write.object_id, second_write.object_id, third_write.object_id}) == 3
+
+
+def test_weekly_hypothesis_gate_requires_falsifier_and_counterexample(repo: Repository):
+    input_service = InputEpisodeService(repo)
+    reflection_service = ReflectionService(repo)
+    first = input_service.capture_idea("first input")["input"]
+    second = input_service.capture_idea("second input")["input"]
+    reflections = [
+        reflection_service.create(item["object_id"], cognitive_reflection_payload()).object_id
+        for item in (first, second)
+    ]
+    with pytest.raises(ValidationError, match="falsifier"):
+        SynthesisService(repo).create({
+            "period": "2026-W29", "input_reflections": reflections,
+            "input_concepts": [], "emerging_patterns": ["shared compression"],
+            "new_connections": [], "unresolved_tensions": [],
+            "candidate_hypotheses": [{"statement": "Untestable claim"}],
+        }, provider_name="test")
+
+
+def test_research_context_includes_reflection_and_execution_excludes_it(repo: Repository):
+    episode = InputEpisodeService(repo).capture_idea(
+        "portable skill compiler validation contract",
+        title="Portable skill compiler",
+    )["input"]
+    reflection = ReflectionService(repo).create(
+        episode["object_id"], cognitive_reflection_payload(
+            title="Portable skill compiler reflection",
+            why_important="Portable skill compiler validation changes how cross-embodiment reuse is evaluated.",
+        ),
+    )
+
+    research = ContextPackService(repo).build(
+        "portable skill compiler", profiles=["research"], token_budget=1200,
+    ).as_dict()
+    reflected = next(item for item in research["items"] if item["id"] == reflection.object_id)
+    assert reflected["truth_layer"] == "reflection"
+    assert reflected["execution_safe"] is False
+    assert reflected["reflection"]["why_important"].startswith("Portable")
+    execution = ContextPackService(repo).build(
+        "portable skill compiler", profiles=["execution"], token_budget=1200,
+    ).as_dict()
+    assert reflection.object_id not in {item["id"] for item in execution["items"]}
+    assert not ({"source", "input", "reflection", "synthesis", "annotation"} & {
+        item["type"] for item in execution["items"]
+    })
+
+
+def test_cognitive_cli_surface_is_provider_neutral():
+    assert build_parser().parse_args(["idea", "capture", "--text", "idea"]).idea_command == "capture"
+    assert build_parser().parse_args(["conversation", "import", "chat.md"]).conversation_command == "import"
+    assert build_parser().parse_args([
+        "session", "import", "--from-file", "session.json", "--agent", "codex",
+    ]).session_command == "import"
+    assert build_parser().parse_args(["reflection", "queue"]).reflection_command == "queue"
+    parsed_backfill = build_parser().parse_args([
+        "inputs", "--backfill", "--limit", "5", "--source-id", "source_x",
+    ])
+    assert parsed_backfill.backfill is True and parsed_backfill.limit == 5
+    assert build_parser().parse_args([
+        "dream", "daily", "--bundle-file", "daily.json",
+    ]).dream_command == "daily"
+    assert build_parser().parse_args([
+        "dream", "weekly", "--bundle-file", "weekly.json",
+    ]).dream_command == "weekly"

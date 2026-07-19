@@ -22,7 +22,7 @@ OBJECT_TYPES = {
     "source", "intuition", "entity", "concept", "claim", "question",
     "tension", "analogy", "anomaly", "hypothesis", "project", "goal", "architecture", "decision",
     "experiment", "failure", "opportunity", "synthesis", "work", "proposal", "followup",
-    "exception", "promotion", "annotation",
+    "exception", "promotion", "annotation", "input", "reflection",
 }
 RELATION_TYPES = {
     "supports", "contradicts", "refines", "analogous_to", "derived_from",
@@ -96,7 +96,7 @@ class Repository:
             "system/logs", "system/reports", "system/error-book",
             "system/recovery", "system/runs", "vault/followups", "vault/annotations",
             "vault/annotations/research", "vault/views/research",
-            "vault/views", "vault/receipts",
+            "vault/views", "vault/receipts", "vault/inputs", "vault/reflections", "vault/synthesis",
             "data/derived/extractions", "data/derived/quality",
         ]
         for directory in directories:
@@ -183,11 +183,29 @@ class Repository:
         if path.exists():
             yield from path.glob("annotation-*.md")
 
+    def input_documents(self) -> Iterable[Path]:
+        path = self.root / "vault" / "inputs"
+        if path.exists():
+            yield from path.glob("input-*.md")
+
+    def reflection_documents(self) -> Iterable[Path]:
+        path = self.root / "vault" / "reflections"
+        if path.exists():
+            yield from path.glob("reflection-*.md")
+
+    def synthesis_documents(self) -> Iterable[Path]:
+        path = self.root / "vault" / "synthesis"
+        if path.exists():
+            yield from path.glob("synthesis-*.md")
+
     def all_indexed_documents(self) -> Iterable[Path]:
         yield from self.source_documents()
         yield from self.memory_documents()
         yield from self.canonical_documents()
         yield from self.annotation_documents()
+        yield from self.input_documents()
+        yield from self.reflection_documents()
+        yield from self.synthesis_documents()
 
     def _schema(self, connection: sqlite3.Connection) -> None:
         connection.executescript(
@@ -290,6 +308,29 @@ class Repository:
                 raise ValidationError(f"{relative} annotation 必须保留 user_authored=true")
             if not isinstance(metadata.get("target_ids", []), list):
                 raise ValidationError(f"{relative} target_ids 必须是列表")
+        if metadata.get("type") == "input":
+            if metadata.get("status") != "active" or metadata.get("truth_layer") != "input_episode":
+                raise ValidationError(f"{relative} input must remain active in the input_episode truth layer")
+            if metadata.get("input_type") not in {
+                "article", "paper", "github", "conversation", "idea", "experiment", "meeting",
+            }:
+                raise ValidationError(f"{relative} invalid input_type")
+            if metadata.get("memory_tier") or metadata.get("epistemic_status"):
+                raise ValidationError(f"{relative} input cannot carry Memory Tier or Epistemic Status")
+        if metadata.get("type") == "reflection":
+            if metadata.get("status") != "active" or metadata.get("truth_layer") != "reflection":
+                raise ValidationError(f"{relative} reflection must remain active in the reflection truth layer")
+            if metadata.get("created_by") not in {"agent", "user"}:
+                raise ValidationError(f"{relative} reflection created_by must be agent or user")
+            if metadata.get("memory_tier") or metadata.get("epistemic_status"):
+                raise ValidationError(f"{relative} reflection cannot carry Memory Tier or Epistemic Status")
+            if not isinstance(metadata.get("target_ids"), list) or not metadata.get("target_ids"):
+                raise ValidationError(f"{relative} reflection requires target_ids")
+        if metadata.get("type") == "synthesis" and relative.startswith("vault/synthesis/"):
+            if metadata.get("status") != "active" or metadata.get("truth_layer") != "cognitive_synthesis":
+                raise ValidationError(f"{relative} cognitive synthesis must remain active and explicitly labeled")
+            if metadata.get("memory_tier") or metadata.get("epistemic_status"):
+                raise ValidationError(f"{relative} cognitive synthesis cannot carry Memory Tier or Epistemic Status")
         if metadata.get("confidence") not in CONFIDENCE_LEVELS:
             raise ValidationError(f"{self.rel(path)} 使用非法 confidence: {metadata.get('confidence')}")
         source_ids = metadata.get("source_ids", [])

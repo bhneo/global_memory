@@ -1,5 +1,22 @@
 # Architecture
 
+## M9.1 cognitive consolidation pipeline
+
+```text
+Source / Conversation / Idea / Agent Experience
+  -> Input Episode
+  -> Reflection (non-factual, non-execution-safe)
+  -> Semantic Bundle reflection_context
+  -> existing Working compiler boundary
+  -> Weekly Cognitive Synthesis (patterns/tensions/hypothesis candidates)
+```
+
+The provider-neutral core queues and validates cognitive artifacts but never
+invokes a model, executes tools or manages Agents. Reflection and Cognitive
+Synthesis are indexed research layers, not Evidence or Memory Tiers. Research
+Context may return them with explicit labels; Execution Context cannot. See ADR
+0057 and `COGNITIVE_CONSOLIDATION.md`.
+
 ## M8 trustworthy evolution pipeline
 
 ```text

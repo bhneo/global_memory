@@ -76,6 +76,12 @@ def truth_layer(metadata: dict[str, Any], path: Path | None = None) -> str:
     object_type = str(metadata.get("type", ""))
     if object_type == "source":
         return "source_capture"
+    if object_type == "input":
+        return "input_episode"
+    if object_type == "reflection":
+        return "reflection"
+    if object_type == "synthesis" and metadata.get("truth_layer") == "cognitive_synthesis":
+        return "cognitive_synthesis"
     if object_type == "proposal":
         return "proposal"
     if object_type == "annotation":

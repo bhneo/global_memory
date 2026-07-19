@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+- Added M9.1 Cognitive Consolidation: typed Input Episodes, append-only
+  non-factual Reflections, Reflection quality/connection gates, provider-neutral
+  Daily and Weekly Dream artifact protocols, Weekly Cognitive Synthesis,
+  falsifiable hypothesis validation, and third-party Agent Session import.
+- Extended Semantic Bundle with validated `reflection_context`; semantic items
+  still compile into Working only and both Dream pipelines assert zero
+  Canonical writes.
+- Extended research/exploration Context Packs with explicitly labeled
+  Reflections and Cognitive Synthesis while keeping Execution Context and the
+  read-only MCP evidence-safe.
+- Added M9.1 schema, architecture, ADR 0057, CLI documentation and dedicated CI
+  acceptance coverage. No Agent Runtime, tool execution, automatic experiment,
+  vector/graph database, write MCP or multi-Agent system was introduced.
+- Made Daily Dream prevalidate complete artifacts, reject non-Daily cognitive
+  object types, and resume deterministic Reflections after interruption.
+- Made Weekly Dream validate knowledge-bundle provenance before writing
+  Cognitive Synthesis and attach only the exact supporting Reflection subset.
+- Bound Cognitive Synthesis identity to knowledge updates, experiments,
+  confidence and provider; added typed, source-backed knowledge-update gates.
+- Clarified that external model-driven Dream stages are distinct from
+  deterministic `consolidate daily/weekly` governance commands.
+- Added bounded, explicit Input backfill for selected/recent historical Sources;
+  it excludes personal notes by default and writes no governed Knowledge.
+- Made Reflection Queue return the current Source-bound extraction, fixing PDF
+  Inputs that previously exposed only a binary-content pointer to the model.
+- Accepted the first bounded real-Vault M9.1 pilot: five Inputs, five Reflections,
+  five Working Concepts and one Cognitive Synthesis with zero Canonical writes.
+
 - Hardened Working Quality Migration Verify/Restore with post-image SHA checks,
   exact event matching, source/Raw and Canonical baselines, successor guards,
   and resumable incomplete manifests. Existing migration `working_quality_b327d9decb846ba2b8f594bf`
