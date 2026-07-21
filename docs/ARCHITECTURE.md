@@ -166,9 +166,16 @@ Recovery journal 保存写前 hash 和确定的写后 payload。`gm recover` 只
 
 ## 可插拔边界
 
-### Read-only MCP
+### Agent Memory Gateway
 
-`gm mcp stdio|http` 把既有 Context Pack、搜索、对象读取、source extraction 与维护 inventory 暴露为五个 provider-neutral 只读工具。MCP 不新增真相层，不暴露 capture/compile/approve/rebuild/delete/canonical write。stdio 用于本地助手；Streamable HTTP 默认仅绑定 localhost，并校验 Origin、限制请求大小，非 loopback 必须提供 bearer token。远程 ChatGPT 接入仍需要 TLS、认证及可信 tunnel/deployment；详见 ADR 0031。
+`gm mcp stdio|http` 把既有 Context Pack、搜索、对象读取与 source extraction
+包装为 provider-neutral 的 Agent Evidence Packet。普通响应不包含路径、hash、
+route trace、SQLite/维护状态或管理命令；完整诊断仍只通过本地 CLI 提供。默认
+MCP 保持只读。显式增加 `--allow-capture` 时，仅新增一个需用户确认的文本
+Capture-only 工具：它只写 immutable Raw/Source 与 Input Episode，不得 compile、
+promote、approve、rebuild、restore Historical 或写 Working/Trusted/Canonical。
+stdio 用于本地助手；Streamable HTTP 默认仅绑定 localhost，并校验 Origin、限制
+请求大小，非 loopback 必须提供 bearer token。详见 ADR 0031 与 ADR 0059。
 
 第一版 processor 是 `deterministic-excerpt-v1`，只为验证治理闭环。`external-model-candidate-v1` 是 provider-neutral 导入边界：它接收用户明确提供的 candidate Markdown，而不在仓库内调用 SDK 或网络服务；输出仍是同一 proposal schema，并记录 provider、model、prompt version/hash、输入 source/content hash 和不确定性。未来实际模型适配器必须沿用该审计字段与 proposal gate，不得绕过审批或默认外传私有 raw。
 

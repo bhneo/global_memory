@@ -27,6 +27,23 @@ class ObsidianViewService:
         ]
         return sorted(documents, key=lambda item: (str(item[1].get("type", "")), self._title(item[1])))
 
+    def _cognitive_syntheses(self) -> list[tuple[Path, dict[str, Any]]]:
+        documents = [
+            (path, read_document(path)[0])
+            for path in self.repository.synthesis_documents()
+        ]
+        return sorted(documents, key=lambda item: self._title(item[1]))
+
+    @staticmethod
+    def _operational_graph_artifact(metadata: dict[str, Any]) -> bool:
+        return (
+            metadata.get("type") == "experiment"
+            and (
+                "agent-acceptance" in metadata.get("tags", [])
+                or "global-memory" in metadata.get("domains", [])
+            )
+        )
+
     def _sources(self) -> list[tuple[Path, dict[str, Any], str]]:
         sources = []
         for path in self.repository.source_documents():
@@ -77,9 +94,33 @@ class ObsidianViewService:
             "claim": "claims", "concept": "concepts", "work": "works",
             "question": "questions", "tension": "tensions",
             "hypothesis": "hypotheses", "analogy": "analogies",
+            "synthesis": "syntheses",
             "project": "projects", "experiment": "experiments",
             "opportunity": "opportunities",
         }.get(object_type, "other")
+
+    def _graph_display_title(self, metadata: dict[str, Any]) -> str:
+        """Keep compact method aliases visible without exposing internal IDs."""
+        title = self._title(metadata)
+        if metadata.get("type") != "concept":
+            return title
+        aliases = metadata.get("aliases", [])
+        if not isinstance(aliases, list):
+            return title
+        method_alias = next((
+            str(alias).strip() for alias in aliases
+            if isinstance(alias, str)
+            and 1 < len(alias.strip()) <= 24
+            and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9 .+_/()-]*", alias.strip())
+            and (
+                any(char.isupper() for char in alias.strip()[1:])
+                or any(char.isdigit() for char in alias.strip())
+                or "-" in alias.strip()
+            )
+        ), "")
+        if not method_alias or method_alias.casefold() in title.casefold():
+            return title
+        return f"{method_alias} · {title}"
 
     def _semantic_graph(
         self,
@@ -135,15 +176,21 @@ class ObsidianViewService:
         for _, metadata in documents:
             item_id = str(metadata["id"])
             category = self._graph_category(str(metadata.get("type", "other")))
-            display_titles[item_id] = self._title(metadata)
+            display_titles[item_id] = self._graph_display_title(metadata)
             locations[item_id] = allocate(item_id, display_titles[item_id], category)
             metadata_by_id[item_id] = metadata
 
         incoming: dict[str, set[str]] = defaultdict(set)
         for _, metadata in documents:
             source_id = str(metadata["id"])
+            cognitive_targets = (
+                [str(item) for item in metadata.get("input_concepts", [])]
+                if metadata.get("type") == "synthesis"
+                else []
+            )
             for target_id in [
                 *[str(item) for item in metadata.get("source_ids", [])],
+                *cognitive_targets,
                 *[
                     str(relation.get("target_id"))
                     for relation in metadata.get("relations", [])
@@ -173,6 +220,11 @@ class ObsidianViewService:
                 target_id = str(relation.get("target_id") or "")
                 if target_id in locations and target_id != item_id:
                     links.append((target_id, str(relation.get("type") or "关联")))
+            if metadata.get("type") == "synthesis":
+                for target_id in metadata.get("input_concepts", []):
+                    target_id = str(target_id)
+                    if target_id in locations and target_id != item_id:
+                        links.append((target_id, "综合输入（非事实关系）"))
             for child_id in sorted(incoming.get(item_id, set())):
                 links.append((child_id, "被引用"))
             if links:
@@ -223,10 +275,11 @@ class ObsidianViewService:
         if graph_profile not in {"knowledge", "trusted", "frontier", "all"}:
             raise ValueError("graph_profile must be knowledge, trusted, frontier, or all")
         documents = self._documents()
+        cognitive_syntheses = self._cognitive_syntheses()
         sources = self._sources()
         rendered: dict[str, str] = {}
         if graph_profile == "all":
-            graph_documents = documents
+            graph_documents = [*documents, *cognitive_syntheses]
         elif graph_profile == "knowledge":
             # Human default: show active semantic objects, including model-distilled
             # Working memory, but keep raw Sources out of the graph. Provenance stays
@@ -239,7 +292,13 @@ class ObsidianViewService:
                     "claim", "concept", "question", "tension", "hypothesis", "analogy",
                     "architecture", "experiment", "synthesis", "opportunity",
                 }
+                and not self._operational_graph_artifact(item[1])
             ]
+            graph_documents.extend(
+                item for item in cognitive_syntheses
+                if item[1].get("status") == "active"
+                and item[1].get("truth_layer") == "cognitive_synthesis"
+            )
         elif graph_profile == "frontier":
             graph_documents = [
                 item for item in documents

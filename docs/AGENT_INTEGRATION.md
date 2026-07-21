@@ -15,7 +15,7 @@ Every assistant must preserve `memory_tier`, `epistemic_status`, confidence, sou
 
 ## M7 write-back contract
 
-Agents may capture, compile and create Working memory without requesting per-item approval. They must preserve raw provenance, candidate hashes, tier, uncertainty and evidence boundaries. They may recommend Trusted/Canonical promotion, but only the user can approve a Canonical promotion card. Read-only MCP remains unchanged and exposes no write authority. Use `consolidate daily`, `consolidate weekly`, `exceptions`, `promotions`, and `trust explain` as described in `MEMORY_CONSOLIDATION.md`.
+Agents may capture, compile and create Working memory through the governed CLI without requesting per-item approval. They must preserve raw provenance, candidate hashes, tier, uncertainty and evidence boundaries. They may recommend Trusted/Canonical promotion, but only the user can approve a Canonical promotion card. The Agent MCP exposes only bounded reads plus an opt-in, explicitly confirmed Capture-only text intake; that intake cannot create governed Knowledge. Use `consolidate daily`, `consolidate weekly`, `exceptions`, `promotions`, and `trust explain` as described in `MEMORY_CONSOLIDATION.md`.
 
 ## Goal
 
@@ -23,7 +23,13 @@ Codex, Cursor, and Claude share one Global Memory without copying the vault into
 
 ## Read path
 
-Local MCP-capable assistants may use the configured `global-memory` server instead of shelling out directly. Its five tools map to the same bounded read path and expose no write operation; see `docs/MCP_INTEGRATION.md` and ADR 0031.
+Local MCP-capable assistants may use the configured read-only `global-memory` server instead of shelling out directly. Four read tools return sanitized Evidence Packets. Codex Desktop uses the personal `global-memory` plugin for explicit-only retrieval or Capture-only intake; the plugin registers no always-on MCP. The standalone Capture-only launcher remains available for an explicitly trusted client; see `docs/MCP_INTEGRATION.md` and ADR 0059.
+
+MCP retrieval is background context, not report content. Ordinary answers must
+not mention MCP, route traces, indexes, storage paths, receipts, recovery or
+internal object IDs unless the user explicitly asks for an audit. Preserve the
+returned epistemic boundary in the substance of the answer without narrating
+the machinery that supplied it.
 
 ```text
 AGENTS.md / CLAUDE.md / .cursor rule

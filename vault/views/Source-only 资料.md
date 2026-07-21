@@ -4,6 +4,23 @@
 
 > 已成功保存、可检索，但尚未安全编译为知识对象的原始资料。
 
+- [[views/readers/source_e8650c5afb7548268f649fb8|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_e67cd99ac31c7017d6f7f7c7|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_ce00fba8d7127c890fdcc46e|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_c2d7b53bd1c40ed0af8ea5cb|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_a5f8ae205338d5f97eea87c7|GitHub - InternRobotics/REAL: [ECCV2026] Official open-source repository for REAL——Exploratory, Communicative, and Deployable: Vision-Driven Embodied Agents for Open-World Mobile Manipulation · GitHub]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_9b0d550203c4d7bd7acf8a36|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_92fed4343c703da77f798f08|2607.13653v1.pdf]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_61152ca8210ad3913764a291|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_4e06d1b1cdcd0d07eff47909|LIFT: Never Too Late for Force]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_46f82af34b1ace2c5c0483af|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_38cba686373b003398483ab2|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_38651a884fe5c5c73a6e190d|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_3521fe9ac8d8f054440ec0af|Building scalable AI agents with modular prompt transpilation - Google Developers Blog]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_1f84f8abfca8810ebd19d85b|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_158b4743a3d4e973913f8bbf|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_01ed2f19e91bb0eb1ec3ee92|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_0003810fbe396059444574f5|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
 - [[views/readers/source_ff90ad99bd47043e812cce9e|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
 - [[views/readers/source_fe986df678d73ef2b6234f0c|2607.11643v1.pdf]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
 - [[views/readers/source_f9128ff3463cfaa7fa41ee7e|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes

@@ -2,6 +2,44 @@
 
 ## Unreleased
 
+- Added an Agent Memory Gateway that returns sanitized Evidence Packets while
+  preserving tier, epistemic status, provenance, evidence and execution-safety
+  boundaries without exposing paths, hashes, route traces, SQLite or
+  maintenance diagnostics.
+- Added an opt-in, explicitly confirmed `memory_capture` tool. It runs recovery
+  first and writes immutable Source plus typed Input Episode only, with zero
+  Working, Trusted and Canonical writes.
+- Added a silent-background delivery contract and separate read-only versus
+  Capture-only stdio launchers. Repository MCP clients stay read-only; a
+  personal Codex Desktop plugin supplies explicit-only read/capture workflows.
+
+- Added a source-bounded Weekly Cognitive Synthesis connecting Robo-ValueRL,
+  RL Token, PAC-ACT and FlowDAgger with tactile control, contact fidelity and
+  demonstration-transfer concepts under precision/contact-rich manipulation.
+  The integration records direct-task versus transferable-mechanism boundaries
+  and writes no Working, Trusted or Canonical knowledge.
+- Projected active Cognitive Synthesis and its declared `input_concepts` into
+  the disposable Obsidian graph as explicitly non-factual synthesis edges.
+  Compact method aliases such as Robo-ValueRL, RL Token, PAC-ACT and
+  FlowDAgger now remain visible beside human-readable concept titles.
+- Excluded archived, superseded and Historical memory from semantic drift
+  auditing, matching the existing routine-maintenance boundary and preventing
+  retired mechanical objects from creating high-severity false positives.
+- Triaged the 17 open Weekly exceptions: dismissed five duplicate no-op update
+  proposals and two historical drift false positives, while deferring eight
+  legacy Claim evidence reviews and two source-link-incomplete M6 Syntheses
+  without changing their trust tier or writing Canonical.
+- Added a semantic-completeness gate for Claims and disabled automatic
+  punctuation/connector splitting. Compound statements now require an explicit
+  semantic split; headings and sentence fragments cannot enter Working.
+- Broadened Working-quality review to inspect fallback semantics regardless of
+  the recorded compiler label. Reversibly archived 21 Agent-labeled mechanical
+  Claim fragments under migration `working_quality_93b259fa551083972ae7524e`
+  with zero Trusted or Canonical writes.
+- Corrected Agent Semantic Bundle provenance so model-generated Claims no
+  longer inherit deterministic-fallback uncertainty by default, and excluded
+  Global Memory acceptance experiments from the default human Obsidian graph.
+
 - Added M9.1 Cognitive Consolidation: typed Input Episodes, append-only
   non-factual Reflections, Reflection quality/connection gates, provider-neutral
   Daily and Weekly Dream artifact protocols, Weekly Cognitive Synthesis,

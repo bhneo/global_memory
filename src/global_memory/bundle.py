@@ -501,6 +501,7 @@ class BundleCompiler:
             if action == "update":
                 candidate["proposed_status"] = target.get("status", "confirmed")
             if object_type == "claim":
+                deterministic_provider = isinstance(self.provider, DeterministicCompilerProvider)
                 start = max(0, int(spec.get("span_start", text.find(body_text))))
                 original = text[start:start + len(body_text)]
                 if original != body_text:
@@ -515,14 +516,24 @@ class BundleCompiler:
                     "page": self._page_for_span(text, start), "stance": "context",
                     "verification_status": "verified" if start >= 0 else "derived", "input_sha256": extraction["input_sha256"],
                     "extractor": extraction["extractor"], "extractor_version": extraction["extractor_version"],
-                    "reason": "确定性 fallback 只确认逐字位置，不自动判断支持或反对。",
+                    "reason": (
+                        "确定性 fallback 只确认逐字位置，不自动判断支持或反对。"
+                        if deterministic_provider
+                        else "Agent 语义编译定位了该材料；是否支持命题仍由 evidence entailment 与治理检查决定。"
+                    ),
                 }
                 candidate.update({
                     "evidence": [evidence], "applicability": [],
-                    "uncertainty": "确定性 fallback 能力有限；该原文尚未经过语义事实核验。",
+                    "uncertainty": (
+                        "确定性 fallback 能力有限；该原文尚未经过语义事实核验。"
+                        if deterministic_provider
+                        else "Agent 语义编译产物；尚未经过独立事实复核。"
+                    ),
                     "atomicity_status": spec.get("atomicity_status", "atomic"),
                     "evidence_coverage": spec.get("evidence_coverage", "full" if start >= 0 else "missing"),
                     "split_from": spec.get("split_from"), "split_reason": spec.get("split_reason"),
+                    "semantic_completeness": spec.get("semantic_completeness", "complete"),
+                    "quality_gate_reason": spec.get("quality_gate_reason"),
                     "quote_verification": "exact" if start >= 0 else "failed",
                     "extraction_quality": quality.extraction_quality,
                     "epistemic_source_authority": (
@@ -537,7 +548,7 @@ class BundleCompiler:
                 })
                 # Provider-supplied stance/evidence is semantic input, not a
                 # cosmetic override; preserve it after deterministic defaults.
-                for key in ("evidence", "evidence_entailment", "claim_confidence", "applicability"):
+                for key in ("evidence", "evidence_entailment", "claim_confidence", "applicability", "uncertainty"):
                     if key in extra_metadata:
                         candidate[key] = extra_metadata[key]
             candidate_text = render_document(candidate, canonical_body)
@@ -560,6 +571,7 @@ class BundleCompiler:
                 "review_tier": "high" if (
                     object_type != "claim" or (
                         candidate.get("atomicity_status") == "atomic"
+                        and candidate.get("semantic_completeness") == "complete"
                         and candidate.get("evidence_coverage") == "full"
                         and candidate.get("evidence_entailment") == "full"
                         and quality.extraction_quality == "good"
@@ -697,6 +709,8 @@ class BundleReviewService:
             if candidate.get("type") == "claim":
                 if candidate.get("atomicity_status") == "compound":
                     raise ValidationError(f"compound claim 必须先拆分: {item['item_id']}")
+                if candidate.get("semantic_completeness") == "fragment":
+                    raise ValidationError(f"claim 不是完整语义命题: {item['item_id']}")
                 if candidate.get("evidence_coverage") in {"partial", "missing"}:
                     raise ValidationError(f"claim evidence coverage 不完整: {item['item_id']}")
             target_path = self.repository.resolve_inside(item["target_path"])

@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "类型化可验证机器人技能图"
 created_at: "2026-07-19T12:18:22+08:00"
-updated_at: "2026-07-19T12:20:25+08:00"
+updated_at: "2026-07-19T23:49:56+08:00"
 aliases: ["typed verified robot skill graph", "Graph-as-Policy", "GaP"]
 tags: []
 domains: ["embodied-ai", "robotics", "skill-graphs", "agent-execution"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-19T12:20:25+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-19T23:49:56+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_b5617e688da75d78abd3-concept-1.md"
 origin_candidate_sha256: "ec5963e7c2ed2938187356345abefa3d22b57b44cd0d654d4777b1eb9a3d0c0c"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_91dde66f6013eaed89a50f13"
+last_consolidation_id: "consolidation_ee18a23eca0800db5622215b"
 ---
 
 # 类型化可验证机器人技能图

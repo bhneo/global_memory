@@ -603,6 +603,8 @@ class DriftAuditService:
         checked = 0
         for path in [*self.repository.memory_documents(), *self.repository.canonical_documents()]:
             metadata, body = read_document(path)
+            if metadata.get("memory_tier") == "historical" or metadata.get("status") in {"archived", "superseded"}:
+                continue
             checked += 1
             object_id = str(metadata["id"])
             evidence_ids = [str(item.get("evidence_id")) for item in metadata.get("evidence", []) if isinstance(item, dict) and item.get("evidence_id")]
@@ -647,7 +649,7 @@ class ConsolidationService:
         self.receipts = ConsolidationReceiptService(repository)
 
     def review_working_quality(self) -> dict[str, Any]:
-        """Identify unsafe deterministic fallbacks without mutating memory."""
+        """Identify unsafe fallback semantics without trusting creator labels."""
         flagged: list[dict[str, Any]] = []
         source_lengths: dict[str, int] = {}
         source_has_markers: dict[str, bool] = {}
@@ -656,7 +658,17 @@ class ConsolidationService:
             metadata, _ = read_document(path)
             if metadata.get("memory_tier") != "working":
                 continue
-            if metadata.get("compiler_version") != "deterministic-bounded-bundle-v1":
+            compiler = str(metadata.get("compiler_version") or "")
+            fallback_marked = (
+                "确定性 fallback 能力有限" in str(metadata.get("uncertainty") or "")
+                or any(
+                    "确定性 fallback" in str(item.get("reason") or "")
+                    for item in metadata.get("evidence", [])
+                    if isinstance(item, dict)
+                )
+            )
+            legacy_deterministic = compiler == "deterministic-bounded-bundle-v1"
+            if not legacy_deterministic and not fallback_marked:
                 continue
             source_ids = [str(item) for item in metadata.get("source_ids", [])]
             long_sources: list[str] = []
@@ -684,17 +696,23 @@ class ConsolidationService:
                     )
                 ):
                     long_sources.append(source_id)
-            if not long_sources:
+            if legacy_deterministic and not long_sources:
                 continue
             reasons: list[str] = []
-            if any(source_has_markers[item] and source_kinds[item] != "personal-notes" for item in long_sources):
+            if legacy_deterministic and any(source_has_markers[item] and source_kinds[item] != "personal-notes" for item in long_sources):
                 reasons.append("automatic article marker misclassified as an Agent instruction")
-            if metadata.get("epistemic_status") == "unknown":
+            if legacy_deterministic and metadata.get("epistemic_status") == "unknown":
                 reasons.append("unknown epistemic status")
-            if metadata.get("type") == "claim" and metadata.get("evidence_entailment") == "none":
+            if legacy_deterministic and metadata.get("type") == "claim" and metadata.get("evidence_entailment") == "none":
                 reasons.append("no semantic evidence entailment")
-            if not metadata.get("applicability") and metadata.get("type") == "claim":
+            if legacy_deterministic and not metadata.get("applicability") and metadata.get("type") == "claim":
                 reasons.append("missing applicability")
+            if fallback_marked and not legacy_deterministic:
+                reasons.append("deterministic fallback semantics remained after Agent compilation")
+                if metadata.get("split_from"):
+                    reasons.append("mechanically split claim requires semantic recompilation")
+                if not metadata.get("reflection_context"):
+                    reasons.append("no cognitive reflection context")
             if reasons:
                 flagged.append({
                     "object_id": str(metadata["id"]), "title": str(metadata.get("title", "")),
@@ -873,7 +891,7 @@ class ConsolidationService:
 class WorkingQualityMigration:
     """Archive unsafe legacy deterministic fallbacks with reversible snapshots."""
 
-    POLICY = "working-quality-source-only-v1"
+    POLICY = "working-quality-source-only-v2"
 
     def __init__(self, repository: Repository):
         self.repository = repository
@@ -1187,7 +1205,7 @@ class WorkingQualityMigration:
                 "quality_migration_id": migration_id,
                 "archived_at": timestamp, "updated_at": timestamp,
                 "updated_by": self.POLICY,
-                "change_reason": "legacy deterministic fallback archived as source-only",
+                "change_reason": "unsafe mechanically compiled knowledge archived as source-only",
             })
             atomic_write_text(path, render_document(metadata, body))
             if not self._event_exists(migration_id, str(metadata["id"]), "working-quality-archived"):

@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "双系统 World Action Model"
 created_at: "2026-07-19T03:03:07+08:00"
-updated_at: "2026-07-19T12:20:07+08:00"
+updated_at: "2026-07-20T13:37:37+08:00"
 aliases: ["dual-system world-action model", "DSWAM"]
 tags: []
 domains: ["embodied-ai", "world-action-model", "vla", "planning"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 5
-last_consolidated_at: "2026-07-19T12:20:07+08:00"
+consolidation_count: 6
+last_consolidated_at: "2026-07-20T13:37:37+08:00"
 last_verified_at: "2026-07-19T03:30:06+08:00"
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_6eccb3b8a64c69fe1836-concept-1.md"
 origin_candidate_sha256: "5ced4e982782653e5e4f9f97f7086ab5478c17d667f40eb20011da720d7de8b4"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_587becc2e8a275b59f889ded"
+last_consolidation_id: "consolidation_9046c3cf9844210b3f26c138"
 evidence: []
 change_history: [{"change_type": "metadata_only", "previous_statement": "# 双系统 World Action Model\n\n默认由 World Action Model 直接生成动作块，仅在粗粒度指令需要任务分解时调用视觉语言规划器生成可执行子任务，从而把高频执行与低频语义规划解耦。", "new_statement": "# 双系统 World Action Model\n\n默认由 World Action Model 直接生成动作块，仅在粗粒度指令需要任务分解时调用视觉语言规划器生成可执行子任务，从而把高频执行与低频语义规划解耦。", "changed_fields": ["source_ids", "evidence", "last_verified_at"], "reason": "compile bundle from source_ba057c2c11df2a5eba107870", "trigger_source": "source_ba057c2c11df2a5eba107870", "evidence_added": []}, {"change_type": "metadata_only", "previous_statement": "# 双系统 World Action Model\n\n默认由 World Action Model 直接生成动作块，仅在粗粒度指令需要任务分解时调用视觉语言规划器生成可执行子任务，从而把高频执行与低频语义规划解耦。", "new_statement": "# 双系统 World Action Model\n\n默认由 World Action Model 直接生成动作块，仅在粗粒度指令需要任务分解时调用视觉语言规划器生成可执行子任务，从而把高频执行与低频语义规划解耦。", "changed_fields": ["source_ids", "evidence", "last_verified_at"], "reason": "compile bundle from source_ba057c2c11df2a5eba107870", "trigger_source": "source_ba057c2c11df2a5eba107870", "evidence_added": []}, {"change_type": "metadata_only", "previous_statement": "# 双系统 World Action Model\n\n默认由 World Action Model 直接生成动作块，仅在粗粒度指令需要任务分解时调用视觉语言规划器生成可执行子任务，从而把高频执行与低频语义规划解耦。", "new_statement": "# 双系统 World Action Model\n\n默认由 World Action Model 直接生成动作块，仅在粗粒度指令需要任务分解时调用视觉语言规划器生成可执行子任务，从而把高频执行与低频语义规划解耦。", "changed_fields": ["aliases"], "reason": "compile bundle from source_ba057c2c11df2a5eba107870", "trigger_source": "source_ba057c2c11df2a5eba107870", "evidence_added": []}]
 ---

@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "跨本体通用 VLA 策略"
 created_at: "2026-07-19T03:01:52+08:00"
-updated_at: "2026-07-19T12:20:12+08:00"
+updated_at: "2026-07-20T13:37:45+08:00"
 aliases: ["generalist cross-embodiment VLA", "cross-embodiment policy"]
 tags: []
 domains: ["embodied-ai", "vla", "cross-embodiment", "humanoid"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 5
-last_consolidated_at: "2026-07-19T12:20:12+08:00"
+consolidation_count: 7
+last_consolidated_at: "2026-07-20T13:37:45+08:00"
 last_verified_at: "2026-07-19T03:27:33+08:00"
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_b42edda3bcd8367515cd-concept-1.md"
 origin_candidate_sha256: "53554fe46394c350e9f4d04c35326fd3a8a97dec6ff9e54c60121411cfe001df"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_f3900676296992eaa2a8827d"
+last_consolidation_id: "consolidation_0214831678be01982cef3410"
 evidence: []
 change_history: [{"change_type": "metadata_only", "previous_statement": "# 跨本体通用 VLA 策略\n\n以统一的视觉、语言和状态输入接口生成连续机器人动作，并通过跨机器人形态的数据与动作表示支持多任务、多环境迁移。", "new_statement": "# 跨本体通用 VLA 策略\n\n以统一的视觉、语言和状态输入接口生成连续机器人动作，并通过跨机器人形态的数据与动作表示支持多任务、多环境迁移。", "changed_fields": ["source_ids", "evidence", "last_verified_at"], "reason": "compile bundle from source_34d6513b0522739d0b25e303", "trigger_source": "source_34d6513b0522739d0b25e303", "evidence_added": []}, {"change_type": "metadata_only", "previous_statement": "# 跨本体通用 VLA 策略\n\n以统一的视觉、语言和状态输入接口生成连续机器人动作，并通过跨机器人形态的数据与动作表示支持多任务、多环境迁移。", "new_statement": "# 跨本体通用 VLA 策略\n\n以统一的视觉、语言和状态输入接口生成连续机器人动作，并通过跨机器人形态的数据与动作表示支持多任务、多环境迁移。", "changed_fields": ["source_ids", "evidence", "last_verified_at"], "reason": "compile bundle from source_34d6513b0522739d0b25e303", "trigger_source": "source_34d6513b0522739d0b25e303", "evidence_added": []}, {"change_type": "metadata_only", "previous_statement": "# 跨本体通用 VLA 策略\n\n以统一的视觉、语言和状态输入接口生成连续机器人动作，并通过跨机器人形态的数据与动作表示支持多任务、多环境迁移。", "new_statement": "# 跨本体通用 VLA 策略\n\n以统一的视觉、语言和状态输入接口生成连续机器人动作，并通过跨机器人形态的数据与动作表示支持多任务、多环境迁移。", "changed_fields": ["aliases"], "reason": "compile bundle from source_34d6513b0522739d0b25e303", "trigger_source": "source_34d6513b0522739d0b25e303", "evidence_added": []}]
 ---

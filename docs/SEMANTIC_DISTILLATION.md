@@ -37,6 +37,12 @@ or contribution, one bounded result/limitation when evidence is available, and
 the minimum useful relations. It should not summarize every section or create
 generic nodes merely to improve graph density.
 
+Claims must be complete, bounded propositions written by the model. The core
+does not split compound prose at commas or conjunctions: such material remains
+`compound` and must be replaced by explicit semantic items. Headings, trailing
+clauses and fragments such as “respectively” tails fail semantic completeness
+and cannot be approved into Working.
+
 ## Weekly: cross-source integration
 
 Weekly uses the stronger Agent model to compare the week's new Working objects,

@@ -1,31 +1,64 @@
-# Global Memory read-only MCP
+# Global Memory Agent Gateway
 
-M9.1 does not add a write MCP. `memory_context` automatically exposes relevant
-Reflections and Cognitive Synthesis for research/exploration profiles through
-the shared Context Pack policy. Execution requests exclude both cognitive
-layers. Agent Session import remains an explicit local CLI capture operation.
+The gateway gives local Agents bounded memory without turning storage and
+maintenance mechanics into user-facing report content. Reads return a sanitized
+Evidence Packet; full Context Pack diagnostics remain an operator-only CLI
+surface.
 
 ## Tools
 
-| Tool | Purpose |
-|---|---|
-| `memory_context` | Build a bounded, provenance-preserving Context Pack |
-| `memory_search` | Search canonical knowledge and captured sources |
-| `memory_show` | Read one object by stable ID |
-| `memory_source` | Read a source record and an already-existing extraction |
-| `memory_status` | Inspect capture-only, review, evidence, receipt, and follow-up inventory |
+| Tool | Purpose | Authority |
+|---|---|---|
+| `memory_context` | Retrieve bounded, connected evidence for a question | Read-only |
+| `memory_search` | Find candidate evidence objects | Read-only |
+| `memory_show` | Read one evidence object by lookup reference | Read-only |
+| `memory_source` | Read source text and an existing extraction | Read-only |
+| `memory_capture` | Save explicitly requested user text as Source + Input | Capture-only, opt-in |
 
-All tools are read-only. Retrieval never means approval.
+The first four tools omit local paths, hashes, route traces, ranking diagnostics,
+SQLite details and maintenance queues. They retain tier/status, epistemic status,
+confidence, authority, evidence coverage/entailment, contradictions, execution
+safety, bounded content and source provenance.
+
+`memory_capture` is available only when the server starts with
+`--allow-capture`. Its request must include `confirmed: true`, meaning the user
+explicitly asked to remember/save the supplied text. It runs recovery first and
+stops on a blocked journal. It accepts no URL or file path, performs no network
+fetch, and always reports zero Working, Trusted and Canonical writes.
 
 ## Local clients
 
-Cursor uses `.cursor/mcp.json`; Claude Code and compatible clients can use `.mcp.json`. Both launch:
+The repository `.mcp.json` and `.cursor/mcp.json` use the strictly read-only
+launcher:
 
 ```powershell
 .\scripts\gm-mcp-stdio.ps1
 ```
 
-Restart the client after adding or changing MCP configuration. The server writes only JSON-RPC messages to stdout.
+For an explicitly trusted non-Desktop client that needs Capture-only intake,
+use:
+
+```powershell
+.\scripts\gm-mcp-agent-stdio.ps1
+```
+
+Restart the client after changing MCP configuration. The server writes only
+JSON-RPC messages to stdout; diagnostics go to stderr.
+
+## Codex Desktop explicit plugin
+
+The personal `global-memory` plugin contains `global-memory-read` and
+`global-memory-capture`. Both set `allow_implicit_invocation: false` and call a
+local gateway script only after the user selects the plugin/skill. The plugin
+does not bundle or register an MCP server, so unrelated Desktop tasks do not
+receive an always-on memory tool surface.
+
+## Delivery contract
+
+Use retrieved knowledge silently as background. In ordinary answers, do not
+mention Global Memory, MCP, storage/index implementation, paths, internal IDs,
+recovery, receipts, route traces or tool calls. These details are appropriate
+only when the user explicitly asks for an audit or diagnostic report.
 
 ## Local HTTP acceptance
 
@@ -33,12 +66,18 @@ Restart the client after adding or changing MCP configuration. The server writes
 .\scripts\gm.ps1 mcp http --host 127.0.0.1 --port 18765 --allowed-origin https://chatgpt.com
 ```
 
-The endpoint is `http://127.0.0.1:18765/mcp`. This is local-only and is not directly reachable by ChatGPT web.
+Add `--allow-capture` only for an explicitly trusted client. The endpoint is
+`http://127.0.0.1:18765/mcp`; local-only HTTP is not directly reachable by a web
+client.
 
 ## Remote deployment boundary
 
-Set a high-entropy secret in `GM_MCP_TOKEN`, terminate TLS in a trusted reverse proxy or tunnel, bind only within the protected runtime, and configure exact allowed origins. Non-loopback startup is rejected when the configured token environment variable is empty.
+Set a high-entropy secret in `GM_MCP_TOKEN`, terminate TLS in a trusted reverse
+proxy or tunnel, bind only within the protected runtime, and configure exact
+allowed origins. Non-loopback startup is rejected when the token is empty.
+Capture should remain disabled for remote deployments unless authentication,
+client identity and explicit-consent behavior have been reviewed.
 
-ChatGPT web requires a reachable remote MCP endpoint. For a private machine or private network, use Secure MCP Tunnel or an equivalent authenticated deployment; do not expose the local port directly. Workspace plan, developer-mode, authentication, and app approval requirements still apply.
-
-This repository does not yet install or operate the tunnel, issue OAuth credentials, or publish a ChatGPT app. Those are deployment operations, not local knowledge-store behavior.
+This repository does not install a tunnel, issue OAuth credentials, or publish
+a hosted app. Those are deployment operations, not local knowledge-store
+behavior.

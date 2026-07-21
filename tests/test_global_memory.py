@@ -35,7 +35,7 @@ from global_memory.epistemics import truth_layer
 from global_memory.evolution import KnowledgeEvolutionService
 from global_memory.migration import EpistemicStatusMigration, TrustPolicyRequalificationMigration, TrustRequalificationRepairMigration
 from global_memory.metrics import ProjectMetricsService
-from global_memory.mcp_server import MCPApplication, ReadOnlyMemoryTools, serve_http
+from global_memory.mcp_server import AgentMemoryTools, MCPApplication, ReadOnlyMemoryTools, serve_http
 from global_memory.obsidian import ObsidianViewService
 from global_memory.proposals import ProposalService
 from global_memory.receipts import ReceiptService
@@ -224,9 +224,18 @@ def test_m6_atomic_claim_split_and_partial_coverage_gate(repo: Repository) -> No
     split = AtomicClaimInspector.split_spec(
         {"object_type": "claim", "title": statement, "body": statement}, statement,
     )
-    assert len(split) == 3
-    assert all(item["atomicity_status"] == "atomic" for item in split)
+    assert len(split) == 1
+    assert split[0]["atomicity_status"] == "compound"
+    assert split[0]["split_reason"] == "automatic syntactic splitting disabled; explicit semantic split required"
     assert AtomicClaimInspector.inspect("方法使用强化学习，并纳入物理单位约束", ["证据"]).status == "compound"
+
+    fragment = AtomicClaimInspector.split_spec(
+        {"object_type": "claim", "title": "GR00T-N1.6, respectively.", "body": "GR00T-N1.6, respectively."},
+        "GR00T-N1.6, respectively.",
+    )
+    assert fragment[0]["atomicity_status"] == "uncertain"
+    assert fragment[0]["semantic_completeness"] == "fragment"
+    assert fragment[0]["evidence_coverage"] == "missing"
 
 
 def test_m6_lifecycle_derives_review_state_without_mutating_source(repo: Repository) -> None:
@@ -2906,6 +2915,62 @@ def test_obsidian_default_knowledge_graph_shows_working_semantics_without_source
     assert not source_node.exists()
 
 
+def test_obsidian_default_graph_excludes_operational_acceptance_experiments(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Acceptance receipt", title="Acceptance source")
+    experiment = write_m8_memory(
+        repo, "experiment_agent_acceptance", "experiment", "Cursor acceptance run",
+        "Operational integration evidence.", [captured.source_id],
+    )
+    metadata, body = read_document(experiment)
+    metadata["tags"] = ["agent-acceptance"]
+    metadata["domains"] = ["global-memory"]
+    experiment.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    ObsidianViewService(repo).build()
+
+    assert not (repo.root / "vault/views/graph/experiments/Cursor acceptance run.md").exists()
+
+
+def test_obsidian_graph_projects_cognitive_synthesis_inputs_and_method_aliases(
+    repo: Repository,
+) -> None:
+    first = write_m8_memory(
+        repo, "concept_graph_method_a", "concept", "价值驱动策略改进",
+        "A Working concept.", [],
+    )
+    second = write_m8_memory(
+        repo, "concept_graph_method_b", "concept", "动作块策略优化",
+        "Another Working concept.", [],
+    )
+    for path, alias in ((first, "Robo-ValueRL"), (second, "PAC-ACT")):
+        metadata, body = read_document(path)
+        metadata["aliases"] = [alias]
+        path.write_text(render_document(metadata, body), encoding="utf-8")
+    synthesis_path = repo.root / "vault/synthesis/synthesis-synthesis_graph_methods.md"
+    synthesis_path.parent.mkdir(parents=True, exist_ok=True)
+    synthesis_path.write_text(render_document({
+        "id": "synthesis_graph_methods", "type": "synthesis", "status": "active",
+        "title": "VLA 后训练反馈接口", "created_at": "2026-07-20T00:00:00+00:00",
+        "updated_at": "2026-07-20T00:00:00+00:00", "source_ids": [], "relations": [],
+        "aliases": [], "tags": [], "domains": [], "confidence": "unknown",
+        "input_concepts": ["concept_graph_method_a", "concept_graph_method_b"],
+        "truth_layer": "cognitive_synthesis", "execution_safe": False,
+    }, "Weekly cognitive synthesis."), encoding="utf-8")
+    repo.rebuild_index()
+
+    ObsidianViewService(repo).build()
+
+    synthesis = repo.root / "vault/views/graph/syntheses/VLA 后训练反馈接口.md"
+    first_node = repo.root / "vault/views/graph/concepts/Robo-ValueRL · 价值驱动策略改进.md"
+    second_node = repo.root / "vault/views/graph/concepts/PAC-ACT · 动作块策略优化.md"
+    assert synthesis.exists() and first_node.exists() and second_node.exists()
+    text = synthesis.read_text(encoding="utf-8")
+    assert "综合输入（非事实关系）" in text
+    assert "Robo-ValueRL · 价值驱动策略改进" in text
+    assert "PAC-ACT · 动作块策略优化" in text
+
+
 def test_repository_obsidian_graph_is_semantically_grouped_and_hides_navigation_hubs() -> None:
     graph_path = Path(__file__).parents[1] / "vault/.obsidian/graph.json"
     config = json.loads(graph_path.read_text(encoding="utf-8"))
@@ -2916,6 +2981,7 @@ def test_repository_obsidian_graph_is_semantically_grouped_and_hides_navigation_
     assert any('views/graph/claims' in query for query in queries)
     assert any('views/graph/concepts' in query for query in queries)
     assert any('views/graph/questions' in query for query in queries)
+    assert any('views/graph/syntheses' in query for query in queries)
     assert any('views/graph/sources' in query for query in queries)
     assert not any('views/graph/high-confidence-sources' in query for query in queries)
     assert not any('views/graph/hubs' in query for query in queries)
@@ -3110,10 +3176,10 @@ def test_weekly_cli_has_bounded_defaults() -> None:
 
 
 def test_read_only_mcp_exposes_only_bounded_query_tools(repo: Repository) -> None:
-    definitions = ReadOnlyMemoryTools.definitions()
+    definitions = ReadOnlyMemoryTools(repo).definitions()
 
     assert [item["name"] for item in definitions] == [
-        "memory_context", "memory_search", "memory_show", "memory_source", "memory_status"
+        "memory_context", "memory_search", "memory_show", "memory_source"
     ]
     assert all(item["annotations"]["readOnlyHint"] is True for item in definitions)
     assert all(item["annotations"]["destructiveHint"] is False for item in definitions)
@@ -3136,13 +3202,15 @@ def test_read_only_mcp_search_show_source_and_context_do_not_mutate(repo: Reposi
     shown = tools.call("memory_show", {"object_id": captured.source_id, "max_chars": 100})
     source = tools.call("memory_source", {"source_id": captured.source_id, "max_chars": 100})
     context = tools.call("memory_context", {"question": "provenance", "token_budget": 256})
-    status = tools.call("memory_status", {})
 
-    assert search["results"][0]["id"] == captured.source_id
-    assert shown["metadata"]["id"] == captured.source_id
-    assert source["extraction"]["metadata"]["source_id"] == captured.source_id
-    assert context["context_pack_version"] == 1
-    assert "capture_only_count" in status
+    assert search["results"][0]["lookup_ref"] == captured.source_id
+    assert shown["source"]["ref"] == captured.source_id
+    assert source["extraction"]["status"] == "ready"
+    assert context["evidence_packet_version"] == 1
+    serialized = json.dumps(context, ensure_ascii=False).casefold()
+    assert all(term not in serialized for term in (
+        "route_trace", "selection_reason", "document_sha256", "sqlite", "vault/", "system/",
+    ))
     after = {path: path.read_bytes() for path in repo.root.rglob("*") if path.is_file()}
     assert before == after
 
@@ -3162,9 +3230,54 @@ def test_mcp_jsonrpc_lifecycle_and_structured_tool_result(repo: Repository) -> N
     })
 
     assert initialized["result"]["capabilities"]["tools"]["listChanged"] is False
-    assert len(listed["result"]["tools"]) == 5
-    assert called["result"]["structuredContent"]["metadata"]["id"] == captured.source_id
+    assert len(listed["result"]["tools"]) == 4
+    assert called["result"]["structuredContent"]["source"]["ref"] == captured.source_id
     assert called["result"]["isError"] is False
+
+
+def test_agent_mcp_capture_requires_explicit_confirmation_and_stays_input_only(repo: Repository) -> None:
+    tools = AgentMemoryTools(repo, allow_capture=True)
+    before_memory = list(repo.memory_documents())
+    before_canonical = list(repo.canonical_documents())
+
+    with pytest.raises(ValidationError, match="explicit user confirmation"):
+        tools.call("memory_capture", {
+            "content": "Remember the bounded gateway decision.", "title": "Gateway decision",
+            "why_saved": "User requested durable recall", "confirmed": False,
+        })
+
+    result = tools.call("memory_capture", {
+        "content": "Remember the bounded gateway decision.", "title": "Gateway decision",
+        "input_type": "idea", "why_saved": "User requested durable recall", "confirmed": True,
+    })
+
+    assert result["capture_status"] == "captured"
+    assert result["reflection_queued"] is True
+    assert result["working_writes"] == result["trusted_writes"] == result["canonical_writes"] == 0
+    _, source, _ = repo.find_document(result["source_ref"])
+    _, episode, _ = repo.find_document(result["input_ref"])
+    assert source["type"] == "source" and source["status"] == "captured"
+    assert episode["type"] == "input" and episode["execution_safe"] is False
+    assert list(repo.memory_documents()) == before_memory
+    assert list(repo.canonical_documents()) == before_canonical
+
+
+def test_agent_mcp_capture_is_opt_in_and_delivery_policy_is_explicit(repo: Repository) -> None:
+    readonly = MCPApplication(repo)
+    writable = MCPApplication(repo, allow_capture=True)
+    readonly_names = [item["name"] for item in readonly.handle({
+        "jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {},
+    })["result"]["tools"]]
+    writable_tools = writable.handle({
+        "jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {},
+    })["result"]["tools"]
+    initialized = writable.handle({"jsonrpc": "2.0", "id": 3, "method": "initialize", "params": {}})
+
+    assert "memory_capture" not in readonly_names
+    capture = next(item for item in writable_tools if item["name"] == "memory_capture")
+    assert capture["inputSchema"]["properties"]["confirmed"]["const"] is True
+    assert capture["annotations"]["readOnlyHint"] is False
+    assert "do not mention this memory system" in initialized["result"]["instructions"].lower()
 
 
 def test_mcp_http_requires_token_when_not_loopback(repo: Repository) -> None:
@@ -3173,14 +3286,16 @@ def test_mcp_http_requires_token_when_not_loopback(repo: Repository) -> None:
 
 
 def test_mcp_cli_arguments() -> None:
-    stdio = build_parser().parse_args(["mcp", "stdio"])
-    http = build_parser().parse_args(["mcp", "http", "--port", "9999", "--allowed-origin", "https://chatgpt.com"])
+    stdio = build_parser().parse_args(["mcp", "stdio", "--allow-capture"])
+    http = build_parser().parse_args(["mcp", "http", "--port", "9999", "--allowed-origin", "https://chatgpt.com", "--allow-capture"])
 
     assert stdio.mcp_transport == "stdio"
+    assert stdio.allow_capture is True
     assert http.mcp_transport == "http"
     assert http.host == "127.0.0.1"
     assert http.port == 9999
     assert http.allowed_origin == ["https://chatgpt.com"]
+    assert http.allow_capture is True
 
 
 def test_m90_research_annotation_is_append_only_and_preserves_user_chinese(repo: Repository) -> None:
@@ -3611,6 +3726,27 @@ def test_m7_weekly_never_writes_canonical_and_drift_is_read_only(repo: Repositor
     assert audit["writes"] == 0
 
 
+def test_drift_audit_excludes_archived_historical_memory(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Historical correlation source.", title="Historical correlation source"
+    )
+    historical = write_m8_memory(
+        repo,
+        "question_historical_drift",
+        "question",
+        "Historical drift question",
+        "Correlation was reported and later described as causing an outcome.",
+        [captured.source_id],
+    )
+    metadata, body = read_document(historical)
+    metadata.update({"status": "archived", "memory_tier": "historical"})
+    historical.write_text(render_document(metadata, body), encoding="utf-8")
+
+    reports = DriftAuditService(repo).run()
+
+    assert all(item["object_id"] != "question_historical_drift" for item in reports["issues"])
+
+
 def test_weekly_excludes_archived_historical_memory_from_consolidation(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Concept: routine maintenance candidate.", title="Active memory")
     active = write_m8_memory(
@@ -3657,7 +3793,7 @@ def test_consolidate_weekly_admits_capture_only_sources_before_review(
 
 def test_daily_keeps_long_unstructured_fallback_source_only(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text(
-        "Paper title and author affiliation header. " * 120,
+        "Paper title affiliation header. " * 120,
         title="Long unstructured paper",
     )
 
@@ -3712,7 +3848,7 @@ def test_working_quality_review_flags_legacy_long_fallback(
     repo: Repository, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     CaptureService(repo).capture_text(
-        "Paper title and author affiliation header. " * 120,
+        "Paper title affiliation header. " * 120,
         title="Legacy fallback paper",
     )
     monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 10000)
@@ -3751,11 +3887,38 @@ def test_working_quality_review_flags_legacy_article_marker_false_positive(
     assert "automatic article marker misclassified as an Agent instruction" in review["flagged"][0]["reasons"]
 
 
+def test_working_quality_review_flags_agent_labeled_fallback_fragment(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Experimental results show gains for pi0.5 and GR00T-N1.6, respectively.",
+        title="Agent fragment source",
+    )
+    claim = write_m8_memory(
+        repo, "claim_agent_fragment", "claim", "GR00T-N1.6, respectively.",
+        "GR00T-N1.6, respectively.", [captured.source_id], epistemic_status="unknown",
+    )
+    metadata, body = read_document(claim)
+    metadata.update({
+        "compiler_version": "agent-semantic-weekly-test",
+        "created_by": "agent-semantic-weekly-test",
+        "uncertainty": "确定性 fallback 能力有限；该原文尚未经过语义事实核验。",
+        "split_from": "Experimental results show gains for pi0.5 and GR00T-N1.6, respectively.",
+        "reflection_context": [],
+    })
+    claim.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    review = ConsolidationService(repo).review_working_quality()
+
+    flagged = next(item for item in review["flagged"] if item["object_id"] == "claim_agent_fragment")
+    assert "deterministic fallback semantics remained after Agent compilation" in flagged["reasons"]
+    assert "mechanically split claim requires semantic recompilation" in flagged["reasons"]
+
+
 def test_working_quality_migration_archives_with_snapshot_and_is_idempotent(
     repo: Repository, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     CaptureService(repo).capture_text(
-        "Paper title and author affiliation header. " * 120,
+        "Paper title affiliation header. " * 120,
         title="Legacy migration paper",
     )
     monkeypatch.setattr(BundleCompiler, "UNSTRUCTURED_FALLBACK_MAX_CHARS", 10000)

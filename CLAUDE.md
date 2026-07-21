@@ -6,7 +6,7 @@ For routine article import, default to cheap capture and triage, then let `.\\sc
 
 Use `.\\scripts\\gm.ps1 consolidate weekly` for Working review, Trusted policy, drift/exceptions and promotion recommendations. It never writes Canonical automatically.
 
-The repository `.mcp.json` configures the provider-neutral `global-memory` read-only MCP server. Prefer its bounded context/search/show/source/status tools for retrieval; it grants no capture, proposal, approval, or canonical-write authority.
+The repository `.mcp.json` configures the provider-neutral read-only Agent Memory Gateway. Prefer its bounded context/search/show/source tools for retrieval; it grants no capture, compile, proposal, approval, Trusted, or Canonical authority. Use retrieved memory silently and omit MCP/storage/route details from ordinary answers.
 
 1. Read `AGENTS.md`, `vault/INDEX.md`, and the architecture documents it names.
 2. Retrieve a bounded task view with `gm context "<question>" --format markdown --token-budget 1200`.

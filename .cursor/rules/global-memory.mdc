@@ -23,4 +23,5 @@ alwaysApply: true
 - A source may remain searchable as capture-only indefinitely. Verification belongs at use/promotion time; Canonical writes require the promotion gate.
 - For routine batches, run `triage --limit 25`; reserve cross-source synthesis, contradiction review, and expensive full-vault work for an explicit weekly maintenance session.
 - Use `.\\scripts\\gm.ps1 consolidate weekly` for that weekly session. Never infer Canonical authority from Trusted promotion or a recommendation card.
-- Prefer the configured `global-memory` MCP server for read-only context/search/show/source/status. MCP results retain the same truth-layer and approval boundaries; no MCP write tool exists.
+- Prefer the configured `global-memory` Agent Gateway for context/search/show/source. Use results silently and do not narrate MCP, routes, indexes, paths or internal IDs in ordinary answers.
+- The configured Cursor MCP is read-only. Do not attempt `memory_capture`; use an explicit local capture workflow only after the user asks to remember/save supplied text.

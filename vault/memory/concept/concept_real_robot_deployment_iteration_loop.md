@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "真机部署评估迭代闭环"
 created_at: "2026-07-19T12:18:02+08:00"
-updated_at: "2026-07-19T12:20:21+08:00"
+updated_at: "2026-07-20T13:37:54+08:00"
 aliases: ["real-robot deployment-evaluation loop", "physical robot iteration loop", "deployment, evaluation and data-collection loop"]
 tags: []
 domains: ["embodied-ai", "robotics", "real-robot-evaluation", "data-collection"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-19T12:20:21+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-20T13:37:54+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_e231d1eaf0d303698229-concept-1.md"
 origin_candidate_sha256: "578066e560ea1336ef9aa4f91f6254668a5aa0dcec63fce8a4d81ff6e8a5f14f"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_c24563aa0144d6d9d728eddd"
+last_consolidation_id: "consolidation_4fd87110b365cbddcf91aeae"
 ---
 
 # 真机部署评估迭代闭环

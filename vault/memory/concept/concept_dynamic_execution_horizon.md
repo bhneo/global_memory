@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "动态动作块执行时域"
 created_at: "2026-07-19T12:18:42+08:00"
-updated_at: "2026-07-19T12:20:08+08:00"
+updated_at: "2026-07-20T13:37:38+08:00"
 aliases: ["dynamic execution horizon", "Dynamic Execution Horizon Prediction", "DEHP"]
 tags: []
 domains: ["embodied-ai", "robot-control", "action-chunking", "reinforcement-learning"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-19T12:20:08+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-20T13:37:38+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_a065541b84dd5bb41857-concept-1.md"
 origin_candidate_sha256: "6d4704c2f91d802bd993cf84ef9865a56e5b13bee1484bf013c3b87d7e46e9d8"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_f2417341fcedc99b75ea8204"
+last_consolidation_id: "consolidation_bb31bf4323ee87ce4298c93c"
 ---
 
 # 动态动作块执行时域

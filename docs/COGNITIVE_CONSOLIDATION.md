@@ -157,6 +157,12 @@ artifact is structurally validated before the first Reflection write. If a run
 is interrupted after an immutable Reflection is written, rerunning the same
 artifact reuses that deterministic Reflection and resumes Working compilation.
 
+Daily Claim items must each be a self-contained proposition. Connector-based
+automatic splitting is forbidden because textual clauses are not reliable
+semantic boundaries. Compound Claims stay in the proposal layer for explicit
+model/human decomposition; fragments receive `semantic_completeness: fragment`
+and incomplete evidence coverage, so they cannot enter Working.
+
 ## Weekly Dream and Synthesis schema
 
 Weekly Dream consumes multiple Reflections plus explicit existing Concepts. Its

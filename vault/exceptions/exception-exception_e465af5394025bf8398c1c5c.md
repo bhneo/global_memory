@@ -1,10 +1,10 @@
 ---
 id: "exception_e465af5394025bf8398c1c5c"
 type: "exception"
-status: "open"
+status: "deferred"
 title: "Consolidation failed: Agentic-VLA 在 LIBERO-Long 上以 700 次迭代达到 90% 成功率，论文报告其相对 EVOLVE-VLA 收敛快 2.4×"
 created_at: "2026-07-17T18:37:01+08:00"
-updated_at: "2026-07-17T18:37:01+08:00"
+updated_at: "2026-07-20T00:05:19+08:00"
 aliases: []
 tags: ["consolidation-failed"]
 domains: []
@@ -16,7 +16,8 @@ severity: "attention"
 object_id: "claim_agentic_vla_training_efficiency_20260715"
 reasons: ["拒绝覆盖不可变 raw 内容: vault/receipts/consolidation/consolidation-consolidation_f6f626be1822c10b43334c83.md"]
 context: {}
-resolution: null
+resolution: "旧 Agentic-VLA Claim 缺少完整 evidence entailment 与 hash-bound 合格 Receipt；需回到论文证据重新核验。"
+resolved_at: "2026-07-20T00:05:19+08:00"
 ---
 
 # Consolidation failed: Agentic-VLA 在 LIBERO-Long 上以 700 次迭代达到 90% 成功率，论文报告其相对 EVOLVE-VLA 收敛快 2.4×

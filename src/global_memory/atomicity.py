@@ -8,6 +8,14 @@ from typing import Any
 ATOMICITY_STATUSES = {"atomic", "compound", "uncertain"}
 EVIDENCE_COVERAGE = {"full", "partial", "missing"}
 _CONNECTOR = re.compile(r"(?:；|;|，(?:并且|并|同时|以及|此外|还)|\s+(?:and|as well as|while also)\s+)", re.I)
+_FRAGMENT_END = re.compile(
+    r"(?:,|:|;|\b(?:and|or|but|with|without|of|for|to|from|than|respectively)\.?)$",
+    re.I,
+)
+_HEADING_LIKE = re.compile(
+    r"^(?:experimental results(?: in (?:simulation|the real world))?|results|discussion|conclusion|predictive capability)\.?$",
+    re.I,
+)
 
 
 @dataclass(frozen=True)
@@ -19,6 +27,19 @@ class AtomicityResult:
 
 
 class AtomicClaimInspector:
+    @staticmethod
+    def is_semantically_self_contained(statement: str) -> bool:
+        """Conservatively reject headings and sentence fragments as Claims."""
+        text = re.sub(r"\s+", " ", statement).strip()
+        if not text or _HEADING_LIKE.fullmatch(text) or _FRAGMENT_END.search(text):
+            return False
+        if text[0].isascii() and text[0].islower():
+            return False
+        latin_words = re.findall(r"[A-Za-z0-9πΦ][A-Za-z0-9_.+@×%-]*", text)
+        if latin_words and len(latin_words) < 5 and not re.search(r"[\u3400-\u9fff]", text):
+            return False
+        return len(text) >= 10
+
     @staticmethod
     def inspect(statement: str, evidence_texts: list[str] | None = None) -> AtomicityResult:
         text = re.sub(r"\s+", " ", statement).strip()
@@ -46,14 +67,19 @@ class AtomicClaimInspector:
             return [spec]
         body = str(spec.get("body", ""))
         result = AtomicClaimInspector.inspect(body, [body] if body in extraction_text else [])
-        if result.status != "compound":
-            return [{**spec, "atomicity_status": result.status, "evidence_coverage": result.evidence_coverage}]
-        split: list[dict[str, Any]] = []
-        for clause in result.clauses:
-            start = extraction_text.find(clause)
-            split.append({
-                **spec, "title": clause[:160], "body": clause, "span_start": start,
-                "atomicity_status": "atomic", "evidence_coverage": "full" if start >= 0 else "partial",
-                "split_from": body, "split_reason": result.reason,
-            })
-        return split
+        if result.status == "compound":
+            return [{
+                **spec,
+                "atomicity_status": "compound",
+                "evidence_coverage": result.evidence_coverage,
+                "semantic_completeness": "complete",
+                "split_reason": "automatic syntactic splitting disabled; explicit semantic split required",
+            }]
+        complete = bool(spec.get("explicit_marker")) or AtomicClaimInspector.is_semantically_self_contained(body)
+        return [{
+            **spec,
+            "atomicity_status": result.status if complete else "uncertain",
+            "evidence_coverage": result.evidence_coverage if complete else "missing",
+            "semantic_completeness": "complete" if complete else "fragment",
+            "quality_gate_reason": None if complete else "claim is not a self-contained proposition",
+        }]

@@ -1,6 +1,51 @@
 # Current State
 
+## M9.2 Agent Memory Gateway update (2026-07-20)
+
+- Agent-facing MCP reads now return sanitized Evidence Packets rather than raw
+  Context Pack diagnostics. Epistemic and provenance boundaries remain visible;
+  filesystem paths, hashes, route traces, SQLite/maintenance state and admin
+  commands are excluded.
+- MCP initialization establishes a silent-background delivery contract so
+  ordinary reports do not narrate the memory system or tool operations.
+- Default MCP remains read-only. The explicitly enabled Capture-only tool
+  requires confirmed user intent, runs recovery first, and writes immutable
+  Source plus typed Input Episode only. Working, Trusted and Canonical writes
+  are structurally absent and reported as zero.
+- Repository MCP configurations remain strictly read-only. Codex Desktop uses
+  a personal plugin with two explicit-only skills for bounded retrieval and
+  Capture-only intake; the plugin registers no always-on MCP server.
+
 ## M9.1 Cognitive Consolidation update (2026-07-19)
+
+- A 2026-W30 cross-line Weekly integrated four VLA post-training interfaces
+  with TouchWorld, TACTIC, TactiDex, REGRIND, TELEDEXTER and DemoBridge under
+  precision/contact-rich manipulation. It used 10 existing Reflections,
+  preserved the weaker Robo-ValueRL evidence boundary, created one non-factual
+  Synthesis and wrote 0 Working, Trusted or Canonical objects.
+- The default Obsidian projection now renders active Cognitive Synthesis as a
+  distinct colored node class and links its declared Concept inputs with
+  explicitly non-factual derived edges. Compact method aliases remain visible,
+  so cross-paper research lines can be inspected without exposing hash IDs.
+- The 2026-W29 real Weekly follow-up classified all 17 open Exceptions. Five
+  duplicate no-op updates and two Historical drift false positives were
+  dismissed; eight legacy Claim verification gaps and two M6 Synthesis
+  provenance gaps were explicitly deferred. No knowledge tier changed and
+  Canonical writes remained zero.
+- Drift audit now excludes archived, superseded and Historical objects, in line
+  with the routine-maintenance boundary. The two remaining active drift signals
+  are medium-severity M6 Synthesis provenance gaps; high-severity drift is zero.
+- M9.1 quality closure removed the unsafe regex Claim splitter. Compound
+  statements remain proposal-gated until explicit semantic decomposition, and
+  headings/sentence fragments fail semantic completeness instead of becoming
+  Working nodes.
+- Working-quality policy v2 inspects actual fallback markers rather than
+  trusting `compiler_version`. It reversibly archived 21 Agent-labeled Claim
+  fragments in migration `working_quality_93b259fa551083972ae7524e`; exact
+  backups, version snapshots and events are retained, with 0 Trusted and 0
+  Canonical writes.
+- The default Obsidian knowledge graph excludes operational Global Memory
+  acceptance experiments while retaining them in the audit corpus.
 
 - Typed Input Episodes now unify article, paper, GitHub, conversation, idea,
   experiment, meeting and third-party Agent Session capture under
@@ -119,22 +164,22 @@ Memory Tier (`working`, `trusted`, `canonical`, `historical`) is independent fro
 ## Current metrics
 
 <!-- GENERATED_METRICS_START -->
-- Generated at: 2026-07-19T17:27:47+08:00
-- Working / Trusted / Canonical / Historical: 106 / 30 / 1 / 43
-- Source-only compile records / sources / historical objects: 42 / 42 / 43
+- Generated at: 2026-07-20T12:00:26+08:00
+- Working / Trusted / Canonical / Historical: 89 / 30 / 1 / 64
+- Source-only compile records / sources / historical objects: 42 / 42 / 64
 - Trusted current policy / receipt / qualified: 28 / 30 / 23
 - Trusted awaiting / stale receipt / contested / high-risk drift: 2 / 0 / 0 / 0
 - Trusted factual / exploration; Canonical with current Receipt: 11 / 19 / 0
 - Contested: 0
 - Working revisions: 0
-- Open exceptions: 12
+- Open exceptions: 11
 - Promotion candidates: 0
-- Consolidation receipts / failed: 557 / 66
-- Receipt schema versions: {'v1': 113, 'v2': 444}
-- Objects with current valid Receipt v2: 120
+- Consolidation receipts / failed: 592 / 82
+- Receipt schema versions: {'v1': 113, 'v2': 479}
+- Objects with current valid Receipt v2: 111
 - Pending recovery journals: 0
-- Drift warnings / high severity: 4 / 2
-- Corpus sources / knowledge objects: 107 / 180
+- Drift warnings / high severity: 2 / 0
+- Corpus sources / knowledge objects: 110 / 184
 - Research annotations total / active / superseded: 0 / 0 / 0
 <!-- GENERATED_METRICS_END -->
 
@@ -178,12 +223,18 @@ GitHub Actions CI #7 for the prior M8 commit `928404f` passed all six jobs: Ubun
 
 ## Active exceptions
 
-Two open synthesis-drift Exceptions from the real weekly pass. Estimated review time is six minutes. There are no Canonical exceptions and no high-severity drift findings.
+Ten outstanding Exceptions remain after the 2026-W29 triage, all explicitly
+deferred: eight legacy Claim evidence-verification gaps and two M6 Synthesis
+provenance gaps. No item is left unclassified; there are no Canonical exceptions
+and no active high-severity drift findings.
 
 ## Next concrete task
 
-Link the two awaiting Concepts to genuinely independent logical works only when evidence supports that identity, then re-run `gm trust requalify <id>`. Review the eight failed legacy receipts and two synthesis evidence-link warnings without bulk-upgrading them merely to improve metrics.
+Link the two awaiting Concepts to genuinely independent logical works only when evidence supports that identity, then re-run `gm trust requalify <id>`. Reopen the deferred legacy Claim or M6 Synthesis reviews only when primary evidence or a source-bound replacement Synthesis is available.
 
 ## Do not do yet
 
-Do not add embeddings, a vector/graph database, a new MCP write surface, browser ingestion, a Web UI, multi-Agent orchestration or automatic Canonical writes. M8 should first accumulate real usage evidence and threshold calibration.
+Do not broaden MCP beyond bounded retrieval and explicitly confirmed text
+Capture-only intake. Do not add URL/file ingestion, compile/promotion/admin
+tools, embeddings, a vector/graph database, browser ingestion, a Web UI,
+multi-Agent orchestration or automatic Canonical writes.

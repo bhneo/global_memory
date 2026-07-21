@@ -14,6 +14,9 @@
 - Daily Dream must be restartable: prevalidate the complete artifact and reuse
   an identical immutable Reflection after interruption. Daily rejects
   Hypothesis, Analogy and Synthesis objects.
+- Never use regex punctuation splitting to manufacture atomic Claims. A Claim
+  must be a self-contained proposition; compound material stays gated until an
+  explicit semantic split, and fragments remain outside Working.
 - Weekly knowledge updates and bundles must bind the exact supporting
   Reflection/Source subset; never attach all weekly Reflections to every item.
 - A Reflection must explain cognitive value and contain a changed belief,
@@ -30,7 +33,7 @@
 
 - Research Annotation is append-only user-owned truth under `vault/annotations/research/`; never rewrite user fields or merge them with Agent interpretation.
 - Annotation and Feedback never change target bytes, Memory Tier, Epistemic Status, Trust Score, Receipt validity or Canonical.
-- Activation is an explicit local operational signal. Default Context and every read-only MCP call must remain write-free; only `--record-use` or `activation record` may append events.
+- Activation is an explicit local operational signal. Default Context and every MCP retrieval call must remain write-free; only `--record-use` or `activation record` may append activation events.
 - Activation, recency and frequency must not enter trust or the default ranking formula in M9.0.
 - Route Project/Domain first, use bounded FTS and relation expansion, retain Global fallback when confidence is insufficient, and return Route Trace.
 - Feedback labels research value (`obvious|forced|interesting|actionable`), not truth. Do not auto-delete, promote, generate hypotheses or create Canonical from Feedback.
@@ -75,7 +78,8 @@
 - Routine article import is capture-first. `triage` remains the cheapest source preparation step; `consolidate daily` automatically compiles prepared material into Working memory. Do not request per-article approval.
 - Run `.\\scripts\\gm.ps1 consolidate weekly` for policy-backed Working review, Trusted promotion, drift audit, exceptions and canonical recommendations. Weekly never writes canonical automatically.
 - Only `gm promotion approve <promotion-id>` may normally move Trusted memory into Canonical. `promote --to canonical` merely creates a review card.
-- External assistants should use the read-only MCP tools documented in `docs/MCP_INTEGRATION.md`. MCP retrieval never grants capture, proposal, approval, rebuild, deletion, or canonical-write authority.
+- External assistants should use the Agent Memory Gateway documented in `docs/MCP_INTEGRATION.md`. MCP retrieval never grants write authority. The optional `memory_capture` tool requires an explicit user save request and may write immutable Source plus Input only; it never grants compile, proposal, approval, rebuild, deletion, Trusted, or Canonical authority.
+- Treat MCP results as silent background context. Do not expose MCP, route trace, index/storage paths, receipts, recovery, internal IDs or tool operations in an ordinary deliverable unless the user explicitly asks for an audit.
 
 ## M6 operating rules
 

@@ -18,15 +18,15 @@
 
 ## claim
 
-- [[memory/claim/claim_93372fb57436c826769d8914|18.5 percentage points, respectively.]] · `working`
+- [[memory/claim/claim_93372fb57436c826769d8914|18.5 percentage points, respectively.]] · `archived`
 - [[memory/claim/claim_e2f86d4a5a367ae1dc8a5e1f|2026-7-14 EmbodiSkill: Skill-Aware Reflection for Self-Evolving Embodied Agents Ruofei Ju1∗† Xinrui Wang2∗† Xin Ding3‡ Yifan Yang4 Hao Wu1 Shiqi Jiang4 Qianxi Z]] · `archived`
 - [[memory/claim/claim_b93f2824932425f11bf3d80c|2026-7-17 GigaWorld-Policy-0.5: A Faster]] · `archived`
-- [[memory/claim/claim_0534c95e4004502bb928fc9e|34.43× for representative flow-based VLA models, π0.5]] · `working`
-- [[memory/claim/claim_6c93f48395d9852588c5c00f|53.7% success under human perturbations, outperforming the strongest baseline by 15.7]] · `working`
+- [[memory/claim/claim_0534c95e4004502bb928fc9e|34.43× for representative flow-based VLA models, π0.5]] · `archived`
+- [[memory/claim/claim_6c93f48395d9852588c5c00f|53.7% success under human perturbations, outperforming the strongest baseline by 15.7]] · `archived`
 - [[memory/claim/claim_parameter_symmetry_orbit_level_set_20260716|A symmetry-group orbit consists of transformed parameters and lies within one loss level set]] · `trusted`
 - [[memory/claim/claim_f18f73fad2499635f142ede5|AUTOMATION LETTERS. PREPRINT VERSION. SUBMITTED JULY , 2026 1 Human-Robot Interaction in GenAI Architectures via the Agent-Client Protocol Jesus Moncada-Ramirez]] · `archived`
 - [[memory/claim/claim_54cac5c21565eb6d274a5383|Accepted October 06, 2023) S]] · `archived`
-- [[memory/claim/claim_bcc3a0fe69a9b845834b4324|Across six long-horizon]] · `working`
+- [[memory/claim/claim_bcc3a0fe69a9b845834b4324|Across six long-horizon]] · `archived`
 - [[memory/claim/claim_agentic_vla_one_shot_20260715|Agentic-VLA 在 LIBERO one-shot 设定下平均成功率 70.5%，相对 OpenVLA-OFT SFT 基线提升 26.9 个百分点]] · `working`
 - [[memory/claim/claim_agentic_vla_libero_main_20260715|Agentic-VLA 在 LIBERO 上报告平均成功率 97.8%，Long 套件相对 SFT 基线提升 12.3 个百分点]] · `working`
 - [[memory/claim/claim_agentic_vla_training_efficiency_20260715|Agentic-VLA 在 LIBERO-Long 上以 700 次迭代达到 90% 成功率，论文报告其相对 EVOLVE-VLA 收敛快 2.4×]] · `working`
@@ -34,11 +34,11 @@
 - [[memory/claim/claim_b035b6de75ccf5819d0e89fa|Draft version October 10, 2023 Typeset using LATEX twocolumn style in AASTeX63 Deep symbolic regression for physics guided by units constraints: toward the auto]] · `archived`
 - [[memory/claim/claim_wechat_epiplexity_definition_20260715|Epiplexity is the program length in the compute-bounded minimum two-part description of a random variable]] · `trusted`
 - [[memory/claim/claim_ea6b984ae4bdd1dfdf5288a1|Evolving Intrinsic Motivations for Altruistic Behavior Jane X. Wang, Edward Hughes, Chrisantha Fernando, Wojciech M. Czarnecki, Edgar A. Duéñez-Guzmán, & Joel Z]] · `archived`
-- [[memory/claim/claim_3e9ebe96416b051f59f5eb91|Experimental results in simulation]] · `working`
-- [[memory/claim/claim_db4c678a437a315763b8b434|Experimental results show consistent improvements in task success rate]] · `working`
+- [[memory/claim/claim_3e9ebe96416b051f59f5eb91|Experimental results in simulation]] · `archived`
+- [[memory/claim/claim_db4c678a437a315763b8b434|Experimental results show consistent improvements in task success rate]] · `archived`
 - [[memory/claim/claim_a78ba4a2ebc88876f4393ad0|Foivos I. Diakogiannis 2 1Universit´ e de Strasbourg, CNRS, Observatoire astronomique de Strasbourg, UMR 7550, F-67000 Strasbourg, France 2Data61, CSIRO, Kensin]] · `archived`
 - [[memory/claim/claim_ad8c28d32a7d55ab2806574d|From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence Marc Finzi∗1 Shikai Qiu∗2 Yiding Jiang∗1 Pavel Izmailov2 J. Zico Kol]] · `archived`
-- [[memory/claim/claim_4a4e2ea931565f8ab567e75e|GR00T-N1.6, respectively.]] · `working`
+- [[memory/claim/claim_4a4e2ea931565f8ab567e75e|GR00T-N1.6, respectively.]] · `archived`
 - [[memory/claim/claim_22f24b48f35fd93994db4200|IEEE ROBOTICS]] · `archived`
 - [[memory/claim/claim_conserved_quantity_small_network_correlations_20260716|In small two-layer networks, conserved quantities were observed to correlate with convergence and minima sharpness]] · `trusted`
 - [[memory/claim/claim_de218ebcf16d288520ce4d0e|Javier Gonzalez-Jimenez 1 Abstract—Recent advances in Generative Artificial Intelligence (GenAI), particularly Large Language Models (LLMs), are driv- ing robot]] · `archived`
@@ -51,29 +51,29 @@
 - [[memory/claim/claim_499470a2d077fe16b177bd1e|Preprint. SKILLEVOLVER: SKILLLEARNING AS AMETA-SKILL Genrui Zhang2∗ Erle Zhu1∗ Jinfeng Zhou1 Caiyan Jia2 Hongning Wang1† 1Tsinghua University 2Beijing Jiaotong]] · `archived`
 - [[memory/claim/claim_45e2c33254979ebece6a7502|Revised October 06 2023]] · `archived`
 - [[memory/claim/claim_ce6495dab9cd14e0068546af|SAFERELBENCH: A Spatial-Relation-Aware Benchmark for Process-Level Safety in VLM-Driven Embodied Agents Huaigang Yang1,2, Ya Li1, Min Ren 1, Bo Dai 2, Zhenliang]] · `archived`
-- [[memory/claim/claim_6c78036028e3192540cdf5fc|Specifically, we propose a staged training paradigm with different learning objectives: first, we autoregressively pre-train a VLM backbone on large-scale egoce]] · `working`
+- [[memory/claim/claim_6c78036028e3192540cdf5fc|Specifically, we propose a staged training paradigm with different learning objectives: first, we autoregressively pre-train a VLM backbone on large-scale egoce]] · `archived`
 - [[memory/claim/claim_ece3b21b134d0b944b46b8fd|Stronger WAM Empowered by AutoResearch GigaAI Tsinghua University Project Page: https://open-gigaai.github.io/giga-world-policy/ Alphabetical Order:Angen Ye, An]] · `archived`
 - [[memory/claim/claim_0b690c465600b65a6f2a3652|Technology 3 University of Science]] · `archived`
 - [[memory/claim/claim_d9476033c30cbb2c7b1f3f51|Technology of China 4 Microsoft Research 5 Institute for AI Industry Research (AIR), Tsinghua University Embodied agents can benefit from skills that]] · `archived`
 - [[memory/claim/claim_3d3342246519ef132c0d22f7|Telecommunications, Beijing, China 2State Key Laboratory of General Artificial Intelligence, BIGAI, Beijing, China Correspondence:daibo@bigai.ai, zhaofenghe@bup]] · `archived`
-- [[memory/claim/claim_251ad28e5021bb5fb97a0f2b|The neural network architecture of GR00T N1.7 is a combination of vision-language foundation model]] · `working`
-- [[memory/claim/claim_4b17c3d6e1aa3af61a3c70d4|These trends indicate that improving VLA models in practice requires a coordinated treatment of data, embodiment,]] · `working`
+- [[memory/claim/claim_251ad28e5021bb5fb97a0f2b|The neural network architecture of GR00T N1.7 is a combination of vision-language foundation model]] · `archived`
+- [[memory/claim/claim_4b17c3d6e1aa3af61a3c70d4|These trends indicate that improving VLA models in practice requires a coordinated treatment of data, embodiment,]] · `archived`
 - [[memory/claim/claim_e3413acb534ee28753a420ba|Towards Human-like Physical Intelligence: Lifelong Vision-Language-Action Learning for Robotic Manipulation Yao He1, Gan Sun ∗1, Wenqi Liang 2, Fazeng Li1]] · `archived`
 - [[knowledge/claims/claim_via_interface_first_robot_control_20260715-via-表明稳定的视觉工具界面可让通用-agent-在限定仿真任务中零样本闭环控制机器人|VIA 表明通用视觉 Agent 可在限定仿真任务中通过工具界面零样本闭环控制机器人]] · `canonical`
-- [[memory/claim/claim_215a419e0f318ce8fbad6627|We instantiate this formulation with a generative behavior model]] · `working`
+- [[memory/claim/claim_215a419e0f318ce8fbad6627|We instantiate this formulation with a generative behavior model]] · `archived`
 - [[memory/claim/claim_56dfdf2b9ba924226087b5a4|Yang Cong 1 1South China University of Technology 2University of Trento Abstract Similar to the natural capabilities of humans to sequentially learn new tasks,]] · `archived`
-- [[memory/claim/claim_b912102d1da06715a0c97c77|a separate optimizer model turns scored rollouts into bounded add/delete/replace edits on a single skill document,]] · `working`
-- [[memory/claim/claim_bddbfc583594cb06ab113d17|an edit is accepted only when it strictly improves a held-out validation score.]] · `working`
-- [[memory/claim/claim_2fa0248b6e89ef9c5810d69d|contact-rich dexterous manipulation tasks, TouchWorld achieves 65.0% success in the clean setting]] · `working`
-- [[memory/claim/claim_758e87c35e680435e7968bfe|diffusion transformer head that denoises continuous actions.]] · `working`
+- [[memory/claim/claim_b912102d1da06715a0c97c77|a separate optimizer model turns scored rollouts into bounded add/delete/replace edits on a single skill document,]] · `archived`
+- [[memory/claim/claim_bddbfc583594cb06ab113d17|an edit is accepted only when it strictly improves a held-out validation score.]] · `archived`
+- [[memory/claim/claim_2fa0248b6e89ef9c5810d69d|contact-rich dexterous manipulation tasks, TouchWorld achieves 65.0% success in the clean setting]] · `archived`
+- [[memory/claim/claim_758e87c35e680435e7968bfe|diffusion transformer head that denoises continuous actions.]] · `archived`
 - [[memory/claim/claim_92804ba3893e52d0c5696e45|humans are able to overcome t]] · `archived`
-- [[memory/claim/claim_9af622d7162156b1ad40f640|predictive capability.]] · `working`
-- [[memory/claim/claim_6ed5013981fdc75c87eb19c9|real-world environments demonstrate that ActionCache maintains high task success rates in a low-latency regime, achieving inference acceleration of up to 11.75×]] · `working`
+- [[memory/claim/claim_9af622d7162156b1ad40f640|predictive capability.]] · `archived`
+- [[memory/claim/claim_6ed5013981fdc75c87eb19c9|real-world environments demonstrate that ActionCache maintains high task success rates in a low-latency regime, achieving inference acceleration of up to 11.75×]] · `archived`
 - [[memory/claim/claim_080bdc5349e0e08fa8882e97|then consumed unchanged, with no mechanism to improve from real use. We proposeSkillEvolver, a lightweight, plug-and-play solution foronline skill learning, in]] · `archived`
-- [[memory/claim/claim_375ec2bd655859372380b6b0|then, we post-train a flow-based action expert on high-quality humanoid robot data to learn precise robot joint control.]] · `working`
-- [[memory/claim/claim_8477d6342c9553e4d9029bd3|training stability compared with the baseline method of directly collecting end-to-end complete task trajectories.]] · `working`
+- [[memory/claim/claim_375ec2bd655859372380b6b0|then, we post-train a flow-based action expert on high-quality humanoid robot data to learn precise robot joint control.]] · `archived`
+- [[memory/claim/claim_8477d6342c9553e4d9029bd3|training stability compared with the baseline method of directly collecting end-to-end complete task trajectories.]] · `archived`
 - [[memory/claim/claim_c7f06719c78cc576410dded2|useful information be constructed from merely applying deterministic transformations to existing data? Can the learnable content in data be evaluated without co]] · `archived`
-- [[memory/claim/claim_31e7e1439a7b52f7bade2625|value-guided action selection, as illustrated in Fig. 1, enabling coordination without complete-task trajectories, skill labels, or oracle task plans.]] · `working`
+- [[memory/claim/claim_31e7e1439a7b52f7bade2625|value-guided action selection, as illustrated in Fig. 1, enabling coordination without complete-task trajectories, skill labels, or oracle task plans.]] · `archived`
 - [[memory/claim/claim_physo_rnn_reinforcement_learning_method_20260716|Φ-SO 使用深度强化学习训练 RNN 生成符号表达式]] · `trusted`
 - [[memory/claim/claim_physo_units_constraints_reduce_search_20260716|Φ-SO 在生成过程中施加物理单位约束以排除不一致表达式并缩小搜索空间]] · `trusted`
 - [[memory/claim/claim_9e31e4b4eddc1ce8ee21db0f|来源原文：2026-7-17
@@ -117,48 +117,70 @@ Symmetry in Neu]] · `archived`
 - [[memory/claim/claim_wechat_im_rl_framework_internal_rewards_20260716|该文称经典 RL 虽常被视为仅处理外在奖励，但 Barto 等框架可将奖励生成机制置于「内部环境」，内在与外在奖励可统一建模]] · `working`
 - [[memory/claim/claim_wechat_double_trace_traversable_20260715|该文称边界 double trace deformation 可引入负能量流，使原本不可穿越的 ER 桥变为可穿越]] · `working`
 - [[memory/claim/claim_wechat_nonergodic_failure_exit_20260716|该文称非遍历情形中个体可能在经历全部路径前因一次失败出局]] · `working`
-- [[memory/claim/claim_ed202cdc4c79d46f2ac31913|该研究的 pass@k 诊断显示冻结 VLA 输出中存在大量可行候选]] · `working`
+- [[memory/claim/claim_ed202cdc4c79d46f2ac31913|该研究的 pass@k 诊断显示冻结 VLA 输出中存在大量可行候选]] · `archived`
 
 ## concept
 
+- [[memory/concept/concept_64c23c660c9017a5bf73d012|Consecutive hand-object subgoal teleoperation]] · `working`
 - [[memory/concept/concept_epiplexity|Epiplexity]] · `working`
 - [[memory/concept/concept_kelly_criterion|Kelly Criterion]] · `working`
 - [[memory/concept/concept_sim_to_real_scene_infrastructure|Sim-to-Real 场景基础设施]] · `working`
+- [[memory/concept/concept_b1b62d103e0a768399664d9d|Simulator-validated single-view demonstration transfer]] · `working`
 - [[memory/concept/concept_vla_action_cache_refinement|VLA 动作缓存与上下文复用]] · `working`
 - [[memory/concept/concept_vla_action_evaluation_distillation|VLA 动作评估蒸馏]] · `working`
 - [[memory/concept/concept_90d52ab5e62d9847f9529875|VLA 注意力泛化—动作泛化缺口]] · `working`
+- [[memory/concept/concept_f9a9f1d1818632c0380b7942|VLA 的强化学习读出接口]] · `working`
 - [[memory/concept/concept_a25076aa1f135c515237fa48|the expansion function𝑓𝐺′(𝑠). This generalizes a notion from additive number theory.]] · `archived`
+- [[memory/concept/concept_09dc6e910b167ba474c89c38|世界动作模型的激活空间鲁棒性 steering]] · `working`
 - [[memory/concept/concept_world_model_evaluation|世界模型评价]] · `working`
+- [[memory/concept/concept_d5965e0770273320ea6b28f2|主动真机因子评测]] · `working`
 - [[memory/concept/concept_event_sensitive_task_progress_memory|事件敏感的任务进度记忆]] · `working`
 - [[memory/concept/concept_sensor_conditional_expert_routing|传感器条件化专家路由]] · `working`
+- [[memory/concept/concept_fc70bfc09ac7d9473592f09c|全身冗余的部分运动学嵌入]] · `working`
 - [[memory/concept/concept_embodied_data_loop|具身数据闭环]] · `trusted`
 - [[memory/concept/concept_intrinsic_motivation_rl|内在动机强化学习]] · `working`
 - [[memory/concept/concept_asymmetric_frozen_vla_harness|冻结 VLA 的非对称技能编排]] · `working`
 - [[memory/concept/concept_d7111f304971448401a57f3b|冻结技能库与轻量路由适应]] · `working`
 - [[memory/concept/concept_geometry_grounded_proprioception|几何落地的本体感觉视觉融合]] · `working`
+- [[memory/concept/concept_d01c4f0b61292d29f0a7ffe2|动作块级策略优化与动态执行时域]] · `working`
 - [[memory/concept/concept_dynamic_execution_horizon|动态动作块执行时域]] · `working`
 - [[memory/concept/concept_parameter_symmetry|参数空间对称性]] · `working`
 - [[memory/concept/concept_dual_system_world_action_model|双系统 World Action Model]] · `working`
 - [[memory/concept/concept_portable_embodied_inference_runtime|可移植具身推理运行时]] · `working`
+- [[memory/concept/concept_4739daf4ef7eacc9153c535f|可靠价值驱动的离线到在线策略改进]] · `working`
+- [[memory/concept/concept_3d739e54fe54c8a5205d2301|多坐标系同步动作去噪]] · `working`
 - [[memory/concept/concept_multitimescale_tactile_world_model|多时间尺度触觉世界模型控制]] · `working`
+- [[memory/concept/concept_27970fb0de0d8995774e31f6|多视角具身合成世界模型数据引擎]] · `working`
 - [[memory/concept/concept_staged_cross_embodiment_alignment|异构具身数据的分阶段对齐]] · `working`
 - [[memory/concept/concept_perceptual_prediction_bias|感知预测偏差]] · `trusted`
+- [[memory/concept/concept_interaction_structure_preserving_demonstration_prior|手—物交互结构保真的示范先验]] · `working`
 - [[memory/concept/concept_skill_evolution|技能演化与技能下沉]] · `working`
 - [[memory/concept/concept_34abf7a170a7e0fc0492fc16|指向式视觉导航接口]] · `working`
+- [[memory/concept/concept_2d8e08b8d8ace05431e064a0|接触中心的混合预测控制]] · `working`
 - [[memory/concept/concept_0c7884679bf6d4e1287ce225|控制策略的自适应潜空间推理]] · `working`
+- [[memory/concept/concept_ac0f0527a9c7bdba44eb37b8|未来语义—几何变化监督的可执行 Latent Action]] · `working`
+- [[memory/concept/concept_21a37fbe65868f6e97a68a20|机器人坐标系稠密 Pointmap 观察接口]] · `working`
 - [[memory/concept/concept_machine_consciousness_integration|机器意识的信息整合问题]] · `working`
 - [[memory/concept/concept_lie_group|李群与连续对称性]] · `working`
+- [[memory/concept/concept_f67f822ee20789d74d7b75e3|物理失败合成驱动的稠密机器人奖励建模]] · `working`
 - [[memory/concept/concept_latent_space_intervention_adaptation|生成策略的潜空间干预适应]] · `working`
 - [[memory/concept/concept_progressive_vla_demonstration_curriculum|由简到繁的 VLA 示范组织]] · `working`
 - [[memory/concept/concept_real_robot_deployment_iteration_loop|真机部署评估迭代闭环]] · `working`
+- [[memory/concept/concept_9443d1789c9a179bd1611be3|示范先验条件化的 VLA 结构化探索]] · `working`
 - [[memory/concept/concept_end_to_end_embodied_reproducibility|端到端具身系统可复现性]] · `working`
 - [[memory/concept/concept_symbolic_regression|符号回归]] · `working`
 - [[memory/concept/concept_typed_verified_robot_skill_graph|类型化可验证机器人技能图]] · `working`
 - [[memory/concept/concept_adaptive_interleaved_multimodal_planning|自适应交错多模态规划]] · `working`
 - [[memory/concept/concept_representation_convergence|表征收敛]] · `working`
+- [[memory/concept/concept_1920583cd9c7063491d45a40|表示对齐的未来触觉 grounding]] · `working`
+- [[memory/concept/concept_59f92bcb786f695ddcd47f7f|视频原生的光流动作接口]] · `working`
+- [[memory/concept/concept_5b49f7afd60ba18d35ca58e8|触觉对齐的人到机器人接触迁移]] · `working`
 - [[memory/concept/concept_ab253cb9064bc1b550d5e973|跨本体世界监督通道]] · `working`
 - [[memory/concept/concept_generalist_cross_embodiment_vla|跨本体通用 VLA 策略]] · `working`
+- [[memory/concept/concept_abb38fe58cbeee09ce87a01d|跨轨迹任务进度代理校正]] · `working`
+- [[memory/concept/concept_17750931a381f8453b27ccba|连续曲线动作接口与执行重定时]] · `working`
 - [[memory/concept/concept_ergodicity|遍历性与非遍历性]] · `working`
+- [[memory/concept/concept_637cf7264723c03955c719e2|遥操作跟踪偏差作为隐式交互线索]] · `working`
 - [[memory/concept/concept_implicit_behavior_coordination|隐式行为协调]] · `working`
 - [[memory/concept/concept_predictive_vla_deployment|面向真实部署的预测式 VLA]] · `working`
 - [[memory/concept/concept_validation_gated_skill_optimization|验证门控的技能文本优化]] · `working`

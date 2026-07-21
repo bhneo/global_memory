@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "指向式视觉导航接口"
 created_at: "2026-07-19T17:17:03+08:00"
-updated_at: "2026-07-19T17:17:04+08:00"
+updated_at: "2026-07-19T23:49:35+08:00"
 aliases: ["Pointing-Based Visual Navigation Interface", "Visual Pointing Navigation", "单目指向导航", "Robostral Navigate"]
 tags: []
 domains: ["embodied-ai", "visual-navigation", "robot-interface"]
@@ -16,12 +16,12 @@ reflection_context: {"reflection_ids": ["reflection_6a9092352b95c1ab440d2274"], 
 memory_tier: "working"
 epistemic_status: "unknown"
 created_by: "codex-gpt56-m91-real-daily-v1"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt56-m91-real-daily-v1"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-07-19T23:49:35+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,6 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_e1795614dab57cbde78b-concept-1.md"
 origin_candidate_sha256: "9f3cf1f163198a887dc141f9e56cea83e61cf63a0a954be1d5df43530f62d959"
 memory_schema_version: 2
+last_consolidation_id: "consolidation_a846a5dcdd8df6febeac4a83"
 ---
 
 # 指向式视觉导航接口

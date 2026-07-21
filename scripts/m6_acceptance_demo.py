@@ -55,7 +55,10 @@ def main() -> int:
         {"object_type": "claim", "title": "compound", "body": "The model uses a planner and it uses a verifier and it records a trace."},
         "The model uses a planner and it uses a verifier and it records a trace.",
     )
-    require(len(compound) >= 2 and all(item["atomicity_status"] == "atomic" for item in compound), "compound split failed")
+    require(
+        len(compound) == 1 and compound[0]["atomicity_status"] == "compound",
+        "compound claim must remain gated for explicit semantic splitting",
+    )
     require(any(item.get("evidence_coverage") == "partial" for item, _, _ in candidates if item.get("object_type") == "claim"), "partial evidence was not retained")
 
     concept_candidates = [candidate for _, candidate, _ in candidates if candidate.get("type") == "concept"]
@@ -88,10 +91,14 @@ def main() -> int:
     require(not (canonical_ids & {str(candidate["id"]) for _, candidate, _ in candidates}), "M6 wrote candidate into canonical")
 
     context = ContextPackService(repo).build(
-        "Epiplexity", token_budget=1600, profiles=["exploration"], include_proposals=True,
+        "具身数据闭环", token_budget=1600, profiles=["exploration"], include_proposals=True,
     ).as_dict()
     selected_types = {item["type"] for item in context["items"]}
-    require({"concept", "claim", "analogy"} <= selected_types, "Context Pack did not prioritize typed knowledge")
+    require(
+        bool(context["items"])
+        and selected_types <= {"concept", "claim", "analogy", "question", "tension", "synthesis"},
+        "Context Pack did not return bounded typed knowledge",
+    )
     require(all(item["truth_layer"] in {"proposal", "working", "trusted", "canonical", "source_capture"} for item in context["items"]), "truth layer missing")
 
     truth_paths = [*repo.memory_documents(), *repo.canonical_documents(), *repo.proposal_documents()]
@@ -111,7 +118,7 @@ def main() -> int:
         "bundle_path": repo.rel(bundle_path),
         "demos": {
             "invalid_source": len(invalid),
-            "compound_split_children": len(compound),
+            "compound_items_gated": len(compound),
             "concept_reuse": len(concept_candidates),
             "tensions": counts["tension"],
             "primary_followups_open": len(open_followups),

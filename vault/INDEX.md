@@ -17,20 +17,20 @@
 
 ## 当前概况
 
-- 资料：107 篇
-- Working：106 条
+- 资料：133 篇
+- Working：107 条
 - Trusted：30 条
 - Canonical：1 条
-- 开放例外：12 项
+- 开放例外：19 项
 - 待确认晋升：0 项
 
 ## 最近收录
 
-- [[views/readers/source_691f3acc1fe3382639690f59|Ψ₀: An Open Foundation Model Towards Universal Humanoid Loco-Manipulation]] · 2026-07-19
-- [[views/readers/source_d75524a9040845cdc76db35c|GitHub - physical-superintelligence-lab/SIMPLE: Welcome to SIMPLE, a full-stack simulation environment for humanoid loco-manipulation, built on AMO/SONIC, with integrated support for mainstream VLAs s]] · 2026-07-19
-- [[views/readers/source_8aa5e06bac422cb3319b94e6|Implicit-Behavior Coordination from Unlabeled Sub-Task Demonstrations for Rearrangement Tasks]] · 2026-07-19
-- [[views/readers/source_54c9a7922f348a245d17efaf|arxiv.org]] · 2026-07-19
-- [[views/readers/source_233c4bef3a727389ddf81ae2|arxiv.org]] · 2026-07-19
-- [[views/readers/source_291d6174cf92660287138f47|Training-Free Acceleration for Vision-Language-Action Models with Action Caching and Refinement]] · 2026-07-19
-- [[views/readers/source_91072aa553af99e6ab97c6cd|Simple-to-Complex Structured Demonstrations for Vision-Language-Action Learning]] · 2026-07-19
-- [[views/readers/source_650f616f1e641912e73115b1|arxiv.org]] · 2026-07-19
+- [[views/readers/source_d90b4e9bf278dfc5e68d1bb5|Frontier Models with Our Harness Achieve ~99% on ARC-AGI-3 Public — Schema]] · 2026-07-21
+- [[views/readers/source_adcddc61e96d32f765d29c90|arxiv.org]] · 2026-07-21
+- [[views/readers/source_42e52a18cc082f3af087d574|[2607.15982] Data and Learning Where it Matters for Contact-Rich Manipulation]] · 2026-07-21
+- [[views/readers/source_4757ec1a2e8a0b678a350ee1|arxiv.org]] · 2026-07-21
+- [[views/readers/source_0c017bf657a648ca70e9ae25|arxiv.org]] · 2026-07-21
+- [[views/readers/source_5df8ebbcd9bd1afec33d46cc|arxiv.org]] · 2026-07-21
+- [[views/readers/source_d4762e0cf2330ab6ea00a521|arxiv.org]] · 2026-07-21
+- [[views/readers/source_38651a884fe5c5c73a6e190d|arxiv.org]] · 2026-07-20
