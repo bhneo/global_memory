@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
@@ -55,6 +56,18 @@ def read_document(path: Path) -> tuple[dict[str, Any], str]:
     return parse_document_text(path.read_text(encoding="utf-8"))
 
 
+def atomic_replace(source: Path, destination: Path) -> None:
+    """Replace one prepared file, tolerating only brief Windows sharing locks."""
+    for attempt in range(5):
+        try:
+            os.replace(source, destination)
+            return
+        except PermissionError:
+            if attempt == 4:
+                raise
+            time.sleep(0.02 * (attempt + 1))
+
+
 def atomic_write_text(path: Path, text: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     fd, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=path.parent)
@@ -64,7 +77,8 @@ def atomic_write_text(path: Path, text: str) -> None:
             handle.write(text)
             handle.flush()
             os.fsync(handle.fileno())
-        os.replace(temp_path, path)
+        # Retry only the atomic replace itself; never replay the governance operation.
+        atomic_replace(temp_path, path)
     finally:
         temp_path.unlink(missing_ok=True)
 

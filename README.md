@@ -1,165 +1,326 @@
-# Global Memory
+<p align="center">
+  <img src="./assets/icon.png" alt="Galois" width="120" />
+</p>
 
-## M9.1 cognitive consolidation
+<h1 align="center">Galois</h1>
 
-M9.1 adds Input Episodes, non-factual Reflections, bounded Daily Dream, deep
-Weekly Cognitive Synthesis, falsifiable hypothesis gates, and labeled
-Reflection/Synthesis retrieval for research Context Packs. The core remains
-provider-neutral and never calls a model or executes an Agent task. Reflection
-and Cognitive Synthesis cannot enter Evidence, Trusted, or Canonical; Execution
-Context excludes both. See `docs/COGNITIVE_CONSOLIDATION.md` and ADR 0057.
+<p align="center">
+  <strong>Find the hidden structure.</strong><br />
+  <em>Scientific memory for AI assistants.</em>
+</p>
 
-```powershell
-.\scripts\gm.ps1 idea capture --text "机器人技能下移可能类似编译器优化"
-.\scripts\gm.ps1 reflection queue --limit 5
-.\scripts\gm.ps1 dream daily --bundle-file .\daily-dream.json --limit 5
-.\scripts\gm.ps1 dream weekly --bundle-file .\weekly-dream.json
-```
+<p align="center">
+  Galois helps AI assistants preserve evidence, evolve knowledge,<br />
+  and discover meaningful structures across papers, conversations,<br />
+  experiments, and ideas.
+</p>
 
-`consolidate daily/weekly` does not replace these model-driven Dream stages.
-Daily validates and applies a bounded Reflection artifact before Working;
-Weekly applies an exact Reflection/Source-bound Synthesis artifact before
-governance review. The synthetic pipeline and first bounded five-Input real
-Vault pilot are accepted locally; remote matrix CI remains pending.
+<p align="center">
+  <a href="#connect-your-ai-assistant">Connect an assistant</a>
+  &nbsp;·&nbsp;
+  <a href="#how-it-works">How it works</a>
+  &nbsp;·&nbsp;
+  <a href="#why-galois">Why Galois</a>
+  &nbsp;·&nbsp;
+  <a href="#documentation">Documentation</a>
+</p>
 
-## M9.0 research signals
+<p align="center">
+  <code>Claude</code>
+  &nbsp;·&nbsp;
+  <code>Codex</code>
+  &nbsp;·&nbsp;
+  <code>Hermes</code>
+  &nbsp;·&nbsp;
+  <code>OpenClaw</code>
+  &nbsp;·&nbsp;
+  <code>OpenHuman</code>
+  &nbsp;·&nbsp;
+  <code>MCP</code>
+</p>
 
-M9.0 adds append-only research annotations, connection feedback, explainable Project/Domain routing, explicit Activation, and local Research Digest/Map views. These signals describe attention, use and research value; they never change Trust, Epistemic Status, Receipt validity or Canonical. See `docs/RESEARCH_SIGNALS.md` and `docs/RESEARCH_ROUTING.md`.
+---
 
-## M9.0.1 quality closure
+Your AI can read thousands of documents.
 
-Routine Weekly maintenance consumes active Working/Trusted memory only. Historical
-objects remain auditable but are excluded from routine consolidation. Unmarked web,
-PDF and automated captures complete as searchable `source_only` records; only
-bounded personal notes may use deterministic paragraph fallback. See ADR 0056.
+It still struggles to remember **why** an idea was believed, **how** it changed,
+and whether a connection is evidence-backed or merely interesting.
 
-## M8.1.2 trust boundary
+**Galois is a shared, local-first scientific memory for humans and AI assistants.**
 
-- Receipt v2 fingerprints incoming and outgoing relations; a stale receipt is excluded from strict execution until explicitly re-consolidated.
-- Canonical promotion writes a recoverable journal and requires a new `canonical_approved` Receipt v2 for final Canonical bytes.
-- Generated Obsidian graph projections remain local/ignored; they are not Git truth-layer artifacts.
+| | | | |
+|:---:|:---:|:---:|:---:|
+| **Remember** | **Reflect** | **Connect** | **Verify** |
+| Preserve sources, claims, and belief history | Digest new material into explicit reflections | Find candidate structures across research fields | Keep evidence, interpretation, and hypotheses separate |
 
-Global Memory 是本地优先、用户拥有、模型无关的长期记忆系统。Markdown、不可变 Raw 与治理记录是真相层；SQLite、Context Pack 和 Obsidian 页面都是可删除、可重建的派生层。
+> **Agents think. Galois remembers. Evidence decides.**
 
-当前里程碑是 **M9.1 — Cognitive Consolidation**。认知层内核、合成场景和首个五输入真实 Daily/Weekly Dream 试跑均已通过；远端矩阵 CI 待统一推送。它建立在冻结的 M8.1.2 信任边界之上：Working 可以低成本演化；所有 Trusted 变化仍必须有 Receipt v2 与恢复日志；Canonical 仍只允许 Proposal/Exception + 用户明确批准。
+---
 
-## 当前工作流
+## What can Galois do?
+
+**Build an evolving scientific memory**  
+Papers, articles, conversations, experiments, ideas, and Agent sessions enter
+one shared memory without losing their original provenance.
+
+**Help assistants understand what changed**  
+New material can support, refine, limit, contradict, or supersede existing
+knowledge. Previous states remain auditable.
+
+**Organize research by direction — not by folder or calendar**  
+Galois maintains long-lived research directions such as world models,
+reinforcement learning, dexterous manipulation, Kakeya geometry, Hilbert VI,
+and gravity–entropy.
+
+**Surface hidden structures across fields**  
+A connection is not accepted because two documents share keywords.
+A useful candidate must identify:
+
+- the shared mechanism
+- where the connection applies
+- how the domains differ
+- counterarguments
+- missing evidence
+- a path to verification
+
+**Turn patterns into better questions**  
+Direction synthesis can surface tensions, open questions, possible experiments,
+and falsifiable hypothesis candidates — without presenting them as established
+facts.
+
+---
+
+## Connect your AI assistant
+
+Galois is designed to be used **through your assistant**, not as a
+terminal-first knowledge manager.
+
+Once connected, ask naturally:
 
 ```text
-capture -> immutable Raw + Source
-        -> bounded triage / extraction / quality
-        -> compile -> Working
-        -> real consolidation -> hash-bound Consolidation Receipt
-        -> eligible Claim/Concept -> Trusted
-        -> promotion card -> explicit user approval -> Canonical
+Use my Galois memory to answer this question and preserve the evidence boundary.
 ```
 
-新资料命中已有知识时必须声明 `support`、`refine`、`limit`、`contradict`、`supersede` 或 `metadata_only`。Trusted 的语义修改创建 Working Revision；冲突保留原对象和双方证据，标记 `contested` 并创建 Exception；任何降级都产生 Demotion Event。
+```text
+Compare my world-model and Hilbert VI research directions.
+What shared mechanism is worth investigating?
+```
 
-## 快速开始
+```text
+Find a non-obvious connection across my recent papers.
+Show the supporting sources, boundary, differences, evidence gap,
+and the next verification step.
+```
 
-要求 Python 3.11–3.13。PowerShell 中 `gm` 可能被解析为 `Get-Member`，本仓库推荐始终使用脚本入口：
+```text
+Remember this research note: skill compilation may be the embodied
+equivalent of JIT optimization.
+```
+
+> Retrieval is read-only by default. Capture requires explicit user intent
+> and an opt-in assistant configuration.
+
+### Supported hosts
+
+| Assistant | Integration |
+|---|---|
+| Claude Desktop | Read-only MCP installer and config fragment |
+| Codex | MCP config and explicit personal plugin workflow |
+| Hermes | Read-only MCP config fragment |
+| OpenClaw | Read-only MCP server fragment |
+| OpenHuman | Generic MCP bridge configuration |
+| Other assistants | Any compatible MCP client |
+
+Host templates live in [`adapters/hosts/`](adapters/hosts/).
+
+<details>
+<summary><strong>One-time local setup</strong></summary>
+
+<br />
+
+Python 3.11–3.13 is supported.
+
+```bash
+git clone https://github.com/bhneo/global_memory.git
+cd global_memory
+python -m pip install -e ".[pdf]"
+```
+
+For Claude Desktop on Windows:
 
 ```powershell
-cd $GM_ROOT
-python -m pip install -e ".[test,pdf]"
-.\scripts\gm.ps1 doctor
-.\scripts\gm.ps1 capture-text --text "待保存材料" --comment "来源说明"
-.\scripts\gm.ps1 triage --limit 25
-.\scripts\gm.ps1 context "我的问题" --profile research --format markdown --token-budget 1200
+.\scripts\install-claude-desktop-mcp.ps1
 ```
 
-例行导入默认停在 capture/triage；只有明确选中的材料才深编译：
+Other hosts can use the reviewed fragments in
+[`adapters/hosts/`](adapters/hosts/).
 
-```powershell
-.\scripts\gm.ps1 triage <source-id> --compile-selected
-.\scripts\gm.ps1 consolidate object <object-id>
-.\scripts\gm.ps1 trust explain <object-id>
-.\scripts\gm.ps1 trust requalify <trusted-object-id>
+The current package and CLI still use `global-memory-local`, `global_memory`,
+and `gm` while the public identity transitions to **Galois**.
+
+</details>
+
+---
+
+## How it works
+
+```mermaid
+flowchart LR
+    A[Papers · Conversations · Ideas] --> B[Source-bound Memory]
+    B --> C[AI Assistant Reflection]
+    C --> D[Research Direction Synthesis]
+    D --> E[Cross-field Structure Candidates]
+    E --> F[Questions · Hypotheses · Experiments]
+
+    B -. provenance .-> G[Evidence]
+    C -. non-factual .-> H[Reflection]
+    D -. non-factual .-> I[Synthesis]
 ```
 
-显式知识演化：
+**The assistant performs the cognition.**  
+Galois does not call a model inside the memory core. Your connected assistant
+reads, compares, reflects, and synthesizes. Galois provides bounded context,
+validates the resulting artifact, preserves its sources, and applies only
+permitted writes.
 
-```powershell
-.\scripts\gm.ps1 evolve <object-id> --change-type support --from-file candidate.md --reason "新增独立支持" --trigger-source <source-id>
-.\scripts\gm.ps1 evolve <object-id> --change-type refine --from-file candidate.md --reason "适用边界改变"
-.\scripts\gm.ps1 evolve <object-id> --change-type contradict --from-file candidate.md --reason "新 Primary Source 冲突"
+**Daily reflection**  
+A connected assistant digests a small set of new inputs and decides whether
+each candidate should:
+
+`create` · `update` · `reuse` · `remain source-only` · `require review` · `defer`
+
+This prevents valuable material from silently disappearing.
+
+**Direction synthesis**  
+Recurring synthesis follows stable research directions rather than arbitrary
+calendar weeks. It asks: *What changed in this research direction?*
+
+**Cross-direction synthesis**  
+Cross-field connections are optional and evidence-bounded. A valid run may
+produce **zero connections**. Rejecting a weak analogy is a successful outcome.
+
+---
+
+## Why Galois?
+
+| Typical AI memory | Galois |
+|---|---|
+| Remembers extracted facts | Preserves Sources, evidence, interpretation, and belief history |
+| Retrieves semantically similar text | Retrieves governed knowledge and active research directions |
+| Rewrites old facts | Records support, refinement, limits, contradiction, and supersession |
+| Generates attractive analogies | Requires mechanism, boundary, difference, counterarguments, and verification |
+| Treats memory as model context | Separates research context from execution-safe context |
+| Belongs to one assistant | Can be shared across multiple assistants |
+| Model confidence becomes authority | Canonical knowledge remains human-controlled |
+
+---
+
+## Trust without killing creativity
+
+Galois separates creative cognition from factual authority.
+
+```text
+Source → Working → Trusted → Canonical
+           ↑
+Reflection and Synthesis remain explicitly non-factual
 ```
 
-维护与治理：
+| Tier | Role |
+|---|---|
+| **Working** | Active knowledge under development |
+| **Trusted** | Evidence-backed and policy-qualified |
+| **Canonical** | Explicitly approved by the user |
+| **Historical** | Superseded knowledge retained for audit |
 
-```powershell
-.\scripts\gm.ps1 consolidate daily --limit 25
-.\scripts\gm.ps1 consolidate weekly
-.\scripts\gm.ps1 weekly
-.\scripts\gm.ps1 audit drift
-.\scripts\gm.ps1 exceptions
-.\scripts\gm.ps1 promotions
-.\scripts\gm.ps1 promotion approve <promotion-id> --lock
-.\scripts\gm.ps1 recover
-```
+Questions, analogies, tensions, reflections, and hypotheses can remain valuable
+for years without being mislabeled as facts.
 
-`consolidate weekly` first performs a bounded Daily admission catch-up (25
-sources by default), so recently captured and triaged material is not silently
-omitted when a Daily run was missed. Use `--admit-limit N` to change the bound,
-or `--skip-daily-admission` for a review-only run. The catch-up may write
-Working memory but never writes Canonical.
+---
 
-外部 provider 更新既有对象时必须返回 `action: "update"`、稳定 `target_id` 和明确 `change_type`。标题只用于展示，不再作为更新身份。Canonical 的 `support`、`metadata_only`、`refine`、`limit`、`contradict`、`supersede` 全部只生成 update Proposal；不会原地修改 Canonical。
+## Agent Memory Gateway
 
-`consolidation_count += 1` 不构成有效复核。Promotion 只承认检查完整、与当前对象 SHA-256 相符的 Consolidation Receipt。Question、Tension、Hypothesis、Analogy、Anomaly、Intuition 和 Synthesis 默认暂停自动 Trusted 晋升。
+Connected assistants receive bounded Evidence Packets through MCP.
 
-## Memory Tier 与 Epistemic Status
+The gateway can expose:
 
-两个维度正交：
+- connected research context
+- evidence search
+- individual knowledge objects
+- original Source material
+- explicit-consent capture
+- optional session, use, and feedback signals
 
-- `memory_tier`: `working | trusted | canonical | historical`
-- `epistemic_status`: `established | supported | provisional | contested | hypothetical | open_question | partially_answered | exploratory_analogy | observed_anomaly | user_intuition | superseded | unknown`
+It preserves epistemic status, evidence quality, contradictions, and execution
+safety while hiding storage paths and maintenance internals.
 
-例如 `trusted + open_question` 表示值得长期追踪但仍未回答；`trusted + contested` 表示值得保留但存在直接冲突。未知旧状态迁移为 `working + unknown`，绝不默认升级为 Canonical。
+The default gateway is **read-only**.
 
-## Context Pack
+---
 
-```powershell
-.\scripts\gm.ps1 context "问题" --profile execution --format markdown
-.\scripts\gm.ps1 context "问题" --profile research --format markdown
-.\scripts\gm.ps1 context "问题" --profile exploration --format markdown
-```
+## Current capabilities
 
-每项显示 `memory_tier`、`epistemic_status`、confidence、source authority、evidence coverage/entailment、未解决冲突和最近 Consolidation。Execution 默认排除 hypothetical、exploratory analogy、unknown、低置信 Working Claim 与 degraded evidence；Research/Exploration 可以显式读取探索材料，但不会把它们改写成事实。
+| Memory | Cognition | Integration |
+|---|---|---|
+| Local-first Markdown truth layer | Agent-driven Daily Reflection | MCP for multiple assistants |
+| Immutable Raw / Source capture | Research-direction Synthesis | Obsidian views & semantic graph |
+| Working / Trusted / Canonical / Historical | Cross-direction Synthesis | Recovery, migration, drift audit |
+| Evidence & provenance tracking | Falsifiable hypothesis gates | Research / exploration / execution profiles |
+| Explicit belief evolution | Evidence-bounded connections | Integrity checks |
 
-## 迁移、指标与重建
+---
 
-```powershell
-.\scripts\gm.ps1 migrate epistemic-status --dry-run
-.\scripts\gm.ps1 migrate epistemic-status
-.\scripts\gm.ps1 migrate epistemic-status --verify
-.\scripts\gm.ps1 metrics
-.\scripts\gm.ps1 metrics --write-project-state
-.\scripts\gm.ps1 status --machine-readable
-.\scripts\gm.ps1 maintain --rebuild-derived
-```
+## What Galois is not
 
-迁移在 `data/backups/` 自动备份，保留 `legacy_status`，可幂等重跑。指标由真实 Vault 计算，不在 README 手工维护活动数量。
+- Not an automatic truth machine
+- Not a generic note-taking app
+- Not a vector database wrapper
+- Not a general Agent runtime
+- Not a multi-Agent orchestrator
+- Not an automatic experiment executor
+- Not a replacement for primary sources
+- Not a system that turns every analogy into a discovery
 
-## 验证
+---
 
-```powershell
-python -m pytest
-.\scripts\gm.ps1 doctor
-.\scripts\gm.ps1 lint
-.\scripts\gm.ps1 raw verify
-python scripts\ci_acceptance.py setup --root .ci-vault --output artifacts\fixture.json
-```
+## Project status
 
-GitHub Actions 固定覆盖 Ubuntu/Windows × Python 3.11/3.12/3.13，并独立运行 pytest、doctor、schema/state/raw、migration、promotion、weekly、provider-driven incremental A→B→C、drift 和 Context truth-layer / strict-execution 验收。
+Galois is experimental research infrastructure and is actively used on a real,
+multi-domain research vault.
 
-## 安全边界
+Before a formal open-source release, the project is preparing:
 
-- 不可变 Raw 和 Source 不覆盖。
-- Trusted 语义变化不直接覆盖原版本。
-- Canonical 不自动降级；冲突只标记 contested 并进入 Canonical Exception。
-- Drift Audit 可生成报告和 Exception，不自动重写 Trusted/Canonical。
-- 当前不引入 embedding、向量库、图数据库、新写入 MCP、浏览器插件、Web UI 或多 Agent 框架。
+- a clean demonstration vault
+- portable assistant setup
+- reproducible reflection and synthesis examples
+- public evaluations
+- cross-platform onboarding
+- a formal open-source license
 
-从 [PROJECT_STATE.md](PROJECT_STATE.md) 查看当前快照；数据结构见 [SCHEMA.md](SCHEMA.md)；Consolidation 规则见 [docs/MEMORY_CONSOLIDATION.md](docs/MEMORY_CONSOLIDATION.md)；Agent 入口见 [docs/AGENT_INTEGRATION.md](docs/AGENT_INTEGRATION.md)。
+---
+
+## Documentation
+
+| | |
+|---|---|
+| [Vision](docs/VISION.md) | [Architecture](docs/ARCHITECTURE.md) |
+| [Cognitive consolidation](docs/COGNITIVE_CONSOLIDATION.md) | [Research directions](docs/RESEARCH_DIRECTIONS.md) |
+| [Agent integration](docs/AGENT_INTEGRATION.md) | [MCP integration](docs/MCP_INTEGRATION.md) |
+| [Memory consolidation](docs/MEMORY_CONSOLIDATION.md) | [Semantic distillation](docs/SEMANTIC_DISTILLATION.md) |
+| [Current project state](PROJECT_STATE.md) | |
+
+---
+
+## License
+
+No open-source license has been selected yet.
+
+Until a `LICENSE` file is added, the repository should not be treated as
+licensed for reuse or redistribution.
+
+---
+
+<p align="center">
+  <img src="./assets/icon.png" alt="Galois" width="44" /><br /><br />
+  <strong>Find the hidden structure.</strong><br />
+  Preserve the evidence. Connect the ideas. Ask a better question.
+</p>

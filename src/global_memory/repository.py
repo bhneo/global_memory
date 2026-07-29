@@ -15,7 +15,7 @@ from zoneinfo import ZoneInfo
 
 from .errors import ImmutableContentError, NotFoundError, ValidationError
 from .epistemics import EPISTEMIC_STATUSES
-from .markdown import atomic_write_text, read_document, render_document
+from .markdown import atomic_replace, atomic_write_text, read_document, render_document
 
 
 OBJECT_TYPES = {
@@ -540,7 +540,7 @@ class Repository:
                         ),
                     )
                 connection.commit()
-            os.replace(temp_path, self.index_path)
+            atomic_replace(temp_path, self.index_path)
             return count
         finally:
             temp_path.unlink(missing_ok=True)

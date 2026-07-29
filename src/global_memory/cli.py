@@ -788,7 +788,10 @@ def lint(repository: Repository) -> dict[str, object]:
                     errors.append(f"raw 内容哈希不匹配: {repository.rel(path)}")
             except Exception as exc:
                 errors.append(f"raw 路径无效: {repository.rel(path)}: {exc}")
-        elif metadata.get("type") != "proposal":
+        elif (
+            metadata.get("type") != "proposal"
+            and repository.rel(path).startswith(("vault/knowledge/", "vault/frontier/", "vault/action/"))
+        ):
             has_relations = bool(metadata.get("relations")) or relation_targets.get(str(metadata["id"]), 0) > 0
             if not metadata.get("source_ids") and not has_relations:
                 warnings.append(f"孤立 canonical 页面: {repository.rel(path)}")

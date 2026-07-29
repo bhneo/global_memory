@@ -5,6 +5,7 @@ import shutil
 import uuid
 import json
 import sys
+import os
 from contextlib import closing
 from pathlib import Path
 
@@ -30,6 +31,7 @@ from global_memory.extraction import ExtractionService
 from global_memory.followups import FollowupService
 from global_memory.lifecycle import SourceAnnotationService, SourceLifecycleService
 from global_memory.markdown import read_document, render_document
+from global_memory.markdown import atomic_replace, atomic_write_text
 from global_memory.maintenance import MaintenanceService
 from global_memory.memory import ExceptionService, WorkingMemoryService
 from global_memory.governance import PromotionService, TrustedPromotionRecoveryManager
@@ -1757,6 +1759,65 @@ def test_lint_reports_broken_references_hashes_and_orphans(repo: Repository) -> 
     assert any("失效 relation" in issue for issue in result["errors"])
     assert any("失效 wikilink ID" in issue for issue in result["errors"])
     assert any("孤立 canonical 页面" in warning for warning in result["warnings"])
+
+
+def test_lint_does_not_treat_user_annotation_as_orphan_canonical(repo: Repository) -> None:
+    path = repo.root / "vault" / "annotations" / "research" / "annotation-lint-intent.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    metadata = {
+        "id": "annotation_lint_intent", "type": "annotation", "status": "active",
+        "title": "Research intent", "truth_layer": "user_annotation", "user_authored": True,
+        "annotation_kind": "research_note", "target_ids": [], "source_ids": [],
+        "aliases": [], "tags": ["research_note"], "domains": [], "relations": [],
+        "confidence": "unknown", "created_at": "2026-07-29T00:00:00+08:00",
+        "updated_at": "2026-07-29T00:00:00+08:00",
+    }
+    path.write_text(render_document(metadata, "User research intent."), encoding="utf-8")
+
+    result = lint(repo)
+    annotation_path = repo.rel(path)
+    assert not any(annotation_path in warning for warning in result["warnings"])
+
+
+def test_atomic_write_retries_transient_windows_replace_lock(
+    workspace: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    target = workspace / "atomic-retry.txt"
+    real_replace = os.replace
+    attempts = 0
+
+    def transient_replace(source, destination):
+        nonlocal attempts
+        attempts += 1
+        if attempts < 3:
+            raise PermissionError("transient Windows file lock")
+        return real_replace(source, destination)
+
+    monkeypatch.setattr("global_memory.markdown.os.replace", transient_replace)
+    monkeypatch.setattr("global_memory.markdown.time.sleep", lambda _: None)
+
+    atomic_write_text(target, "complete\n")
+    assert attempts == 3
+    assert target.read_text(encoding="utf-8") == "complete\n"
+
+
+def test_atomic_replace_raises_after_bounded_permission_retries(
+    workspace: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = workspace / "replace-source"
+    source.write_text("prepared", encoding="utf-8")
+    attempts = 0
+
+    def locked_replace(_source, _destination):
+        nonlocal attempts
+        attempts += 1
+        raise PermissionError("persistent lock")
+
+    monkeypatch.setattr("global_memory.markdown.os.replace", locked_replace)
+    monkeypatch.setattr("global_memory.markdown.time.sleep", lambda _: None)
+    with pytest.raises(PermissionError):
+        atomic_replace(source, workspace / "replace-target")
+    assert attempts == 5
 
 
 def test_raw_backup_is_incremental_verifiable_and_restorable(
