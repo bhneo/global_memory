@@ -14,7 +14,8 @@ Experience / Source / Conversation / Idea
   -> Reflection (not fact)
   -> Semantic Bundle + reflection_context
   -> Working Knowledge
-  -> Weekly Cognitive Synthesis (not fact)
+  -> Direction Cognitive Synthesis (not fact)
+  -> optional Cross-direction Synthesis (not fact)
   -> questions, tensions and falsifiable hypothesis candidates
 ```
 
@@ -124,18 +125,42 @@ Keyword overlap is not a cognitive connection.
 
 ## Daily Dream
 
-Daily Dream is a low-cost, bounded external-Agent workflow. The CLI does not
-invoke a model. A Terra-Light-class Agent reads at most five queue items and
-writes one local JSON bundle:
+Daily Dream is a bounded external-Agent workflow. The CLI does not invoke a
+model. New production artifacts use the v2 admission contract and a strong
+reasoning model reads at most five queue items before writing one local JSON
+bundle. Legacy v1 artifacts remain accepted only so an interrupted immutable
+artifact can be replayed safely:
 
 ```json
 {
-  "provider_name": "gpt-5.6-terra-light",
+  "daily_protocol_version": 2,
+  "provider_name": "gpt-5.6-sol-high",
   "reflections": [
     {
       "input_id": "input_...",
       "reflection": {"why_important": "...", "open_questions": ["..."]},
-      "semantic_items": [{"object_type": "concept", "title": "...", "body": "..."}]
+      "source_assessment": {"readability": "readable", "source_role": "primary", "reason": ""},
+      "semantic_inventory": [{
+        "candidate_id": "mechanism",
+        "candidate_type": "concept",
+        "statement": "A complete, reusable semantic candidate.",
+        "value": "high",
+        "value_reason": "It changes or reuses durable knowledge.",
+        "source_grounded": true
+      }],
+      "admission_decisions": [{
+        "candidate_id": "mechanism",
+        "decision": "create",
+        "reason_code": "",
+        "reason": "No active object fully covers it.",
+        "target_ids": []
+      }],
+      "semantic_items": [{
+        "candidate_id": "mechanism",
+        "object_type": "concept",
+        "title": "...",
+        "body": "..."
+      }]
     }
   ]
 }
@@ -163,19 +188,62 @@ semantic boundaries. Compound Claims stay in the proposal layer for explicit
 model/human decomposition; fragments receive `semantic_completeness: fragment`
 and incomplete evidence coverage, so they cannot enter Working.
 
-## Weekly Dream and Synthesis schema
+Daily v2 separates cognitive value, semantic value and evidence strength. Each
+Input first records source readability/role and an explicit semantic inventory,
+then gives every candidate exactly one `create`, `update`, `reuse`,
+`source_only`, `review_required`, or `deferred` decision. Create/update decisions
+must map exactly to the at-most-three semantic items. Reuse/update name active
+stable target IDs. Source-only uses a specific reason code: `unreadable`,
+`duplicate`, `insufficient_evidence`, `too_broad`, `metadata_only`, or
+`no_reusable_increment`. Review uses `needs_deep_review`, `dedup_uncertain`, or
+`evidence_ambiguous`; deferred is reserved for `daily_item_limit`.
 
-Weekly Dream consumes multiple Reflections plus explicit existing Concepts. Its
-Synthesis objects live in `vault/synthesis/` and use
+A high-importance readable Input cannot have an empty semantic inventory. A
+high-value readable, source-grounded candidate must be admitted, reused,
+deferred, or sent to review rather than silently disappearing. Run the read-only
+coverage audit before Weekly integration:
+
+```powershell
+.\scripts\gm.ps1 dream audit-daily --from-date 2026-07-21 --to-date 2026-07-27
+.\scripts\gm.ps1 obsidian status --graph-profile knowledge
+```
+
+The audit resolves admission state by stable `input_id`, using the latest
+artifact in the selected range. A later v2 re-admission therefore closes an
+earlier legacy high-value-empty event without erasing its historical event
+count. The weekly cadence should audit from the previous successful run (or
+another explicit bounded start) through the current date so later remediation
+is included.
+`inputs` counts artifact entries, `unique_inputs` counts logical Inputs, and
+`resolved_prior_unresolved` makes repaired gaps explicit.
+
+## Recurring Dream and Synthesis schema
+
+The weekly scheduler consumes multiple Reflections plus explicit existing
+Concepts, but the calendar is not the semantic grouping key. Synthesis objects
+live in `vault/synthesis/` and use
 `truth_layer: cognitive_synthesis` with no Memory Tier.
 
 ```yaml
 id: synthesis_<stable-id>
 type: synthesis
 status: active
-period: 2026-W29
+synthesis_protocol_version: 2
+scope_kind: direction
+scope_ids: [world-models-predictive-representations]
+candidate_window: {from_date: 2026-07-21, to_date: 2026-07-28}
+delta_kind: extend
+direction_assignments:
+  - reflection_id: reflection_<id>
+    primary_direction: world-models-predictive-representations
+    secondary_directions: []
+    subdirections: [action-conditioned-prediction]
+    crosscut_dimensions: [system-and-deployment]
+    routing_confidence: high
+    reason: <specific routing reason>
 input_reflections: [reflection_<id>]
 input_concepts: [concept_<id>]
+input_syntheses: []
 emerging_patterns: []
 knowledge_updates:
   - target_id: concept_<id>
@@ -189,6 +257,14 @@ new_connections:
   - shared_mechanism: ...
     boundary: ...
     difference: ...
+    direction_ids: [world-models-predictive-representations]
+    supporting_reflections: [reflection_<id>]
+    supporting_sources: [source_<id>]
+    why_potentially_useful: ...
+    counter_arguments: [...]
+    evidence_gap: ...
+    verification_path: ...
+    confidence: low
 unresolved_tensions: []
 candidate_hypotheses: []
 possible_experiments: []
@@ -197,11 +273,27 @@ truth_layer: cognitive_synthesis
 execution_safe: false
 ```
 
-Weekly requires at least two Reflections and at least one pattern, qualified
+Synthesis requires at least two Reflections and at least one pattern, qualified
 connection, or unresolved tension. A hypothesis candidate must include a
 statement, supporting patterns, supporting Reflection IDs, supporting Source
 IDs, counterarguments, falsifier, and possible experiment. It is always labeled
 `epistemic_status: hypothetical` and is never promoted to Trusted.
+
+Protocol v2 has two scopes:
+
+- `direction`: exactly one registered direction; it may cite at most one prior
+  active Synthesis to express an incremental delta.
+- `cross_direction`: at least two registered directions and at least two active
+  direction Syntheses. Every connection names both directions and retains its
+  Reflection/Source support, counterarguments, evidence gap and verification
+  path.
+
+Every input Reflection has exactly one primary direction. Secondary directions
+are allowed only for a distinct mechanism or boundary. The registry is
+`docs/RESEARCH_DIRECTIONS.md`. Unchanged directions reuse prior Synthesis and
+produce a no-op report. Legacy `period` artifacts remain replayable as protocol
+v1 audit history, but new production artifacts do not use a natural week as
+their scope.
 
 ```powershell
 .\scripts\gm.ps1 dream weekly --bundle-file .\weekly-dream.json
@@ -213,7 +305,8 @@ Bundle compiler. The declared Source must be covered by those Reflections. The
 validated subset—not every weekly Reflection—is attached as
 `reflection_context`. These bundles can create or update Working only.
 
-The Synthesis content identity includes its provider, title, confidence,
+The Synthesis content identity includes its provider, semantic scope, candidate
+window, direction assignments, title, confidence,
 patterns, tensions, connections, knowledge updates, hypothesis candidates and
 possible experiments. Changing any cognitive content produces a new immutable
 Synthesis rather than silently reusing an older object.

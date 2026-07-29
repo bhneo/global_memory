@@ -1,10 +1,10 @@
 ---
 id: "claim_wechat_ergodicity_time_ensemble_equivalence_20260716"
 type: "claim"
-status: "working"
+status: "archived"
 title: "该文将遍历性描述为个体时间平均与群体平均相等的条件"
 created_at: "2026-07-16T00:36:00+08:00"
-updated_at: "2026-07-18T16:03:01+08:00"
+updated_at: "2026-07-29T12:46:46+08:00"
 aliases: []
 tags: ["ergodicity", "time-average", "ensemble-average"]
 domains: ["statistical-physics", "decision-theory"]
@@ -24,9 +24,9 @@ claim_confidence: "medium"
 publication_gate: "needs_review"
 split_from: "claim_wechat_ergodicity_time_vs_ensemble_20260716"
 split_reason: "将定义性断言与现实路径风险断言分开核验"
-memory_tier: "working"
+memory_tier: "historical"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v2"
+updated_by: "working-quality-source-only-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -46,6 +46,12 @@ memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_033c0460d73a41ec4928b801"
+quality_review_status: "source_only"
+quality_review_policy: "working-quality-source-only-v2"
+quality_review_reasons: ["Human-reviewed low-authority secondary-source claim or legacy synthesis without M9.1 provenance; retain Raw/Extraction as source_only"]
+quality_migration_id: "working_quality_2efa79a2d5a3effb14e5087f"
+archived_at: "2026-07-29T12:46:46+08:00"
+change_reason: "unsafe mechanically compiled knowledge archived as source-only"
 ---
 
 该文将遍历性描述为个体时间平均与群体平均相等的条件。

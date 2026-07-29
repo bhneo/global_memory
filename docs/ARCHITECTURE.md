@@ -8,7 +8,8 @@ Source / Conversation / Idea / Agent Experience
   -> Reflection (non-factual, non-execution-safe)
   -> Semantic Bundle reflection_context
   -> existing Working compiler boundary
-  -> Weekly Cognitive Synthesis (patterns/tensions/hypothesis candidates)
+  -> Direction Cognitive Synthesis (patterns/tensions/hypothesis candidates)
+  -> optional Cross-direction Synthesis (qualified research candidates)
 ```
 
 The provider-neutral core queues and validates cognitive artifacts but never
@@ -16,6 +17,10 @@ invokes a model, executes tools or manages Agents. Reflection and Cognitive
 Synthesis are indexed research layers, not Evidence or Memory Tiers. Research
 Context may return them with explicit labels; Execution Context cannot. See ADR
 0057 and `COGNITIVE_CONSOLIDATION.md`.
+
+Weekly describes the scheduler and governance audit, not the knowledge-object
+identity. Synthesis protocol v2 separates `candidate_window` from semantic
+`scope_kind`/`scope_ids`; see ADR 0061 and `docs/RESEARCH_DIRECTIONS.md`.
 
 ## M8 trustworthy evolution pipeline
 
@@ -143,7 +148,7 @@ Claim candidate 的 `evidence[]` 区分 quote、paraphrase、translation、table
 
 ### Context Pack
 
-`gm context` 位于读取边界，不是 processor 或写入路径。它依据明确 query、profile、filters 与 token budget 对检索/关系命中做确定性裁剪；输出保留路径、文档 hash、来源 ID、evidence 和选择理由。直接入选的 source 默认只使用 family 最新版本；`archived` canonical 默认退出活动 Context Pack，只被 archived canonical 引用且没有活动 canonical 引用的 source 也随之退出。历史材料仍保留在真相层供 `search`/`show` 和审计回溯。Context Pack 不写入 Markdown、SQLite 或审计日志，不缓存为真相层，也不提升任何命中或摘录的认知状态。
+`gm context` 位于读取边界，不是 processor 或写入路径。它依据明确 query、profile、filters 与 token budget 对检索/关系命中做确定性裁剪；输出保留路径、文档 hash、来源 ID、evidence 和选择理由。Research/Exploration 查询还可使用 `docs/RESEARCH_DIRECTIONS.md` 中的中英文别名进行有界导航：匹配只选择 `scope_ids` 一致的少量 active Cognitive Synthesis，并在 Route Trace 中显式标注；它不是 Evidence、真值或排名信任信号，Execution profile 仍排除 Synthesis。直接入选的 source 默认只使用 family 最新版本；`archived` canonical 默认退出活动 Context Pack，只被 archived canonical 引用且没有活动 canonical 引用的 source 也随之退出。历史材料仍保留在真相层供 `search`/`show` 和审计回溯。Context Pack 不写入 Markdown、SQLite 或审计日志，不缓存为真相层，也不提升任何命中或摘录的认知状态。
 
 M5 profile 层在同一读取边界上扩展：execution 优先 project/goal/architecture/decision/failure，research 优先 claim/concept/source/evidence/question，exploration 优先 intuition/tension/analogy/anomaly/hypothesis。Profile 可组合，并接受 project/domain/type/status/time/source-kind filter。召回顺序为分字段 FTS/metadata → 有界 typed relation traversal → extraction/source verification → token 裁剪。默认不含 proposal；显式包含时必须保留其 pending/deferred 等状态。
 

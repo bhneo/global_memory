@@ -24,6 +24,25 @@ class SemanticDistillationQueue:
     def _state(self) -> tuple[set[str], set[str]]:
         source_only: set[str] = set()
         model_processed: set[str] = set()
+        active_sources: set[str] = set()
+        retired_deterministic_sources: set[str] = set()
+        for path in self.repository.memory_documents():
+            metadata, _ = read_document(path)
+            source_ids = {str(item) for item in metadata.get("source_ids", [])}
+            if (
+                metadata.get("memory_tier") in {"working", "trusted"}
+                and metadata.get("status") not in {"archived", "superseded"}
+            ):
+                active_sources.update(source_ids)
+            if (
+                str(metadata.get("created_by") or "").startswith("deterministic-")
+                and metadata.get("quality_review_status") == "source_only"
+                and (
+                    metadata.get("memory_tier") == "historical"
+                    or metadata.get("status") in {"archived", "superseded"}
+                )
+            ):
+                retired_deterministic_sources.update(source_ids)
         for path in self.repository.proposal_documents():
             metadata, _ = read_document(path)
             source_ids = {str(item) for item in metadata.get("source_ids", [])}
@@ -40,6 +59,21 @@ class SemanticDistillationQueue:
                 and metadata.get("bundle_items")
             ):
                 model_processed.update(source_ids)
+        reflection_dir = self.repository.root / "vault" / "reflections"
+        if reflection_dir.exists():
+            for path in reflection_dir.glob("reflection-*.md"):
+                metadata, _ = read_document(path)
+                if (
+                    metadata.get("status") == "active"
+                    and metadata.get("created_by") == "agent"
+                ):
+                    model_processed.update(
+                        str(item) for item in metadata.get("source_ids", [])
+                    )
+        # A legacy deterministic proposal can be terminal even after quality review
+        # retires every materialized object to Historical.  Re-admit that source to
+        # model distillation without restoring or mutating the Historical object.
+        source_only.update(retired_deterministic_sources - active_sources)
         return source_only, model_processed
 
     def queue(self, *, limit: int = 5, max_chars: int = 6000) -> dict[str, Any]:
@@ -99,4 +133,3 @@ class SemanticDistillationQueue:
                 "truth_boundary": "All model output enters Working; Trusted/Canonical gates are unchanged.",
             },
         }
-

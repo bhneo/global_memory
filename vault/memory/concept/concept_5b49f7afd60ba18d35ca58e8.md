@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "触觉对齐的人到机器人接触迁移"
 created_at: "2026-07-20T12:39:31+08:00"
-updated_at: "2026-07-20T13:37:29+08:00"
+updated_at: "2026-07-26T12:33:33+08:00"
 aliases: ["Tactile-aligned human-to-robot contact transfer", "TactiDex", "TactiSkill", "接触保真迁移"]
 tags: []
 domains: ["embodied-ai", "dexterous-manipulation", "tactile-transfer", "contact-evaluation"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt56-m91-daily-batch-c-20260720"
-consolidation_count: 1
-last_consolidated_at: "2026-07-20T13:37:29+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-26T12:33:33+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_cd720382dd1ddfa13fe5-concept-1.md"
 origin_candidate_sha256: "aa6ee2f3ecdda77c7f8cf33f3d65a6db3039bd51c43e9a97c694fd6c81c1b006"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_0cbed75503bbfb839e284e0d"
+last_consolidation_id: "consolidation_cb9954eb8d4e2641d43cd516"
 ---
 
 # 触觉对齐的人到机器人接触迁移

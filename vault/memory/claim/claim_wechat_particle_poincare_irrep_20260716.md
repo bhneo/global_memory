@@ -1,10 +1,10 @@
 ---
 id: "claim_wechat_particle_poincare_irrep_20260716"
 type: "claim"
-status: "working"
+status: "archived"
 title: "该文介绍维格纳观点：粒子可由庞加莱群的不可约表示定义"
 created_at: "2026-07-16T10:48:00+08:00"
-updated_at: "2026-07-18T16:03:08+08:00"
+updated_at: "2026-07-29T12:46:47+08:00"
 aliases: []
 tags: ["Wigner", "Poincare-group", "particle"]
 domains: ["physics", "mathematics"]
@@ -24,9 +24,9 @@ claim_confidence: "medium"
 publication_gate: "needs_review"
 split_from: "claim_wechat_particle_poincare_wigner_20260716"
 split_reason: "将庞加莱群表示定义与标准模型内部对称群分开核验"
-memory_tier: "working"
+memory_tier: "historical"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v2"
+updated_by: "working-quality-source-only-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -46,6 +46,12 @@ memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_0f83353962cd24459700c07d"
+quality_review_status: "source_only"
+quality_review_policy: "working-quality-source-only-v2"
+quality_review_reasons: ["Human-reviewed low-authority secondary-source claim or legacy synthesis without M9.1 provenance; retain Raw/Extraction as source_only"]
+quality_migration_id: "working_quality_2efa79a2d5a3effb14e5087f"
+archived_at: "2026-07-29T12:46:47+08:00"
+change_reason: "unsafe mechanically compiled knowledge archived as source-only"
 ---
 
 该文介绍维格纳观点：粒子可由庞加莱群的不可约表示定义。

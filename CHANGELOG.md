@@ -2,6 +2,75 @@
 
 ## Unreleased
 
+- Added a provider-neutral Agent Memory Gateway contract with capabilities
+  negotiation, one EvidenceItem shape across all reads, strict-execution
+  blocker codes, and opt-in session/use/feedback signals that cannot write
+  Trusted or Canonical memory. Added read-only host fragments for Codex,
+  Claude, Hermes, OpenClaw and OpenHuman plus a backed-up Claude Desktop merge
+  installer.
+- Reversibly retired 20 low-authority single-WeChat Claims and two M6
+  provenance-debt Syntheses to Historical/source-only. Added an explicit-object
+  Working-quality migration for audited debt cleanup.
+- Added a recoverable synthesis-scope migration and used it to replace eight
+  cadence-scoped Syntheses with provenance-linked direction successors. The
+  duplicate REAL Concept was collapsed while preserving both repository and
+  primary-paper sources on the stable Working Concept. Trusted and Canonical
+  remained unchanged.
+
+- Replaced calendar-week cognitive aggregation with direction-scoped Synthesis
+  protocol v2. Weekly now separates its candidate/audit window from semantic
+  scope, records primary/secondary direction routing and can create an explicit
+  cross-direction Synthesis only from qualified direction parents.
+- Added a versioned research-direction registry covering Agent, VLA, world
+  models, RL, dexterous manipulation, value/reward signals, motion control,
+  Kakeya, Hilbert VI and gravity-entropy. Cross-direction connections now retain
+  supporting sources, counterarguments, evidence gaps and verification paths.
+- Added bounded direction-alias routing for Context Packs. Chinese/English and
+  punctuation variants select active Cognitive Syntheses by `scope_ids`, make
+  the navigation match visible in Route Trace, and never change truth, trust,
+  Receipt or execution eligibility.
+
+- Added Daily Dream protocol v2 with explicit source assessment, semantic
+  inventory and per-candidate create/update/reuse/source-only/review/deferred
+  decisions. High-value readable candidates can no longer silently disappear
+  behind a generic Source-only outcome.
+- Added a read-only date-range Daily admission audit for Weekly preflight. It
+  reports semantic coverage, unresolved high-value Reflection-only material,
+  review/deferred candidates, reuse targets and bounded Source-only reasons,
+  while preserving legacy immutable-artifact replay and zero Canonical writes.
+- Daily admission audit now resolves the latest state per stable Input ID, so
+  bounded v2 remediation closes legacy gaps without erasing historical event
+  counts.
+- Made Obsidian expected/actual freshness a distinct Weekly completion gate;
+  doctor, lint, Raw verification and status no longer substitute for graph
+  projection acceptance after a maintenance timeout.
+
+- Made Daily/Weekly Dream writes process-exclusive and semantic replay-safe.
+  A timed-out wrapper can no longer race a still-running child into duplicate
+  Working updates or false `unclassified-change` Exceptions; identical bundle
+  replays are recorded as `duplicate_noop`.
+- Corrected Source refresh approval routing and lifecycle derivation. Approved
+  immutable successors supersede the failed predecessor, while extraction
+  failures remain batch-local and valid Sources continue through Source-only
+  staging.
+- Indexed lifecycle, Receipt and document reads within a status operation,
+  removing repeated full-corpus scans without weakening Receipt fingerprint
+  validation. The current machine-readable status check fell from roughly
+  88--122 seconds to 3.3 seconds locally.
+- Re-admit legacy deterministic Sources to the model semantic queue when
+  quality review has retired all of their materialized objects to Historical
+  with `source_only` disposition. Historical objects remain untouched, and an
+  active Working/Trusted object or completed model bundle still closes queue
+  admission.
+- Re-digested arXiv:2603.20396 as a source-grounded Reflection plus bounded
+  Working Concept and Question about hierarchical mathematical compression;
+  the malformed legacy deterministic Concept remains Historical.
+- Completed semantic re-admission review for the remaining 13 legacy candidates:
+  eight primary papers produced eight bounded Working Concepts, the paired
+  HY-Embodied repository and secondary interview remained Reflection-only, and
+  three directory/implementation repositories remained Source-only without
+  duplicate knowledge. Active Agent Reflections now close semantic re-queueing
+  even when the deliberate outcome is Source-only.
 - Added an Agent Memory Gateway that returns sanitized Evidence Packets while
   preserving tier, epistemic status, provenance, evidence and execution-safety
   boundaries without exposing paths, hashes, route traces, SQLite or

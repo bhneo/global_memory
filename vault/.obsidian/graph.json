@@ -36,6 +36,13 @@
       }
     },
     {
+      "query": "path:\"views/graph/syntheses\"",
+      "color": {
+        "a": 1,
+        "rgb": 10040012
+      }
+    },
+    {
       "query": "path:\"views/graph/projects\" OR path:\"views/graph/experiments\" OR path:\"views/graph/opportunities\"",
       "color": {
         "a": 1,
@@ -60,6 +67,6 @@
   "repelStrength": 11,
   "linkStrength": 0.8,
   "linkDistance": 170,
-  "scale": 0.37182256187003443,
-  "close": false
+  "scale": 1.024622495365495,
+  "close": true
 }

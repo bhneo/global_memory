@@ -17,8 +17,8 @@
 
 ## 当前概况
 
-- 资料：133 篇
-- Working：107 条
+- 资料：276 篇
+- Working：169 条
 - Trusted：30 条
 - Canonical：1 条
 - 开放例外：19 项
@@ -26,11 +26,11 @@
 
 ## 最近收录
 
-- [[views/readers/source_d90b4e9bf278dfc5e68d1bb5|Frontier Models with Our Harness Achieve ~99% on ARC-AGI-3 Public — Schema]] · 2026-07-21
-- [[views/readers/source_adcddc61e96d32f765d29c90|arxiv.org]] · 2026-07-21
-- [[views/readers/source_42e52a18cc082f3af087d574|[2607.15982] Data and Learning Where it Matters for Contact-Rich Manipulation]] · 2026-07-21
-- [[views/readers/source_4757ec1a2e8a0b678a350ee1|arxiv.org]] · 2026-07-21
-- [[views/readers/source_0c017bf657a648ca70e9ae25|arxiv.org]] · 2026-07-21
-- [[views/readers/source_5df8ebbcd9bd1afec33d46cc|arxiv.org]] · 2026-07-21
-- [[views/readers/source_d4762e0cf2330ab6ea00a521|arxiv.org]] · 2026-07-21
-- [[views/readers/source_38651a884fe5c5c73a6e190d|arxiv.org]] · 2026-07-20
+- [[views/readers/source_e81925f355a0e0d30a13439a|2607.22535v1.pdf]] · 2026-07-28
+- [[views/readers/source_3b0dd57a10c8bd53518fdadc|[2607.22535] Robot-Factored World Models via Robot Rendering]] · 2026-07-28
+- [[views/readers/source_ba71396b5fc37637b125a89f|arxiv.org]] · 2026-07-28
+- [[views/readers/source_5d10374c3158d70587d9ef6a|[2607.21670] Ordered Action Tokens for Visuomotor Policy Learning]] · 2026-07-28
+- [[views/readers/source_38375a0f6ddc91f3bfde47d3|arxiv.org]] · 2026-07-28
+- [[views/readers/source_152577393ba943aec3dd527f|arxiv.org]] · 2026-07-27
+- [[views/readers/source_92d713e0ff1d895cbf75a74a|arxiv.org]] · 2026-07-27
+- [[views/readers/source_83b4b67dc31108d06a082c88|arxiv.org]] · 2026-07-27

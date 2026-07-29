@@ -9,22 +9,41 @@ surface.
 
 | Tool | Purpose | Authority |
 |---|---|---|
+| `memory_capabilities` | Negotiate contract versions and exact write scopes | Read-only |
 | `memory_context` | Retrieve bounded, connected evidence for a question | Read-only |
 | `memory_search` | Find candidate evidence objects | Read-only |
 | `memory_show` | Read one evidence object by lookup reference | Read-only |
 | `memory_source` | Read source text and an existing extraction | Read-only |
 | `memory_capture` | Save explicitly requested user text as Source + Input | Capture-only, opt-in |
+| `memory_session_record` | Save bounded goal/result/lesson as Source + Input | Session scope, opt-in |
+| `memory_use_record` | Append actual-use Activation (never retrieval) | Use scope, opt-in |
+| `memory_feedback_record` | Save explicit connection-value feedback | user_annotation, opt-in |
 
-The first four tools omit local paths, hashes, route traces, ranking diagnostics,
+The five read tools omit local paths, hashes, route traces, ranking diagnostics,
 SQLite details and maintenance queues. They retain tier/status, epistemic status,
 confidence, authority, evidence coverage/entailment, contradictions, execution
 safety, bounded content and source provenance.
 
-`memory_capture` is available only when the server starts with
-`--allow-capture`. Its request must include `confirmed: true`, meaning the user
+Gateway contract v1 uses one `EvidenceItem` shape across context, search, show
+and source reads. Receipt state/currentness, policy qualification, qualification
+scope/failures, last consolidation, contradiction blockers and execution safety
+remain machine-readable. Evidence Packet v2 reports
+`ready|partial|insufficient_evidence|blocked`. For an execution decision, call
+`memory_context` with `profile=execution` and `strict_execution=true`; excluded
+high-relevance objects become structured blockers instead of disappearing.
+
+`memory_capture` is available only when the server starts with the `capture`
+write scope (`--allow-capture` remains a compatibility alias). Its request must include `confirmed: true`, meaning the user
 explicitly asked to remember/save the supplied text. It runs recovery first and
 stops on a blocked journal. It accepts no URL or file path, performs no network
 fetch, and always reports zero Working, Trusted and Canonical writes.
+
+Session/use/feedback tools appear only under their corresponding server-side
+write scopes. Every call requires an explicit authorization envelope, a
+provider-neutral actor, a session reference and an idempotency key. Session
+records stop at Source/Input, use records are trust-orthogonal Activation, and
+feedback is `truth_layer=user_annotation` with `execution_safe=false`. None can
+write Trusted or Canonical.
 
 ## Local clients
 
@@ -35,12 +54,17 @@ launcher:
 .\scripts\gm-mcp-stdio.ps1
 ```
 
-For an explicitly trusted non-Desktop client that needs Capture-only intake,
-use:
+For an explicitly trusted single-user client that can preserve consent and
+session identity, use:
 
 ```powershell
 .\scripts\gm-mcp-agent-stdio.ps1
 ```
+
+It enables only `capture`, `session`, `use`, and `feedback`. It does not enable
+Receipt compilation, Working writes, Trusted writes or Canonical writes. Host
+configuration fragments for Codex, Claude Desktop, Hermes, OpenClaw and
+OpenHuman live in `adapters/hosts/`; they all default to the read-only launcher.
 
 Restart the client after changing MCP configuration. The server writes only
 JSON-RPC messages to stdout; diagnostics go to stderr.

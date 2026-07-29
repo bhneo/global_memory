@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "端到端具身系统可复现性"
 created_at: "2026-07-19T12:17:39+08:00"
-updated_at: "2026-07-19T12:20:10+08:00"
+updated_at: "2026-07-26T12:33:50+08:00"
 aliases: ["end-to-end embodied-system reproducibility", "embodied AI full-stack reproducibility", "E2E embodied reproducibility"]
 tags: []
 domains: ["embodied-ai", "robotics", "reproducibility", "vla"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-19T12:20:10+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-26T12:33:50+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_2f0c3e579b6d4e1b0889-concept-1.md"
 origin_candidate_sha256: "cdb20dafd73bbc8161c49ff6d972bbd3bc177c85f4d705503a7d19a5d6561e8b"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_79645d0d2219533e4752f760"
+last_consolidation_id: "consolidation_528a78a6745434329987870b"
 ---
 
 # 端到端具身系统可复现性

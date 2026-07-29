@@ -1,0 +1,305 @@
+---
+id: "consolidation_f887922c9d78809fd466ad7e"
+type: "consolidation_receipt"
+receipt_schema_version: 2
+status: "complete"
+execution_status: "complete"
+validation_outcome: "passed"
+title: "Consolidation: R3 restriction 与 Kakeya 几何改进 / R3 restriction and Kakeya-geometric improvements"
+created_at: "2026-07-28T10:05:30+08:00"
+updated_at: "2026-07-28T10:05:30+08:00"
+consolidation_id: "consolidation_f887922c9d78809fd466ad7e"
+object_id: "concept_0ea689b9ff94e453dd23b64b"
+object_version_before: 1
+object_sha256_before: "87d4cbba42da2b23e1934b46f9d7a229cf93b134ce137676d2a0a79907aa6770"
+object_sha256_after: "55be462379828838fba48de063dfb682e92e11d35b17cd3009ea2b99daa878ac"
+source_ids: ["source_299adfe6dd42f97b6f75b777", "source_b6d55666cda69c2a1c407986", "source_f366554c5c3887de7c6ad29b"]
+source_sha256s: ["af745d5dd5f06081d696714a7ab93155e2cd81a73986163c39472ca83549ca04", "4f49125d72501b7b0eebcd4f7136c070d0cd4d1b259817c86738e831e98b60cd", "85a841cb6f3d607ee6f1b68803fcc61767fd7b3432c8c59aa1edc45e17517111"]
+source_records: [{"source_id": "source_299adfe6dd42f97b6f75b777", "source_record_sha256": "49c8f2ac1072f62499ee58cb87a67a0956fc5f88871491e4291aef6e9c35a2c5", "raw_content_sha256": "af745d5dd5f06081d696714a7ab93155e2cd81a73986163c39472ca83549ca04", "work_id": null, "work_document_sha256": null}, {"source_id": "source_b6d55666cda69c2a1c407986", "source_record_sha256": "cfa6b94ada59148f26930ff496f9eabe0edaf9833fbec50ab6696d2fc62cf53b", "raw_content_sha256": "4f49125d72501b7b0eebcd4f7136c070d0cd4d1b259817c86738e831e98b60cd", "work_id": null, "work_document_sha256": null}, {"source_id": "source_f366554c5c3887de7c6ad29b", "source_record_sha256": "67a89b55320e3e6dd01c07e5787a1a01a3c02baa13feefa150034aefdc18ced4", "raw_content_sha256": "85a841cb6f3d607ee6f1b68803fcc61767fd7b3432c8c59aa1edc45e17517111", "work_id": null, "work_document_sha256": null}]
+evidence_ids: []
+started_at: "2026-07-28T10:05:29+08:00"
+completed_at: "2026-07-28T10:05:30+08:00"
+consolidator: "deterministic"
+consolidator_version: "trustworthy-consolidation-v2"
+model_provider: "none"
+model_version: "none"
+checks: {"schema_validated": true, "raw_available": true, "provenance_revalidated": true, "evidence_revalidated": true, "evidence_entailment_rechecked": true, "duplicate_search_completed": true, "related_object_search_completed": true, "contradiction_search_completed": true, "freshness_checked": true, "source_independence_checked": true, "drift_checked": true}
+check_details: {"schema_validated": {"check_name": "schema_validated", "execution_status": "completed", "validation_outcome": "passed", "method": "deterministic repository check", "semantic_recheck_performed": null, "declared_value": null, "findings": ["validated:vault/memory/concept/concept_0ea689b9ff94e453dd23b64b.md"], "warnings": []}, "raw_available": {"check_name": "raw_available", "execution_status": "completed", "validation_outcome": "passed", "method": "deterministic repository check", "semantic_recheck_performed": null, "declared_value": null, "findings": ["source:source_299adfe6dd42f97b6f75b777 raw_sha256:af745d5dd5f06081d696714a7ab93155e2cd81a73986163c39472ca83549ca04", "source:source_b6d55666cda69c2a1c407986 raw_sha256:4f49125d72501b7b0eebcd4f7136c070d0cd4d1b259817c86738e831e98b60cd", "source:source_f366554c5c3887de7c6ad29b raw_sha256:85a841cb6f3d607ee6f1b68803fcc61767fd7b3432c8c59aa1edc45e17517111"], "warnings": []}, "provenance_revalidated": {"check_name": "provenance_revalidated", "execution_status": "completed", "validation_outcome": "passed", "method": "deterministic repository check", "semantic_recheck_performed": null, "declared_value": null, "findings": ["source:source_299adfe6dd42f97b6f75b777 record_sha256:49c8f2ac1072f62499ee58cb87a67a0956fc5f88871491e4291aef6e9c35a2c5", "source:source_b6d55666cda69c2a1c407986 record_sha256:cfa6b94ada59148f26930ff496f9eabe0edaf9833fbec50ab6696d2fc62cf53b", "source:source_f366554c5c3887de7c6ad29b record_sha256:67a89b55320e3e6dd01c07e5787a1a01a3c02baa13feefa150034aefdc18ced4"], "warnings": []}, "evidence_revalidated": {"check_name": "evidence_revalidated", "execution_status": "completed", "validation_outcome": "passed", "method": "deterministic repository check", "semantic_recheck_performed": null, "declared_value": null, "findings": ["not applicable for non-claim object"], "warnings": []}, "evidence_entailment_rechecked": {"check_name": "evidence_entailment_rechecked", "execution_status": "completed", "validation_outcome": "not_applicable", "method": "declared-metadata-inspection", "semantic_recheck_performed": true, "declared_value": null, "findings": ["not applicable for non-claim object"], "warnings": []}, "duplicate_search_completed": {"check_name": "duplicate_search_completed", "execution_status": "completed", "validation_outcome": "passed", "method": "deterministic repository check", "semantic_recheck_performed": null, "declared_value": null, "findings": ["searched title; 1 candidates inspected", "candidate:concept_0ea689b9ff94e453dd23b64b"], "warnings": []}, "related_object_search_completed": {"check_name": "related_object_search_completed", "execution_status": "completed", "validation_outcome": "passed", "method": "deterministic repository check", "semantic_recheck_performed": null, "declared_value": null, "findings": ["relation index inspected; 2 related objects found", "related:source_299adfe6dd42f97b6f75b777", "related:concept_c0e590dd716efa867bc34cbd"], "warnings": []}, "contradiction_search_completed": {"check_name": "contradiction_search_completed", "execution_status": "completed", "validation_outcome": "clear", "method": "relation-index-query", "semantic_recheck_performed": null, "declared_value": null, "findings": ["contradiction relations inspected; 0 found"], "warnings": []}, "freshness_checked": {"check_name": "freshness_checked", "execution_status": "completed", "validation_outcome": "passed", "method": "deterministic repository check", "semantic_recheck_performed": null, "declared_value": null, "findings": ["object_updated_at:2026-07-28T10:05:01+08:00", "source:source_299adfe6dd42f97b6f75b777 work_sha256:none", "source:source_b6d55666cda69c2a1c407986 work_sha256:none", "source:source_f366554c5c3887de7c6ad29b work_sha256:none"], "warnings": []}, "source_independence_checked": {"check_name": "source_independence_checked", "execution_status": "completed", "validation_outcome": "not_established", "method": "logical-work-identity-count", "semantic_recheck_performed": null, "declared_value": null, "findings": ["distinct_source_ids:3", "distinct_work_ids:0"], "warnings": []}, "drift_checked": {"check_name": "drift_checked", "execution_status": "completed", "validation_outcome": "passed", "method": "deterministic repository check", "semantic_recheck_performed": null, "declared_value": null, "findings": ["drift_reports:0"], "warnings": []}}
+contradiction_search: {"execution_status": "completed", "outgoing": [], "incoming": [], "unresolved_count": 0, "validation_outcome": "clear"}
+consolidation_fingerprint: {"object_sha256": "55be462379828838fba48de063dfb682e92e11d35b17cd3009ea2b99daa878ac", "source_state_sha256": "e6ae326883136501dbc51fe7d560185640e6f66c1cfdd3e8725c67480901a8ad", "source_record_sha256s": {"source_299adfe6dd42f97b6f75b777": "49c8f2ac1072f62499ee58cb87a67a0956fc5f88871491e4291aef6e9c35a2c5", "source_b6d55666cda69c2a1c407986": "cfa6b94ada59148f26930ff496f9eabe0edaf9833fbec50ab6696d2fc62cf53b", "source_f366554c5c3887de7c6ad29b": "67a89b55320e3e6dd01c07e5787a1a01a3c02baa13feefa150034aefdc18ced4"}, "raw_state_sha256": "621fe65ba30a95e13559f7dbd57f31fabe81cbefd9c8af2e44dce9bf0efb60e1", "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945", "extraction_state_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945", "work_identity_sha256": "27ced315e8b3ee2b4228e4a903ac35d900152eb09766a8c4c4859348c559983f", "relation_fingerprint": {"outgoing_relations_sha256": "b52ccc5a87fcefd8ce422867c01daae5479ea29f28b927a3cefc8b38a3a5fc1f", "incoming_relations_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945", "full_neighborhood_sha256": "b52ccc5a87fcefd8ce422867c01daae5479ea29f28b927a3cefc8b38a3a5fc1f"}, "relation_neighborhood_sha256": "b52ccc5a87fcefd8ce422867c01daae5479ea29f28b927a3cefc8b38a3a5fc1f", "contradictions_sha256": "17d35d182c9ceebd5c99aabdd4299838ea08f22782f21b0b588dbecee2c2574b", "receipt_schema_version": 2, "memory_schema_version": 2, "consolidator_version": "trustworthy-consolidation-v2", "drift_policy_version": "semantic-drift-v2", "promotion_policy_version": "trusted-promotion-v3-receipt-v2"}
+drift_policy_version: "semantic-drift-v2"
+result: "refined"
+changes: [{"change_type": "refine", "previous_statement": "# 三维 restriction 的 Kakeya--decoupling 指数改进 / Kakeya--decoupling improvement for restriction in R3\n\nWang 与 Wu 的摘要将 R3 中 Lp→Lp restriction 估计的适用范围改进为 p>3+3/14，并归因于 Kakeya 型 incidence estimates 与 refined decoupling 的结合。该条目只记录论文摘要中的定量结果和方法标签，不代表完整线性 restriction 理论已解决。\n\n## 新增来源材料\n\n- `source_b6d55666cda69c2a1c407986`：对 R3 中紧致、光滑且第二基本形式严格正的曲面，Guth 以 polynomial partitioning 控制 extension 波包，证明 L2(S) 到 Lp(R3) 的 restriction estimate 在 p>3.25 时成立；这是特定曲率与范数下的线性改进，不等同于预期 p>3 的完整 Stein restriction conjecture。", "new_statement": "# 三维 restriction 的 Kakeya--decoupling 指数改进 / Kakeya--decoupling improvement for restriction in R3\n\nWang 与 Wu 的摘要将 R3 中 Lp→Lp restriction 估计的适用范围改进为 p>3+3/14，并归因于 Kakeya 型 incidence estimates 与 refined decoupling 的结合。该条目只记录论文摘要中的定量结果和方法标签，不代表完整线性 restriction 理论已解决。\n\n## 新增来源材料\n\n- `source_b6d55666cda69c2a1c407986`：对 R3 中紧致、光滑且第二基本形式严格正的曲面，Guth 以 polynomial partitioning 控制 extension 波包，证明 L2(S) 到 Lp(R3) 的 restriction estimate 在 p>3.25 时成立；这是特定曲率与范数下的线性改进，不等同于预期 p>3 的完整 Stein restriction conjecture。\n\n## 新增来源材料\n\n- `source_f366554c5c3887de7c6ad29b`：在后续 p>3+3/14 的 Kakeya incidence 与 refined-decoupling 改进之前，Wang 的论文摘要对 R3 截断抛物面给出 L∞ 到 Lp restriction 估计的 p>3+3/13 范围，并把证明路线标记为 polynomial partitioning、two-ends reduction 和 brooms。该来源仅为摘要，因而这里只保存精确指数、范数和方法标签；不能据此把 broom 解释扩展为一般波包聚集定理，也不能把该界与后续更强指数合并。", "changed_fields": [], "reason": "compile bundle from source_f366554c5c3887de7c6ad29b", "trigger_source": "source_f366554c5c3887de7c6ad29b", "evidence_added": []}]
+change_summary: "compile bundle from source_f366554c5c3887de7c6ad29b"
+warnings: []
+exceptions_created: []
+promotion_recommendation: "evaluate"
+---
+
+# Consolidation Receipt
+
+```json
+{
+  "change_summary": "compile bundle from source_f366554c5c3887de7c6ad29b",
+  "changes": [
+    {
+      "change_type": "refine",
+      "changed_fields": [],
+      "evidence_added": [],
+      "new_statement": "# 三维 restriction 的 Kakeya--decoupling 指数改进 / Kakeya--decoupling improvement for restriction in R3\n\nWang 与 Wu 的摘要将 R3 中 Lp→Lp restriction 估计的适用范围改进为 p>3+3/14，并归因于 Kakeya 型 incidence estimates 与 refined decoupling 的结合。该条目只记录论文摘要中的定量结果和方法标签，不代表完整线性 restriction 理论已解决。\n\n## 新增来源材料\n\n- `source_b6d55666cda69c2a1c407986`：对 R3 中紧致、光滑且第二基本形式严格正的曲面，Guth 以 polynomial partitioning 控制 extension 波包，证明 L2(S) 到 Lp(R3) 的 restriction estimate 在 p>3.25 时成立；这是特定曲率与范数下的线性改进，不等同于预期 p>3 的完整 Stein restriction conjecture。\n\n## 新增来源材料\n\n- `source_f366554c5c3887de7c6ad29b`：在后续 p>3+3/14 的 Kakeya incidence 与 refined-decoupling 改进之前，Wang 的论文摘要对 R3 截断抛物面给出 L∞ 到 Lp restriction 估计的 p>3+3/13 范围，并把证明路线标记为 polynomial partitioning、two-ends reduction 和 brooms。该来源仅为摘要，因而这里只保存精确指数、范数和方法标签；不能据此把 broom 解释扩展为一般波包聚集定理，也不能把该界与后续更强指数合并。",
+      "previous_statement": "# 三维 restriction 的 Kakeya--decoupling 指数改进 / Kakeya--decoupling improvement for restriction in R3\n\nWang 与 Wu 的摘要将 R3 中 Lp→Lp restriction 估计的适用范围改进为 p>3+3/14，并归因于 Kakeya 型 incidence estimates 与 refined decoupling 的结合。该条目只记录论文摘要中的定量结果和方法标签，不代表完整线性 restriction 理论已解决。\n\n## 新增来源材料\n\n- `source_b6d55666cda69c2a1c407986`：对 R3 中紧致、光滑且第二基本形式严格正的曲面，Guth 以 polynomial partitioning 控制 extension 波包，证明 L2(S) 到 Lp(R3) 的 restriction estimate 在 p>3.25 时成立；这是特定曲率与范数下的线性改进，不等同于预期 p>3 的完整 Stein restriction conjecture。",
+      "reason": "compile bundle from source_f366554c5c3887de7c6ad29b",
+      "trigger_source": "source_f366554c5c3887de7c6ad29b"
+    }
+  ],
+  "check_details": {
+    "contradiction_search_completed": {
+      "check_name": "contradiction_search_completed",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "contradiction relations inspected; 0 found"
+      ],
+      "method": "relation-index-query",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "clear",
+      "warnings": []
+    },
+    "drift_checked": {
+      "check_name": "drift_checked",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "drift_reports:0"
+      ],
+      "method": "deterministic repository check",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "passed",
+      "warnings": []
+    },
+    "duplicate_search_completed": {
+      "check_name": "duplicate_search_completed",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "searched title; 1 candidates inspected",
+        "candidate:concept_0ea689b9ff94e453dd23b64b"
+      ],
+      "method": "deterministic repository check",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "passed",
+      "warnings": []
+    },
+    "evidence_entailment_rechecked": {
+      "check_name": "evidence_entailment_rechecked",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "not applicable for non-claim object"
+      ],
+      "method": "declared-metadata-inspection",
+      "semantic_recheck_performed": true,
+      "validation_outcome": "not_applicable",
+      "warnings": []
+    },
+    "evidence_revalidated": {
+      "check_name": "evidence_revalidated",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "not applicable for non-claim object"
+      ],
+      "method": "deterministic repository check",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "passed",
+      "warnings": []
+    },
+    "freshness_checked": {
+      "check_name": "freshness_checked",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "object_updated_at:2026-07-28T10:05:01+08:00",
+        "source:source_299adfe6dd42f97b6f75b777 work_sha256:none",
+        "source:source_b6d55666cda69c2a1c407986 work_sha256:none",
+        "source:source_f366554c5c3887de7c6ad29b work_sha256:none"
+      ],
+      "method": "deterministic repository check",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "passed",
+      "warnings": []
+    },
+    "provenance_revalidated": {
+      "check_name": "provenance_revalidated",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "source:source_299adfe6dd42f97b6f75b777 record_sha256:49c8f2ac1072f62499ee58cb87a67a0956fc5f88871491e4291aef6e9c35a2c5",
+        "source:source_b6d55666cda69c2a1c407986 record_sha256:cfa6b94ada59148f26930ff496f9eabe0edaf9833fbec50ab6696d2fc62cf53b",
+        "source:source_f366554c5c3887de7c6ad29b record_sha256:67a89b55320e3e6dd01c07e5787a1a01a3c02baa13feefa150034aefdc18ced4"
+      ],
+      "method": "deterministic repository check",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "passed",
+      "warnings": []
+    },
+    "raw_available": {
+      "check_name": "raw_available",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "source:source_299adfe6dd42f97b6f75b777 raw_sha256:af745d5dd5f06081d696714a7ab93155e2cd81a73986163c39472ca83549ca04",
+        "source:source_b6d55666cda69c2a1c407986 raw_sha256:4f49125d72501b7b0eebcd4f7136c070d0cd4d1b259817c86738e831e98b60cd",
+        "source:source_f366554c5c3887de7c6ad29b raw_sha256:85a841cb6f3d607ee6f1b68803fcc61767fd7b3432c8c59aa1edc45e17517111"
+      ],
+      "method": "deterministic repository check",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "passed",
+      "warnings": []
+    },
+    "related_object_search_completed": {
+      "check_name": "related_object_search_completed",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "relation index inspected; 2 related objects found",
+        "related:source_299adfe6dd42f97b6f75b777",
+        "related:concept_c0e590dd716efa867bc34cbd"
+      ],
+      "method": "deterministic repository check",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "passed",
+      "warnings": []
+    },
+    "schema_validated": {
+      "check_name": "schema_validated",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "validated:vault/memory/concept/concept_0ea689b9ff94e453dd23b64b.md"
+      ],
+      "method": "deterministic repository check",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "passed",
+      "warnings": []
+    },
+    "source_independence_checked": {
+      "check_name": "source_independence_checked",
+      "declared_value": null,
+      "execution_status": "completed",
+      "findings": [
+        "distinct_source_ids:3",
+        "distinct_work_ids:0"
+      ],
+      "method": "logical-work-identity-count",
+      "semantic_recheck_performed": null,
+      "validation_outcome": "not_established",
+      "warnings": []
+    }
+  },
+  "checks": {
+    "contradiction_search_completed": true,
+    "drift_checked": true,
+    "duplicate_search_completed": true,
+    "evidence_entailment_rechecked": true,
+    "evidence_revalidated": true,
+    "freshness_checked": true,
+    "provenance_revalidated": true,
+    "raw_available": true,
+    "related_object_search_completed": true,
+    "schema_validated": true,
+    "source_independence_checked": true
+  },
+  "completed_at": "2026-07-28T10:05:30+08:00",
+  "consolidation_fingerprint": {
+    "consolidator_version": "trustworthy-consolidation-v2",
+    "contradictions_sha256": "17d35d182c9ceebd5c99aabdd4299838ea08f22782f21b0b588dbecee2c2574b",
+    "drift_policy_version": "semantic-drift-v2",
+    "evidence_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "extraction_state_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "memory_schema_version": 2,
+    "object_sha256": "55be462379828838fba48de063dfb682e92e11d35b17cd3009ea2b99daa878ac",
+    "promotion_policy_version": "trusted-promotion-v3-receipt-v2",
+    "raw_state_sha256": "621fe65ba30a95e13559f7dbd57f31fabe81cbefd9c8af2e44dce9bf0efb60e1",
+    "receipt_schema_version": 2,
+    "relation_fingerprint": {
+      "full_neighborhood_sha256": "b52ccc5a87fcefd8ce422867c01daae5479ea29f28b927a3cefc8b38a3a5fc1f",
+      "incoming_relations_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "outgoing_relations_sha256": "b52ccc5a87fcefd8ce422867c01daae5479ea29f28b927a3cefc8b38a3a5fc1f"
+    },
+    "relation_neighborhood_sha256": "b52ccc5a87fcefd8ce422867c01daae5479ea29f28b927a3cefc8b38a3a5fc1f",
+    "source_record_sha256s": {
+      "source_299adfe6dd42f97b6f75b777": "49c8f2ac1072f62499ee58cb87a67a0956fc5f88871491e4291aef6e9c35a2c5",
+      "source_b6d55666cda69c2a1c407986": "cfa6b94ada59148f26930ff496f9eabe0edaf9833fbec50ab6696d2fc62cf53b",
+      "source_f366554c5c3887de7c6ad29b": "67a89b55320e3e6dd01c07e5787a1a01a3c02baa13feefa150034aefdc18ced4"
+    },
+    "source_state_sha256": "e6ae326883136501dbc51fe7d560185640e6f66c1cfdd3e8725c67480901a8ad",
+    "work_identity_sha256": "27ced315e8b3ee2b4228e4a903ac35d900152eb09766a8c4c4859348c559983f"
+  },
+  "consolidation_id": "consolidation_f887922c9d78809fd466ad7e",
+  "consolidator": "deterministic",
+  "consolidator_version": "trustworthy-consolidation-v2",
+  "contradiction_search": {
+    "execution_status": "completed",
+    "incoming": [],
+    "outgoing": [],
+    "unresolved_count": 0,
+    "validation_outcome": "clear"
+  },
+  "created_at": "2026-07-28T10:05:30+08:00",
+  "drift_policy_version": "semantic-drift-v2",
+  "evidence_ids": [],
+  "exceptions_created": [],
+  "execution_status": "complete",
+  "id": "consolidation_f887922c9d78809fd466ad7e",
+  "model_provider": "none",
+  "model_version": "none",
+  "object_id": "concept_0ea689b9ff94e453dd23b64b",
+  "object_sha256_after": "55be462379828838fba48de063dfb682e92e11d35b17cd3009ea2b99daa878ac",
+  "object_sha256_before": "87d4cbba42da2b23e1934b46f9d7a229cf93b134ce137676d2a0a79907aa6770",
+  "object_version_before": 1,
+  "promotion_recommendation": "evaluate",
+  "receipt_schema_version": 2,
+  "result": "refined",
+  "source_ids": [
+    "source_299adfe6dd42f97b6f75b777",
+    "source_b6d55666cda69c2a1c407986",
+    "source_f366554c5c3887de7c6ad29b"
+  ],
+  "source_records": [
+    {
+      "raw_content_sha256": "af745d5dd5f06081d696714a7ab93155e2cd81a73986163c39472ca83549ca04",
+      "source_id": "source_299adfe6dd42f97b6f75b777",
+      "source_record_sha256": "49c8f2ac1072f62499ee58cb87a67a0956fc5f88871491e4291aef6e9c35a2c5",
+      "work_document_sha256": null,
+      "work_id": null
+    },
+    {
+      "raw_content_sha256": "4f49125d72501b7b0eebcd4f7136c070d0cd4d1b259817c86738e831e98b60cd",
+      "source_id": "source_b6d55666cda69c2a1c407986",
+      "source_record_sha256": "cfa6b94ada59148f26930ff496f9eabe0edaf9833fbec50ab6696d2fc62cf53b",
+      "work_document_sha256": null,
+      "work_id": null
+    },
+    {
+      "raw_content_sha256": "85a841cb6f3d607ee6f1b68803fcc61767fd7b3432c8c59aa1edc45e17517111",
+      "source_id": "source_f366554c5c3887de7c6ad29b",
+      "source_record_sha256": "67a89b55320e3e6dd01c07e5787a1a01a3c02baa13feefa150034aefdc18ced4",
+      "work_document_sha256": null,
+      "work_id": null
+    }
+  ],
+  "source_sha256s": [
+    "af745d5dd5f06081d696714a7ab93155e2cd81a73986163c39472ca83549ca04",
+    "4f49125d72501b7b0eebcd4f7136c070d0cd4d1b259817c86738e831e98b60cd",
+    "85a841cb6f3d607ee6f1b68803fcc61767fd7b3432c8c59aa1edc45e17517111"
+  ],
+  "started_at": "2026-07-28T10:05:29+08:00",
+  "status": "complete",
+  "title": "Consolidation: R3 restriction 与 Kakeya 几何改进 / R3 restriction and Kakeya-geometric improvements",
+  "type": "consolidation_receipt",
+  "updated_at": "2026-07-28T10:05:30+08:00",
+  "validation_outcome": "passed",
+  "warnings": []
+}
+```

@@ -1,5 +1,86 @@
 # Current State
 
+## Direction alias routing (2026-07-29)
+
+- Context routing now reads machine-readable aliases from the direction
+  registry. A matched alias selects a bounded set of active Syntheses by their
+  declared `scope_ids`, records the match in Route Trace, and remains a
+  navigation signal rather than Evidence. Execution Context still excludes
+  every Reflection and Cognitive Synthesis.
+
+## Direction-scoped cognitive synthesis (2026-07-28)
+
+- Weekly remains the scheduling and governance cadence, but new Cognitive
+  Synthesis is organized by registered research directions rather than natural
+  weeks. Candidate date windows and semantic scope are separate fields.
+- Synthesis protocol v2 records direction assignments, subdirections,
+  crosscuts, semantic delta and optional parent Syntheses. Cross-direction
+  connections require explicit provenance, counterarguments, evidence gaps and
+  a verification path; zero candidates is valid.
+- `docs/RESEARCH_DIRECTIONS.md` initializes the user-approved embodied-AI,
+  mathematics and physics directions with domain-specific subdirections and
+  crosscuts. The registry is navigation policy, not Evidence or truth.
+- Legacy period-based Synthesis remains replayable for audit. Reflection and
+  Synthesis stay non-factual and non-execution-safe; Trusted/Canonical policy is
+  unchanged.
+
+## Daily semantic admission coverage and graph closure (2026-07-28)
+
+- Daily Dream protocol v2 now separates source assessment, semantic inventory
+  and admission decisions before Working compilation. Every candidate is
+  explicitly created, updated, reused, left Source-only, sent to review or
+  deferred; high-value readable candidates cannot silently disappear.
+- The provider-neutral core reports candidate/admission coverage, high-value
+  Reflection-only outcomes, review/deferred counts, reuse targets and
+  Source-only reasons. Legacy v1 artifacts remain replayable for recovery.
+- `dream audit-daily --from-date ... --to-date ...` provides a read-only Weekly
+  preflight over persisted Daily artifacts. It reports unresolved legacy/high-
+  value/review/deferred items and never writes knowledge. The current gate uses
+  the latest state per Input: later v2 remediation closes an earlier gap while
+  historical event counts and `resolved_prior_unresolved` preserve the audit
+  trail.
+- The knowledge Obsidian projection was rebuilt and independently verified with
+  zero missing and zero stale expected nodes. Weekly policy now treats derived
+  projection freshness as a separate completion gate.
+- Daily/Weekly model output remains Working-only; Trusted and Canonical policy
+  is unchanged and Canonical writes remain zero.
+
+## Daily Dream recovery hardening (2026-07-24)
+
+- Daily and Weekly cognitive writes now share an OS-backed process lock. If a
+  command wrapper times out while its child is still running, a replay must
+  wait and then reuse the same immutable artifact instead of racing writes.
+- Semantically identical candidate replays are no-ops even when regenerated
+  timestamps or proposal metadata differ. Four false Daily
+  `unclassified-change` Exceptions were dismissed with audit resolutions; no
+  Working semantics changed.
+- The corrupted arXiv Source was preserved and recaptured as immutable version
+  `source_4f709a2f26b6_v0002_cb9f3e56f3e6`. Its extraction is ready, the failed
+  predecessor is `superseded`, and Daily consolidation safely staged the new
+  version as Source-only.
+- Source refresh approval now uses the Source-refresh governance path. A failed
+  extraction no longer aborts the rest of a triage batch.
+- Lifecycle and Receipt lookups use operation-local indexes. Machine-readable
+  status now completes in about 3.3 seconds locally while retaining current
+  Receipt fingerprint validation. Trusted and Canonical were not changed.
+
+## Legacy semantic re-admission update (2026-07-21)
+
+- Sources whose only deterministic Working output was later quality-retired to
+  Historical/source-only are again visible to the bounded model semantic
+  queue. This is derived queue state: it neither restores Historical objects
+  nor mutates terminal legacy proposals.
+- arXiv:2603.20396 was re-read from its 28-page extraction and admitted through
+  Input Episode and Reflection into two bounded Working objects covering the
+  hierarchical compression model and its compression-bias validation question.
+  Trusted and Canonical remained unchanged.
+- The remaining 13 quality-retired legacy Sources were reviewed in bounded
+  batches. Eight primary papers yielded one reusable Working Concept each;
+  five paired, secondary, directory or already-covered implementation Sources
+  were deliberately left without new governed knowledge. Agent-authored active
+  Reflections now count as completed model review for semantic queue state, so
+  intentional Source-only outcomes do not loop back into the queue.
+
 ## M9.2 Agent Memory Gateway update (2026-07-20)
 
 - Agent-facing MCP reads now return sanitized Evidence Packets rather than raw
@@ -15,6 +96,29 @@
 - Repository MCP configurations remain strictly read-only. Codex Desktop uses
   a personal plugin with two explicit-only skills for bounded retrieval and
   Capture-only intake; the plugin registers no always-on MCP server.
+
+## M9.2.1 Gateway and cognitive-debt closure (2026-07-29)
+
+- Agent-facing reads now share one versioned `EvidenceItem` / Evidence Packet
+  contract across Context, Search, Show and Source. `memory_capabilities`
+  negotiates contract versions and exact server-side write scopes.
+- Strict execution retrieval exposes stable blocker codes for unresolved
+  contradiction, Receipt/currentness, policy qualification and semantic
+  entailment failures. Raw Source, Input, Annotation, Reflection and Cognitive
+  Synthesis remain non-execution-safe.
+- Provider-neutral, explicitly authorized and idempotent session/use/feedback
+  signals are available only from the opt-in Agent launcher. Session records
+  stop at Source/Input; Activation and research feedback cannot change trust.
+- Codex retains its explicit-only personal plugin. Claude Desktop has a backed-up
+  read-only MCP registration; reviewed templates cover Hermes, OpenClaw and
+  OpenHuman without copying the Vault or replacing their native memory stores.
+- Twenty low-authority single-WeChat Claims and two provenance-debt M6
+  Syntheses were reversibly retired to Historical/source-only. Eight active
+  cadence-scoped Syntheses were replaced by provenance-linked direction-scoped
+  successors and moved to the synthesis archive through a verified migration.
+- The duplicate REAL Concept was collapsed: the stable Working Concept now
+  retains both the official repository and primary-paper sources; the duplicate
+  is Historical/source-only. Trusted and Canonical were unchanged.
 
 ## M9.1 Cognitive Consolidation update (2026-07-19)
 
@@ -223,18 +327,22 @@ GitHub Actions CI #7 for the prior M8 commit `928404f` passed all six jobs: Ubun
 
 ## Active exceptions
 
-Ten outstanding Exceptions remain after the 2026-W29 triage, all explicitly
-deferred: eight legacy Claim evidence-verification gaps and two M6 Synthesis
-provenance gaps. No item is left unclassified; there are no Canonical exceptions
-and no active high-severity drift findings.
+Eight legacy Claim evidence-verification gaps remain explicitly deferred. The
+two M6 Synthesis provenance gaps were retired to Historical/source-only after
+review and no longer participate in routine conclusions. The Canonical VIA
+Claim remains an execution blocker until its semantic entailment evidence is
+re-verifiable; Canonical status alone does not make it execution-safe.
 
 ## Next concrete task
 
-Link the two awaiting Concepts to genuinely independent logical works only when evidence supports that identity, then re-run `gm trust requalify <id>`. Reopen the deferred legacy Claim or M6 Synthesis reviews only when primary evidence or a source-bound replacement Synthesis is available.
+Restart Claude Desktop and run a real read-only Context acceptance call. Bring
+Hermes, OpenClaw and OpenHuman online one at a time, validate their native MCP
+config parser and session isolation, then pilot explicit session/use/feedback
+signals only after the host can preserve consent and stable idempotency keys.
 
 ## Do not do yet
 
-Do not broaden MCP beyond bounded retrieval and explicitly confirmed text
-Capture-only intake. Do not add URL/file ingestion, compile/promotion/admin
-tools, embeddings, a vector/graph database, browser ingestion, a Web UI,
-multi-Agent orchestration or automatic Canonical writes.
+Do not expose receipt compilation, Working mutation, promotion, maintenance or
+admin operations through default MCP. Do not add URL/file ingestion,
+embeddings, a vector/graph database, browser ingestion, automatic cross-domain
+hypothesis generation, multi-Agent orchestration or automatic Canonical writes.

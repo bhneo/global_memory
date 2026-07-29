@@ -95,6 +95,45 @@ class WorkingMemoryService:
     def _path(self, object_type: str, object_id: str) -> Path:
         return self.repository.root / "vault" / "memory" / object_type / f"{object_id}.md"
 
+    @staticmethod
+    def _normalized_relation(value: dict[str, Any]) -> str:
+        relation = {
+            key: item for key, item in value.items()
+            if key not in {"status", "created_at", "updated_at"}
+        }
+        return json.dumps(relation, ensure_ascii=False, sort_keys=True)
+
+    @classmethod
+    def _same_semantic_candidate(
+        cls, old: dict[str, Any], old_body: str,
+        candidate: dict[str, Any], candidate_body: str,
+    ) -> bool:
+        """Recognize an identical replay despite proposal timestamps and lifecycle fields."""
+        if old_body.strip() != candidate_body.strip():
+            return False
+        if set(map(str, old.get("source_ids", []))) != set(map(str, candidate.get("source_ids", []))):
+            return False
+        ignored = {
+            "status", "created_at", "updated_at", "change_reason", "change_type",
+            "proposed_status",
+        }
+        unordered = {"aliases", "tags", "domains", "source_ids"}
+        for key, value in candidate.items():
+            if key in ignored:
+                continue
+            current = old.get(key)
+            if key == "relations":
+                expected = {cls._normalized_relation(item) for item in value}
+                actual = {cls._normalized_relation(item) for item in (current or [])}
+                if expected != actual:
+                    return False
+            elif key in unordered:
+                if sorted(set(value or [])) != sorted(set(current or [])):
+                    return False
+            elif current != value:
+                return False
+        return True
+
     def _working_text(
         self, candidate: dict[str, Any], body: str, *, proposal: dict[str, Any],
         item_id: str, candidate_path: Path, existing: tuple[Path, dict[str, Any], str] | None,
@@ -117,6 +156,7 @@ class WorkingMemoryService:
             "origin_proposal_id": proposal["id"], "origin_item_id": item_id,
             "origin_candidate_path": self.repository.rel(candidate_path),
             "origin_candidate_sha256": sha256_bytes(candidate_path.read_bytes()),
+            "origin_cognitive_artifact_sha256": proposal.get("cognitive_artifact_sha256"),
             "memory_schema_version": MEMORY_SCHEMA_VERSION,
         })
         for relation in metadata.get("relations", []):
@@ -201,13 +241,22 @@ class WorkingMemoryService:
             existing = None
             if target.exists():
                 old, old_body = read_document(target)
-                if old.get("origin_candidate_sha256") == sha256_bytes(candidate_path.read_bytes()):
+                classification = str(candidate.get("change_type") or item.get("change_type") or "needs_review")
+                if (
+                    old.get("origin_candidate_sha256") == sha256_bytes(candidate_path.read_bytes())
+                    or (
+                        classification == "needs_review"
+                        and bool(proposal.get("cognitive_artifact_sha256"))
+                        and old.get("origin_cognitive_artifact_sha256") == proposal.get("cognitive_artifact_sha256")
+                        and self._same_semantic_candidate(old, old_body, candidate, body)
+                    )
+                ):
                     skipped.append(item_id)
                     item["decision"] = "working"
+                    item["ingestion_action"] = "duplicate_noop"
                     touched_items.append(item)
                     continue
                 existing = (target, old, old_body)
-                classification = str(candidate.get("change_type") or item.get("change_type") or "needs_review")
                 if classification not in {"support", "refine", "limit", "contradict", "supersede", "metadata_only"}:
                     exceptions.append(self.exceptions.create(
                         "unclassified-change", f"Incremental change needs classification: {candidate.get('title')}",
@@ -220,12 +269,24 @@ class WorkingMemoryService:
                     touched_items.append(item)
                     continue
                 if classification in {"support", "refine", "limit", "contradict", "supersede", "metadata_only"}:
+                    if (
+                        classification in {"refine", "limit", "supersede"}
+                        and body.strip() == old_body.strip()
+                        and set(str(value) for value in candidate.get("source_ids", []))
+                        <= set(str(value) for value in old.get("source_ids", []))
+                    ):
+                        skipped.append(item_id)
+                        item["decision"] = "working"
+                        item["ingestion_action"] = "duplicate_noop"
+                        touched_items.append(item)
+                        continue
                     from .evolution import KnowledgeEvolutionService
                     change_type = classification
                     evolution = KnowledgeEvolutionService(self.repository).apply(
                         object_id, candidate, body, change_type=change_type,
                         reason=str(candidate.get("change_reason") or "incremental material changed trusted memory"),
                         trigger_source=(list(candidate.get("source_ids", [])) or [None])[-1],
+                        defer_receipt_rebuild=True,
                     )
                     evolved_paths.append(str(evolution.get("revision_path") or self.repository.rel(target)))
                     item["decision"] = "working"

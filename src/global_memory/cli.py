@@ -11,10 +11,11 @@ from .backups import RawBackupService
 from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from .capture import CaptureService
 from .cognition import (
-    DailyDreamService, InputEpisodeService, ReflectionService, WeeklyDreamService,
+    DailyAdmissionAuditService, DailyDreamService, InputEpisodeService,
+    ReflectionService, WeeklyDreamService,
 )
 from .context import ContextPackService
-from .consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration, WorkingQualityMigration
+from .consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration, SynthesisScopeMigration, WorkingQualityMigration
 from .distillation import CorpusDistillationService
 from .errors import GlobalMemoryError
 from .extraction import ExtractionService
@@ -125,6 +126,9 @@ def build_parser() -> argparse.ArgumentParser:
     dream_daily = dream_commands.add_parser("daily")
     dream_daily.add_argument("--bundle-file", required=True)
     dream_daily.add_argument("--limit", type=int, default=5)
+    dream_audit_daily = dream_commands.add_parser("audit-daily")
+    dream_audit_daily.add_argument("--from-date")
+    dream_audit_daily.add_argument("--to-date")
     dream_weekly = dream_commands.add_parser("weekly")
     dream_weekly.add_argument("--bundle-file", required=True)
     commands.add_parser("inbox", help="列出 derived processing state 中待 compile 的来源")
@@ -434,10 +438,14 @@ def build_parser() -> argparse.ArgumentParser:
     obsidian_build.add_argument(
         "--graph-profile", choices=["knowledge", "trusted", "frontier", "all"], default="knowledge"
     )
+    obsidian_status = obsidian_commands.add_parser("status")
+    obsidian_status.add_argument(
+        "--graph-profile", choices=["knowledge", "trusted", "frontier", "all"], default="knowledge"
+    )
     receipt = commands.add_parser("receipt", help="创建 session receipt 并通过 proposal 写回")
     receipt_commands = receipt.add_subparsers(dest="receipt_command", required=True)
     receipt_create = receipt_commands.add_parser("create")
-    receipt_create.add_argument("--agent", choices=["codex", "cursor", "claude"], required=True)
+    receipt_create.add_argument("--agent", required=True, help="provider-neutral actor id, for example codex or hermes:local")
     receipt_create.add_argument("--project", required=True)
     receipt_create.add_argument("--task", required=True)
     receipt_create.add_argument("--from-file", required=True)
@@ -501,10 +509,25 @@ def build_parser() -> argparse.ArgumentParser:
     repair_requalification.add_argument("--dry-run", action="store_true")
     working_quality = migrate_commands.add_parser("working-quality")
     working_quality.add_argument("--dry-run", action="store_true")
+    working_quality.add_argument(
+        "--object-id", action="append", default=[],
+        help="archive an explicitly human-reviewed active Working object; repeatable",
+    )
+    working_quality.add_argument(
+        "--reason", default="",
+        help="audit reason recorded for explicit --object-id archives",
+    )
     working_quality_mode = working_quality.add_mutually_exclusive_group()
     working_quality_mode.add_argument("--verify")
     working_quality_mode.add_argument("--restore")
     working_quality_mode.add_argument("--upgrade-legacy-manifest")
+    synthesis_scope = migrate_commands.add_parser("synthesis-scope")
+    synthesis_scope.add_argument("--dry-run", action="store_true")
+    synthesis_scope.add_argument(
+        "--mapping", action="append", default=[], metavar="OLD_ID=SUCCESSOR_ID",
+        help="archive a legacy synthesis after validating its direction successor; repeatable",
+    )
+    synthesis_scope.add_argument("--verify")
     runs = commands.add_parser("runs", help="查看或清理可重建的 system/runs")
     runs_commands = runs.add_subparsers(dest="runs_command", required=True)
     runs_commands.add_parser("list")
@@ -1110,6 +1133,10 @@ def run(args: argparse.Namespace) -> int:
     elif args.command == "dream":
         if args.dream_command == "daily":
             _print(DailyDreamService(repository).run(args.bundle_file, limit=args.limit))
+        elif args.dream_command == "audit-daily":
+            _print(DailyAdmissionAuditService(repository).audit(
+                from_date=args.from_date, to_date=args.to_date,
+            ))
         else:
             _print(WeeklyDreamService(repository).run(args.bundle_file))
     elif args.command == "inbox":
@@ -1281,6 +1308,15 @@ def run(args: argparse.Namespace) -> int:
             if proposal_metadata.get("proposal_kind") in {"compile_bundle", "source_bundle", "corpus_distillation"}:
                 item_ids = args.items.split(",") if args.items else None
                 _print(WorkingMemoryService(repository).ingest_bundle(args.proposal_id, item_ids).__dict__)
+            elif proposal_metadata.get("proposal_kind") in {
+                "source_refresh", "relation_discovery", "deterministic_synthesis",
+            }:
+                if args.items:
+                    raise GlobalMemoryError("--items is only valid for compile bundles")
+                _print({
+                    "approved": args.proposal_id,
+                    "target_path": proposals.approve(args.proposal_id),
+                })
             else:
                 if args.items:
                     raise GlobalMemoryError("--items 只适用于 compile bundle")
@@ -1446,7 +1482,11 @@ def run(args: argparse.Namespace) -> int:
                 )
         _print(pack.as_markdown() if args.format == "markdown" else pack.as_dict())
     elif args.command == "obsidian":
-        _print(ObsidianViewService(repository).build(graph_profile=args.graph_profile))
+        service = ObsidianViewService(repository)
+        if args.obsidian_command == "build":
+            _print(service.build(graph_profile=args.graph_profile))
+        else:
+            _print(service.status(graph_profile=args.graph_profile))
     elif args.command == "receipt":
         service = ReceiptService(repository)
         if args.receipt_command == "create":
@@ -1589,6 +1629,20 @@ def run(args: argparse.Namespace) -> int:
         _print(result)
         return 0 if result["ok"] else 1
     elif args.command == "migrate":
+        if args.migrate_command == "synthesis-scope":
+            migration = SynthesisScopeMigration(repository)
+            if args.verify:
+                result = migration.verify(args.verify)
+            else:
+                mappings: list[tuple[str, str]] = []
+                for value in args.mapping:
+                    if "=" not in value:
+                        raise GlobalMemoryError(f"invalid --mapping, expected OLD_ID=SUCCESSOR_ID: {value}")
+                    old_id, successor_id = value.split("=", 1)
+                    mappings.append((old_id.strip(), successor_id.strip()))
+                result = migration.plan(mappings) if args.dry_run else migration.apply(mappings)
+            _print(result)
+            return 0 if result.get("ok", True) else 1
         if args.migrate_command == "working-quality":
             migration = WorkingQualityMigration(repository)
             if args.verify:
@@ -1598,7 +1652,11 @@ def run(args: argparse.Namespace) -> int:
             elif args.upgrade_legacy_manifest:
                 result = migration.upgrade_legacy_manifest(args.upgrade_legacy_manifest)
             else:
-                result = migration.plan() if args.dry_run else migration.apply()
+                result = (
+                    migration.plan(object_ids=args.object_id, reason=args.reason)
+                    if args.dry_run
+                    else migration.apply(object_ids=args.object_id, reason=args.reason)
+                )
             _print(result)
             return 0 if result.get("ok", True) else 1
         if args.migrate_command == "trust-requalification":

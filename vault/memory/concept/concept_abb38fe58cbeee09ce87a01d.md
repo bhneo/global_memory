@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "跨轨迹任务进度代理校正"
 created_at: "2026-07-20T11:56:21+08:00"
-updated_at: "2026-07-20T11:57:01+08:00"
+updated_at: "2026-07-28T16:33:49+08:00"
 aliases: ["UR-VC", "Unsupervised Robotic Value Correction", "time-derived progress correction"]
 tags: []
 domains: ["embodied-ai", "vla", "value-learning", "progress-estimation"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt56-m91-vla-posttraining-weekly-20260720"
-consolidation_count: 1
-last_consolidated_at: "2026-07-20T11:57:01+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-28T16:33:49+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_96ad3d6da02d71c3c0a7-concept-1.md"
 origin_candidate_sha256: "4f4115e29baa8e8ece55d4d0f31ea51d688c4395bfbbd29f5b736d63216ca0ac"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_4ed4c88b30f045e84f43619b"
+last_consolidation_id: "consolidation_a512c4740021bcaf43dcc46d"
 ---
 
 # 跨轨迹任务进度代理校正

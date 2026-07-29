@@ -14,6 +14,7 @@ from .repository import Repository, now_iso
 PROCESSING_STATES = {
     "captured", "extracted", "quality_checked", "compile_pending", "compiled",
     "awaiting_review", "partially_approved", "completed", "failed", "deferred",
+    "superseded",
 }
 
 
@@ -38,29 +39,113 @@ class SourceLifecycleService:
 
     def __init__(self, repository: Repository):
         self.repository = repository
+        self._sources: dict[str, tuple[Path, dict[str, Any]]] | None = None
+        self._latest_extractions: dict[str, dict[str, Any]] | None = None
+        self._processing_proposals: dict[str, list[dict[str, Any]]] | None = None
+        self._reflected_sources: set[str] | None = None
+        self._pending_refresh_sources: set[str] | None = None
+        self._approved_refresh_predecessors: set[str] | None = None
 
-    def _proposals(self, source_id: str) -> list[dict[str, Any]]:
-        found = []
+    def _build_source_index(self) -> None:
+        if self._sources is not None:
+            return
+        sources: dict[str, tuple[Path, dict[str, Any]]] = {}
+        for path in self.repository.source_documents():
+            metadata, _ = read_document(path)
+            sources[str(metadata["id"])] = (path, metadata)
+        self._sources = sources
+
+    def _build_extraction_index(self) -> None:
+        if self._latest_extractions is not None:
+            return
+        self._build_source_index()
+        assert self._sources is not None
+        latest: dict[str, dict[str, Any]] = {}
+        extraction_service = ExtractionService(self.repository)
+        for path in extraction_service.documents():
+            metadata, _ = read_document(path)
+            source_id = str(metadata.get("source_id") or "")
+            source = self._sources.get(source_id)
+            if not source or metadata.get("input_sha256") != source[1].get("content_sha256"):
+                continue
+            current = latest.get(source_id)
+            if current is None or str(metadata.get("extracted_at", "")) > str(current.get("extracted_at", "")):
+                latest[source_id] = metadata
+        self._latest_extractions = latest
+
+    def _build_proposal_index(self) -> None:
+        if self._processing_proposals is not None:
+            return
+        processing: dict[str, list[dict[str, Any]]] = {}
+        pending_refresh_sources: set[str] = set()
+        approved_refresh_predecessors: set[str] = set()
         processing_kinds = {
             "knowledge_compile", "knowledge_update", "knowledge_revision", "model_candidate",
             "compile_bundle", "source_bundle", "corpus_distillation", "deterministic_synthesis",
         }
         for path in self.repository.proposal_documents():
             metadata, _ = read_document(path)
-            if source_id in metadata.get("source_ids", []) and metadata.get("proposal_kind", "knowledge_compile") in processing_kinds:
+            proposal_kind = metadata.get("proposal_kind", "knowledge_compile")
+            if proposal_kind == "source_refresh":
+                status = str(metadata.get("status"))
+                if status in {"pending", "deferred"}:
+                    pending_refresh_sources.update(filter(None, (
+                        str(metadata.get("new_source_id") or ""),
+                        str(metadata.get("previous_source_id") or ""),
+                    )))
+                elif status == "approved" and metadata.get("previous_source_id"):
+                    approved_refresh_predecessors.add(str(metadata["previous_source_id"]))
+                continue
+            if proposal_kind not in processing_kinds:
+                continue
+            for source_id in metadata.get("source_ids", []):
+                item = metadata
                 if source_id in metadata.get("source_only_source_ids", []):
-                    metadata = {**metadata, "status": "source_only"}
-                found.append(metadata)
-        return found
+                    item = {**metadata, "status": "source_only"}
+                processing.setdefault(str(source_id), []).append(item)
+        self._processing_proposals = processing
+        self._pending_refresh_sources = pending_refresh_sources
+        self._approved_refresh_predecessors = approved_refresh_predecessors
+
+    def _build_reflection_index(self) -> None:
+        """Index Sources that Daily Dream has already cognitively processed."""
+        if self._reflected_sources is not None:
+            return
+        reflected: set[str] = set()
+        for path in self.repository.reflection_documents():
+            metadata, _ = read_document(path)
+            if metadata.get("status") in {"archived", "superseded"}:
+                continue
+            reflected.update(str(source_id) for source_id in metadata.get("source_ids", []) if source_id)
+        self._reflected_sources = reflected
+
+    def _proposals(self, source_id: str) -> list[dict[str, Any]]:
+        self._build_proposal_index()
+        assert self._processing_proposals is not None
+        return list(self._processing_proposals.get(source_id, []))
+
+    def _refresh_state(self, source_id: str) -> tuple[bool, bool]:
+        """Return (has_pending_refresh, has_approved_successor)."""
+        self._build_proposal_index()
+        assert self._pending_refresh_sources is not None
+        assert self._approved_refresh_predecessors is not None
+        return (
+            source_id in self._pending_refresh_sources,
+            source_id in self._approved_refresh_predecessors,
+        )
 
     def status(self, source_id: str, *, assess: bool = False) -> SourceState:
-        self.repository.find_document(source_id)
-        extraction_status = None
-        try:
-            _, extraction, _ = ExtractionService(self.repository).latest_for_source(source_id)
-            extraction_status = str(extraction.get("status"))
-        except Exception:
-            pass
+        self._build_source_index()
+        assert self._sources is not None
+        source = self._sources.get(source_id)
+        if source is None:
+            # Preserve the public lookup error and behavior for an invalid id.
+            self.repository.find_document(source_id)
+        pending_refresh, approved_successor = self._refresh_state(source_id)
+        self._build_extraction_index()
+        assert self._latest_extractions is not None
+        extraction = self._latest_extractions.get(source_id)
+        extraction_status = str(extraction.get("status")) if extraction else None
         quality_service = SourceQualityService(self.repository)
         quality = quality_service.assess(source_id, persist=True) if assess else quality_service.load(source_id)
         availability = quality.availability_status if quality else "unknown"
@@ -68,8 +153,17 @@ class SourceLifecycleService:
         proposals = self._proposals(source_id)
         active = [p for p in proposals if p.get("status") in {"pending", "deferred"}]
         terminal = [p for p in proposals if p.get("status") in {"approved", "published", "migrated", "rejected", "superseded", "source_only"}]
+        self._build_reflection_index()
+        assert self._reflected_sources is not None
+        reflected = source_id in self._reflected_sources
         reasons: list[str] = []
-        if quality and not quality.compile_allowed:
+        if approved_successor:
+            state = "superseded"
+            reasons.append("an approved immutable source version supersedes this capture")
+        elif pending_refresh:
+            state = "awaiting_review"
+            reasons.append("source refresh version awaits review")
+        elif quality and not quality.compile_allowed:
             state = "failed"
             reasons.extend(quality.reasons)
         elif active:
@@ -83,6 +177,9 @@ class SourceLifecycleService:
                 state = "awaiting_review"
         elif proposals and terminal:
             state = "completed"
+        elif reflected:
+            state = "completed"
+            reasons.append("a source-linked Reflection records completed Daily Dream processing")
         elif quality:
             state = "compile_pending" if quality.compile_allowed else "failed"
         elif extraction_status == "ready":
@@ -94,14 +191,15 @@ class SourceLifecycleService:
         return SourceState(
             source_id=source_id, state=state, extraction_status=extraction_status,
             availability_status=availability, content_quality=content_quality,
-            proposal_count=len(proposals), pending_count=len(active), terminal_count=len(terminal),
+            proposal_count=len(proposals), pending_count=len(active), terminal_count=len(terminal) + int(reflected),
             reasons=reasons,
         )
 
     def all(self) -> list[dict[str, Any]]:
         result = []
-        for path in sorted(self.repository.source_documents()):
-            metadata, _ = read_document(path)
+        self._build_source_index()
+        assert self._sources is not None
+        for path, metadata in sorted(self._sources.values(), key=lambda item: item[0]):
             state = self.status(str(metadata["id"]), assess=False)
             result.append({**state.as_dict(), "title": metadata.get("title"), "source_kind": metadata.get("source_kind")})
         return result

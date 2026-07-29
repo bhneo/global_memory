@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import re
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from .errors import ValidationError
@@ -29,7 +30,8 @@ PROFILE_PRIORITIES = {
     },
     "exploration": {
         "intuition": 100, "tension": 95, "analogy": 92, "anomaly": 90,
-        "hypothesis": 88, "reflection": 85, "question": 82, "annotation": 80, "concept": 65, "claim": 45,
+        "hypothesis": 88, "reflection": 85, "synthesis": 84, "question": 82,
+        "annotation": 80, "concept": 65, "claim": 45,
     },
 }
 
@@ -107,7 +109,13 @@ class ContextPack:
                 lines.append(f"- Open questions: {', '.join(reflection.get('open_questions', [])) or 'none'}\n")
                 lines.append("- Epistemic note: cognitive reflection, not fact or execution-safe evidence\n")
             if item.get("truth_layer") == "cognitive_synthesis":
-                lines.append("- Epistemic note: weekly pattern synthesis; hypotheses remain falsifiable candidates\n")
+                synthesis = item.get("cognitive_synthesis") or {}
+                lines.append(
+                    f"- Synthesis scope: `{synthesis.get('scope_kind')}` / "
+                    f"{', '.join(synthesis.get('scope_ids', [])) or 'legacy-period'}\n"
+                )
+                lines.append(f"- Candidate window: `{synthesis.get('candidate_window')}`\n")
+                lines.append("- Epistemic note: cognitive synthesis, not fact, Evidence, or execution-safe material; hypotheses remain falsifiable candidates\n")
             if item.get("evidence"):
                 lines.append(f"- Evidence: `{item['evidence']}`\n")
             if item.get("verification"):
@@ -428,6 +436,49 @@ class ContextPackService:
             domains=domains, source_kinds=source_kinds,
         )
 
+        # A direction alias is a navigation signal, not Evidence. Select a
+        # bounded set of current Syntheses by their declared semantic scope so
+        # punctuation and language variants do not depend on FTS tokenization.
+        if "synthesis" in allowed_types and route.selected_directions:
+            seen_direction_ids = {item.id for item in results}
+            scoped: dict[str, list[tuple[str, Path, dict[str, Any], str]]] = {
+                direction_id: [] for direction_id in route.selected_directions
+            }
+            matched_aliases = {
+                item["id"]: item["matched_alias"] for item in route.direction_matches
+            }
+            for synthesis_path in self.repository.synthesis_documents():
+                metadata, body = read_document(synthesis_path)
+                if metadata.get("status") != "active" or metadata.get("truth_layer") != "cognitive_synthesis":
+                    continue
+                if statuses and str(metadata.get("status")) not in statuses:
+                    continue
+                for direction_id in set(map(str, metadata.get("scope_ids", []))) & set(route.selected_directions):
+                    scoped[direction_id].append((
+                        str(metadata.get("updated_at", "")), synthesis_path, metadata, body,
+                    ))
+            for direction_id in route.selected_directions:
+                for _, synthesis_path, metadata, body in sorted(
+                    scoped[direction_id], key=lambda item: item[0], reverse=True,
+                )[:4]:
+                    synthesis_id = str(metadata["id"])
+                    if synthesis_id in seen_direction_ids:
+                        continue
+                    results.append(SearchResult(
+                        id=synthesis_id,
+                        type="synthesis",
+                        title=str(metadata.get("title", synthesis_id)),
+                        path=self.repository.rel(synthesis_path),
+                        status=str(metadata.get("status", "active")),
+                        source_ids=list(map(str, metadata.get("source_ids", []))),
+                        snippet=body[:240],
+                        match_reason=(
+                            f"research-direction-alias:{matched_aliases.get(direction_id, direction_id)}"
+                            f"->{direction_id}"
+                        ),
+                    ))
+                    seen_direction_ids.add(synthesis_id)
+
         def has_active_governed_result(items: list[SearchResult]) -> bool:
             """Archived search hits must not suppress broad-query expansion."""
             for item in items:
@@ -565,16 +616,32 @@ class ContextPackService:
                 except Exception:
                     has_relation_contradiction = True
                 if has_relation_contradiction:
-                    omitted.append({"id": str(metadata["id"]), "reason": "strict execution excludes unresolved incoming or outgoing contradiction relations"})
+                    omitted.append({
+                        "id": str(metadata["id"]),
+                        "reason_code": "unresolved_contradiction",
+                        "reason": "strict execution excludes unresolved incoming or outgoing contradiction relations",
+                    })
                     continue
                 if metadata.get("needs_policy_requalification"):
-                    omitted.append({"id": str(metadata["id"]), "reason": "strict execution excludes Trusted memory awaiting policy requalification"})
+                    omitted.append({
+                        "id": str(metadata["id"]),
+                        "reason_code": "awaiting_requalification",
+                        "reason": "strict execution excludes Trusted memory awaiting policy requalification",
+                    })
                     continue
                 if current_receipt is None:
-                    omitted.append({"id": str(metadata["id"]), "reason": "strict execution requires current Receipt v2"})
+                    omitted.append({
+                        "id": str(metadata["id"]),
+                        "reason_code": "receipt_missing_or_stale",
+                        "reason": "strict execution requires current Receipt v2",
+                    })
                     continue
                 if semantic_failures:
-                    omitted.append({"id": str(metadata["id"]), "reason": "strict execution requires type-specific semantic Receipt qualification"})
+                    omitted.append({
+                        "id": str(metadata["id"]),
+                        "reason_code": "semantic_entailment_unverified",
+                        "reason": "strict execution requires type-specific semantic Receipt qualification",
+                    })
                     continue
             if updated_since and str(metadata.get("updated_at", "")) < updated_since:
                 omitted.append({"id": str(metadata["id"]), "reason": "早于 updated_since filter"})
@@ -642,7 +709,22 @@ class ContextPackService:
                 if object_type not in {"source", "proposal"}
                 else min(12, matched_term_count * 3)
             )
-            metadata_bonus = 8 if result.match_reason.startswith("metadata:") else 0
+            metadata_bonus = (
+                160 if result.match_reason.startswith("research-direction-alias:")
+                else 8 if result.match_reason.startswith("metadata:") else 0
+            )
+            selection_reason = (
+                f"研究方向别名路由；对象 scope 与注册方向一致；"
+                f"对象类型为 {object_type}；状态为 {metadata.get('status')}；"
+                f"profile={','.join(profiles)}；{result.match_reason}；"
+                "别名仅用于导航，保留其非事实标签与显式来源链。"
+                if result.match_reason.startswith("research-direction-alias:")
+                else (
+                    f"全文检索命中第 {search_rank} 位；"
+                    f"对象类型为 {object_type}；状态为 {metadata.get('status')}；"
+                    f"profile={','.join(profiles)}；{result.match_reason}；保留其显式来源链。"
+                )
+            )
             ranked.append((
                 -(
                     1_000 - search_rank
@@ -671,8 +753,8 @@ class ContextPackService:
                     "receipt_current": current_receipt is not None if not non_governed else None,
                     "policy_version": policy_version,
                     "policy_qualified": policy_qualified,
-                    "execution_safe": False if non_governed and object_type != "source" else bool(
-                        object_type == "source" or policy_qualified or (
+                    "execution_safe": False if non_governed else bool(
+                        policy_qualified or (
                             tier == "canonical" and current_receipt is not None and not semantic_failures
                             and epistemic not in {"contested", "hypothetical", "exploratory_analogy", "unknown"}
                             and not metadata.get("high_risk_drift")
@@ -725,6 +807,13 @@ class ContextPackService:
                     } if object_type == "reflection" else None),
                     "cognitive_synthesis": ({
                         "period": metadata.get("period"),
+                        "synthesis_protocol_version": metadata.get("synthesis_protocol_version", 1),
+                        "scope_kind": metadata.get("scope_kind"),
+                        "scope_ids": metadata.get("scope_ids", []),
+                        "candidate_window": metadata.get("candidate_window"),
+                        "delta_kind": metadata.get("delta_kind"),
+                        "direction_assignments": metadata.get("direction_assignments", []),
+                        "input_syntheses": metadata.get("input_syntheses", []),
                         "input_reflections": metadata.get("input_reflections", []),
                         "input_concepts": metadata.get("input_concepts", []),
                         "emerging_patterns": metadata.get("emerging_patterns", []),
@@ -745,11 +834,7 @@ class ContextPackService:
                     "evidence": self._evidence_view(metadata) if object_type == "claim" else [],
                     "match_reason": result.match_reason,
                     "content": content,
-                    "selection_reason": (
-                        f"全文检索命中第 {search_rank} 位；"
-                        f"对象类型为 {object_type}；状态为 {metadata.get('status')}；"
-                        f"profile={','.join(profiles)}；{result.match_reason}；保留其显式来源链。"
-                    ),
+                    "selection_reason": selection_reason,
                 },
             ))
         if include_proposals:

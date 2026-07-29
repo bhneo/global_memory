@@ -15,15 +15,15 @@ Every assistant must preserve `memory_tier`, `epistemic_status`, confidence, sou
 
 ## M7 write-back contract
 
-Agents may capture, compile and create Working memory through the governed CLI without requesting per-item approval. They must preserve raw provenance, candidate hashes, tier, uncertainty and evidence boundaries. They may recommend Trusted/Canonical promotion, but only the user can approve a Canonical promotion card. The Agent MCP exposes only bounded reads plus an opt-in, explicitly confirmed Capture-only text intake; that intake cannot create governed Knowledge. Use `consolidate daily`, `consolidate weekly`, `exceptions`, `promotions`, and `trust explain` as described in `MEMORY_CONSOLIDATION.md`.
+Agents may capture, compile and create Working memory through the governed CLI without requesting per-item approval. They must preserve raw provenance, candidate hashes, tier, uncertainty and evidence boundaries. They may recommend Trusted/Canonical promotion, but only the user can approve a Canonical promotion card. Default MCP is read-only. The separately enabled Agent launcher can accept explicitly authorized Capture/session/use/feedback signals: session records stop at Source/Input, Activation and research feedback are trust-orthogonal, and none can create governed Knowledge. Use `consolidate daily`, `consolidate weekly`, `exceptions`, `promotions`, and `trust explain` as described in `MEMORY_CONSOLIDATION.md`.
 
 ## Goal
 
-Codex, Cursor, and Claude share one Global Memory without copying the vault into tool-specific memory stores. Each tool gets a thin filesystem entry; the knowledge and governance model remain provider-neutral.
+Codex, Cursor, Claude, Hermes, OpenClaw, and OpenHuman share one Global Memory without copying the vault into tool-specific memory stores. Each tool gets a thin host adapter; the knowledge and governance model remain provider-neutral.
 
 ## Read path
 
-Local MCP-capable assistants may use the configured read-only `global-memory` server instead of shelling out directly. Four read tools return sanitized Evidence Packets. Codex Desktop uses the personal `global-memory` plugin for explicit-only retrieval or Capture-only intake; the plugin registers no always-on MCP. The standalone Capture-only launcher remains available for an explicitly trusted client; see `docs/MCP_INTEGRATION.md` and ADR 0059.
+Local MCP-capable assistants may use the configured read-only `global-memory` server instead of shelling out directly. Five read tools expose capabilities plus sanitized Evidence Packets. Codex Desktop uses the personal `global-memory` plugin for explicit-only retrieval or Capture-only intake; the plugin registers no always-on MCP. A separate trusted launcher exposes explicit, idempotent Capture/session/use/feedback signals; see `docs/MCP_INTEGRATION.md`, `adapters/hosts/`, and ADR 0059.
 
 MCP retrieval is background context, not report content. Ordinary answers must
 not mention MCP, route traces, indexes, storage paths, receipts, recovery or
@@ -55,7 +55,7 @@ agent session
 Use:
 
 ```text
-gm receipt create --agent codex|cursor|claude --project <name> --task <name> --from-file <receipt.md>
+gm receipt create --agent <provider-neutral-actor-id> --project <name> --task <name> --from-file <receipt.md>
 gm receipt propose <receipt-id>
 ```
 

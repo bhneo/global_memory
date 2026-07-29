@@ -117,7 +117,7 @@ class KnowledgeEvolutionService:
     def apply(
         self, object_id: str, incoming: dict[str, Any], body: str, *,
         change_type: str, reason: str, trigger_source: str | None = None,
-        force_contest: bool = False,
+        force_contest: bool = False, defer_receipt_rebuild: bool = False,
     ) -> dict[str, Any]:
         if change_type not in CHANGE_TYPES:
             raise ValueError(f"unsupported knowledge change type: {change_type}")
@@ -327,6 +327,7 @@ class KnowledgeEvolutionService:
             receipt = self.receipts.consolidate(
                 object_id, result=result, changes=[record], change_summary=reason,
                 exceptions_created=[exception_id] if exception_id else [],
+                rebuild_index=not defer_receipt_rebuild,
             )
             if tier == "trusted" and not self.receipts.complete(receipt):
                 raise ValueError("trusted evolution rolled back because consolidation receipt failed")

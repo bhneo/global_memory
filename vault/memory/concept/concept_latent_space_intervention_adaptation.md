@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "生成策略的潜空间干预适应"
 created_at: "2026-07-19T12:19:04+08:00"
-updated_at: "2026-07-19T12:20:15+08:00"
+updated_at: "2026-07-28T16:34:14+08:00"
 aliases: ["latent-space intervention adaptation", "noise-space policy adaptation", "FlowDAgger"]
 tags: []
 domains: ["embodied-ai", "robot-learning", "human-in-the-loop", "generative-policy"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-19T12:20:15+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-28T16:34:14+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_915ac66f5af193cc3ec2-concept-1.md"
 origin_candidate_sha256: "a1570eba4b9e88ec518093ddc5530da1f62b312f5dd1181cb52fd2a940f7096d"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_9bb6e83c9bd4c3d433713ed3"
+last_consolidation_id: "consolidation_7ed30bbb64516aaf50564392"
 ---
 
 # 生成策略的潜空间干预适应

@@ -1,0 +1,20 @@
+---
+id: "concept_769f84122571858ee48f9c48"
+type: "concept"
+status: "proposal"
+title: "共享持久对象状态的可验证人形 VLA 闭环"
+created_at: "2026-07-22T18:12:38+08:00"
+updated_at: "2026-07-22T18:12:38+08:00"
+aliases: ["Persistent Object Tokenization", "POT-VLA", "Persistent 3D Object Tokens", "持久三维对象 token"]
+tags: []
+domains: ["humanoid-robotics", "vla", "execution-verification"]
+confidence: "medium"
+source_ids: ["source_d33321374508784864c44d65"]
+relations: [{"type": "derived_from", "target_id": "source_d33321374508784864c44d65", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "codex-gpt56-m91-real-daily-v1", "status": "proposal"}, {"type": "related_to", "target_id": "concept_relation_triggered_process_safety", "reason": "两者都通过明确条件阻止流程在未验证状态下推进；POT-VLA 将条件绑定到共享对象记忆。", "confidence": "medium", "created_by": "codex-gpt56-m91-real-daily-v1", "status": "proposal"}]
+change_reason: "compile bundle from source_d33321374508784864c44d65"
+reflection_context: {"reflection_ids": ["reflection_5dc40c1f6baef6a5579f8b47"], "importance": "high", "changed_belief": "闭环验证的关键不只是额外加一个监视器，而是让动作与验证共享并在每个动作块后刷新同一可定位对象状态。", "surprising": "", "connections": [{"shared_mechanism": "两者都依赖动作后观测、条件检查和失败恢复来约束流程推进。", "boundary": "对象 token 的共享状态不等于已验证的接触力、动力学可行性或跨环境鲁棒性。", "difference": "POT-VLA 使用角色索引三维对象记录；现有过程安全概念定义更一般的关系触发检查。"}], "open_questions": ["遮挡或低置信度对象在何时应触发重观测而非继续执行恢复动作？"]}
+---
+
+# 共享持久对象状态的可验证人形 VLA 闭环
+
+对每个活跃子任务维护角色索引的 RGB-D 三维对象记录，将其序列化为动作专家的对象 token，并在执行动作块后刷新同一记录以检查几何成功谓词和触发恢复。该方法依赖对象角色绑定、深度观测与谓词定义，不能把报告的特定 Unitree G1 结果当作一般保证。

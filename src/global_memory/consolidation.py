@@ -49,9 +49,38 @@ class ConsolidationReceiptService:
     def __init__(self, repository: Repository):
         self.repository = repository
         self.directory = repository.root / "vault" / "receipts" / "consolidation"
+        self._receipt_paths: list[Path] | None = None
+        self._receipts_by_object: dict[str, list[tuple[Path, dict[str, Any]]]] | None = None
+        self._documents_by_id: dict[str, tuple[Path, dict[str, Any], str]] | None = None
 
     def documents(self) -> list[Path]:
-        return sorted(self.directory.glob("consolidation-*.md")) if self.directory.exists() else []
+        if self._receipt_paths is None:
+            self._receipt_paths = sorted(self.directory.glob("consolidation-*.md")) if self.directory.exists() else []
+        return list(self._receipt_paths)
+
+    def _build_receipt_index(self) -> None:
+        if self._receipts_by_object is not None:
+            return
+        by_object: dict[str, list[tuple[Path, dict[str, Any]]]] = {}
+        for path in self.documents():
+            metadata, _ = read_document(path)
+            by_object.setdefault(str(metadata.get("object_id") or ""), []).append((path, metadata))
+        self._receipts_by_object = by_object
+
+    def _find_document(self, object_id: str) -> tuple[Path, dict[str, Any], str]:
+        if self._documents_by_id is None:
+            documents: dict[str, tuple[Path, dict[str, Any], str]] = {}
+            for path in self.repository.all_indexed_documents():
+                metadata, body = read_document(path)
+                documents[str(metadata.get("id") or "")] = (path, metadata, body)
+            self._documents_by_id = documents
+        result = self._documents_by_id.get(object_id)
+        return result if result is not None else self.repository.find_document(object_id)
+
+    def _invalidate_caches(self) -> None:
+        self._receipt_paths = None
+        self._receipts_by_object = None
+        self._documents_by_id = None
 
     def load(self, consolidation_id: str) -> tuple[Path, dict[str, Any], str]:
         for path in self.documents():
@@ -102,6 +131,13 @@ class ConsolidationReceiptService:
         return []
 
     def valid_for(self, object_id: str) -> dict[str, Any] | None:
+        current_candidates = [
+            item for item in self._current_for(object_id)
+            if self.complete(item)
+            and int(item.get("receipt_schema_version", 1)) >= RECEIPT_SCHEMA_VERSION
+        ]
+        if not current_candidates:
+            return None
         try:
             fingerprint = self.fingerprint(object_id)
         except Exception:
@@ -109,25 +145,22 @@ class ConsolidationReceiptService:
             # read completely (notably the relation index).
             return None
         candidates = [
-            item for item in self._current_for(object_id)
-            if self.complete(item)
-            and int(item.get("receipt_schema_version", 1)) >= RECEIPT_SCHEMA_VERSION
-            and item.get("consolidation_fingerprint") == fingerprint
+            item for item in current_candidates
+            if item.get("consolidation_fingerprint") == fingerprint
         ]
         return sorted(candidates, key=lambda item: str(item.get("completed_at", "")))[-1] if candidates else None
 
     def _current_for(self, object_id: str) -> list[dict[str, Any]]:
         """Return receipts bound to the current bytes, including explicit failures."""
         try:
-            path, _, _ = self.repository.find_document(object_id)
+            path, _, _ = self._find_document(object_id)
         except Exception:
             return []
         current = hashlib.sha256(path.read_bytes()).hexdigest()
         candidates: list[dict[str, Any]] = []
-        for receipt_path in self.documents():
-            receipt, _ = read_document(receipt_path)
-            if receipt.get("object_id") != object_id:
-                continue
+        self._build_receipt_index()
+        assert self._receipts_by_object is not None
+        for receipt_path, receipt in self._receipts_by_object.get(object_id, []):
             if receipt.get("object_sha256_after") != current:
                 continue
             candidates.append({**receipt, "path": self.repository.rel(receipt_path)})
@@ -141,13 +174,13 @@ class ConsolidationReceiptService:
         records = []
         for source_id in source_ids:
             try:
-                source_path, source, _ = self.repository.find_document(source_id)
+                source_path, source, _ = self._find_document(source_id)
                 raw_path = self.repository.resolve_inside(str(source["raw_content_path"])) if source.get("raw_content_path") else None
                 work_id = source.get("work_id")
                 work_sha = None
                 if work_id:
                     try:
-                        work_path, _, _ = self.repository.find_document(str(work_id))
+                        work_path, _, _ = self._find_document(str(work_id))
                         work_sha = sha256_bytes(work_path.read_bytes())
                     except Exception:
                         work_sha = None
@@ -191,7 +224,7 @@ class ConsolidationReceiptService:
 
     def fingerprint(self, object_id: str, *, metadata: dict[str, Any] | None = None, body: str | None = None) -> dict[str, Any]:
         """Hash every governed input that can invalidate a consolidation."""
-        path, current, current_body = self.repository.find_document(object_id)
+        path, current, current_body = self._find_document(object_id)
         metadata = metadata or current
         body = current_body if body is None else body
         source_ids = [str(item) for item in metadata.get("source_ids", [])]
@@ -542,6 +575,7 @@ class ConsolidationReceiptService:
         )
         if receipt_complete and not metadata.get("user_locked"):
             atomic_write_text(path, after_text)
+        self._invalidate_caches()
         if rebuild_index:
             self.repository.rebuild_index()
         self.repository.append_event("memory-events", {
@@ -1102,22 +1136,47 @@ class WorkingQualityMigration:
         self.repository.rebuild_index()
         return {**verified, "dry_run": False, "restored": restored, "canonical_writes": 0}
 
-    def plan(self) -> dict[str, Any]:
+    def plan(
+        self,
+        *,
+        object_ids: list[str] | None = None,
+        reason: str = "",
+    ) -> dict[str, Any]:
         review = ConsolidationService(self.repository).review_working_quality()
-        object_ids = sorted(item["object_id"] for item in review["flagged"])
+        if object_ids:
+            candidates: list[dict[str, Any]] = []
+            for object_id in sorted(set(map(str, object_ids))):
+                _, metadata, _ = self.repository.find_document(object_id)
+                if metadata.get("memory_tier") != "working" or metadata.get("status") != "working":
+                    raise ValidationError(f"explicit quality archive requires active Working object: {object_id}")
+                candidates.append({
+                    "object_id": object_id,
+                    "title": str(metadata.get("title", "")),
+                    "source_ids": list(map(str, metadata.get("source_ids", []))),
+                    "reasons": [reason.strip() or "human-reviewed source-only or superseded cognitive debt"],
+                    "recommended_action": "archive_as_historical_source_only",
+                })
+        else:
+            candidates = review["flagged"]
+        selected_ids = sorted(item["object_id"] for item in candidates)
         migration_id = "working_quality_" + hashlib.sha256(
-            (self.POLICY + "\n" + "\n".join(object_ids)).encode("utf-8")
+            (self.POLICY + "\n" + "\n".join(selected_ids)).encode("utf-8")
         ).hexdigest()[:24]
         return {
             "dry_run": True, "migration_id": migration_id, "policy": self.POLICY,
-            "candidate_count": len(object_ids), "candidates": review["flagged"],
+            "candidate_count": len(selected_ids), "candidates": candidates,
             "canonical_writes": 0,
         }
 
-    def apply(self) -> dict[str, Any]:
+    def apply(
+        self,
+        *,
+        object_ids: list[str] | None = None,
+        reason: str = "",
+    ) -> dict[str, Any]:
         resumed = self._incomplete_manifest()
         if resumed is None:
-            plan = self.plan()
+            plan = self.plan(object_ids=object_ids, reason=reason)
             migration_id = str(plan["migration_id"])
             backup = self.repository.root / "data" / "backups" / migration_id
             backup.mkdir(parents=True, exist_ok=True)
@@ -1230,6 +1289,254 @@ class WorkingQualityMigration:
             "unchanged_count": len(unchanged), "unchanged_ids": unchanged,
             "remaining_flagged": ConsolidationService(self.repository).review_working_quality()["flagged_count"],
             "canonical_writes": 0,
+        }
+
+
+class SynthesisScopeMigration:
+    """Replace cadence-scoped cognitive syntheses with audited direction successors."""
+
+    POLICY = "direction-scoped-synthesis-v2"
+
+    def __init__(self, repository: Repository):
+        self.repository = repository
+
+    def _canonical_hashes(self) -> dict[str, str]:
+        return {
+            self.repository.rel(path): sha256_bytes(path.read_bytes())
+            for path in sorted(self.repository.canonical_documents())
+        }
+
+    def _manifest_path(self, migration_id: str) -> Path:
+        return self.repository.root / "data" / "backups" / migration_id / "manifest.json"
+
+    def _write_manifest(self, path: Path, manifest: dict[str, Any]) -> None:
+        atomic_write_text(path, json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+
+    def _event_exists(self, migration_id: str, object_id: str, event: str) -> bool:
+        path = self.repository.root / "system" / "logs" / "cognitive-events.jsonl"
+        if not path.exists():
+            return False
+        for line in path.read_text(encoding="utf-8").splitlines():
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (
+                record.get("event") == event
+                and record.get("operation_id") == migration_id
+                and record.get("object_id") == object_id
+            ):
+                return True
+        return False
+
+    def _validate_pair(self, old_id: str, successor_id: str) -> tuple[Path, dict[str, Any], dict[str, Any]]:
+        old_path, old, _ = self.repository.find_document(old_id)
+        _, successor, _ = self.repository.find_document(successor_id)
+        if old.get("type") != "synthesis" or old.get("truth_layer") != "cognitive_synthesis":
+            raise ValidationError(f"scope migration requires cognitive synthesis: {old_id}")
+        if old.get("status") != "active" or old.get("scope_kind") == "direction":
+            raise ValidationError(f"scope migration requires active legacy synthesis: {old_id}")
+        if (
+            successor.get("type") != "synthesis"
+            or successor.get("status") != "active"
+            or successor.get("truth_layer") != "cognitive_synthesis"
+            or successor.get("scope_kind") != "direction"
+        ):
+            raise ValidationError(f"successor must be an active direction synthesis: {successor_id}")
+        if old_id not in list(map(str, successor.get("input_syntheses", []))):
+            raise ValidationError(f"successor does not declare legacy input synthesis: {old_id} -> {successor_id}")
+        return old_path, old, successor
+
+    def plan(self, mappings: list[tuple[str, str]]) -> dict[str, Any]:
+        if not mappings:
+            raise ValidationError("synthesis scope migration requires at least one old=new mapping")
+        normalized = sorted(set((str(old), str(new)) for old, new in mappings))
+        if len({old for old, _ in normalized}) != len(normalized):
+            raise ValidationError("each legacy synthesis may have only one successor")
+        candidates: list[dict[str, Any]] = []
+        for old_id, successor_id in normalized:
+            path, old, successor = self._validate_pair(old_id, successor_id)
+            candidates.append({
+                "object_id": old_id,
+                "title": str(old.get("title", "")),
+                "path": self.repository.rel(path),
+                "successor_id": successor_id,
+                "successor_scope_ids": list(map(str, successor.get("scope_ids", []))),
+            })
+        seed = self.POLICY + "\n" + "\n".join(f"{old}={new}" for old, new in normalized)
+        migration_id = "synthesis_scope_" + hashlib.sha256(seed.encode("utf-8")).hexdigest()[:24]
+        return {
+            "dry_run": True,
+            "migration_id": migration_id,
+            "policy": self.POLICY,
+            "candidate_count": len(candidates),
+            "candidates": candidates,
+            "trusted_changes": 0,
+            "canonical_writes": 0,
+        }
+
+    def apply(self, mappings: list[tuple[str, str]]) -> dict[str, Any]:
+        plan = self.plan(mappings)
+        migration_id = str(plan["migration_id"])
+        manifest_path = self._manifest_path(migration_id)
+        backup_root = manifest_path.parent
+        backup_root.mkdir(parents=True, exist_ok=True)
+        if manifest_path.exists():
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        else:
+            manifest = {
+                "migration_id": migration_id,
+                "policy": self.POLICY,
+                "phase": "prepared",
+                "created_at": now_iso(),
+                "canonical_sha256": self._canonical_hashes(),
+                "objects": [],
+            }
+            for candidate in plan["candidates"]:
+                path = self.repository.resolve_inside(candidate["path"])
+                data = path.read_bytes()
+                backup_path = backup_root / path.name
+                self.repository.immutable_write(backup_path, data)
+                manifest["objects"].append({
+                    **candidate,
+                    "sha256_before": sha256_bytes(data),
+                    "backup_path": self.repository.rel(backup_path),
+                    "status": "pending",
+                })
+            self._write_manifest(manifest_path, manifest)
+        manifest["phase"] = "applying"
+        self._write_manifest(manifest_path, manifest)
+        archived: list[str] = []
+        unchanged: list[str] = []
+        for item in manifest["objects"]:
+            object_id = str(item["object_id"])
+            active_path = self.repository.resolve_inside(str(item["path"]))
+            archive_path = self.repository.root / "vault" / "archive" / "synthesis" / active_path.name
+            if archive_path.exists():
+                archived_metadata, _ = read_document(archive_path)
+                if archived_metadata.get("scope_migration_id") != migration_id:
+                    raise ValidationError(f"archive destination conflict: {object_id}")
+                if active_path.exists():
+                    active_path.unlink()
+                item.update({
+                    "status": "applied",
+                    "archive_path": self.repository.rel(archive_path),
+                    "sha256_after": sha256_bytes(archive_path.read_bytes()),
+                })
+                unchanged.append(object_id)
+                continue
+            if not active_path.exists() or sha256_bytes(active_path.read_bytes()) != item["sha256_before"]:
+                manifest["phase"] = "blocked"
+                self._write_manifest(manifest_path, manifest)
+                raise ValidationError(f"legacy synthesis changed during migration: {object_id}")
+            metadata, body = read_document(active_path)
+            self._validate_pair(object_id, str(item["successor_id"]))
+            version_path = (
+                self.repository.root / "vault" / "archive" / "versions" / object_id
+                / f"{item['sha256_before']}.md"
+            )
+            self.repository.immutable_write(version_path, active_path.read_bytes())
+            timestamp = now_iso()
+            tags = list(map(str, metadata.get("tags", [])))
+            metadata.update({
+                "status": "archived",
+                "superseded_by": str(item["successor_id"]),
+                "scope_migration_id": migration_id,
+                "scope_migration_policy": self.POLICY,
+                "archived_at": timestamp,
+                "updated_at": timestamp,
+                "updated_by": self.POLICY,
+                "execution_safe": False,
+                "change_reason": "cadence-scoped synthesis replaced by direction-scoped cognitive successor",
+                "tags": list(dict.fromkeys([*tags, "archived-period-synthesis"])),
+            })
+            atomic_write_text(archive_path, render_document(metadata, body))
+            active_path.unlink()
+            if not self._event_exists(migration_id, object_id, "synthesis-scope-archived"):
+                self.repository.append_event("cognitive-events", {
+                    "event": "synthesis-scope-archived",
+                    "operation_id": migration_id,
+                    "object_id": object_id,
+                    "successor_id": item["successor_id"],
+                    "snapshot_path": self.repository.rel(version_path),
+                })
+            item.update({
+                "status": "applied",
+                "archive_path": self.repository.rel(archive_path),
+                "snapshot_path": self.repository.rel(version_path),
+                "sha256_after": sha256_bytes(archive_path.read_bytes()),
+            })
+            self._write_manifest(manifest_path, manifest)
+            archived.append(object_id)
+        manifest["phase"] = "completed"
+        manifest["completed_at"] = now_iso()
+        self._write_manifest(manifest_path, manifest)
+        self.repository.rebuild_index()
+        verified = self.verify(migration_id)
+        return {
+            **plan,
+            "dry_run": False,
+            "archived_ids": archived,
+            "unchanged_ids": unchanged,
+            "backup_path": self.repository.rel(backup_root),
+            "verification": verified,
+            "trusted_changes": 0,
+            "canonical_writes": 0,
+        }
+
+    def verify(self, migration_id: str) -> dict[str, Any]:
+        manifest_path = self._manifest_path(migration_id)
+        if not manifest_path.exists():
+            raise ValidationError(f"synthesis scope manifest not found: {migration_id}")
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        conflicts: list[str] = []
+        checked: list[dict[str, Any]] = []
+        canonical_unchanged = manifest.get("canonical_sha256") == self._canonical_hashes()
+        if not canonical_unchanged:
+            conflicts.append("canonical state changed since migration preparation")
+        for item in manifest.get("objects", []):
+            object_id = str(item["object_id"])
+            active_path = self.repository.resolve_inside(str(item["path"]))
+            archive_path = self.repository.resolve_inside(str(item.get("archive_path", "missing")))
+            backup_path = self.repository.resolve_inside(str(item["backup_path"]))
+            snapshot_path = self.repository.resolve_inside(str(item.get("snapshot_path", "missing")))
+            archive_valid = False
+            try:
+                metadata, _ = read_document(archive_path)
+                archive_valid = (
+                    metadata.get("status") == "archived"
+                    and metadata.get("superseded_by") == item["successor_id"]
+                    and metadata.get("scope_migration_id") == migration_id
+                    and sha256_bytes(archive_path.read_bytes()) == item.get("sha256_after")
+                )
+            except Exception:
+                pass
+            backup_valid = backup_path.exists() and sha256_bytes(backup_path.read_bytes()) == item["sha256_before"]
+            snapshot_valid = snapshot_path.exists() and sha256_bytes(snapshot_path.read_bytes()) == item["sha256_before"]
+            event_valid = self._event_exists(migration_id, object_id, "synthesis-scope-archived")
+            if active_path.exists():
+                conflicts.append(f"legacy synthesis still active: {object_id}")
+            if not archive_valid:
+                conflicts.append(f"archive invalid: {object_id}")
+            if not backup_valid or not snapshot_valid:
+                conflicts.append(f"backup or snapshot invalid: {object_id}")
+            if not event_valid:
+                conflicts.append(f"archive event missing: {object_id}")
+            checked.append({
+                "object_id": object_id,
+                "successor_id": item["successor_id"],
+                "active_absent": not active_path.exists(),
+                "archive_valid": archive_valid,
+                "backup_valid": backup_valid,
+                "snapshot_valid": snapshot_valid,
+                "event_valid": event_valid,
+            })
+        return {
+            "ok": not conflicts,
+            "migration_id": migration_id,
+            "objects": checked,
+            "conflicts": conflicts,
+            "canonical_unchanged": canonical_unchanged,
         }
 
 

@@ -13,13 +13,16 @@ import global_memory.research as research_module
 
 from global_memory.capture import CaptureService, canonicalize_url
 from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
-from global_memory.bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
+from global_memory.bundle import (
+    BundleCompiler, BundleRecoveryManager, BundleReviewService,
+    DeterministicCompilerProvider, JsonBundleProvider,
+)
 from global_memory.atomicity import AtomicClaimInspector
 from global_memory.cli import build_parser, contradiction_audit, doctor, lint, run
 from global_memory.context import ContextPackService
 from global_memory.cognition import (
-    DailyDreamService, InputEpisodeService, ReflectionService, SynthesisService,
-    WeeklyDreamService,
+    DailyAdmissionAuditService, DailyDreamService, InputEpisodeService,
+    ReflectionService, SynthesisService, WeeklyDreamService,
 )
 from global_memory.distillation import CorpusDistillationService
 from global_memory.errors import ImmutableContentError, ValidationError
@@ -30,12 +33,12 @@ from global_memory.markdown import read_document, render_document
 from global_memory.maintenance import MaintenanceService
 from global_memory.memory import ExceptionService, WorkingMemoryService
 from global_memory.governance import PromotionService, TrustedPromotionRecoveryManager
-from global_memory.consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration, REQUIRED_RECEIPT_CHECKS, WorkingQualityMigration
+from global_memory.consolidation import ConsolidationReceiptService, ConsolidationService, DriftAuditService, ProposalGateMigration, REQUIRED_RECEIPT_CHECKS, SynthesisScopeMigration, WorkingQualityMigration
 from global_memory.epistemics import truth_layer
 from global_memory.evolution import KnowledgeEvolutionService
 from global_memory.migration import EpistemicStatusMigration, TrustPolicyRequalificationMigration, TrustRequalificationRepairMigration
 from global_memory.metrics import ProjectMetricsService
-from global_memory.mcp_server import AgentMemoryTools, MCPApplication, ReadOnlyMemoryTools, serve_http
+from global_memory.mcp_server import AgentMemoryTools, GatewayPolicy, MCPApplication, ReadOnlyMemoryTools, serve_http
 from global_memory.obsidian import ObsidianViewService
 from global_memory.proposals import ProposalService
 from global_memory.receipts import ReceiptService
@@ -133,6 +136,19 @@ def test_daily_triage_defaults_to_capture_only_and_is_incremental(repo: Reposito
     assert automatic["selected"] == 0
     assert automatic["remaining_inbox"] == 1
     assert automatic["remaining_unprepared"] == 0
+
+
+def test_lifecycle_marks_source_completed_after_source_linked_reflection(repo: Repository):
+    captured = capture_web_bytes(repo, "https://example.com/reflection-completes-lifecycle", b"Readable source body. " * 20)
+    DailyTriageService(repo).run([captured.source_id])
+    episode = InputEpisodeService(repo).create_from_source(captured.source_id)
+    ReflectionService(repo).create(episode.object_id, cognitive_reflection_payload())
+
+    state = SourceLifecycleService(repo).status(captured.source_id)
+
+    assert state.state == "completed"
+    assert state.proposal_count == 0
+    assert state.terminal_count == 1
 
 
 def test_daily_triage_explicit_web_marker_stays_source_only(repo: Repository):
@@ -977,6 +993,35 @@ def test_semantic_queue_exposes_source_only_and_closes_after_model_bundle(repo: 
     assert after["pending_count"] == 0
 
 
+def test_semantic_queue_readmits_source_after_deterministic_working_is_retired(
+    repo: Repository,
+) -> None:
+    captured = CaptureService(repo).capture_text(
+        "Concept: Re-admission marker\n\nA legacy deterministic object is later rejected by quality review."
+    )
+    ExtractionService(repo).extract(captured.source_id)
+    compiled = BundleCompiler(repo, DeterministicCompilerProvider()).compile(captured.source_id)
+    ingested = WorkingMemoryService(repo).ingest_bundle(str(compiled.proposal_id))
+    working_path = repo.root / ingested.written[0]
+    metadata, body = read_document(working_path)
+    metadata.update({
+        "status": "archived", "memory_tier": "historical",
+        "quality_review_status": "source_only",
+    })
+    working_path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    queued = SemanticDistillationQueue(repo).queue(limit=5, max_chars=1200)
+
+    assert queued["pending_count"] == 1
+    assert queued["items"][0]["source_id"] == captured.source_id
+
+    episode = InputEpisodeService(repo).create_from_source(captured.source_id)
+    ReflectionService(repo).create(episode.object_id, cognitive_reflection_payload())
+    after_reflection = SemanticDistillationQueue(repo).queue(limit=5, max_chars=1200)
+    assert after_reflection["pending_count"] == 0
+
+
 def test_external_provider_update_uses_stable_target_id_not_title(
     repo: Repository, workspace: Path,
 ) -> None:
@@ -1344,6 +1389,56 @@ def test_changed_refresh_appends_version_and_diff_proposal(repo: Repository) -> 
     assert doctor(repo)["ok"] is True
 
 
+def test_refresh_freezes_both_versions_until_approval_then_supersedes_old_source(
+    repo: Repository,
+) -> None:
+    first = capture_web_bytes(repo, "https://example.com/version-gate", b"old")
+    refreshed = capture_web_bytes(
+        repo, "https://example.com/version-gate", b"new", refresh=True,
+    )
+
+    lifecycle = SourceLifecycleService(repo)
+    assert lifecycle.status(first.source_id).state == "awaiting_review"
+    assert lifecycle.status(refreshed.source_id).state == "awaiting_review"
+    assert ProposalService(repo).inbox() == []
+
+    ProposalService(repo).approve(refreshed.refresh_proposal_id)
+
+    refreshed_lifecycle = SourceLifecycleService(repo)
+    assert refreshed_lifecycle.status(first.source_id).state == "superseded"
+    assert refreshed_lifecycle.status(refreshed.source_id).state == "captured"
+    assert [item["id"] for item in ProposalService(repo).inbox()] == [refreshed.source_id]
+
+
+def test_daily_triage_records_extraction_failure_without_aborting_batch(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    first = CaptureService(repo).capture_text("first source")
+    second = CaptureService(repo).capture_text("second source")
+    original_extract = ExtractionService.extract
+
+    def fail_first(service: ExtractionService, source_id: str, rebuild: bool = False):
+        if source_id == first.source_id:
+            from global_memory.extraction import ExtractionResult
+
+            return ExtractionResult(
+                "extraction_failed", "data/derived/extractions/failed.md",
+                "error", "test", ["truncated PDF"], False,
+            )
+        return original_extract(service, source_id, rebuild=rebuild)
+
+    monkeypatch.setattr(ExtractionService, "extract", fail_first)
+
+    result = DailyTriageService(repo).run(limit=2)
+
+    assert len(result["results"]) == 2
+    failed = next(item for item in result["results"] if item["source_id"] == first.source_id)
+    succeeded = next(item for item in result["results"] if item["source_id"] == second.source_id)
+    assert failed["action"] == "blocked_by_quality"
+    assert failed["compile_allowed"] is False
+    assert succeeded["state"] in {"quality_checked", "compile_pending"}
+
+
 def test_repeated_refresh_and_content_reversion_preserve_version_history(repo: Repository) -> None:
     first = capture_web_bytes(repo, "https://example.com/history", b"alpha")
     second = capture_web_bytes(repo, "https://example.com/history", b"beta", refresh=True)
@@ -1376,6 +1471,29 @@ def test_source_refresh_approval_does_not_modify_canonical(repo: Repository) -> 
     assert proposal["status"] == "approved"
     assert proposal["review_reason"] == "人工确认新的不可变来源版本"
     assert [item["id"] for item in service.inbox()] == [refreshed.source_id]
+
+
+def test_source_refresh_can_be_approved_through_cli(
+    repo: Repository, capsys: pytest.CaptureFixture[str],
+) -> None:
+    capture_web_bytes(repo, "https://example.com/cli-refresh", b"old")
+    refreshed = capture_web_bytes(
+        repo, "https://example.com/cli-refresh", b"new", refresh=True,
+    )
+
+    exit_code = run(build_parser().parse_args([
+        "--root", str(repo.root), "proposal", "approve", refreshed.refresh_proposal_id,
+    ]))
+
+    output = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert output == {
+        "approved": refreshed.refresh_proposal_id,
+        "target_path": refreshed.source_path,
+    }
+    _, proposal, _ = repo.find_document(refreshed.refresh_proposal_id)
+    assert proposal["status"] == "approved"
+    assert not list(repo.canonical_documents())
 
 
 def test_source_refresh_approval_revalidates_version_hashes(repo: Repository) -> None:
@@ -2822,6 +2940,29 @@ def test_obsidian_views_are_rebuildable_and_do_not_change_canonical(repo: Reposi
     assert service.status()["current"] is True
 
 
+def test_obsidian_status_reports_expected_missing_and_stale_counts(
+    repo: Repository, capsys: pytest.CaptureFixture[str],
+) -> None:
+    CaptureService(repo).capture_text("Projection status source", title="Projection status source")
+    built = ObsidianViewService(repo).build(graph_profile="knowledge")
+
+    exit_code = run(build_parser().parse_args([
+        "--root", str(repo.root), "obsidian", "status", "--graph-profile", "knowledge",
+    ]))
+    current = json.loads(capsys.readouterr().out)
+
+    assert exit_code == 0
+    assert current["current"] is True
+    assert current["expected"] == len(built["written"])
+    assert current["missing_count"] == current["stale_count"] == 0
+
+    missing_path = repo.root / built["written"][0]
+    missing_path.unlink()
+    status = ObsidianViewService(repo).status(graph_profile="knowledge")
+    assert status["current"] is False
+    assert status["missing_count"] == 1
+
+
 def test_obsidian_semantic_graph_uses_readable_names_and_materializes_source_edges(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text("Evidence body", title="Readable Evidence")
     write_m8_memory(
@@ -3055,11 +3196,13 @@ def test_explicit_marker_preserves_full_block_until_next_marker(repo: Repository
     assert "The decision remains reversible" in decision_body
 
 
-def test_receipt_rejects_unknown_agent(repo: Repository, workspace: Path) -> None:
+def test_receipt_accepts_provider_neutral_actor_and_rejects_invalid_identity(repo: Repository, workspace: Path) -> None:
     input_file = workspace / "receipt.md"
     input_file.write_text("durable note", encoding="utf-8")
-    with pytest.raises(ValidationError, match="unsupported receipt agent"):
-        ReceiptService(repo).create("hermes", "project", "task", input_file)
+    created = ReceiptService(repo).create("hermes:local", "project", "task", input_file)
+    assert created["receipt_id"].startswith("receipt_")
+    with pytest.raises(ValidationError, match="invalid receipt agent identity"):
+        ReceiptService(repo).create("bad actor identity", "project", "task", input_file)
 
 
 def test_agent_adapter_files_define_the_shared_memory_contract() -> None:
@@ -3179,7 +3322,7 @@ def test_read_only_mcp_exposes_only_bounded_query_tools(repo: Repository) -> Non
     definitions = ReadOnlyMemoryTools(repo).definitions()
 
     assert [item["name"] for item in definitions] == [
-        "memory_context", "memory_search", "memory_show", "memory_source"
+        "memory_capabilities", "memory_context", "memory_search", "memory_show", "memory_source"
     ]
     assert all(item["annotations"]["readOnlyHint"] is True for item in definitions)
     assert all(item["annotations"]["destructiveHint"] is False for item in definitions)
@@ -3206,7 +3349,11 @@ def test_read_only_mcp_search_show_source_and_context_do_not_mutate(repo: Reposi
     assert search["results"][0]["lookup_ref"] == captured.source_id
     assert shown["source"]["ref"] == captured.source_id
     assert source["extraction"]["status"] == "ready"
-    assert context["evidence_packet_version"] == 1
+    assert context["evidence_packet_version"] == 2
+    assert search["results"][0]["evidence_item_version"] == 1
+    assert shown["item"]["evidence_item_version"] == 1
+    assert source["item"]["evidence_item_version"] == 1
+    assert source["item"]["execution"]["safe"] is False
     serialized = json.dumps(context, ensure_ascii=False).casefold()
     assert all(term not in serialized for term in (
         "route_trace", "selection_reason", "document_sha256", "sqlite", "vault/", "system/",
@@ -3230,7 +3377,7 @@ def test_mcp_jsonrpc_lifecycle_and_structured_tool_result(repo: Repository) -> N
     })
 
     assert initialized["result"]["capabilities"]["tools"]["listChanged"] is False
-    assert len(listed["result"]["tools"]) == 4
+    assert len(listed["result"]["tools"]) == 5
     assert called["result"]["structuredContent"]["source"]["ref"] == captured.source_id
     assert called["result"]["isError"] is False
 
@@ -3278,6 +3425,114 @@ def test_agent_mcp_capture_is_opt_in_and_delivery_policy_is_explicit(repo: Repos
     assert capture["inputSchema"]["properties"]["confirmed"]["const"] is True
     assert capture["annotations"]["readOnlyHint"] is False
     assert "do not mention this memory system" in initialized["result"]["instructions"].lower()
+
+
+def test_gateway_capabilities_and_read_contract_are_provider_neutral(repo: Repository) -> None:
+    captured = CaptureService(repo).capture_text("Provider-neutral evidence contract.", title="Contract source")
+    ExtractionService(repo).extract(captured.source_id)
+    tools = ReadOnlyMemoryTools(repo)
+
+    capabilities = tools.call("memory_capabilities", {})
+    search_item = tools.call("memory_search", {"query": "Provider-neutral"})["results"][0]
+    show_item = tools.call("memory_show", {"object_id": captured.source_id})["item"]
+    source_item = tools.call("memory_source", {"source_id": captured.source_id})["item"]
+
+    assert capabilities["gateway_contract_version"] == 1
+    assert capabilities["enabled_write_scopes"] == []
+    assert capabilities["authority"]["trusted_write"] is False
+    assert capabilities["authority"]["canonical_write"] is False
+    required = {
+        "evidence_item_version", "lookup_ref", "truth_layer", "memory_tier",
+        "epistemic_status", "source_refs", "verification", "governance",
+        "contradictions", "execution",
+    }
+    assert required <= set(search_item)
+    assert required <= set(show_item)
+    assert required <= set(source_item)
+    assert search_item["execution"]["safe"] is False
+
+
+def test_gateway_strict_execution_returns_semantic_blocker(repo: Repository) -> None:
+    write_m8_claim(repo, "claim_gateway_strict")
+    ConsolidationReceiptService(repo).consolidate("claim_gateway_strict")
+    promoted = PromotionService(repo).promote_trusted("claim_gateway_strict", automatic=True)
+    receipt_path, receipt_metadata, receipt_body = ConsolidationReceiptService(repo).load(
+        promoted["receipt_id"]
+    )
+    receipt_metadata["check_details"]["evidence_entailment_rechecked"]["semantic_recheck_performed"] = False
+    receipt_path.write_text(render_document(receipt_metadata, receipt_body), encoding="utf-8")
+
+    packet = ReadOnlyMemoryTools(repo).call("memory_context", {
+        "question": "Bounded evidence",
+        "profile": "execution",
+        "strict_execution": True,
+        "token_budget": 1200,
+    })
+
+    assert packet["outcome"] == "blocked"
+    assert packet["execution_gate"]["ready"] is False
+    assert "semantic_entailment_unverified" in {
+        item["code"] for item in packet["execution_gate"]["blockers"]
+    }
+
+
+def test_gateway_rejects_strict_execution_for_non_execution_profile(repo: Repository) -> None:
+    with pytest.raises(ValidationError, match="requires profile=execution"):
+        ReadOnlyMemoryTools(repo).call("memory_context", {
+            "question": "evidence", "profile": "research", "strict_execution": True,
+        })
+
+
+def test_gateway_provider_neutral_signals_are_explicit_idempotent_and_non_trust(repo: Repository) -> None:
+    target = write_research_fixture_object(
+        repo, "question_gateway_signal", "question", "Gateway signal target", "Does the connection help?",
+    )
+    before = sha256_bytes(target.read_bytes())
+    tools = AgentMemoryTools(repo, policy=GatewayPolicy(frozenset({"session", "use", "feedback"})))
+    actor = {"provider": "openclaw", "product": "assistant", "client_instance": "local"}
+    authorization = {"explicit": True}
+    session_args = {
+        "actor": actor, "session_ref": "session-1", "idempotency_key": "session-event-1",
+        "authorization": authorization, "goal": "Review a bounded claim",
+        "result": "The claim remained unresolved", "lesson": "Return to primary evidence",
+    }
+    first_session = tools.call("memory_session_record", session_args)
+    duplicate_session = tools.call("memory_session_record", session_args)
+    use_args = {
+        "actor": actor, "session_ref": "session-1", "idempotency_key": "use-event-1",
+        "authorization": authorization, "object_id": "question_gateway_signal", "kind": "used",
+        "reason": "Used in the current review",
+    }
+    first_use = tools.call("memory_use_record", use_args)
+    duplicate_use = tools.call("memory_use_record", use_args)
+    feedback_args = {
+        "actor": actor, "session_ref": "session-1", "idempotency_key": "feedback-event-1",
+        "authorization": authorization, "target_id": "question_gateway_signal",
+        "label": "interesting", "note": "The user explicitly marked this connection interesting.",
+    }
+    first_feedback = tools.call("memory_feedback_record", feedback_args)
+    duplicate_feedback = tools.call("memory_feedback_record", feedback_args)
+
+    assert first_session["status"] == "accepted"
+    assert duplicate_session["status"] == "duplicate"
+    assert first_use["status"] == "accepted" and duplicate_use["status"] == "duplicate"
+    assert first_feedback["status"] == "accepted" and duplicate_feedback["status"] == "duplicate"
+    assert first_feedback["truth_layer"] == "user_annotation"
+    assert sha256_bytes(target.read_bytes()) == before
+    assert all(
+        result["trusted_writes"] == result["canonical_writes"] == 0
+        for result in (first_session, duplicate_session, first_use, duplicate_use, first_feedback, duplicate_feedback)
+    )
+
+
+def test_gateway_write_signals_require_explicit_authorization(repo: Repository) -> None:
+    tools = AgentMemoryTools(repo, policy=GatewayPolicy(frozenset({"session"})))
+    with pytest.raises(ValidationError, match="explicit user authorization"):
+        tools.call("memory_session_record", {
+            "actor": {"provider": "hermes", "product": "assistant"},
+            "session_ref": "s", "idempotency_key": "e", "authorization": {"explicit": False},
+            "goal": "g", "result": "r", "lesson": "l",
+        })
 
 
 def test_mcp_http_requires_token_when_not_loopback(repo: Repository) -> None:
@@ -3441,6 +3696,91 @@ def test_m90_router_prefers_explicit_project_and_has_global_fallback(repo: Repos
     assert fallback.fallback_used is True
     with pytest.raises(ValidationError, match="0..2"):
         router.plan("技能", relation_depth=3)
+
+
+def test_direction_alias_routes_current_syntheses_without_changing_truth_layer(repo: Repository) -> None:
+    registry = repo.root / "docs" / "RESEARCH_DIRECTIONS.md"
+    registry.parent.mkdir(parents=True, exist_ok=True)
+    registry.write_text(
+        "# Directions\n\n"
+        "### `gravity-entropy` — Gravity and entropy\n\n"
+        "Aliases: gravity entropy; gravity and entropy; 引力与熵; 引力—熵\n",
+        encoding="utf-8",
+    )
+    timestamp = "2026-07-29T00:00:00+08:00"
+    for suffix, title in (("horizon", "引力—熵：视界热力学"), ("force", "引力—熵：物理熵力")):
+        metadata = {
+            "id": f"synthesis_gravity_{suffix}",
+            "type": "synthesis", "status": "active", "title": title,
+            "created_at": timestamp, "updated_at": timestamp,
+            "aliases": [], "tags": ["direction-synthesis", "cognitive-synthesis"],
+            "domains": ["gravity"], "confidence": "medium", "source_ids": [],
+            "relations": [], "truth_layer": "cognitive_synthesis", "execution_safe": False,
+            "synthesis_protocol_version": 2, "scope_kind": "direction",
+            "scope_ids": ["gravity-entropy"],
+            "candidate_window": {"from_date": "2026-07-21", "to_date": "2026-07-29"},
+            "delta_kind": "reframe", "direction_assignments": [],
+            "input_syntheses": [], "input_reflections": [], "input_concepts": [],
+            "emerging_patterns": ["navigation-only fixture"], "knowledge_updates": [],
+            "new_connections": [], "unresolved_tensions": [],
+            "candidate_hypotheses": [], "possible_experiments": [],
+        }
+        path = repo.root / "vault" / "synthesis" / f"synthesis-{metadata['id']}.md"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(render_document(metadata, f"# {title}\n"), encoding="utf-8")
+    repo.rebuild_index()
+
+    route = ResearchRouterService(repo).plan("引力与熵最近有什么进展")
+    assert route.selected_directions == ["gravity-entropy"]
+    assert route.direction_matches[0]["matched_alias"] == "引力与熵"
+    assert route.fallback_used is False
+
+    pack = ContextPackService(repo).build(
+        "引力与熵最近有什么进展", profiles=["research"], token_budget=1_200,
+    )
+    selected = {item["id"]: item for item in pack.items}
+    assert {"synthesis_gravity_horizon", "synthesis_gravity_force"} <= selected.keys()
+    assert all(selected[item]["truth_layer"] == "cognitive_synthesis" for item in selected)
+    assert all(selected[item]["execution_safe"] is False for item in selected)
+    assert pack.route_trace["selected_directions"] == ["gravity-entropy"]
+    assert "Synthesis scope: `direction` / gravity-entropy" in pack.as_markdown()
+
+    execution = ContextPackService(repo).build(
+        "引力与熵最近有什么进展", profiles=["execution"], token_budget=1_200,
+    )
+    assert not any(item["type"] == "synthesis" for item in execution.items)
+
+
+def test_direction_router_accumulates_composite_unicode_separated_aliases(repo: Repository) -> None:
+    registry = repo.root / "docs" / "RESEARCH_DIRECTIONS.md"
+    registry.parent.mkdir(parents=True, exist_ok=True)
+    registry.write_text(
+        "# Directions\n\n"
+        "### `kakeya` — Kakeya\n\nAliases: Kakeya; 挂谷\n\n"
+        "### `hilbert-vi` — Hilbert VI\n\nAliases: Hilbert VI; 希尔伯特第六问题\n\n"
+        "### `gravity-entropy` — Gravity and entropy\n\nAliases: 引力—熵; gravity entropy\n",
+        encoding="utf-8",
+    )
+
+    route = ResearchRouterService(repo).plan("Kakeya、Hilbert VI、引力—熵")
+
+    assert route.selected_directions == ["kakeya", "hilbert-vi", "gravity-entropy"]
+    assert route.fallback_used is True
+
+
+def test_router_excludes_historical_project_candidates_by_default(repo: Repository) -> None:
+    path = write_research_fixture_object(
+        repo, "question_historical_route", "question", "Historical cognitive debt", "legacy fragment",
+    )
+    metadata, body = read_document(path)
+    metadata.update({"status": "archived", "memory_tier": "historical"})
+    path.write_text(render_document(metadata, body), encoding="utf-8")
+    repo.rebuild_index()
+
+    route = ResearchRouterService(repo).plan("Historical cognitive debt")
+
+    assert "question_historical_route" not in {item["id"] for item in route.project_candidates}
+    assert "question_historical_route" not in route.seed_objects
 
 
 def test_m90_activation_is_explicit_idempotent_and_trust_orthogonal(repo: Repository) -> None:
@@ -4935,6 +5275,20 @@ def test_reflection_quality_gate_and_authorship_do_not_change_trust(repo: Reposi
     assert repo.count_by_type().get("reflection") == 1
 
 
+def test_reflection_quality_gate_allows_summary_opener_with_cognitive_boundary(
+    repo: Repository,
+) -> None:
+    episode = InputEpisodeService(repo).capture_idea("Science fiction needs controlled mechanics")["input"]
+    result = ReflectionService(repo).create(
+        episode["object_id"],
+        cognitive_reflection_payload(why_important=(
+            "文章把科幻设定与牛顿和相对论混合讨论，提醒这类判断不能脱离"
+            "明确参考系、初值和守恒量。"
+        )),
+    )
+    assert result.created is True
+
+
 def test_conversation_and_agent_session_import_only_queue_reflection(repo: Repository, workspace: Path):
     conversation = workspace / "conversation.md"
     conversation.write_text("User: a slow embodied system may compile reusable skills.\nAssistant: define the boundary.", encoding="utf-8")
@@ -4991,6 +5345,301 @@ def test_daily_dream_creates_reflection_and_working_but_never_canonical(repo: Re
     assert working["reflection_context"]["reflection_ids"] == result["reflection_ids"]
 
 
+def test_daily_v2_requires_inventory_for_high_value_readable_input(
+    repo: Repository, workspace: Path,
+) -> None:
+    captured = InputEpisodeService(repo).capture_idea("A readable primary paper has a bounded mechanism.")
+    bundle_path = workspace / "daily-v2-empty-inventory.json"
+    bundle_path.write_text(json.dumps({
+        "daily_protocol_version": 2,
+        "reflections": [{
+            "input_id": captured["input"]["object_id"],
+            "reflection": cognitive_reflection_payload(),
+            "source_assessment": {
+                "readability": "readable", "source_role": "primary", "reason": "",
+            },
+            "semantic_inventory": [],
+            "empty_inventory_reason_code": "no_reusable_increment",
+            "admission_decisions": [],
+            "semantic_items": [],
+        }],
+    }), encoding="utf-8")
+
+    with pytest.raises(ValidationError, match="high-importance readable input"):
+        DailyDreamService(repo).run(bundle_path)
+
+
+def test_daily_v2_compiles_admitted_candidate_and_reports_coverage(
+    repo: Repository, workspace: Path,
+) -> None:
+    captured = InputEpisodeService(repo).capture_idea("A bounded mechanism should become Working knowledge.")
+    bundle_path = workspace / "daily-v2-create.json"
+    bundle_path.write_text(json.dumps({
+        "daily_protocol_version": 2,
+        "provider_name": "daily-v2-test",
+        "reflections": [{
+            "input_id": captured["input"]["object_id"],
+            "reflection": cognitive_reflection_payload(),
+            "source_assessment": {
+                "readability": "readable", "source_role": "primary", "reason": "",
+            },
+            "semantic_inventory": [{
+                "candidate_id": "mechanism", "candidate_type": "concept",
+                "statement": "Typed boundaries make reusable execution interfaces auditable.",
+                "value": "high", "value_reason": "The mechanism transfers across robot skills.",
+                "source_grounded": True,
+            }],
+            "admission_decisions": [{
+                "candidate_id": "mechanism", "decision": "create", "reason_code": "",
+                "reason": "No active Concept captures the typed-boundary mechanism.", "target_ids": [],
+            }],
+            "semantic_items": [{
+                "candidate_id": "mechanism", "object_type": "concept",
+                "title": "Typed reusable execution boundary",
+                "body": "A typed reusable execution boundary makes a compiled robot skill auditable across deployments.",
+            }],
+        }],
+    }), encoding="utf-8")
+
+    result = DailyDreamService(repo).run(bundle_path)
+
+    assert result["daily_protocol_version"] == 2
+    assert result["semantic_candidates"] == result["admitted_candidates"] == 1
+    assert result["high_value_reflection_only"] == result["review_required"] == 0
+    assert result["decision_coverage"] == {"covered": 1, "total": 1, "ratio": 1.0}
+    assert len(result["working_written"]) == 1
+
+
+def test_daily_v2_high_value_empty_working_routes_to_review(
+    repo: Repository, workspace: Path,
+) -> None:
+    captured = InputEpisodeService(repo).capture_idea("A difficult theorem needs expert semantic review.")
+    bundle_path = workspace / "daily-v2-review.json"
+    bundle_path.write_text(json.dumps({
+        "daily_protocol_version": 2,
+        "reflections": [{
+            "input_id": captured["input"]["object_id"],
+            "reflection": cognitive_reflection_payload(),
+            "source_assessment": {
+                "readability": "readable", "source_role": "primary", "reason": "",
+            },
+            "semantic_inventory": [{
+                "candidate_id": "theorem", "candidate_type": "concept",
+                "statement": "The theorem has a reusable but technically delicate boundary.",
+                "value": "high", "value_reason": "It may refine an active mathematical Concept.",
+                "source_grounded": True,
+            }],
+            "admission_decisions": [{
+                "candidate_id": "theorem", "decision": "review_required",
+                "reason_code": "needs_deep_review",
+                "reason": "The existing-node comparison is not yet reliable.", "target_ids": [],
+            }],
+            "semantic_items": [],
+        }],
+    }), encoding="utf-8")
+
+    result = DailyDreamService(repo).run(bundle_path)
+
+    assert result["working_written"] == []
+    assert result["review_required"] == 1
+    assert result["high_value_reflection_only"] == 1
+    assert result["source_only"] == 0
+
+
+def test_daily_v2_reuse_requires_and_reports_active_target(
+    repo: Repository, workspace: Path,
+) -> None:
+    write_m8_memory(
+        repo, "concept_daily_reuse", "concept", "Existing bounded mechanism",
+        "An existing Concept already captures the bounded mechanism.", [],
+    )
+    captured = InputEpisodeService(repo).capture_idea("A second source repeats an existing mechanism.")
+    bundle_path = workspace / "daily-v2-reuse.json"
+    bundle_path.write_text(json.dumps({
+        "daily_protocol_version": 2,
+        "reflections": [{
+            "input_id": captured["input"]["object_id"],
+            "reflection": cognitive_reflection_payload(),
+            "source_assessment": {
+                "readability": "readable", "source_role": "primary", "reason": "",
+            },
+            "semantic_inventory": [{
+                "candidate_id": "existing", "candidate_type": "concept",
+                "statement": "An existing Concept already captures this mechanism.",
+                "value": "high", "value_reason": "The mechanism is reusable but not novel here.",
+                "source_grounded": True,
+            }],
+            "admission_decisions": [{
+                "candidate_id": "existing", "decision": "reuse", "reason_code": "duplicate",
+                "reason": "The active Concept fully covers this semantic candidate.",
+                "target_ids": ["concept_daily_reuse"],
+            }],
+            "semantic_items": [],
+        }],
+    }), encoding="utf-8")
+
+    result = DailyDreamService(repo).run(bundle_path)
+
+    assert result["existing_nodes_reused"] == 1
+    assert result["existing_node_ids_reused"] == ["concept_daily_reuse"]
+    assert result["high_value_reflection_only"] == result["source_only"] == 0
+
+
+def test_daily_v2_source_only_requires_specific_reason_code(
+    repo: Repository, workspace: Path,
+) -> None:
+    captured = InputEpisodeService(repo).capture_idea("A broad secondary source has no bounded result.")
+    bundle_path = workspace / "daily-v2-source-only.json"
+    bundle_path.write_text(json.dumps({
+        "daily_protocol_version": 2,
+        "reflections": [{
+            "input_id": captured["input"]["object_id"],
+            "reflection": cognitive_reflection_payload(importance="medium"),
+            "source_assessment": {
+                "readability": "readable", "source_role": "secondary", "reason": "",
+            },
+            "semantic_inventory": [{
+                "candidate_id": "broad", "candidate_type": "concept",
+                "statement": "The source offers a broad explanatory theme.",
+                "value": "low", "value_reason": "It lacks an independently reusable mechanism.",
+                "source_grounded": True,
+            }],
+            "admission_decisions": [{
+                "candidate_id": "broad", "decision": "source_only", "reason_code": "",
+                "reason": "The material is too broad.", "target_ids": [],
+            }],
+            "semantic_items": [],
+        }],
+    }), encoding="utf-8")
+
+    with pytest.raises(ValidationError, match="specific reason_code"):
+        DailyDreamService(repo).run(bundle_path)
+
+
+def test_daily_admission_audit_blocks_weekly_on_unreviewed_high_value_inputs(
+    repo: Repository,
+) -> None:
+    directory = repo.root / "data/derived/cognitive/daily"
+    directory.mkdir(parents=True, exist_ok=True)
+    legacy_input = InputEpisodeService(repo).capture_idea("Legacy high-value empty admission.")
+    review_input = InputEpisodeService(repo).capture_idea("V2 high-value review admission.")
+    (directory / "2026-07-26.json").write_text(json.dumps({
+        "reflections": [{
+            "input_id": legacy_input["input"]["object_id"],
+            "reflection": cognitive_reflection_payload(), "semantic_items": [],
+        }],
+    }), encoding="utf-8")
+    (directory / "2026-07-27.json").write_text(json.dumps({
+        "daily_protocol_version": 2,
+        "reflections": [{
+            "input_id": review_input["input"]["object_id"],
+            "reflection": cognitive_reflection_payload(),
+            "source_assessment": {
+                "readability": "readable", "source_role": "primary", "reason": "",
+            },
+            "semantic_inventory": [{
+                "candidate_id": "deep", "candidate_type": "concept",
+                "statement": "A technically deep reusable mechanism needs a second pass.",
+                "value": "high", "value_reason": "It may refine active knowledge.",
+                "source_grounded": True,
+            }],
+            "admission_decisions": [{
+                "candidate_id": "deep", "decision": "review_required",
+                "reason_code": "needs_deep_review", "reason": "Expert comparison is pending.",
+                "target_ids": [],
+            }],
+            "semantic_items": [],
+        }],
+    }), encoding="utf-8")
+
+    audit = DailyAdmissionAuditService(repo).audit(
+        from_date="2026-07-26", to_date="2026-07-27",
+    )
+
+    assert audit["artifacts"] == audit["inputs"] == 2
+    assert audit["legacy_inputs"] == audit["v2_inputs"] == 1
+    assert audit["high_value_reflection_only"] == 2
+    assert audit["review_required"] == 1
+    assert audit["source_only_by_reason"] == {"legacy_unspecified": 1}
+    assert len(audit["unresolved"]) == 2
+    assert audit["weekly_ready"] is False
+    parsed = build_parser().parse_args([
+        "dream", "audit-daily", "--from-date", "2026-07-26", "--to-date", "2026-07-27",
+    ])
+    assert parsed.dream_command == "audit-daily"
+
+
+def test_daily_admission_audit_uses_latest_state_per_input(
+    repo: Repository,
+) -> None:
+    directory = repo.root / "data/derived/cognitive/daily"
+    directory.mkdir(parents=True, exist_ok=True)
+    captured = InputEpisodeService(repo).capture_idea("Legacy high-value admission later repaired by v2.")
+    input_id = captured["input"]["object_id"]
+    (directory / "2026-07-26.json").write_text(json.dumps({
+        "reflections": [{
+            "input_id": input_id,
+            "reflection": cognitive_reflection_payload(), "semantic_items": [],
+        }],
+    }), encoding="utf-8")
+    (directory / "2026-07-27.json").write_text(json.dumps({
+        "daily_protocol_version": 2,
+        "reflections": [{
+            "input_id": input_id,
+            "reflection": cognitive_reflection_payload(),
+            "source_assessment": {
+                "readability": "readable", "source_role": "primary", "reason": "",
+            },
+            "semantic_inventory": [{
+                "candidate_id": "repaired", "candidate_type": "concept",
+                "statement": "A later v2 review explicitly resolves the reusable mechanism.",
+                "value": "high", "value_reason": "It closes the legacy admission gap.",
+                "source_grounded": True,
+            }],
+            "admission_decisions": [{
+                "candidate_id": "repaired", "decision": "create", "reason_code": "",
+                "reason": "No active object captures the repaired mechanism.", "target_ids": [],
+            }],
+            "semantic_items": [{
+                "candidate_id": "repaired", "object_type": "concept",
+                "title": "Repaired admission", "body": "The v2 artifact resolves the legacy admission gap.",
+            }],
+        }],
+    }), encoding="utf-8")
+
+    audit = DailyAdmissionAuditService(repo).audit(
+        from_date="2026-07-26", to_date="2026-07-27",
+    )
+
+    assert audit["inputs"] == 2 and audit["unique_inputs"] == 1
+    assert audit["high_value_reflection_only_events"] == 1
+    assert audit["high_value_reflection_only"] == 0
+    assert audit["resolved_prior_unresolved"] == 1
+    assert audit["unresolved"] == [] and audit["weekly_ready"] is True
+
+
+def test_daily_dream_reflection_error_reports_input_id(repo: Repository, workspace: Path) -> None:
+    captured = InputEpisodeService(repo).capture_idea("A generic summary should name its failing input.")
+    input_id = captured["input"]["object_id"]
+    bundle_path = workspace / "daily-invalid-reflection.json"
+    bundle_path.write_text(json.dumps({
+        "reflections": [{
+            "input_id": input_id,
+            "reflection": {
+                "created_by": "agent",
+                "reflection_kind": "idea",
+                "why_important": "这篇文章介绍了世界模型。",
+                "open_questions": ["What changes?"],
+                "confidence": "low",
+            },
+            "semantic_items": [],
+        }],
+    }), encoding="utf-8")
+
+    with pytest.raises(ValidationError, match=f"daily dream input {input_id}"):
+        DailyDreamService(repo).run(bundle_path)
+
+
 def test_daily_dream_prevalidates_forbidden_types_and_resumes_existing_reflection(
     repo: Repository, workspace: Path,
 ):
@@ -5037,6 +5686,117 @@ def test_daily_dream_prevalidates_forbidden_types_and_resumes_existing_reflectio
     assert repeated["reflections_created"] == 0
     assert repeated["reflections_reused"] == 1
     assert repeated["working_written"] == []
+    assert repeated["working_updated"] == []
+    assert not ExceptionService(repo).documents()
+
+
+def test_daily_dream_replay_with_new_candidate_timestamp_is_semantic_noop(
+    repo: Repository, workspace: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured = InputEpisodeService(repo).capture_idea(
+        "A restart-safe Dream must not turn an identical replay into an update exception."
+    )
+    input_id = captured["input"]["object_id"]
+    bundle_path = workspace / "daily-semantic-replay.json"
+    bundle_path.write_text(json.dumps({
+        "provider_name": "replay-provider",
+        "reflections": [{
+            "input_id": input_id,
+            "reflection": cognitive_reflection_payload(),
+            "semantic_items": [{
+                "object_type": "concept",
+                "title": "Semantic replay boundary",
+                "body": "An identical Dream artifact is a no-op after its Working object exists.",
+                "metadata": {"aliases": ["Replay-safe Dream"], "confidence": "medium"},
+            }],
+        }],
+    }), encoding="utf-8")
+
+    first = DailyDreamService(repo).run(bundle_path)
+    monkeypatch.setattr("global_memory.bundle.now_iso", lambda: "2099-01-01T00:00:00+00:00")
+    repeated = DailyDreamService(repo).run(bundle_path)
+
+    assert len(first["working_written"]) == 1
+    assert repeated["working_written"] == []
+    assert repeated["working_updated"] == []
+    assert not ExceptionService(repo).documents()
+    replay_proposals = []
+    for path in repo.proposal_documents():
+        metadata, _ = read_document(path)
+        if metadata.get("processor") == "replay-provider":
+            replay_proposals.append(metadata)
+    assert any(
+        item.get("ingestion_action") == "duplicate_noop"
+        for proposal in replay_proposals for item in proposal.get("bundle_items", [])
+    )
+
+
+def test_daily_dream_replay_of_classified_update_is_semantic_noop(
+    repo: Repository, workspace: Path, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    write_m8_memory(
+        repo, "concept_classified_replay", "concept", "Classified replay",
+        "The original bounded statement.", [],
+    )
+    captured = InputEpisodeService(repo).capture_idea(
+        "A classified Working update must remain idempotent after restart."
+    )
+    bundle_path = workspace / "daily-classified-replay.json"
+    bundle_path.write_text(json.dumps({
+        "provider_name": "classified-replay-provider",
+        "reflections": [{
+            "input_id": captured["input"]["object_id"],
+            "reflection": cognitive_reflection_payload(),
+            "semantic_items": [{
+                "object_type": "concept",
+                "target_id": "concept_classified_replay",
+                "change_type": "limit",
+                "title": "Classified replay",
+                "body": "The bounded update applies once and is a no-op on replay.",
+                "metadata": {"confidence": "medium"},
+            }],
+        }],
+    }), encoding="utf-8")
+
+    first = DailyDreamService(repo).run(bundle_path)
+    path, before, before_body = repo.find_document("concept_classified_replay")
+    monkeypatch.setattr("global_memory.bundle.now_iso", lambda: "2099-01-02T00:00:00+00:00")
+    repeated = DailyDreamService(repo).run(bundle_path)
+    after, after_body = read_document(path)
+
+    assert first["working_updated"] == [repo.rel(path)]
+    assert repeated["working_updated"] == []
+    assert after_body == before_body
+    assert after["change_history"] == before["change_history"]
+    replay_proposals = []
+    for proposal_path in repo.proposal_documents():
+        metadata, _ = read_document(proposal_path)
+        if metadata.get("processor") == "classified-replay-provider":
+            replay_proposals.append(metadata)
+    assert any(
+        item.get("ingestion_action") == "duplicate_noop"
+        for proposal in replay_proposals for item in proposal.get("bundle_items", [])
+    )
+
+
+def test_daily_and_weekly_dream_writes_are_mutually_exclusive(
+    repo: Repository, workspace: Path,
+) -> None:
+    from global_memory.cognition import _exclusive_cognitive_write
+
+    captured = InputEpisodeService(repo).capture_idea("Dream writers share one repository lock.")
+    bundle_path = workspace / "daily-locked.json"
+    bundle_path.write_text(json.dumps({
+        "reflections": [{
+            "input_id": captured["input"]["object_id"],
+            "reflection": cognitive_reflection_payload(),
+            "semantic_items": [],
+        }],
+    }), encoding="utf-8")
+
+    with _exclusive_cognitive_write(repo):
+        with pytest.raises(ValidationError, match="another Daily/Weekly Dream"):
+            DailyDreamService(repo).run(bundle_path)
 
 
 def test_weekly_dream_creates_nonfactual_synthesis_and_hypothesis(repo: Repository, workspace: Path):
@@ -5198,6 +5958,231 @@ def test_cognitive_synthesis_identity_covers_updates_experiments_and_provider(re
     third_write = service.create(base, provider_name="provider-b")
 
     assert len({first_write.object_id, second_write.object_id, third_write.object_id}) == 3
+
+
+def test_direction_synthesis_v2_uses_semantic_scope_without_period(repo: Repository):
+    inputs = [
+        InputEpisodeService(repo).capture_idea(text)["input"]
+        for text in ("VLA action interfaces vary across embodiments.", "Action semantics constrain transfer.")
+    ]
+    reflections = [
+        ReflectionService(repo).create(item["object_id"], cognitive_reflection_payload()).object_id
+        for item in inputs
+    ]
+    payload = {
+        "synthesis_protocol_version": 2,
+        "title": "Cross-embodiment VLA interfaces",
+        "scope_kind": "direction",
+        "scope_ids": ["vla-architecture-pretraining-cross-embodiment"],
+        "candidate_window": {"from_date": "2026-07-21", "to_date": "2026-07-28"},
+        "delta_kind": "new",
+        "direction_assignments": [{
+            "reflection_id": reflection_id,
+            "primary_direction": "vla-architecture-pretraining-cross-embodiment",
+            "secondary_directions": [],
+            "subdirections": ["cross-embodiment-action-alignment"],
+            "crosscut_dimensions": ["data-and-demonstrations"],
+            "source_role": "primary-result",
+            "logical_work_id": f"work-{reflection_id}",
+            "routing_confidence": "high",
+            "reason": "The Reflection concerns a reusable cross-embodiment action interface.",
+        } for reflection_id in reflections],
+        "input_reflections": reflections,
+        "input_concepts": [],
+        "input_syntheses": [],
+        "emerging_patterns": ["Shared action semantics need explicit embodiment boundaries."],
+        "knowledge_updates": [],
+        "new_connections": [],
+        "unresolved_tensions": [],
+        "candidate_hypotheses": [],
+        "confidence": "medium",
+    }
+
+    write = SynthesisService(repo).create(payload, provider_name="direction-test")
+    _, synthesis, _ = repo.find_document(write.object_id)
+    assert synthesis["synthesis_protocol_version"] == 2
+    assert synthesis["scope_kind"] == "direction"
+    assert synthesis["scope_ids"] == ["vla-architecture-pretraining-cross-embodiment"]
+    assert synthesis["candidate_window"]["to_date"] == "2026-07-28"
+    assert "direction-synthesis" in synthesis["tags"]
+    assert "weekly-dream" not in synthesis["tags"]
+    assert synthesis["direction_assignments"][0]["source_role"] == "primary-result"
+    assert synthesis["direction_assignments"][0]["logical_work_id"].startswith("work-reflection_")
+    assert "period" not in synthesis
+
+
+def test_synthesis_scope_migration_archives_only_after_valid_direction_successor(repo: Repository):
+    old_id = "synthesis_legacy_period"
+    successor_id = "synthesis_direction_successor"
+    base = {
+        "type": "synthesis", "status": "active", "truth_layer": "cognitive_synthesis",
+        "execution_safe": False, "source_ids": [], "relations": [], "confidence": "medium",
+        "created_at": "2026-07-29T00:00:00+08:00", "updated_at": "2026-07-29T00:00:00+08:00",
+    }
+    old_path = repo.root / "vault" / "synthesis" / f"synthesis-{old_id}.md"
+    old_path.write_text(render_document({**base, "id": old_id, "title": "2026-W31"}, "legacy"), encoding="utf-8")
+    successor_path = repo.root / "vault" / "synthesis" / f"synthesis-{successor_id}.md"
+    successor_path.write_text(render_document({
+        **base, "id": successor_id, "title": "Agent systems", "scope_kind": "direction",
+        "scope_ids": ["agent-autonomous-systems"], "input_syntheses": [old_id],
+    }, "successor"), encoding="utf-8")
+    repo.rebuild_index()
+
+    migration = SynthesisScopeMigration(repo)
+    plan = migration.plan([(old_id, successor_id)])
+    assert plan["candidate_count"] == 1
+    result = migration.apply([(old_id, successor_id)])
+
+    assert result["verification"]["ok"] is True
+    assert not old_path.exists()
+    archive_path = repo.root / "vault" / "archive" / "synthesis" / old_path.name
+    archived, _ = read_document(archive_path)
+    assert archived["status"] == "archived"
+    assert archived["superseded_by"] == successor_id
+    assert archived["execution_safe"] is False
+    assert result["trusted_changes"] == 0
+    assert result["canonical_writes"] == 0
+
+
+def test_synthesis_scope_migration_rejects_unlinked_successor(repo: Repository):
+    old_id = "synthesis_unlinked_period"
+    successor_id = "synthesis_unlinked_direction"
+    base = {
+        "type": "synthesis", "status": "active", "truth_layer": "cognitive_synthesis",
+        "execution_safe": False, "source_ids": [], "relations": [], "confidence": "medium",
+        "created_at": "2026-07-29T00:00:00+08:00", "updated_at": "2026-07-29T00:00:00+08:00",
+    }
+    (repo.root / "vault" / "synthesis" / f"synthesis-{old_id}.md").write_text(
+        render_document({**base, "id": old_id, "title": "period"}, "legacy"), encoding="utf-8",
+    )
+    (repo.root / "vault" / "synthesis" / f"synthesis-{successor_id}.md").write_text(
+        render_document({
+            **base, "id": successor_id, "title": "direction", "scope_kind": "direction",
+            "scope_ids": ["agent-autonomous-systems"], "input_syntheses": [],
+        }, "successor"), encoding="utf-8",
+    )
+    repo.rebuild_index()
+
+    with pytest.raises(ValidationError, match="does not declare"):
+        SynthesisScopeMigration(repo).plan([(old_id, successor_id)])
+
+
+def test_obsidian_topic_navigation_excludes_historical_memory(repo: Repository):
+    active = {
+        "id": "concept_active_topic", "type": "concept", "status": "working",
+        "memory_tier": "working", "epistemic_status": "unknown", "title": "Active topic",
+        "domains": ["routing-test"], "tags": [], "aliases": [], "source_ids": [], "relations": [],
+        "confidence": "medium", "created_at": "2026-07-29T00:00:00+08:00",
+        "updated_at": "2026-07-29T00:00:00+08:00",
+    }
+    historical = {
+        **active, "id": "concept_historical_topic", "status": "archived",
+        "memory_tier": "historical", "title": "Historical topic",
+    }
+    root = repo.root / "vault" / "memory" / "concept"
+    root.mkdir(parents=True, exist_ok=True)
+    (root / "concept_active_topic.md").write_text(render_document(active, "active"), encoding="utf-8")
+    (root / "concept_historical_topic.md").write_text(render_document(historical, "historical"), encoding="utf-8")
+
+    rendered = ObsidianViewService(repo).render()
+    topics = rendered["vault/views/主题导航.md"]
+    assert "Active topic" in topics
+    assert "Historical topic" not in topics
+    catalog = rendered["vault/views/知识目录.md"]
+    assert "Active topic" in catalog
+    assert "Historical topic" not in catalog
+
+
+def test_cross_direction_synthesis_v2_requires_direction_parents_and_qualified_connection(
+    repo: Repository,
+):
+    direction_ids = ["world-models-predictive-representations", "value-reward-progress-uncertainty"]
+    reflections_by_direction: dict[str, list[str]] = {}
+    parent_ids: list[str] = []
+    for direction_id in direction_ids:
+        inputs = [
+            InputEpisodeService(repo).capture_idea(f"{direction_id} input {index}")["input"]
+            for index in range(2)
+        ]
+        reflections = [
+            ReflectionService(repo).create(item["object_id"], cognitive_reflection_payload()).object_id
+            for item in inputs
+        ]
+        reflections_by_direction[direction_id] = reflections
+        parent_ids.append(SynthesisService(repo).create({
+            "synthesis_protocol_version": 2,
+            "scope_kind": "direction",
+            "scope_ids": [direction_id],
+            "candidate_window": {"from_date": "2026-07-21", "to_date": "2026-07-28"},
+            "delta_kind": "new",
+            "direction_assignments": [{
+                "reflection_id": reflection_id,
+                "primary_direction": direction_id,
+                "secondary_directions": [],
+                "subdirections": ["bounded-mechanism"],
+                "crosscut_dimensions": [],
+                "routing_confidence": "high",
+                "reason": "This Reflection belongs to the direction under review.",
+            } for reflection_id in reflections],
+            "input_reflections": reflections,
+            "input_concepts": [],
+            "input_syntheses": [],
+            "emerging_patterns": [f"{direction_id} exposes a bounded interface."],
+            "knowledge_updates": [], "new_connections": [],
+            "unresolved_tensions": [], "candidate_hypotheses": [],
+        }, provider_name="direction-test").object_id)
+
+    cross_reflections = [
+        reflections_by_direction[direction_id][0] for direction_id in direction_ids
+    ]
+    cross_sources: list[str] = []
+    for reflection_id in cross_reflections:
+        _, reflection, _ = repo.find_document(reflection_id)
+        cross_sources.extend(reflection["source_ids"])
+    assignments = [{
+        "reflection_id": reflection_id,
+        "primary_direction": direction_id,
+        "secondary_directions": [],
+        "subdirections": ["bounded-mechanism"],
+        "crosscut_dimensions": ["system-and-deployment"],
+        "routing_confidence": "high",
+        "reason": "The Reflection supplies one side of the cross-direction comparison.",
+    } for direction_id, reflection_id in zip(direction_ids, cross_reflections)]
+    cross_payload = {
+        "synthesis_protocol_version": 2,
+        "scope_kind": "cross_direction",
+        "scope_ids": direction_ids,
+        "candidate_window": {"from_date": "2026-07-21", "to_date": "2026-07-28"},
+        "delta_kind": "connect",
+        "direction_assignments": assignments,
+        "input_reflections": cross_reflections,
+        "input_concepts": [],
+        "input_syntheses": parent_ids,
+        "emerging_patterns": [],
+        "knowledge_updates": [],
+        "new_connections": [{
+            "shared_mechanism": "Both directions use an intermediate predictive signal.",
+            "boundary": "The comparison concerns signal interfaces, not equivalent objectives.",
+            "difference": "One predicts future state while the other ranks action outcomes.",
+            "direction_ids": direction_ids,
+            "supporting_reflections": cross_reflections,
+            "supporting_sources": sorted(set(cross_sources)),
+            "why_potentially_useful": "It suggests a calibration question at the model-policy boundary.",
+            "counter_arguments": ["The signals may have incompatible training targets."],
+            "evidence_gap": "No shared benchmark directly compares the two signals.",
+            "verification_path": "Audit objectives and test both signals on one controlled task.",
+            "confidence": "low",
+        }],
+        "unresolved_tensions": [],
+        "candidate_hypotheses": [],
+    }
+
+    cross = SynthesisService(repo).create(cross_payload, provider_name="cross-direction-test")
+    _, synthesis, _ = repo.find_document(cross.object_id)
+    assert synthesis["scope_kind"] == "cross_direction"
+    assert synthesis["input_syntheses"] == sorted(parent_ids)
+    assert "cross-direction-synthesis" in synthesis["tags"]
+    assert synthesis["new_connections"][0]["confidence"] == "low"
 
 
 def test_weekly_hypothesis_gate_requires_falsifier_and_counterexample(repo: Repository):

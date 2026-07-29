@@ -2,8 +2,9 @@
 
 M9.1 operating model: Experience enters a typed Input Layer, then a non-factual
 Reflection layer before semantic knowledge evolution. Daily Dream digests a
-small queue; Weekly Dream discovers cross-source patterns, unresolved tensions
-and falsifiable research candidates. Global Memory remains the truth and
+small queue; the weekly cadence audits recent admission and incrementally
+synthesizes durable research directions. Cross-direction candidates are
+explicit, optional and evidence-bounded. Global Memory remains the truth and
 cognitive-evolution layer, never an Agent execution runtime.
 
 M9 scientific cognition north star: Global Memory connects four responsibilities without collapsing them—Evidence Graph, Model Graph, Possibility Graph and Experiment Graph. M9.0 records the user's attention, connection feedback and real project use needed to build those graphs later; it does not claim automatic scientific discovery.

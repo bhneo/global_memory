@@ -40,6 +40,8 @@ system/runs/*
 !system/runs/.gitkeep
 system/recovery/*
 !system/recovery/.gitkeep
+system/locks/*
+!system/locks/.gitkeep
 
 # Large/binary raw payloads stay local and require an explicit backup policy.
 vault/raw/**/blobs/*

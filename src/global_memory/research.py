@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import re
+import unicodedata
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -149,7 +150,23 @@ class ResearchAnnotationService:
         supersedes_annotation_id: str | None = None,
         allow_unresolved: bool = False,
         created_by: str = "user",
+        external_event_id: str | None = None,
     ) -> dict[str, Any]:
+        if external_event_id is not None:
+            external_event_id = external_event_id.strip()
+            if not external_event_id or len(external_event_id) > 200:
+                raise ValidationError("external_event_id must contain 1 to 200 characters")
+            existing = next(
+                (item for item in self.all() if item.get("external_event_id") == external_event_id),
+                None,
+            )
+            if existing is not None:
+                return {
+                    "id": existing["id"],
+                    "path": self.repository.rel(self.directory / f"annotation-{existing['id']}.md"),
+                    "annotation_kind": existing.get("annotation_kind"),
+                    "duplicate": True,
+                }
         if created_by != "user":
             raise ValidationError("Research Annotation 只能保存明确的用户输入；Agent interpretation 必须分层")
         if kind not in ANNOTATION_KINDS:
@@ -220,6 +237,7 @@ class ResearchAnnotationService:
             **user_fields,
             "personal_salience": personal_salience,
             "supersedes_annotation_id": supersedes_annotation_id,
+            "external_event_id": external_event_id,
         }
         annotation_id = _stable_id("annotation", identity)
         metadata: dict[str, Any] = {
@@ -252,6 +270,7 @@ class ResearchAnnotationService:
             "feedback_label": feedback_label,
             "feedback_note": user_fields["feedback_note"],
             "supersedes_annotation_id": supersedes_annotation_id,
+            "external_event_id": external_event_id,
             "agent_interpretation": None,
             "truth_layer": "user_annotation",
         }
@@ -268,7 +287,12 @@ class ResearchAnnotationService:
         path = self.directory / f"annotation-{annotation_id}.md"
         self.repository.immutable_write(path, render_document(metadata, body).encode("utf-8"))
         self.repository.rebuild_index()
-        return {"id": annotation_id, "path": self.repository.rel(path), "annotation_kind": kind}
+        return {
+            "id": annotation_id,
+            "path": self.repository.rel(path),
+            "annotation_kind": kind,
+            "duplicate": False,
+        }
 
     def feedback_summary(self) -> dict[str, Any]:
         feedback = self.active(kind="connection_feedback")
@@ -440,6 +464,8 @@ class RoutePlan:
     selected_project: str | None
     project_candidates: list[dict[str, Any]]
     selected_domains: list[str]
+    selected_directions: list[str]
+    direction_matches: list[dict[str, str]]
     seed_objects: list[str]
     relation_expansions: list[dict[str, Any]]
     annotation_matches: list[str]
@@ -458,6 +484,55 @@ class ResearchRouterService:
         self.repository = repository
         self.annotations = ResearchAnnotationService(repository)
 
+    @staticmethod
+    def _fold_direction_text(value: str) -> str:
+        folded = unicodedata.normalize("NFKC", value).casefold()
+        folded = re.sub(r"[-‐‑‒–—―_/\\|:：,，。！？!?;；()（）\[\]{}]+", " ", folded)
+        # Chinese enumeration marks and Unicode dashes are common in composite
+        # research questions.  Normalize every remaining separator so aliases
+        # from several directions can be accumulated in one route.
+        folded = re.sub(r"[^\w\u3400-\u9fff]+", " ", folded, flags=re.UNICODE)
+        return " ".join(folded.split())
+
+    def _direction_matches(self, query: str) -> list[dict[str, str]]:
+        """Read bounded navigation aliases from the direction registry."""
+        path = self.repository.root / "docs" / "RESEARCH_DIRECTIONS.md"
+        if not path.exists():
+            return []
+        text = path.read_text(encoding="utf-8")
+        headings = list(re.finditer(r"^###\s+`([^`]+)`\s+—\s+(.+)$", text, re.MULTILINE))
+        query_folded = self._fold_direction_text(query)
+        query_compact = query_folded.replace(" ", "")
+        matches: list[dict[str, str]] = []
+        for index, heading in enumerate(headings):
+            direction_id, title = heading.group(1).strip(), heading.group(2).strip()
+            end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
+            section = text[heading.end():end]
+            alias_line = re.search(r"^Aliases:\s*(.+)$", section, re.MULTILINE | re.IGNORECASE)
+            aliases = [direction_id, title]
+            if alias_line:
+                aliases.extend(item.strip() for item in alias_line.group(1).split(";") if item.strip())
+            matched: list[tuple[int, str]] = []
+            for alias in aliases:
+                folded = self._fold_direction_text(alias)
+                if len(folded.replace(" ", "")) < 2:
+                    continue
+                contains_cjk = bool(re.search(r"[\u3400-\u9fff]", folded))
+                present = (
+                    folded.replace(" ", "") in query_compact
+                    if contains_cjk
+                    else f" {folded} " in f" {query_folded} "
+                )
+                if present:
+                    matched.append((len(folded), alias))
+            if matched:
+                matches.append({
+                    "id": direction_id,
+                    "title": title,
+                    "matched_alias": max(matched)[1],
+                })
+        return matches
+
     def _project_candidates(self, query: str) -> list[dict[str, Any]]:
         query_folded = query.casefold()
         query_terms = {
@@ -471,6 +546,15 @@ class ResearchRouterService:
                 candidate_query, 10, object_types={"project", "goal", "question"},
                 include_proposals=False,
             ):
+                try:
+                    _, metadata, _ = self.repository.find_document(item.id)
+                except Exception:
+                    continue
+                if (
+                    metadata.get("status") in {"archived", "superseded"}
+                    or metadata.get("memory_tier") == "historical"
+                ):
+                    continue
                 if item.id not in seen:
                     seen.add(item.id)
                     candidates.append(item)
@@ -503,6 +587,7 @@ class ResearchRouterService:
         if relation_depth < 0 or relation_depth > 2:
             raise ValidationError("research route relation depth 必须在 0..2")
         candidates = self._project_candidates(query)
+        direction_matches = self._direction_matches(query)
         selected_project = project
         reasons: list[str] = []
         if project:
@@ -510,8 +595,16 @@ class ResearchRouterService:
         elif candidates and candidates[0]["type"] == "project" and candidates[0]["score"] >= 0.75:
             selected_project = str(candidates[0]["id"])
             reasons.append("标题/别名/正文检索得到高置信 Project 候选。")
+        elif direction_matches:
+            reasons.append("没有可靠 Project 候选；采用注册表中的研究方向路由。")
         else:
             reasons.append("没有可靠 Project 候选，保留 Global Route。")
+        if direction_matches:
+            reasons.append(
+                "研究方向注册表别名命中："
+                + "；".join(f"{item['matched_alias']} -> {item['id']}" for item in direction_matches)
+                + "。该命中仅用于导航，不是事实或证据。"
+            )
 
         selected_domains = _clean_list(domains)
         annotation_matches: list[str] = []
@@ -529,7 +622,7 @@ class ResearchRouterService:
             for candidate in candidates:
                 if candidate["id"] == selected_project or candidate["type"] in {"goal", "question"}:
                     seed_objects.append(str(candidate["id"]))
-        elif candidates:
+        elif candidates and not direction_matches:
             seed_objects.extend(str(item["id"]) for item in candidates[:3])
 
         expansions: list[dict[str, Any]] = []
@@ -545,6 +638,15 @@ class ResearchRouterService:
                 continue
             for relation in relations:
                 neighbor = relation["target_id"] if relation["source_id"] == current else relation["source_id"]
+                try:
+                    _, neighbor_metadata, _ = self.repository.find_document(str(neighbor))
+                except Exception:
+                    continue
+                if (
+                    neighbor_metadata.get("status") in {"archived", "superseded"}
+                    or neighbor_metadata.get("memory_tier") == "historical"
+                ):
+                    continue
                 expansions.append({"from": current, "to": neighbor, "type": relation["relation_type"], "depth": depth + 1})
                 if neighbor not in seen:
                     seen.add(neighbor)
@@ -557,10 +659,12 @@ class ResearchRouterService:
             selected_project=selected_project,
             project_candidates=candidates,
             selected_domains=sorted(set(selected_domains)),
+            selected_directions=[item["id"] for item in direction_matches],
+            direction_matches=direction_matches,
             seed_objects=list(dict.fromkeys(seed_objects)),
             relation_expansions=expansions,
             annotation_matches=annotation_matches,
-            fallback_used=selected_project is None,
+            fallback_used=selected_project is None and (not direction_matches or len(direction_matches) > 1),
             raw_opened=[],
             selection_reasons=reasons,
         )

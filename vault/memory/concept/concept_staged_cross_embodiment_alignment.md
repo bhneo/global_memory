@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "异构具身数据的分阶段对齐"
 created_at: "2026-07-19T02:51:00+08:00"
-updated_at: "2026-07-19T03:06:08+08:00"
+updated_at: "2026-07-26T12:34:00+08:00"
 aliases: []
 tags: []
 domains: ["embodied-ai", "vla", "humanoid", "robot-learning"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-daily-gpt56terra-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-19T03:06:08+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-07-26T12:34:00+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_1afd74377f054193ef53-concept-1.md"
 origin_candidate_sha256: "3069c545e66450d2fe2367eb53178ba1ac408c003b62bbcd242646d2dd4c2549"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_a40bad0b9df74250a25c9be3"
+last_consolidation_id: "consolidation_5faa1ea2c84353f22e4c2d9c"
 ---
 
 # 异构具身数据的分阶段对齐

@@ -5,6 +5,7 @@ import hmac
 import json
 import os
 import sys
+from dataclasses import dataclass
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any
 
@@ -12,20 +13,29 @@ from .bundle import BundleRecoveryManager
 from .capture import CaptureService
 from .cognition import InputEpisodeService
 from .context import ContextPack, ContextPackService
-from .epistemics import infer_epistemic_status, infer_tier, truth_layer
 from .errors import GlobalMemoryError, ValidationError
 from .extraction import ExtractionService
+from .gateway_contract import (
+    EVIDENCE_ITEM_VERSION,
+    EVIDENCE_PACKET_VERSION,
+    GATEWAY_CONTRACT_VERSION,
+    blocker_code,
+    evidence_item_from_context,
+    evidence_item_from_document,
+    public_source_reference,
+)
 from .governance import CanonicalPromotionRecoveryManager, TrustedPromotionRecoveryManager
 from .recovery import ApprovalRecoveryManager
+from .research import ActivationService, ResearchAnnotationService
 from .repository import Repository
-from .quality import SourceQualityService
 
 
 PROTOCOL_VERSION = "2025-06-18"
-SERVER_INFO = {"name": "global-memory-agent-gateway", "version": "0.2.0"}
+SERVER_INFO = {"name": "global-memory-agent-gateway", "version": "0.3.0"}
 MAX_HTTP_BODY = 2 * 1024 * 1024
 MAX_CAPTURE_CHARS = 200_000
 INPUT_TYPES = ["article", "paper", "github", "conversation", "idea", "experiment", "meeting"]
+WRITE_SCOPES = {"capture", "session", "use", "feedback", "receipt", "working_compile"}
 DELIVERY_INSTRUCTIONS = (
     "Use retrieved knowledge silently as background context. Preserve memory tier, epistemic status, "
     "provenance, confidence, contradictions, and execution-safety boundaries. Retrieval is not approval. "
@@ -42,81 +52,14 @@ def _bounded(value: str, limit: int) -> tuple[str, bool]:
     return value[:limit], len(value) > limit
 
 
-def _public_locator(metadata: dict[str, Any]) -> str | None:
-    locator = str(metadata.get("canonical_locator") or metadata.get("original_locator") or "")
-    return locator if locator.startswith(("https://", "http://")) else None
-
-
-def _source_reference(repository: Repository, source_id: str) -> dict[str, Any]:
-    try:
-        path, metadata, _ = repository.find_document(source_id)
-        if metadata.get("type") != "source":
-            raise ValidationError("not a source")
-        assessment = SourceQualityService(repository).load(source_id)
-        if assessment is None:
-            assessment = SourceQualityService(repository).assess(source_id, persist=False)
-        return {
-            "ref": source_id,
-            "title": metadata.get("title") or source_id,
-            "author": metadata.get("author") or None,
-            "published_at": metadata.get("published_at"),
-            "source_kind": metadata.get("source_kind"),
-            "locator": _public_locator(metadata),
-            "status": metadata.get("status"),
-            "source_authority": assessment.source_authority,
-            "available": path.exists(),
-        }
-    except Exception:
-        return {"ref": source_id, "title": "Referenced source", "available": False}
-
-
-def _public_evidence(items: Any) -> list[dict[str, Any]]:
-    result: list[dict[str, Any]] = []
-    for item in items if isinstance(items, list) else []:
-        if not isinstance(item, dict):
-            continue
-        text = item.get("text") or item.get("original_text") or item.get("interpretation") or item.get("excerpt") or ""
-        result.append({
-            "source_ref": item.get("source_ref") or item.get("source_id"),
-            "stance": item.get("stance"),
-            "evidence_kind": item.get("evidence_kind", "legacy_excerpt"),
-            "page": item.get("page"),
-            "section": item.get("section"),
-            "text": str(text)[:240],
-            "verification_status": item.get("verification_status"),
-        })
-    return result
-
-
-def _public_item(item: dict[str, Any]) -> dict[str, Any]:
-    """Keep semantic/evidence boundaries while excluding operational diagnostics."""
-    result = {
-        "lookup_ref": item.get("id"),
-        "title": item.get("title"),
-        "object_type": item.get("type"),
-        "knowledge_status": item.get("knowledge_status"),
-        "memory_tier": item.get("memory_tier"),
-        "epistemic_status": item.get("epistemic_status"),
-        "truth_layer": item.get("truth_layer"),
-        "confidence": item.get("confidence"),
-        "source_authority": item.get("source_authority"),
-        "evidence_coverage": item.get("evidence_coverage"),
-        "evidence_entailment": item.get("evidence_entailment"),
-        "unresolved_contradictions": item.get("unresolved_contradictions", []),
-        "execution_safe": bool(item.get("execution_safe", False)),
-        "source_refs": list(item.get("source_ids", [])),
-        "content": item.get("content", item.get("snippet", "")),
-    }
-    if item.get("evidence"):
-        result["evidence"] = _public_evidence(item["evidence"])
-    for optional in ("verification", "annotation", "reflection", "cognitive_synthesis"):
-        if item.get(optional):
-            result[optional] = item[optional]
-    return result
-
-
-def _evidence_packet(repository: Repository, pack: ContextPack) -> dict[str, Any]:
-    items = [_public_item(item) for item in pack.items]
+def _evidence_packet(
+    repository: Repository,
+    pack: ContextPack,
+    *,
+    strict_execution: bool = False,
+    include_blockers: bool = True,
+) -> dict[str, Any]:
+    items = [evidence_item_from_context(item) for item in pack.items]
     source_ids = list(dict.fromkeys(
         str(source_id)
         for item in items
@@ -128,13 +71,41 @@ def _evidence_packet(repository: Repository, pack: ContextPack) -> dict[str, Any
         if item.get("truth_layer") in {"user_annotation", "reflection", "cognitive_synthesis"}
     ]
     unsafe = [str(item.get("lookup_ref")) for item in items if not item.get("execution_safe")]
+    execution_requested = "execution" in pack.profiles
+    blockers = []
+    if execution_requested and include_blockers:
+        for omitted in pack.omitted:
+            reason = str(omitted.get("reason", ""))
+            code = str(omitted.get("reason_code") or blocker_code(reason))
+            if strict_execution or code != "insufficient_execution_evidence":
+                blockers.append({
+                    "blocker_version": 1,
+                    "lookup_ref": omitted.get("id"),
+                    "code": code,
+                    "message": reason or "Execution evidence is not qualified.",
+                })
+    safe_count = sum(bool(item["execution"]["safe"]) for item in items)
+    execution_ready = bool(items) and safe_count == len(items) and not blockers
+    if execution_requested:
+        outcome = "ready" if execution_ready else ("partial" if safe_count else "blocked")
+    else:
+        outcome = "ready" if items else "insufficient_evidence"
     return {
-        "evidence_packet_version": 1,
+        "evidence_packet_version": EVIDENCE_PACKET_VERSION,
+        "gateway_contract_version": GATEWAY_CONTRACT_VERSION,
         "question": pack.query,
         "profile": pack.profiles[0] if len(pack.profiles) == 1 else pack.profiles,
-        "result": "ok" if items else "insufficient_evidence",
+        "outcome": outcome,
+        "result": "ok" if outcome in {"ready", "partial"} else outcome,
         "knowledge": items,
-        "sources": [_source_reference(repository, source_id) for source_id in source_ids],
+        "sources": [public_source_reference(repository, source_id) for source_id in source_ids],
+        "execution_gate": {
+            "requested": execution_requested,
+            "strict": strict_execution,
+            "ready": execution_ready if execution_requested else None,
+            "safe_item_count": safe_count,
+            "blockers": blockers,
+        },
         "evidence_boundary": {
             "all_items_execution_safe": not unsafe,
             "non_execution_safe_refs": unsafe,
@@ -147,6 +118,42 @@ def _evidence_packet(repository: Repository, pack: ContextPack) -> dict[str, Any
             "budget_exhausted": any("budget" in str(item.get("reason", "")) for item in pack.omitted),
         },
     }
+
+
+@dataclass(frozen=True)
+class GatewayPolicy:
+    write_scopes: frozenset[str] = frozenset()
+
+    @classmethod
+    def from_legacy(cls, *, allow_capture: bool) -> "GatewayPolicy":
+        return cls(frozenset({"capture"} if allow_capture else set()))
+
+
+def _require_explicit_authorization(args: dict[str, Any]) -> None:
+    authorization = args.get("authorization")
+    if not isinstance(authorization, dict) or authorization.get("explicit") is not True:
+        raise ValidationError("gateway write requires explicit user authorization")
+
+
+def _actor_label(args: dict[str, Any]) -> str:
+    actor = args.get("actor")
+    if not isinstance(actor, dict):
+        raise ValidationError("gateway write requires an actor object")
+    unknown = set(actor) - {"provider", "product", "client_instance"}
+    if unknown:
+        raise ValidationError(f"unsupported actor fields: {', '.join(sorted(unknown))}")
+    provider = str(actor.get("provider", "")).strip().casefold()
+    product = str(actor.get("product", "")).strip().casefold()
+    if not provider or not product or len(provider) > 80 or len(product) > 80:
+        raise ValidationError("actor provider and product must contain 1 to 80 characters")
+    return f"{provider}:{product}"
+
+
+def _idempotency_key(args: dict[str, Any]) -> str:
+    value = str(args.get("idempotency_key", "")).strip()
+    if not value or len(value) > 200:
+        raise ValidationError("idempotency_key must contain 1 to 200 characters")
+    return value
 
 
 def _recover_before_capture(repository: Repository) -> None:
@@ -163,9 +170,43 @@ def _recover_before_capture(repository: Repository) -> None:
 class AgentMemoryTools:
     """Agent-facing evidence tools plus an explicitly enabled Capture-only boundary."""
 
-    def __init__(self, repository: Repository, *, allow_capture: bool = False):
+    def __init__(
+        self,
+        repository: Repository,
+        *,
+        allow_capture: bool = False,
+        policy: GatewayPolicy | None = None,
+    ):
         self.repository = repository
-        self.allow_capture = allow_capture
+        self.policy = policy or GatewayPolicy.from_legacy(allow_capture=allow_capture)
+        self.allow_capture = "capture" in self.policy.write_scopes
+
+    def capabilities(self) -> dict[str, Any]:
+        scopes = sorted(self.policy.write_scopes)
+        return {
+            "gateway_contract_version": GATEWAY_CONTRACT_VERSION,
+            "server_version": SERVER_INFO["version"],
+            "evidence_item_version": EVIDENCE_ITEM_VERSION,
+            "evidence_packet_version": EVIDENCE_PACKET_VERSION,
+            "profiles": ["research", "execution", "exploration"],
+            "strict_execution_supported": True,
+            "enabled_write_scopes": scopes,
+            "authority": {
+                "source_input_write": "capture" in scopes or "session" in scopes,
+                "annotation_write": "feedback" in scopes,
+                "activation_write": "use" in scopes,
+                "receipt_write": "receipt" in scopes,
+                "working_write": "working_compile" in scopes,
+                "trusted_write": False,
+                "canonical_write": False,
+            },
+            "limits": {
+                "max_capture_chars": MAX_CAPTURE_CHARS,
+                "max_context_tokens": 20_000,
+                "max_search_results": 50,
+            },
+            "idempotency_required_for": ["session", "use", "feedback", "receipt"],
+        }
 
     def definitions(self) -> list[dict[str, Any]]:
         read_annotation = {
@@ -175,6 +216,13 @@ class AgentMemoryTools:
             "openWorldHint": False,
         }
         definitions = [
+            {
+                "name": "memory_capabilities",
+                "title": "Inspect memory gateway capabilities",
+                "description": "Return the versioned evidence contract and exact write authority enabled for this server.",
+                "inputSchema": {"type": "object", "properties": {}, "additionalProperties": False},
+                "annotations": read_annotation,
+            },
             {
                 "name": "memory_context",
                 "title": "Get bounded evidence context",
@@ -189,6 +237,12 @@ class AgentMemoryTools:
                         "token_budget": {"type": "integer", "minimum": 128, "maximum": 20000, "default": 1200},
                         "profile": {"type": "string", "enum": ["research", "execution", "exploration"], "default": "research"},
                         "relation_depth": {"type": "integer", "minimum": 0, "maximum": 3, "default": 1},
+                        "strict_execution": {
+                            "type": "boolean",
+                            "default": False,
+                            "description": "Fail closed and return structured blockers; valid only with profile=execution.",
+                        },
+                        "include_blockers": {"type": "boolean", "default": True},
                     },
                     "required": ["question"],
                     "additionalProperties": False,
@@ -272,17 +326,121 @@ class AgentMemoryTools:
                     "openWorldHint": False,
                 },
             })
+        write_annotation = {
+            "readOnlyHint": False,
+            "destructiveHint": False,
+            "idempotentHint": True,
+            "openWorldHint": False,
+        }
+        actor_schema = {
+            "type": "object",
+            "properties": {
+                "provider": {"type": "string", "minLength": 1, "maxLength": 80},
+                "product": {"type": "string", "minLength": 1, "maxLength": 80},
+                "client_instance": {"type": "string", "maxLength": 120},
+            },
+            "required": ["provider", "product"],
+            "additionalProperties": False,
+        }
+        authorization_schema = {
+            "type": "object",
+            "properties": {"explicit": {"type": "boolean", "const": True}},
+            "required": ["explicit"],
+            "additionalProperties": False,
+        }
+        if "session" in self.policy.write_scopes:
+            definitions.append({
+                "name": "memory_session_record",
+                "title": "Record an explicitly authorized session episode",
+                "description": "Store a bounded goal/result/lesson summary as Source + Input only; never writes governed knowledge.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "actor": actor_schema,
+                        "session_ref": {"type": "string", "minLength": 1, "maxLength": 200},
+                        "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 200},
+                        "authorization": authorization_schema,
+                        "goal": {"type": "string", "minLength": 1, "maxLength": 4000},
+                        "result": {"type": "string", "minLength": 1, "maxLength": 12000},
+                        "lesson": {"type": "string", "minLength": 1, "maxLength": 8000},
+                    },
+                    "required": ["actor", "session_ref", "idempotency_key", "authorization", "goal", "result", "lesson"],
+                    "additionalProperties": False,
+                },
+                "annotations": write_annotation,
+            })
+        if "use" in self.policy.write_scopes:
+            definitions.append({
+                "name": "memory_use_record",
+                "title": "Record actual use of memory",
+                "description": "Append an idempotent operational use event. Retrieval alone must not call this tool.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "actor": actor_schema,
+                        "session_ref": {"type": "string", "minLength": 1, "maxLength": 200},
+                        "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 200},
+                        "authorization": authorization_schema,
+                        "object_id": {"type": "string", "minLength": 1},
+                        "kind": {"type": "string", "enum": ["opened", "used", "cited", "coactivated"]},
+                        "project_id": {"type": "string"},
+                        "query": {"type": "string", "maxLength": 4000},
+                        "reason": {"type": "string", "maxLength": 2000},
+                        "coactivated_ids": {"type": "array", "items": {"type": "string"}, "maxItems": 50},
+                    },
+                    "required": ["actor", "session_ref", "idempotency_key", "authorization", "object_id", "kind"],
+                    "additionalProperties": False,
+                },
+                "annotations": write_annotation,
+            })
+        if "feedback" in self.policy.write_scopes:
+            definitions.append({
+                "name": "memory_feedback_record",
+                "title": "Record user connection-value feedback",
+                "description": "Store explicit obvious/forced/interesting/actionable feedback as user_annotation, never as truth evidence.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "actor": actor_schema,
+                        "session_ref": {"type": "string", "minLength": 1, "maxLength": 200},
+                        "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 200},
+                        "authorization": authorization_schema,
+                        "target_id": {"type": "string", "minLength": 1},
+                        "label": {"type": "string", "enum": ["obvious", "forced", "interesting", "actionable"]},
+                        "note": {"type": "string", "minLength": 1, "maxLength": 4000},
+                        "projects": {"type": "array", "items": {"type": "string"}, "maxItems": 20},
+                        "domains": {"type": "array", "items": {"type": "string"}, "maxItems": 20},
+                    },
+                    "required": ["actor", "session_ref", "idempotency_key", "authorization", "target_id", "label", "note"],
+                    "additionalProperties": False,
+                },
+                "annotations": write_annotation,
+            })
         return definitions
 
     def call(self, name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
         args = arguments or {}
+        if name == "memory_capabilities":
+            if args:
+                raise ValidationError("memory_capabilities accepts no arguments")
+            return self.capabilities()
         if name == "memory_context":
+            profile = str(args.get("profile", "research"))
+            strict_execution = bool(args.get("strict_execution", False))
+            if strict_execution and profile != "execution":
+                raise ValidationError("strict_execution requires profile=execution")
             pack = ContextPackService(self.repository).build(
                 str(args["question"]), int(args.get("token_budget", 1200)),
-                profiles=[str(args.get("profile", "research"))],
+                profiles=[profile],
                 relation_depth=int(args.get("relation_depth", 1)),
+                strict_execution=strict_execution,
             )
-            return _evidence_packet(self.repository, pack)
+            return _evidence_packet(
+                self.repository,
+                pack,
+                strict_execution=strict_execution,
+                include_blockers=bool(args.get("include_blockers", True)),
+            )
         if name == "memory_search":
             results = self.repository.search(
                 str(args["query"]), int(args.get("limit", 10)),
@@ -297,15 +455,9 @@ class AgentMemoryTools:
                     source_payload = self.call("memory_source", {"source_id": item.id, "max_chars": 600})
                     extraction = source_payload.get("extraction") or {}
                     snippet = extraction.get("text") or source_payload["source"]["body"]
-                public_results.append({
-                    "lookup_ref": item.id, "object_type": item.type, "title": item.title,
-                    "knowledge_status": item.status,
-                    "memory_tier": None if item.type in {"source", "input", "reflection", "annotation"} else infer_tier(metadata, item_path),
-                    "epistemic_status": infer_epistemic_status(metadata, item_path),
-                    "truth_layer": truth_layer(metadata, item_path),
-                    "confidence": metadata.get("claim_confidence", metadata.get("confidence", "unknown")),
-                    "source_refs": item.source_ids, "snippet": snippet,
-                })
+                public_results.append(evidence_item_from_document(
+                    self.repository, item_path, metadata, snippet,
+                ))
             return {"query": args["query"], "results": public_results}
         if name == "memory_show":
             path, metadata, body = self.repository.find_document(str(args["object_id"]))
@@ -317,26 +469,16 @@ class AgentMemoryTools:
             source_ids = [str(item) for item in metadata.get("source_ids", [])]
             if metadata.get("type") == "source":
                 source_ids = [str(metadata["id"])]
-            item = {
-                "id": metadata.get("id"), "title": metadata.get("title"), "type": metadata.get("type"),
-                "knowledge_status": metadata.get("status"), "memory_tier": metadata.get("memory_tier"),
-                "epistemic_status": infer_epistemic_status(metadata, path),
-                "truth_layer": truth_layer(metadata, path),
-                "confidence": metadata.get("claim_confidence", metadata.get("confidence", "unknown")),
-                "evidence_coverage": metadata.get("evidence_coverage"),
-                "evidence_entailment": metadata.get("evidence_entailment", "unknown"),
-                "unresolved_contradictions": metadata.get("unresolved_contradictions", []),
-                "execution_safe": metadata.get("execution_safe", False), "source_ids": source_ids,
-                "content": text, "evidence": metadata.get("evidence", []),
-            }
+            item = evidence_item_from_document(self.repository, path, metadata, text)
             return {
-                "object": _public_item(item),
-                "sources": [_source_reference(self.repository, source_id) for source_id in source_ids],
+                "item": item,
+                "object": item,
+                "sources": [public_source_reference(self.repository, source_id) for source_id in source_ids],
                 "truncated": truncated,
             }
         if name == "memory_source":
             source_id = str(args["source_id"])
-            _, metadata, _ = self.repository.find_document(source_id)
+            source_path, metadata, _source_markdown_body = self.repository.find_document(source_id)
             if metadata.get("type") != "source":
                 raise ValidationError(f"not a source object: {source_id}")
             limit = int(args.get("max_chars", 12000))
@@ -356,10 +498,87 @@ class AgentMemoryTools:
                 }
             except Exception:
                 extraction = None
+            item = evidence_item_from_document(self.repository, source_path, metadata, source_body)
             return {
-                "source": {**_source_reference(self.repository, source_id), "body": source_body,
-                           "truncated": source_truncated},
+                "item": item,
+                "source": {**public_source_reference(self.repository, source_id), "body": source_body,
+                           "truncated": source_truncated, "execution_safe": False},
                 "extraction": extraction,
+            }
+        if name == "memory_session_record":
+            if "session" not in self.policy.write_scopes:
+                raise ValidationError("session recording is not enabled for this server")
+            _require_explicit_authorization(args)
+            actor = _actor_label(args)
+            _idempotency_key(args)
+            result = InputEpisodeService(self.repository).record_agent_session(
+                {key: args.get(key) for key in ("goal", "result", "lesson")},
+                agent=actor,
+                session_ref=str(args.get("session_ref", "")),
+            )
+            return {
+                "operation": "session_record",
+                "status": "accepted" if result["input"]["created"] else "duplicate",
+                "source_ref": result["source"]["source_id"],
+                "input_ref": result["input"]["object_id"],
+                "reflection_queued": True,
+                "working_writes": 0,
+                "trusted_writes": 0,
+                "canonical_writes": 0,
+            }
+        if name == "memory_use_record":
+            if "use" not in self.policy.write_scopes:
+                raise ValidationError("use recording is not enabled for this server")
+            _require_explicit_authorization(args)
+            actor = _actor_label(args)
+            event_id = _idempotency_key(args)
+            kind = str(args.get("kind", ""))
+            if kind not in {"opened", "used", "cited", "coactivated"}:
+                raise ValidationError("gateway use kind must be opened/used/cited/coactivated")
+            result = ActivationService(self.repository).record(
+                str(args.get("object_id", "")),
+                kind=kind,
+                project_id=str(args.get("project_id") or "") or None,
+                query=str(args.get("query") or "") or None,
+                context_pack_id=str(args.get("session_ref") or "") or None,
+                reason=str(args.get("reason") or ""),
+                source=f"gateway:{actor}",
+                coactivated_ids=list(map(str, args.get("coactivated_ids", []))),
+                event_id=event_id,
+            )
+            return {
+                "operation": "use_record",
+                "status": "duplicate" if result["duplicate"] else "accepted",
+                **result,
+                "working_writes": 0,
+                "trusted_writes": 0,
+                "canonical_writes": 0,
+            }
+        if name == "memory_feedback_record":
+            if "feedback" not in self.policy.write_scopes:
+                raise ValidationError("feedback recording is not enabled for this server")
+            _require_explicit_authorization(args)
+            _actor_label(args)
+            event_id = _idempotency_key(args)
+            result = ResearchAnnotationService(self.repository).create(
+                "connection_feedback",
+                target_ids=[str(args.get("target_id", ""))],
+                feedback_label=str(args.get("label", "")),
+                feedback_note=str(args.get("note", "")),
+                research_projects=list(map(str, args.get("projects", []))),
+                domains=list(map(str, args.get("domains", []))),
+                created_by="user",
+                external_event_id=event_id,
+            )
+            return {
+                "operation": "feedback_record",
+                "status": "duplicate" if result.get("duplicate") else "accepted",
+                "annotation_ref": result["id"],
+                "truth_layer": "user_annotation",
+                "execution_safe": False,
+                "working_writes": 0,
+                "trusted_writes": 0,
+                "canonical_writes": 0,
             }
         if name == "memory_capture":
             if not self.allow_capture:
@@ -404,8 +623,20 @@ class ReadOnlyMemoryTools(AgentMemoryTools):
 
 
 class MCPApplication:
-    def __init__(self, repository: Repository, *, allow_capture: bool = False):
-        self.tools = AgentMemoryTools(repository, allow_capture=allow_capture)
+    def __init__(
+        self,
+        repository: Repository,
+        *,
+        allow_capture: bool = False,
+        write_scopes: set[str] | None = None,
+    ):
+        scopes = set(write_scopes or set())
+        if allow_capture:
+            scopes.add("capture")
+        unknown = scopes - WRITE_SCOPES
+        if unknown:
+            raise ValidationError(f"unknown gateway write scopes: {', '.join(sorted(unknown))}")
+        self.tools = AgentMemoryTools(repository, policy=GatewayPolicy(frozenset(scopes)))
 
     @staticmethod
     def _result(request_id: Any, result: Any) -> dict[str, Any]:
@@ -455,8 +686,13 @@ class MCPApplication:
             })
 
 
-def serve_stdio(repository: Repository, *, allow_capture: bool = False) -> None:
-    app = MCPApplication(repository, allow_capture=allow_capture)
+def serve_stdio(
+    repository: Repository,
+    *,
+    allow_capture: bool = False,
+    write_scopes: set[str] | None = None,
+) -> None:
+    app = MCPApplication(repository, allow_capture=allow_capture, write_scopes=write_scopes)
     for line in sys.stdin:
         if not line.strip():
             continue
@@ -478,10 +714,11 @@ def serve_http(
     bearer_token: str | None,
     allowed_origins: set[str],
     allow_capture: bool = False,
+    write_scopes: set[str] | None = None,
 ) -> None:
     if host not in {"127.0.0.1", "localhost", "::1"} and not bearer_token:
         raise ValidationError("non-loopback MCP HTTP requires a bearer token")
-    app = MCPApplication(repository, allow_capture=allow_capture)
+    app = MCPApplication(repository, allow_capture=allow_capture, write_scopes=write_scopes)
 
     class Handler(BaseHTTPRequestHandler):
         server_version = "GlobalMemoryMCP/0.2"
@@ -549,17 +786,19 @@ def add_mcp_arguments(parser: argparse.ArgumentParser) -> None:
     commands = parser.add_subparsers(dest="mcp_transport", required=True)
     stdio = commands.add_parser("stdio", help="serve the Agent Memory Gateway over stdio")
     stdio.add_argument("--allow-capture", action="store_true", help="enable explicit Capture-only text intake")
+    stdio.add_argument("--write-scope", action="append", choices=sorted(WRITE_SCOPES), default=[])
     http = commands.add_parser("http", help="serve the Agent Memory Gateway over Streamable HTTP")
     http.add_argument("--host", default="127.0.0.1")
     http.add_argument("--port", type=int, default=8765)
     http.add_argument("--token-env", default="GM_MCP_TOKEN")
     http.add_argument("--allowed-origin", action="append", default=[])
     http.add_argument("--allow-capture", action="store_true", help="enable explicit Capture-only text intake")
+    http.add_argument("--write-scope", action="append", choices=sorted(WRITE_SCOPES), default=[])
 
 
 def run_mcp(repository: Repository, args: argparse.Namespace) -> None:
     if args.mcp_transport == "stdio":
-        serve_stdio(repository, allow_capture=args.allow_capture)
+        serve_stdio(repository, allow_capture=args.allow_capture, write_scopes=set(args.write_scope))
         return
     token = os.environ.get(args.token_env) if args.token_env else None
     serve_http(
@@ -567,4 +806,5 @@ def run_mcp(repository: Repository, args: argparse.Namespace) -> None:
         bearer_token=token,
         allowed_origins=set(args.allowed_origin),
         allow_capture=args.allow_capture,
+        write_scopes=set(args.write_scope),
     )

@@ -1,0 +1,14 @@
+[mcp_client]
+enabled = true
+
+[[mcp_client.servers]]
+name = "global-memory"
+description = "Governed long-term evidence memory (read-only)"
+command = "powershell.exe"
+args = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\bhneo\\Desktop\\project\\global-memory-runtime\\scripts\\gm-mcp-stdio.ps1"]
+cwd = "C:\\Users\\bhneo\\Desktop\\project\\global-memory-runtime"
+enabled = true
+allowed_tools = ["memory_capabilities", "memory_context", "memory_search", "memory_show", "memory_source"]
+disallowed_tools = []
+timeout_secs = 60
+

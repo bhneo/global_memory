@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "动作块级策略优化与动态执行时域"
 created_at: "2026-07-20T11:56:00+08:00"
-updated_at: "2026-07-20T13:37:36+08:00"
+updated_at: "2026-07-28T16:33:58+08:00"
 aliases: ["PAC-ACT", "chunk-level PPO", "action-chunk policy optimization"]
 tags: []
 domains: ["embodied-ai", "robot-rl", "action-chunking", "contact-manipulation"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt56-m91-vla-posttraining-weekly-20260720"
-consolidation_count: 2
-last_consolidated_at: "2026-07-20T13:37:36+08:00"
+consolidation_count: 3
+last_consolidated_at: "2026-07-28T16:33:58+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_63cd1d4cd1ac5e4971d1-concept-1.md"
 origin_candidate_sha256: "0abbeece325a6ec42b27fbeac3a8881574c4e7069a16d72fd7dbb027a8eae290"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_b37a36ee83a614dec5a46304"
+last_consolidation_id: "consolidation_d80fd7f4c86feb000675b567"
 ---
 
 # 动作块级策略优化与动态执行时域

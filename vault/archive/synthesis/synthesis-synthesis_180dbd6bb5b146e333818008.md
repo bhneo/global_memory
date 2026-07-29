@@ -1,0 +1,173 @@
+---
+id: "synthesis_180dbd6bb5b146e333818008"
+type: "synthesis"
+status: "archived"
+title: "按需语义、状态交接与快环权限：具身系统的时序化接口边界"
+created_at: "2026-07-26T12:31:55+08:00"
+updated_at: "2026-07-29T13:52:36+08:00"
+aliases: []
+tags: ["weekly-dream", "cognitive-synthesis", "archived-period-synthesis"]
+domains: ["embodied-ai", "robot-memory", "vla", "robot-safety", "world-models", "long-horizon-robotics"]
+confidence: "medium"
+source_ids: ["source_45c4de28acb4ba36642f1594", "source_4e06d1b1cdcd0d07eff47909", "source_4f709a2f26b6_v0002_cb9f3e56f3e6", "source_b470fe87f9d09df2b7d3b5fd", "source_cc2f2812863ca6751c223b54", "source_d4762e0cf2330ab6ea00a521", "source_d90b4e9bf278dfc5e68d1bb5", "source_e8650c5afb7548268f649fb8"]
+relations: []
+period: "2026-W30"
+input_reflections: ["reflection_1f5ecace3c0b5fd265b9d846", "reflection_5eb9ba718b0b143e55d0b020", "reflection_743b2d2d30d2f822bf2bfb9f", "reflection_96809e9d9bffed57b211681f", "reflection_d3da57bd40bcce58fcac3b37", "reflection_dc9b1c4fbde4b505081c875b", "reflection_e8b12edde0bfcd108fbc334e", "reflection_ee2dc3e5679d14ca67d9f5df"]
+input_concepts: ["concept_23e7d830d5080b6725168c6e", "concept_2ce226e08d585158c1dfbb18", "concept_4b29abb8c07d6365b04b97c3", "concept_648a44e346f991eab5956e55", "concept_a858f8d191d3afdd69418471", "concept_action_centered_joint_world_action_model", "concept_asymmetric_frozen_vla_harness", "concept_relation_triggered_process_safety", "concept_typed_verified_robot_skill_graph"]
+emerging_patterns: ["长时程系统不应让昂贵语义处理随观察历史单调增长：JITOMA 以 dormant anchors 延迟场景语义化，FastSlow-LMDrive 以可增量缓存延迟慢上下文重算，Schema 则只在历史反例暴露表示缺口时修订可执行规则；三者共同把高成本计算绑定到任务、陈旧性或失配触发器，而不是绑定到每个输入时刻。", "慢速语义输出适合提出任务、关系前置条件、恢复原语或缓存上下文，但新鲜传感、连续控制与不可提升的安全上限必须保留在快环：SafeRelBench 揭示动作前关系门禁，LIFT 与 FastSlow-LMDrive提供块内或 tick 级新鲜观测接口，FORGE-plus 明确语义恢复不能提高力预算。", "异构策略的可组合性不仅取决于能力目录或正确分解，还取决于前一策略终态是否处于后一策略的有效支持域；RoboHarness 的 Memory Bridge、类型化技能图的检查点以及冻结 VLA 外壳的恢复原语都指向需要显式表示和验证交接状态。", "可运行世界表示有不同用途且证据不可互换：Schema 的离散程序接受追加式历史回放约束，Agentic Real2Sim 的 episode twin 追求物理仿真重放，动作中心联合世界—动作模型用未来视觉辅助控制；可搜索、可模拟和可预测都不能单独证明现实闭环有效。"]
+knowledge_updates: [{"target_id": "concept_asymmetric_frozen_vla_harness", "previous": "把冻结 VLA 限定为可重试的局部接触操作专家，由高层代理和固定解析原语负责语义重绑定、自由空间运输、姿态调整、失败重置与验证，并用成功轨迹和失败模型学习各原语的适用范围。", "proposed": "把冻结 VLA 和其他异构策略限定为能力有界的局部专家；高层代理负责分解、路由和恢复，但每次策略切换前还必须用执行记忆估计当前状态与 incoming policy 支持域的兼容性，并在必要时生成受硬安全权限约束的桥接轨迹。正确的技能选择不能替代交接状态验证，稀疏历史也不能证明能力边界。", "reason": "RoboHarness 的消融把 Memory Bridge 与任务理解、能力路由区分开，显示正确分解后仍可能因交接状态失配而失败；FORGE-plus 同时限定桥接或恢复动作不能取得提高力预算的权限。", "change_type": "refine", "supporting_reflections": ["reflection_d3da57bd40bcce58fcac3b37", "reflection_5eb9ba718b0b143e55d0b020"], "supporting_sources": ["source_cc2f2812863ca6751c223b54", "source_45c4de28acb4ba36642f1594"]}, {"target_id": "concept_relation_triggered_process_safety", "previous": "将安全条件绑定到会触发风险的具体动作，并要求支撑、容纳、邻近等关系前置条件在该动作执行前成立，而不只检查最终任务状态。", "proposed": "把过程安全实现为不能互相替代的双门禁：在风险动作前验证支撑、容纳、邻近等语义关系前置条件，并在动作执行期间由高频传感与控制环执行不可由语义层提升的力或其他物理上限。符号关系成立不能证明接触安全，硬命令上限也不能修复错误动作顺序。", "reason": "SafeRelBench 量化了关系风险对动作顺序安全的影响，而 FORGE-plus 暴露了命令 clamp 与真实接触峰值之间的 overshoot；二者共同限定了语义门禁和物理门禁的不同责任。", "change_type": "refine", "supporting_reflections": ["reflection_ee2dc3e5679d14ca67d9f5df", "reflection_5eb9ba718b0b143e55d0b020"], "supporting_sources": ["source_b470fe87f9d09df2b7d3b5fd", "source_45c4de28acb4ba36642f1594"]}]
+new_connections: [{"shared_mechanism": "JITOMA、FastSlow-LMDrive 与 Schema 都保留低成本、可复用的持久状态，并只在任务激活、缓存刷新或历史失配时支付高成本推理。", "boundary": "该连接适用于高成本语义或模型更新可延迟、且系统仍保留足够索引或历史来触发恢复的任务；它不证明三个系统共享同一种学习算法，也不适用于必须每个 tick 完整重估的快速危险动态。", "difference": "JITOMA 延迟场景节点的 caption 与功能推断，FastSlow-LMDrive 延迟视觉语言前缀重算并管理缓存陈旧性，Schema 延迟显式世界程序的结构修订直到反例出现。"}, {"shared_mechanism": "SafeRelBench、LIFT、FastSlow-LMDrive 与 FORGE-plus 都把慢语义或预训练上下文限制在提议层，并要求执行时读取更新鲜的局部状态。", "boundary": "语义关系、六维力、驾驶视觉与接触峰值具有不同传感延迟和危险变量；共同的快慢结构不能让一种模态的安全结论外推到另一模态。", "difference": "SafeRelBench 检查风险动作前的离散关系，LIFT 在动作块内注入力记忆，FastSlow-LMDrive 在控制 tick 读取当前图像，FORGE-plus 由快环执行不可提升的力预算。"}, {"shared_mechanism": "RoboHarness、冻结 VLA 非对称编排与类型化技能图都把长程任务外化为可检查的局部专家组合，并在边界处保留检查点或恢复机制。", "boundary": "RoboHarness 的支持域估计依赖积累的轨迹，技能图的类型检查依赖正确契约，冻结 VLA 外壳依赖局部专家真实具备目标能力；任一表示都不能创造策略库中不存在的能力。", "difference": "RoboHarness 显式学习 incoming policy 的状态兼容区域并规划桥接，冻结 VLA 外壳强调高层与接触原语的非对称职责，类型化技能图强调工作流 schema、验证与恢复语义。"}, {"shared_mechanism": "Schema 与 Agentic Real2Sim 都把观察历史转换成可运行的环境表示，并要求该表示能重放或生成动作后果。", "boundary": "Schema 的证据来自离散 ARC 环境中的程序 backtest；Agentic Real2Sim 面向带重建误差、物理参数不确定性和传感噪声的机器人仿真，两者的保真度标准不可互换。", "difference": "Schema 通过区分性实验修订对象、状态变量和转移规则，Agentic Real2Sim 通过场景、物理、参与者、相机与轨迹组合构造 episode twin。"}]
+unresolved_tensions: ["越早用任务意图过滤观察，计算成本越低，但未来任务可能需要已被前端抑制的细节；保留 dormant anchor 能缓解而不能消除这一信息损失。", "更频繁的快环更新可提高路线完成率或接触反应性，却可能增加危险状态暴露时间；FastSlow-LMDrive 的碰撞变化和 FORGE-plus 的接触 overshoot 都要求把完成与安全分开计量。", "用成功与失败轨迹学习策略支持域能够改善路由，但新策略或罕见扰动的证据天然稀疏；保守桥接可能降低效率，激进桥接又可能把状态推向未知分布。", "可读程序、物理 episode twin 和未来视觉预测分别优化解释、仿真与监督；强行统一为单一世界模型指标会掩盖各自的验证边界。"]
+candidate_hypotheses: [{"statement": "在慢语义或预训练主干与快速物理控制并存的具身系统中，如果训练覆盖部署时的上下文陈旧性，并把安全上限固定在读取新鲜传感的快环，系统会比同步全模型或由语义层直接输出约束更可靠。", "falsifier": "在同一硬件、策略容量、训练数据与控制频率下，覆盖陈旧性并固定快环权限的系统在延迟扰动、传感噪声、成功率、过程安全和约束超调上均不优于同步端到端基线或语义层直接约束基线。", "possible_experiment": "在统一接触任务中构造 0 至 500 毫秒慢上下文延迟和分级力噪声，交叉比较同步全模型、未做陈旧性训练的异步模型、陈旧性对齐异步模型，以及语义可改写或不可改写力上限；分别报告任务成功、动作前置条件违规、峰值力超调、恢复时间与计算延迟。", "supporting_patterns": ["FastSlow-LMDrive 通过随机截断慢前缀覆盖部署缓存陈旧性", "LIFT 用近期六维力驱动块内反应分支并保留慢速视觉语言先验", "FORGE-plus 将恢复选择与不可提升的力权限分离", "SafeRelBench 显示任务完成与风险动作前的安全前置条件必须分开评测"], "counter_arguments": ["这些来源覆盖驾驶、接触装配和符号化家庭模拟，跨任务共同模式可能来自抽象层级过高而非可迁移机制。", "同步端到端模型可能在充足算力和数据下学习更优的联合表示，显式快慢接口会引入缓存、标定和调度故障。", "固定快环上限若过于保守，可能阻止必要恢复；新鲜传感若噪声大，也可能比陈旧但稳定的语义上下文更不可靠。"], "supporting_reflections": ["reflection_743b2d2d30d2f822bf2bfb9f", "reflection_1f5ecace3c0b5fd265b9d846", "reflection_5eb9ba718b0b143e55d0b020", "reflection_ee2dc3e5679d14ca67d9f5df"], "supporting_sources": ["source_d4762e0cf2330ab6ea00a521", "source_4e06d1b1cdcd0d07eff47909", "source_45c4de28acb4ba36642f1594", "source_b470fe87f9d09df2b7d3b5fd"], "epistemic_status": "hypothetical"}, {"statement": "对需要多次策略切换的长时程机器人任务，按需激活局部语义并把交接状态桥接到 incoming policy 的支持域，会比完整语义构图加仅基于技能标签的路由获得更稳定的完成率与有界计算成本。", "falsifier": "在相同策略库、场景轨迹和计算预算下，局部语义激活加支持域桥接在长程成功率、交接失败率、峰值活跃图规模和任务切换延迟上均不优于完整语义图加标签路由。", "possible_experiment": "在包含可预测与突发任务切换的同一长程基准上做二乘二消融：完整或按需场景语义，与标签路由或状态支持域桥接；对新策略、稀疏记忆、视觉噪声和不可达状态分层报告交接成功、完成率、活跃图峰值与延迟。", "supporting_patterns": ["JITOMA 让昂贵语义图规模随当前任务而非探索长度增长", "RoboHarness 的 Memory Bridge 处理相邻策略之间的状态分布失配", "类型化技能图与冻结 VLA 外壳都把检查点和恢复留在显式编排层"], "counter_arguments": ["JITOMA 主要评测场景图 grounding 与效率，RoboHarness 主要评测策略编排；把两者组合的收益尚无直接实验。", "完整构图可能在任务快速切换或查询不可预测时减少遗漏，支持域桥接也可能因稀疏记忆或错误相似度把状态引向更差区域。", "当单一通用策略已经覆盖全部子任务时，额外的语义激活和桥接层可能只增加故障面。"], "supporting_reflections": ["reflection_96809e9d9bffed57b211681f", "reflection_d3da57bd40bcce58fcac3b37"], "supporting_sources": ["source_e8650c5afb7548268f649fb8", "source_cc2f2812863ca6751c223b54"], "epistemic_status": "hypothetical"}]
+possible_experiments: ["建立快慢接口延迟矩阵，独立扫描慢上下文年龄、快传感延迟和安全约束执行频率，并同时报告完成率与过程安全。", "对 RoboHarness 类系统分别移除能力目录、支持域估计和桥接轨迹，以同一初始状态分布测量每层对交接失败的贡献。", "在 JITOMA 类记忆中加入未来任务回放，测量前端任务过滤造成的不可恢复信息损失，并与 dormant anchor 的存储成本形成曲线。", "用相同交互轨迹分别拟合可读程序、episode twin 和未来视觉预测器，按历史一致性、反事实仿真和闭环控制三个独立门禁评测，禁止合并为单一世界模型分数。"]
+truth_layer: "cognitive_synthesis"
+created_by: "codex-gpt-5.6-sol-m91-weekly-v1"
+execution_safe: false
+superseded_by: "synthesis_018828f3c24b95c98284a79b"
+scope_migration_id: "synthesis_scope_d52a95ff837b421340b2c410"
+scope_migration_policy: "direction-scoped-synthesis-v2"
+archived_at: "2026-07-29T13:52:36+08:00"
+updated_by: "direction-scoped-synthesis-v2"
+change_reason: "cadence-scoped synthesis replaced by direction-scoped cognitive successor"
+---
+
+# 按需语义、状态交接与快环权限：具身系统的时序化接口边界
+
+## Emerging patterns
+
+- 长时程系统不应让昂贵语义处理随观察历史单调增长：JITOMA 以 dormant anchors 延迟场景语义化，FastSlow-LMDrive 以可增量缓存延迟慢上下文重算，Schema 则只在历史反例暴露表示缺口时修订可执行规则；三者共同把高成本计算绑定到任务、陈旧性或失配触发器，而不是绑定到每个输入时刻。
+- 慢速语义输出适合提出任务、关系前置条件、恢复原语或缓存上下文，但新鲜传感、连续控制与不可提升的安全上限必须保留在快环：SafeRelBench 揭示动作前关系门禁，LIFT 与 FastSlow-LMDrive提供块内或 tick 级新鲜观测接口，FORGE-plus 明确语义恢复不能提高力预算。
+- 异构策略的可组合性不仅取决于能力目录或正确分解，还取决于前一策略终态是否处于后一策略的有效支持域；RoboHarness 的 Memory Bridge、类型化技能图的检查点以及冻结 VLA 外壳的恢复原语都指向需要显式表示和验证交接状态。
+- 可运行世界表示有不同用途且证据不可互换：Schema 的离散程序接受追加式历史回放约束，Agentic Real2Sim 的 episode twin 追求物理仿真重放，动作中心联合世界—动作模型用未来视觉辅助控制；可搜索、可模拟和可预测都不能单独证明现实闭环有效。
+
+## Knowledge updates
+
+[
+  {
+    "target_id": "concept_asymmetric_frozen_vla_harness",
+    "previous": "把冻结 VLA 限定为可重试的局部接触操作专家，由高层代理和固定解析原语负责语义重绑定、自由空间运输、姿态调整、失败重置与验证，并用成功轨迹和失败模型学习各原语的适用范围。",
+    "proposed": "把冻结 VLA 和其他异构策略限定为能力有界的局部专家；高层代理负责分解、路由和恢复，但每次策略切换前还必须用执行记忆估计当前状态与 incoming policy 支持域的兼容性，并在必要时生成受硬安全权限约束的桥接轨迹。正确的技能选择不能替代交接状态验证，稀疏历史也不能证明能力边界。",
+    "reason": "RoboHarness 的消融把 Memory Bridge 与任务理解、能力路由区分开，显示正确分解后仍可能因交接状态失配而失败；FORGE-plus 同时限定桥接或恢复动作不能取得提高力预算的权限。",
+    "change_type": "refine",
+    "supporting_reflections": [
+      "reflection_d3da57bd40bcce58fcac3b37",
+      "reflection_5eb9ba718b0b143e55d0b020"
+    ],
+    "supporting_sources": [
+      "source_cc2f2812863ca6751c223b54",
+      "source_45c4de28acb4ba36642f1594"
+    ]
+  },
+  {
+    "target_id": "concept_relation_triggered_process_safety",
+    "previous": "将安全条件绑定到会触发风险的具体动作，并要求支撑、容纳、邻近等关系前置条件在该动作执行前成立，而不只检查最终任务状态。",
+    "proposed": "把过程安全实现为不能互相替代的双门禁：在风险动作前验证支撑、容纳、邻近等语义关系前置条件，并在动作执行期间由高频传感与控制环执行不可由语义层提升的力或其他物理上限。符号关系成立不能证明接触安全，硬命令上限也不能修复错误动作顺序。",
+    "reason": "SafeRelBench 量化了关系风险对动作顺序安全的影响，而 FORGE-plus 暴露了命令 clamp 与真实接触峰值之间的 overshoot；二者共同限定了语义门禁和物理门禁的不同责任。",
+    "change_type": "refine",
+    "supporting_reflections": [
+      "reflection_ee2dc3e5679d14ca67d9f5df",
+      "reflection_5eb9ba718b0b143e55d0b020"
+    ],
+    "supporting_sources": [
+      "source_b470fe87f9d09df2b7d3b5fd",
+      "source_45c4de28acb4ba36642f1594"
+    ]
+  }
+]
+
+## New connections
+
+[
+  {
+    "shared_mechanism": "JITOMA、FastSlow-LMDrive 与 Schema 都保留低成本、可复用的持久状态，并只在任务激活、缓存刷新或历史失配时支付高成本推理。",
+    "boundary": "该连接适用于高成本语义或模型更新可延迟、且系统仍保留足够索引或历史来触发恢复的任务；它不证明三个系统共享同一种学习算法，也不适用于必须每个 tick 完整重估的快速危险动态。",
+    "difference": "JITOMA 延迟场景节点的 caption 与功能推断，FastSlow-LMDrive 延迟视觉语言前缀重算并管理缓存陈旧性，Schema 延迟显式世界程序的结构修订直到反例出现。"
+  },
+  {
+    "shared_mechanism": "SafeRelBench、LIFT、FastSlow-LMDrive 与 FORGE-plus 都把慢语义或预训练上下文限制在提议层，并要求执行时读取更新鲜的局部状态。",
+    "boundary": "语义关系、六维力、驾驶视觉与接触峰值具有不同传感延迟和危险变量；共同的快慢结构不能让一种模态的安全结论外推到另一模态。",
+    "difference": "SafeRelBench 检查风险动作前的离散关系，LIFT 在动作块内注入力记忆，FastSlow-LMDrive 在控制 tick 读取当前图像，FORGE-plus 由快环执行不可提升的力预算。"
+  },
+  {
+    "shared_mechanism": "RoboHarness、冻结 VLA 非对称编排与类型化技能图都把长程任务外化为可检查的局部专家组合，并在边界处保留检查点或恢复机制。",
+    "boundary": "RoboHarness 的支持域估计依赖积累的轨迹，技能图的类型检查依赖正确契约，冻结 VLA 外壳依赖局部专家真实具备目标能力；任一表示都不能创造策略库中不存在的能力。",
+    "difference": "RoboHarness 显式学习 incoming policy 的状态兼容区域并规划桥接，冻结 VLA 外壳强调高层与接触原语的非对称职责，类型化技能图强调工作流 schema、验证与恢复语义。"
+  },
+  {
+    "shared_mechanism": "Schema 与 Agentic Real2Sim 都把观察历史转换成可运行的环境表示，并要求该表示能重放或生成动作后果。",
+    "boundary": "Schema 的证据来自离散 ARC 环境中的程序 backtest；Agentic Real2Sim 面向带重建误差、物理参数不确定性和传感噪声的机器人仿真，两者的保真度标准不可互换。",
+    "difference": "Schema 通过区分性实验修订对象、状态变量和转移规则，Agentic Real2Sim 通过场景、物理、参与者、相机与轨迹组合构造 episode twin。"
+  }
+]
+
+## Unresolved tensions
+
+- 越早用任务意图过滤观察，计算成本越低，但未来任务可能需要已被前端抑制的细节；保留 dormant anchor 能缓解而不能消除这一信息损失。
+- 更频繁的快环更新可提高路线完成率或接触反应性，却可能增加危险状态暴露时间；FastSlow-LMDrive 的碰撞变化和 FORGE-plus 的接触 overshoot 都要求把完成与安全分开计量。
+- 用成功与失败轨迹学习策略支持域能够改善路由，但新策略或罕见扰动的证据天然稀疏；保守桥接可能降低效率，激进桥接又可能把状态推向未知分布。
+- 可读程序、物理 episode twin 和未来视觉预测分别优化解释、仿真与监督；强行统一为单一世界模型指标会掩盖各自的验证边界。
+
+## Candidate hypotheses
+
+[
+  {
+    "statement": "在慢语义或预训练主干与快速物理控制并存的具身系统中，如果训练覆盖部署时的上下文陈旧性，并把安全上限固定在读取新鲜传感的快环，系统会比同步全模型或由语义层直接输出约束更可靠。",
+    "falsifier": "在同一硬件、策略容量、训练数据与控制频率下，覆盖陈旧性并固定快环权限的系统在延迟扰动、传感噪声、成功率、过程安全和约束超调上均不优于同步端到端基线或语义层直接约束基线。",
+    "possible_experiment": "在统一接触任务中构造 0 至 500 毫秒慢上下文延迟和分级力噪声，交叉比较同步全模型、未做陈旧性训练的异步模型、陈旧性对齐异步模型，以及语义可改写或不可改写力上限；分别报告任务成功、动作前置条件违规、峰值力超调、恢复时间与计算延迟。",
+    "supporting_patterns": [
+      "FastSlow-LMDrive 通过随机截断慢前缀覆盖部署缓存陈旧性",
+      "LIFT 用近期六维力驱动块内反应分支并保留慢速视觉语言先验",
+      "FORGE-plus 将恢复选择与不可提升的力权限分离",
+      "SafeRelBench 显示任务完成与风险动作前的安全前置条件必须分开评测"
+    ],
+    "counter_arguments": [
+      "这些来源覆盖驾驶、接触装配和符号化家庭模拟，跨任务共同模式可能来自抽象层级过高而非可迁移机制。",
+      "同步端到端模型可能在充足算力和数据下学习更优的联合表示，显式快慢接口会引入缓存、标定和调度故障。",
+      "固定快环上限若过于保守，可能阻止必要恢复；新鲜传感若噪声大，也可能比陈旧但稳定的语义上下文更不可靠。"
+    ],
+    "supporting_reflections": [
+      "reflection_743b2d2d30d2f822bf2bfb9f",
+      "reflection_1f5ecace3c0b5fd265b9d846",
+      "reflection_5eb9ba718b0b143e55d0b020",
+      "reflection_ee2dc3e5679d14ca67d9f5df"
+    ],
+    "supporting_sources": [
+      "source_d4762e0cf2330ab6ea00a521",
+      "source_4e06d1b1cdcd0d07eff47909",
+      "source_45c4de28acb4ba36642f1594",
+      "source_b470fe87f9d09df2b7d3b5fd"
+    ],
+    "epistemic_status": "hypothetical"
+  },
+  {
+    "statement": "对需要多次策略切换的长时程机器人任务，按需激活局部语义并把交接状态桥接到 incoming policy 的支持域，会比完整语义构图加仅基于技能标签的路由获得更稳定的完成率与有界计算成本。",
+    "falsifier": "在相同策略库、场景轨迹和计算预算下，局部语义激活加支持域桥接在长程成功率、交接失败率、峰值活跃图规模和任务切换延迟上均不优于完整语义图加标签路由。",
+    "possible_experiment": "在包含可预测与突发任务切换的同一长程基准上做二乘二消融：完整或按需场景语义，与标签路由或状态支持域桥接；对新策略、稀疏记忆、视觉噪声和不可达状态分层报告交接成功、完成率、活跃图峰值与延迟。",
+    "supporting_patterns": [
+      "JITOMA 让昂贵语义图规模随当前任务而非探索长度增长",
+      "RoboHarness 的 Memory Bridge 处理相邻策略之间的状态分布失配",
+      "类型化技能图与冻结 VLA 外壳都把检查点和恢复留在显式编排层"
+    ],
+    "counter_arguments": [
+      "JITOMA 主要评测场景图 grounding 与效率，RoboHarness 主要评测策略编排；把两者组合的收益尚无直接实验。",
+      "完整构图可能在任务快速切换或查询不可预测时减少遗漏，支持域桥接也可能因稀疏记忆或错误相似度把状态引向更差区域。",
+      "当单一通用策略已经覆盖全部子任务时，额外的语义激活和桥接层可能只增加故障面。"
+    ],
+    "supporting_reflections": [
+      "reflection_96809e9d9bffed57b211681f",
+      "reflection_d3da57bd40bcce58fcac3b37"
+    ],
+    "supporting_sources": [
+      "source_e8650c5afb7548268f649fb8",
+      "source_cc2f2812863ca6751c223b54"
+    ],
+    "epistemic_status": "hypothetical"
+  }
+]
+
+## Possible experiments
+
+- 建立快慢接口延迟矩阵，独立扫描慢上下文年龄、快传感延迟和安全约束执行频率，并同时报告完成率与过程安全。
+- 对 RoboHarness 类系统分别移除能力目录、支持域估计和桥接轨迹，以同一初始状态分布测量每层对交接失败的贡献。
+- 在 JITOMA 类记忆中加入未来任务回放，测量前端任务过滤造成的不可恢复信息损失，并与 dormant anchor 的存储成本形成曲线。
+- 用相同交互轨迹分别拟合可读程序、episode twin 和未来视觉预测器，按历史一致性、反事实仿真和闭环控制三个独立门禁评测，禁止合并为单一世界模型分数。

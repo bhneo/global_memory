@@ -8,13 +8,13 @@ applicability: ["现代物理对称性/群论入门语境", "洛伦兹对称性�
 uncertainty: "为科普性概念介绍，未给出严格定理证明；自旋导出路径被压缩叙述。"
 evidence: [{"evidence_id": "ev_75", "evidence_kind": "quote", "source_id": "source_941321d95232028c233c9433", "content_id": "content_8ca515527b4c45ba7d9cbf931b4ab5dabc90b09436d73da21ad290ce9ea15d11", "extraction_id": "extraction_c4f0793e6fac8c18c8ed3a6f", "input_sha256": "8ca515527b4c45ba7d9cbf931b4ab5dabc90b09436d73da21ad290ce9ea15d11", "span_start": 75, "span_end": 118, "original_text": "物理上经常会遇到一些能连续变化的对称性，为了描述这种连续变化的对称，我们就要借助李群。", "section": "连续对称", "stance": "supports", "verification_status": "verified", "reason": "文内对引入李群动机的说明。"}, {"evidence_id": "ev_118", "evidence_kind": "quote", "source_id": "source_941321d95232028c233c9433", "content_id": "content_8ca515527b4c45ba7d9cbf931b4ab5dabc90b09436d73da21ad290ce9ea15d11", "extraction_id": "extraction_c4f0793e6fac8c18c8ed3a6f", "input_sha256": "8ca515527b4c45ba7d9cbf931b4ab5dabc90b09436d73da21ad290ce9ea15d11", "span_start": 118, "span_end": 178, "original_text": "比如洛伦兹对称性就是这样一种对称性，借助李群（及它的表示论）的概念，我们可以定量地描述洛伦兹变换甚至由此导出自旋的概念。", "section": "洛伦兹与自旋", "stance": "supports", "verification_status": "verified", "reason": "文内对李群在相对论与自旋中作用的表述。"}]
 type: "claim"
-status: "working"
+status: "archived"
 created_at: "2026-07-15T21:00:00+08:00"
-updated_at: "2026-07-18T16:03:05+08:00"
+updated_at: "2026-07-29T12:46:47+08:00"
 aliases: []
 superseded_by: null
 valid_during: null
-change_reason: "M6 corpus distillation from claim_wechat_lie_group_continuous_symmetry_20260715"
+change_reason: "unsafe mechanically compiled knowledge archived as source-only"
 source_ids: ["source_941321d95232028c233c9433"]
 relations: [{"type": "derived_from", "target_id": "source_941321d95232028c233c9433", "reason": "由中科院物理所转载的李群李代数科普文章归纳；非教材定理证明", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}]
 atomicity_status: "atomic"
@@ -25,9 +25,9 @@ epistemic_source_authority: "secondary"
 evidence_entailment: "partial"
 claim_confidence: "medium"
 publication_gate: "needs_review"
-memory_tier: "working"
+memory_tier: "historical"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v2"
+updated_by: "working-quality-source-only-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -47,6 +47,11 @@ memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_bb1bf2597657e38cbeaff377"
+quality_review_status: "source_only"
+quality_review_policy: "working-quality-source-only-v2"
+quality_review_reasons: ["Human-reviewed low-authority secondary-source claim or legacy synthesis without M9.1 provenance; retain Raw/Extraction as source_only"]
+quality_migration_id: "working_quality_2efa79a2d5a3effb14e5087f"
+archived_at: "2026-07-29T12:46:47+08:00"
 ---
 
 # 李群与连续对称

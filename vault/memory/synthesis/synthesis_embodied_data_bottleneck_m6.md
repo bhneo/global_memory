@@ -1,20 +1,20 @@
 ---
 id: "synthesis_embodied_data_bottleneck_m6"
 type: "synthesis"
-status: "working"
+status: "archived"
 title: "具身智能中的数据瓶颈：规模、结构、闭环与评价"
 created_at: "2026-07-16T16:30:21+08:00"
-updated_at: "2026-07-18T16:03:25+08:00"
+updated_at: "2026-07-29T12:46:48+08:00"
 aliases: []
 tags: ["m6-distillation"]
 domains: []
 confidence: "unknown"
 source_ids: ["source_0a113baae7ce4d1ab78da1a3", "source_cda5a1b9e036598aff53e5be", "source_2d4f3a7d3525782c8ff503ee", "source_a20c5fb22d91216503d413e1"]
 relations: [{"type": "derived_from", "target_id": "source_0a113baae7ce4d1ab78da1a3", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "derived_from", "target_id": "source_cda5a1b9e036598aff53e5be", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "derived_from", "target_id": "source_2d4f3a7d3525782c8ff503ee", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "derived_from", "target_id": "source_a20c5fb22d91216503d413e1", "reason": "由当前语料蒸馏为待审知识对象", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "related_to", "target_id": "concept_embodied_data_loop", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "related_to", "target_id": "concept_world_model_evaluation", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}, {"type": "related_to", "target_id": "tension_embodied_data_scale_structure", "reason": "M6 人工可审阅结构连接；不得仅凭关键词确认", "confidence": "low", "created_by": "m6-controlled-distillation-v1", "status": "working"}]
-change_reason: "M6 controlled corpus distillation; requires human review"
-memory_tier: "working"
+change_reason: "unsafe mechanically compiled knowledge archived as source-only"
+memory_tier: "historical"
 created_by: "m6-controlled-distillation-v1"
-updated_by: "trustworthy-consolidation-v2"
+updated_by: "working-quality-source-only-v2"
 model_provider: null
 model_version: null
 compiler_version: "m6-controlled-distillation-v1"
@@ -34,6 +34,11 @@ memory_schema_version: 2
 legacy_status: "working"
 epistemic_status: "unknown"
 last_consolidation_id: "consolidation_43166f9bff620ef9808b77a1"
+quality_review_status: "source_only"
+quality_review_policy: "working-quality-source-only-v2"
+quality_review_reasons: ["Human-reviewed low-authority secondary-source claim or legacy synthesis without M9.1 provenance; retain Raw/Extraction as source_only"]
+quality_migration_id: "working_quality_2efa79a2d5a3effb14e5087f"
+archived_at: "2026-07-29T12:46:48+08:00"
 ---
 
 # 具身智能中的数据瓶颈：规模、结构、闭环与评价

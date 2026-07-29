@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Any
 
@@ -10,7 +11,7 @@ from .markdown import read_document, render_document
 from .repository import Repository, now_iso, sha256_bytes, slugify
 
 
-SUPPORTED_AGENTS = {"codex", "cursor", "claude"}
+AGENT_ID_PATTERN = re.compile(r"^[a-z0-9][a-z0-9._:-]{0,79}$")
 
 
 class ReceiptService:
@@ -21,8 +22,8 @@ class ReceiptService:
 
     def create(self, agent: str, project: str, task: str, input_file: Path | str) -> dict[str, Any]:
         normalized_agent = agent.strip().lower()
-        if normalized_agent not in SUPPORTED_AGENTS:
-            raise ValidationError(f"unsupported receipt agent: {agent}")
+        if not AGENT_ID_PATTERN.fullmatch(normalized_agent):
+            raise ValidationError(f"invalid receipt agent identity: {agent}")
         body = Path(input_file).expanduser().resolve().read_text(encoding="utf-8").strip()
         if not body:
             raise ValidationError("receipt body must not be empty")

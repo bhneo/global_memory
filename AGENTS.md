@@ -14,11 +14,28 @@
 - Daily Dream must be restartable: prevalidate the complete artifact and reuse
   an identical immutable Reflection after interruption. Daily rejects
   Hypothesis, Analogy and Synthesis objects.
+- New Daily artifacts use the v2 admission contract: extract a semantic
+  inventory before deciding create/update/reuse/source_only/review/deferred.
+  Every candidate needs an explicit decision; high-value readable candidates
+  cannot disappear behind a generic Source-only outcome, and legacy artifacts
+  remain replayable only for backward-compatible recovery.
 - Never use regex punctuation splitting to manufacture atomic Claims. A Claim
   must be a self-contained proposition; compound material stays gated until an
   explicit semantic split, and fragments remain outside Working.
-- Weekly knowledge updates and bundles must bind the exact supporting
-  Reflection/Source subset; never attach all weekly Reflections to every item.
+- Weekly is a cadence, not a semantic scope. New Synthesis uses a direction or
+  cross-direction scope from `docs/RESEARCH_DIRECTIONS.md`; the date window is
+  only for candidate discovery and governance audit. Weekly knowledge updates
+  and bundles bind the exact supporting Reflection/Source subset.
+- Direction Synthesis precedes cross-direction Synthesis. Cross-direction
+  connections are optional and require supporting direction Syntheses,
+  Reflections/Sources, shared mechanism, boundary, difference, counterarguments,
+  evidence gaps and a verification path. Calendar or keyword proximity is invalid.
+- Weekly must run the Daily admission coverage audit from the target range's
+  start through the current date before synthesis. The audit uses the latest
+  state per stable Input ID while retaining earlier unresolved-event counts;
+  Weekly must report current unresolved high-value/review/deferred candidates.
+  Derived-view completion requires a current Obsidian expected/actual check;
+  doctor/lint/raw/status do not establish projection freshness.
 - A Reflection must explain cognitive value and contain a changed belief,
   surprise, qualified connection or open question. Connections require shared
   mechanism, boundary and difference; keyword overlap is invalid.

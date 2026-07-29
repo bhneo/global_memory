@@ -131,6 +131,7 @@ class ObsidianViewService:
         rendered: dict[str, str] = {}
         locations: dict[str, str] = {}
         metadata_by_id: dict[str, dict[str, Any]] = {}
+        original_paths: dict[str, Path] = {}
         display_titles: dict[str, str] = {}
         used: set[str] = set()
 
@@ -168,17 +169,19 @@ class ObsidianViewService:
             used.add(key)
             return f"vault/views/graph/{category}/{filename}.md"
 
-        for _, metadata, _ in sources:
+        for path, metadata, _ in sources:
             item_id = str(metadata["id"])
             display_titles[item_id] = source_title(metadata)
             locations[item_id] = allocate(item_id, display_titles[item_id], "sources")
             metadata_by_id[item_id] = metadata
-        for _, metadata in documents:
+            original_paths[item_id] = path
+        for path, metadata in documents:
             item_id = str(metadata["id"])
             category = self._graph_category(str(metadata.get("type", "other")))
             display_titles[item_id] = self._graph_display_title(metadata)
             locations[item_id] = allocate(item_id, display_titles[item_id], category)
             metadata_by_id[item_id] = metadata
+            original_paths[item_id] = path
 
         incoming: dict[str, set[str]] = defaultdict(set)
         for _, metadata in documents:
@@ -204,7 +207,7 @@ class ObsidianViewService:
             metadata = metadata_by_id[item_id]
             title = display_titles[item_id]
             lines = [self._header(title, "人类可读的派生语义图节点；真实内容与治理状态仍以原对象为准。")]
-            original_path, _, _ = self.repository.find_document(item_id)
+            original_path = original_paths[item_id]
             lines.append(f"- 原始对象：`{self.repository.rel(original_path)}`\n")
             lines.append(f"- 类型：`{metadata.get('type', 'source')}`\n")
             if metadata.get("memory_tier") or metadata.get("status"):
@@ -240,15 +243,34 @@ class ObsidianViewService:
             rendered[relative] = "".join(lines)
         return rendered
 
-    def _extraction(self, source_id: str) -> tuple[dict[str, Any] | None, str]:
-        try:
-            _, metadata, body = self.extractions.latest_for_source(source_id)
-            return metadata, body
-        except Exception:
-            return None, ""
+    def _latest_extractions(
+        self, sources: list[tuple[Path, dict[str, Any], str]],
+    ) -> dict[str, tuple[dict[str, Any], str]]:
+        """Index current ready Extractions once instead of rescanning per Source."""
+        current_hashes = {
+            str(metadata["id"]): str(metadata.get("content_sha256", ""))
+            for _, metadata, _ in sources
+        }
+        latest: dict[str, tuple[dict[str, Any], str]] = {}
+        for path in self.extractions.documents():
+            metadata, body = read_document(path)
+            source_id = str(metadata.get("source_id", ""))
+            if (
+                not source_id
+                or metadata.get("status") != "ready"
+                or str(metadata.get("input_sha256", "")) != current_hashes.get(source_id)
+            ):
+                continue
+            previous = latest.get(source_id)
+            if previous is None or str(metadata.get("extracted_at", "")) >= str(previous[0].get("extracted_at", "")):
+                latest[source_id] = (metadata, body)
+        return latest
 
-    def _reader(self, source_path: Path, metadata: dict[str, Any], source_body: str) -> str:
-        extraction, body = self._extraction(str(metadata["id"]))
+    def _reader(
+        self, source_path: Path, metadata: dict[str, Any], source_body: str,
+        extraction_record: tuple[dict[str, Any], str] | None = None,
+    ) -> str:
+        extraction, body = extraction_record or (None, "")
         content = body.strip()
         if not content:
             # Source bodies contain a bounded preview. They are preferable to an empty reader,
@@ -275,8 +297,14 @@ class ObsidianViewService:
         if graph_profile not in {"knowledge", "trusted", "frontier", "all"}:
             raise ValueError("graph_profile must be knowledge, trusted, frontier, or all")
         documents = self._documents()
+        active_documents = [
+            item for item in documents
+            if item[1].get("memory_tier") != "historical"
+            and item[1].get("status") not in {"archived", "superseded"}
+        ]
         cognitive_syntheses = self._cognitive_syntheses()
         sources = self._sources()
+        extractions_by_source = self._latest_extractions(sources)
         rendered: dict[str, str] = {}
         if graph_profile == "all":
             graph_documents = [*documents, *cognitive_syntheses]
@@ -301,12 +329,12 @@ class ObsidianViewService:
             )
         elif graph_profile == "frontier":
             graph_documents = [
-                item for item in documents
+                item for item in active_documents
                 if item[1].get("type") in {"question", "tension", "hypothesis", "analogy", "concept"}
             ]
         else:
             graph_documents = [
-                item for item in documents
+                item for item in active_documents
                 if item[1].get("memory_tier") in {"trusted", "canonical"}
                 or item[1].get("type") in {"question", "tension"}
             ]
@@ -328,8 +356,17 @@ class ObsidianViewService:
         partial: list[tuple[Path, dict[str, Any]]] = []
         stale: list[tuple[Path, dict[str, Any]]] = []
         for path, metadata in documents:
-            by_type[str(metadata.get("type", "unknown"))].append((path, metadata))
-            if metadata.get("type") == "claim" and metadata.get("evidence_coverage") in {"partial", "missing"}:
+            if (
+                metadata.get("memory_tier") != "historical"
+                and metadata.get("status") not in {"archived", "superseded"}
+            ):
+                by_type[str(metadata.get("type", "unknown"))].append((path, metadata))
+            if (
+                metadata.get("type") == "claim"
+                and metadata.get("evidence_coverage") in {"partial", "missing"}
+                and metadata.get("status") not in {"archived", "superseded"}
+                and metadata.get("memory_tier") != "historical"
+            ):
                 partial.append((path, metadata))
             if metadata.get("status") in {"contested", "superseded", "archived"} or metadata.get("stale_reason"):
                 stale.append((path, metadata))
@@ -425,7 +462,7 @@ class ObsidianViewService:
             labels = [str(value) for value in [*metadata.get("domains", []), *metadata.get("tags", [])] if value]
             for label in labels or [str(metadata.get("source_kind") or "未分类")]:
                 topics[label].append(("source", metadata))
-        for path, metadata in documents:
+        for path, metadata in active_documents:
             labels = [str(value) for value in [*metadata.get("domains", []), *metadata.get("tags", [])] if value]
             for label in labels:
                 topics[label].append((self.repository.rel(path), metadata))
@@ -445,7 +482,7 @@ class ObsidianViewService:
             topic_lines.append("\n")
         rendered["vault/views/主题导航.md"] = "".join(topic_lines)
 
-        catalog = [self._header("知识目录", "按对象类型列出可用记忆；每条保留 Working / Trusted / Canonical 状态。")]
+        catalog = [self._header("知识目录", "按对象类型列出活动记忆；Historical/archived 仅在显式审计中查看。")]
         for object_type in sorted(by_type):
             catalog.append(f"## {object_type}\n\n")
             catalog.extend(f"- {self._link(path, metadata)} · `{metadata.get('status', 'unknown')}`\n" for path, metadata in by_type[object_type])
@@ -502,7 +539,7 @@ class ObsidianViewService:
         deep.append(f"\n## 证据不完整（{len(partial)}）\n\n")
         deep.extend(f"- {self._link(path, metadata)}\n" for path, metadata in partial)
         deep.append(f"\n## 历史或状态变化（{len(stale)}）\n\n")
-        deep.extend(f"- {self._link(path, metadata)}\n" for path, metadata in stale)
+        deep.append("- 历史对象保留用于审计，不混入日常行动队列；需要时使用 history/audit 显式查看。\n")
         rendered["vault/views/待深挖.md"] = "".join(deep)
 
         review = [self._header("Review Queues", "供 Agent 与治理检查使用的技术队列。")]
@@ -511,11 +548,17 @@ class ObsidianViewService:
         review.append(f"\n## Partial evidence ({len(partial)})\n\n")
         review.extend(f"- {self._link(path, metadata)}\n" for path, metadata in partial)
         review.append(f"\n## Stale or historical ({len(stale)})\n\n")
-        review.extend(f"- {self._link(path, metadata)}\n" for path, metadata in stale)
+        review.append(
+            "- Historical objects are retained for audit and excluded from the actionable queue; "
+            "use `gm history` or `gm audit` for explicit inspection.\n"
+        )
         rendered["vault/views/Review Queues.md"] = "".join(review)
 
         for source_path, metadata, source_body in sources:
-            rendered[self._reader_relative(str(metadata["id"]))] = self._reader(source_path, metadata, source_body)
+            source_id = str(metadata["id"])
+            rendered[self._reader_relative(source_id)] = self._reader(
+                source_path, metadata, source_body, extractions_by_source.get(source_id),
+            )
         return rendered
 
     def status(self, *, graph_profile: str = "knowledge") -> dict[str, Any]:
@@ -527,12 +570,25 @@ class ObsidianViewService:
                 missing.append(relative)
             elif path.read_text(encoding="utf-8") != expected:
                 stale.append(relative)
-        return {"current": not missing and not stale, "missing": missing, "stale": stale}
+        return {
+            "current": not missing and not stale,
+            "graph_profile": graph_profile,
+            "expected": len(rendered),
+            "missing_count": len(missing), "stale_count": len(stale),
+            "missing": missing, "stale": stale,
+        }
 
     def build(self, *, graph_profile: str = "knowledge") -> dict[str, Any]:
         rendered = self.render(graph_profile=graph_profile)
+        updated: list[str] = []
+        unchanged: list[str] = []
         for relative, content in rendered.items():
-            atomic_write_text(self.repository.root / relative, content)
+            path = self.repository.root / relative
+            if path.exists() and path.read_text(encoding="utf-8") == content:
+                unchanged.append(relative)
+                continue
+            atomic_write_text(path, content)
+            updated.append(relative)
         readers = self.repository.root / "vault" / "views" / "readers"
         removed: list[str] = []
         if readers.exists():
@@ -548,4 +604,9 @@ class ObsidianViewService:
                 if path.resolve() not in expected and f"generated by {GENERATOR}" in path.read_text(encoding="utf-8")[:200]:
                     removed.append(self.repository.rel(path))
                     path.unlink()
-        return {"ok": True, "graph_profile": graph_profile, "documents": len(self._documents()), "sources": len(self._sources()), "written": list(rendered), "removed": removed}
+        return {
+            "ok": True, "graph_profile": graph_profile,
+            "documents": len(self._documents()), "sources": len(self._sources()),
+            "written": list(rendered), "updated": updated,
+            "unchanged": unchanged, "removed": removed,
+        }
