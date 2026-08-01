@@ -1,6 +1,6 @@
 # M9.1 Cognitive Consolidation
 
-M9.1 adds a cognitive interpretation layer without turning Global Memory into
+M9.1 adds a cognitive interpretation layer without turning Galois into
 an Agent runtime. The core remains provider-neutral: it stores Input Episodes,
 validates externally authored Reflections and Weekly Synthesis, compiles
 explicit semantic items through the existing Working gate, and serves labeled
@@ -47,18 +47,18 @@ Every normal CLI capture now creates an Input Episode and queues it for
 Reflection. Specialized entry points are:
 
 ```powershell
-.\scripts\gm.ps1 idea capture --text "机器人技能下移可能类似编译器优化"
-.\scripts\gm.ps1 conversation import .\chat.md --participant user --participant assistant --topic embodied-agent
-.\scripts\gm.ps1 session import --from-file .\session.json --agent codex
-.\scripts\gm.ps1 inputs
+.\scripts\galois.ps1 idea capture --text "机器人技能下移可能类似编译器优化"
+.\scripts\galois.ps1 conversation import .\chat.md --participant user --participant assistant --topic embodied-agent
+.\scripts\galois.ps1 session import --from-file .\session.json --agent codex
+.\scripts\galois.ps1 inputs
 ```
 
 Existing Sources are not silently migrated. Recent or selected historical
 material can enter the new layer through a bounded, explicit transition:
 
 ```powershell
-.\scripts\gm.ps1 inputs --backfill --limit 5
-.\scripts\gm.ps1 inputs --backfill --source-id source_<id>
+.\scripts\galois.ps1 inputs --backfill --limit 5
+.\scripts\galois.ps1 inputs --backfill --source-id source_<id>
 ```
 
 Default backfill excludes personal notes/receipts, writes no governed Knowledge
@@ -106,8 +106,8 @@ Reflection objects cannot contain `memory_tier` or `epistemic_status`. They do
 not participate in Receipt, Trust or Canonical policy.
 
 ```powershell
-.\scripts\gm.ps1 reflection queue --limit 5 --max-chars 6000
-.\scripts\gm.ps1 reflection create <input-id> --from-file .\reflection.json
+.\scripts\galois.ps1 reflection queue --limit 5 --max-chars 6000
+.\scripts\galois.ps1 reflection create <input-id> --from-file .\reflection.json
 ```
 
 ## Reflection quality gate
@@ -169,9 +169,9 @@ artifact can be replayed safely:
 Run:
 
 ```powershell
-.\scripts\gm.ps1 recover
-.\scripts\gm.ps1 reflection queue --limit 5 --max-chars 6000
-.\scripts\gm.ps1 dream daily --bundle-file .\daily-dream.json --limit 5
+.\scripts\galois.ps1 recover
+.\scripts\galois.ps1 reflection queue --limit 5 --max-chars 6000
+.\scripts\galois.ps1 dream daily --bundle-file .\daily-dream.json --limit 5
 ```
 
 Daily permits at most three semantic items per input, creates Reflections,
@@ -204,8 +204,8 @@ deferred, or sent to review rather than silently disappearing. Run the read-only
 coverage audit before Weekly integration:
 
 ```powershell
-.\scripts\gm.ps1 dream audit-daily --from-date 2026-07-21 --to-date 2026-07-27
-.\scripts\gm.ps1 obsidian status --graph-profile knowledge
+.\scripts\galois.ps1 dream audit-daily --from-date 2026-07-21 --to-date 2026-07-27
+.\scripts\galois.ps1 obsidian status --graph-profile knowledge
 ```
 
 The audit resolves admission state by stable `input_id`, using the latest
@@ -296,7 +296,7 @@ v1 audit history, but new production artifacts do not use a natural week as
 their scope.
 
 ```powershell
-.\scripts\gm.ps1 dream weekly --bundle-file .\weekly-dream.json
+.\scripts\galois.ps1 dream weekly --bundle-file .\weekly-dream.json
 ```
 
 Optional `knowledge_bundles` in the JSON use explicit Source IDs, an exact

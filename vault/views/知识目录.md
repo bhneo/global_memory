@@ -83,6 +83,7 @@
 - [[memory/concept/concept_embodied_data_loop|具身数据闭环]] · `trusted`
 - [[memory/concept/concept_intrinsic_motivation_rl|内在动机强化学习]] · `working`
 - [[memory/concept/concept_asymmetric_frozen_vla_harness|冻结 VLA 的非对称技能编排]] · `working`
+- [[memory/concept/concept_6a559a41722de87986c350e7|冻结 flow 先验的分阶段潜空间奖励转向 / Staged latent-space reward steering over a frozen flow prior]] · `working`
 - [[memory/concept/concept_d7111f304971448401a57f3b|冻结技能库与轻量路由适应]] · `working`
 - [[memory/concept/concept_geometry_grounded_proprioception|几何落地的本体感觉视觉融合]] · `working`
 - [[memory/concept/concept_f8a4dfcc3d24b856a7d6335d|凸集非集中体积准则 / convex-set non-concentration volume criterion]] · `working`
@@ -92,6 +93,7 @@
 - [[memory/concept/concept_action_centered_joint_world_action_model|动作中心的联合世界—动作模型]] · `working`
 - [[memory/concept/concept_d01c4f0b61292d29f0a7ffe2|动作块级策略优化与动态执行时域]] · `working`
 - [[memory/concept/concept_native_action_aligned_vla_memory|动作对齐的 VLA 原生视觉记忆压缩]] · `working`
+- [[memory/concept/concept_2db7edf95d63ca80702f042e|动作条件的执行期后果验证与后缀修复 / Action-conditioned execution consequence verification and suffix repair]] · `working`
 - [[memory/concept/concept_dynamic_execution_horizon|动态动作块执行时域]] · `working`
 - [[memory/concept/concept_365bbb2a2d0b113d59b474ff|协变熵界以光片而非空间体积限定熵 / covariant entropy bound uses light-sheets rather than spatial volumes]] · `working`
 - [[memory/concept/concept_1bc84fc99981d367b712d161|单次前向动作条件世界模型的 rollout 吞吐量接口]] · `working`
@@ -111,6 +113,7 @@
 - [[memory/concept/concept_e41100353a87ecb775dd5c71|局部 Rindler Clausius 关系与 Einstein 方程状态方程 / local-Rindler Clausius relation and Einstein equation of state]] · `working`
 - [[memory/concept/concept_7960d38d3965156bf98d11b2|局部 Rindler 作用量与热力学 / local Rindler action and thermodynamics]] · `working`
 - [[memory/concept/concept_98b7ebb5d2382b61dd11bab3|带本体掩码的语义分组跨本体动作空间]] · `working`
+- [[memory/concept/concept_2c69b09323afa79344401cd8|延迟自适应的三段 flow 动作调度 / Latency-adaptive three-region flow action schedule]] · `working`
 - [[memory/concept/concept_staged_cross_embodiment_alignment|异构具身数据的分阶段对齐]] · `working`
 - [[memory/concept/concept_705dff5d5d3ebdcb87f1564f|形态可重构机器人的跨本体控制边界]] · `working`
 - [[memory/concept/concept_de5eb948d97d16bec01b7a96|微分同胚不变引力中的 Wald Noether-charge 熵]] · `working`
@@ -136,6 +139,7 @@
 - [[memory/concept/concept_149582520594364a508516c6|查询介导的 VLA 动作表征塑形]] · `working`
 - [[memory/concept/concept_f67f822ee20789d74d7b75e3|物理失败合成驱动的稠密机器人奖励建模]] · `working`
 - [[memory/concept/concept_39512575bdcd8ac68d340b03|状态转换语言驱动的跨本体 VLA 两阶段训练]] · `working`
+- [[memory/concept/concept_a13a20254f749ae9c5484c6b|生成器状态监督的当前态预测控制接口 / Current-only predictive control interface supervised by generator states]] · `working`
 - [[memory/concept/concept_latent_space_intervention_adaptation|生成策略的潜空间干预适应]] · `working`
 - [[memory/concept/concept_progressive_vla_demonstration_curriculum|由简到繁的 VLA 示范组织]] · `working`
 - [[memory/concept/concept_23e7d830d5080b6725168c6e|由追加式交互历史约束的可执行程序世界模型]] · `working`

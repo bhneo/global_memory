@@ -10,293 +10,303 @@
 </p>
 
 <p align="center">
-  Galois helps AI assistants preserve evidence, evolve knowledge,<br />
-  and discover meaningful structures across papers, conversations,<br />
-  experiments, and ideas.
-</p>
-
-<p align="center">
   <a href="#connect-your-ai-assistant">Connect an assistant</a>
-  &nbsp;·&nbsp;
-  <a href="#how-it-works">How it works</a>
-  &nbsp;·&nbsp;
-  <a href="#why-galois">Why Galois</a>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
+  <a href="#from-fragments-to-structure">See the structure</a>
+  &nbsp;&middot;&nbsp;
+  <a href="#trust-without-killing-creativity">Trust model</a>
+  &nbsp;&middot;&nbsp;
   <a href="#documentation">Documentation</a>
 </p>
 
 <p align="center">
   <code>Claude</code>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
   <code>Codex</code>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
   <code>Hermes</code>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
   <code>OpenClaw</code>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
   <code>OpenHuman</code>
-  &nbsp;·&nbsp;
+  &nbsp;&middot;&nbsp;
   <code>MCP</code>
 </p>
 
 ---
 
-Your AI can read thousands of documents.
+Knowledge rarely arrives as a finished map. It arrives as fragments: a paper,
+a contradiction, an intuition, a failed experiment, a question that will not
+go away.
 
-It still struggles to remember **why** an idea was believed, **how** it changed,
-and whether a connection is evidence-backed or merely interesting.
+**Galois preserves those fragments and the evidence around them so a connected
+AI assistant can look for the structure that becomes visible only over time.**
 
-**Galois is a shared, local-first scientific memory for humans and AI assistants.**
+| | |
+|:---|:---|
+| **Trace**<br />Keep the source and its authority. | **Evolve**<br />Record how a belief changes. |
+| **Connect**<br />Develop bounded cross-field candidates. | **Question**<br />Turn tensions into testable questions. |
 
-| | | | |
-|:---:|:---:|:---:|:---:|
-| **Remember** | **Reflect** | **Connect** | **Verify** |
-| Preserve sources, claims, and belief history | Digest new material into explicit reflections | Find candidate structures across research fields | Keep evidence, interpretation, and hypotheses separate |
+> **The goal is not to remember everything. It is to notice what becomes
+> visible when memory has structure.**
 
-> **Agents think. Galois remembers. Evidence decides.**
+Galois does not decide that a pattern is true. The assistant performs the
+cognitive work; Galois keeps its sources, boundaries, contradictions and trust
+state explicit.
 
----
+## From fragments to structure
 
-## What can Galois do?
+```mermaid
+flowchart TD
+    F["Papers · Conversations · Experiments · Ideas"] --> M(("Evolving memory"))
+    M --> D["Research directions"]
+    D --> P1["Patterns"]
+    D --> T["Tensions"]
+    D --> Q["Open questions"]
+    P1 -. "qualified bridge" .-> X["Cross-field candidate"]
+    T --> X
+    X --> V["Verification path"]
+```
 
-**Build an evolving scientific memory**  
-Papers, articles, conversations, experiments, ideas, and Agent sessions enter
-one shared memory without losing their original provenance.
+A theorem, a robot failure and a thermodynamic argument may be unrelated. Or
+they may share a boundary, a scaling law or merely a seductive word. Galois is
+designed to retain enough context to tell the difference.
 
-**Help assistants understand what changed**  
-New material can support, refine, limit, contradict, or supersede existing
-knowledge. Previous states remain auditable.
+It helps a connected assistant ask questions such as:
 
-**Organize research by direction — not by folder or calendar**  
-Galois maintains long-lived research directions such as world models,
-reinforcement learning, dexterous manipulation, Kakeya geometry, Hilbert VI,
-and gravity–entropy.
+- Does the same mechanism appear in two fields, or only the same vocabulary?
+- Did new evidence support a belief, limit it, or expose a contradiction?
+- Which missing source would turn an attractive analogy into a serious research
+  candidate?
+- What becomes worth testing once several research directions are seen together?
 
-**Surface hidden structures across fields**  
-A connection is not accepted because two documents share keywords.
-A useful candidate must identify:
-
-- the shared mechanism
-- where the connection applies
-- how the domains differ
-- counterarguments
-- missing evidence
-- a path to verification
-
-**Turn patterns into better questions**  
-Direction synthesis can surface tensions, open questions, possible experiments,
-and falsifiable hypothesis candidates — without presenting them as established
-facts.
-
----
+These are prompts for investigation, not claims of automatic discovery.
 
 ## Connect your AI assistant
 
-Galois is designed to be used **through your assistant**, not as a
-terminal-first knowledge manager.
+Galois is designed to be used **through the assistant you already use**, not as
+a terminal-first knowledge manager.
 
-Once connected, ask naturally:
+After connecting the default read-only gateway, ask naturally:
 
 ```text
-Use my Galois memory to answer this question and preserve the evidence boundary.
+Use my Galois memory to answer this question. Separate memory evidence,
+non-factual synthesis, uncertainty, and your own interpretation.
 ```
 
 ```text
-Compare my world-model and Hilbert VI research directions.
-What shared mechanism is worth investigating?
+Compare my world-model and reinforcement-learning research directions.
+Show any shared mechanism, its boundary, the important difference,
+the evidence gap, and the next verification step.
 ```
 
 ```text
-Find a non-obvious connection across my recent papers.
-Show the supporting sources, boundary, differences, evidence gap,
-and the next verification step.
+What changed in my recent research, and which unresolved tension is now
+most worth investigating?
 ```
 
-```text
-Remember this research note: skill compilation may be the embodied
-equivalent of JIT optimization.
-```
-
-> Retrieval is read-only by default. Capture requires explicit user intent
-> and an opt-in assistant configuration.
+> The configurations in this repository are read-only by default. A request
+> such as “remember this note” requires an explicit opt-in capture connection
+> and clear user intent; it is not part of the default five-tool surface.
 
 ### Supported hosts
 
-| Assistant | Integration |
+| Assistant | Integration status |
 |---|---|
-| Claude Desktop | Read-only MCP installer and config fragment |
-| Codex | MCP config and explicit personal plugin workflow |
-| Hermes | Read-only MCP config fragment |
-| OpenClaw | Read-only MCP server fragment |
-| OpenHuman | Generic MCP bridge configuration |
-| Other assistants | Any compatible MCP client |
+| Claude Desktop | Windows installer and read-only MCP template; live validated |
+| Codex | Read-only MCP template; live validated on Windows |
+| Hermes | Read-only MCP fragment; host-prefixed tool names are expected |
+| OpenClaw | Use its managed MCP CLI or Control UI with the reviewed server fragment |
+| OpenHuman | Supports a static MCP bridge or a dynamic Registry, depending on the build |
+| Other assistants | Compatible local `stdio` MCP clients; verify the mapping live |
 
-Host templates live in [`adapters/hosts/`](adapters/hosts/).
+Current templates are **machine-path-neutral Windows templates**, not a claim
+of completed macOS/Linux onboarding. They live with the machine-readable
+acceptance contract in [`adapters/hosts/`](adapters/hosts/).
+
+### Let your assistant perform the integration
+
+Give the assistant this repository and send:
+
+```text
+Read README.md and adapters/hosts/galois.mcp-manifest.json. Connect this
+assistant to Galois using its native MCP configuration command or registry
+when available; otherwise merge the matching template. Discover the actual
+repository, Python runtime, host version, operating system, and config path.
+Back up the config and preserve unrelated settings. Keep Galois read-only.
+
+Restart the host if required. Prove the live connection by calling
+memory_capabilities, checking that the server-level tools/list surface is the
+five required memory_* tools, and running one bounded Chinese memory_context
+query. The host may prefix or wrap tool names, but the mapping must remain
+one-to-one and expose no write tools. Static config or subprocess startup is
+not proof of success. If this is not Windows, or the installed host uses an
+unknown registration path, stop and report the concrete compatibility gap.
+```
+
+The server-level read surface is exactly:
+
+`memory_capabilities`, `memory_context`, `memory_search`, `memory_show`,
+`memory_source`.
+
+Hermes may expose prefixed names. OpenHuman's static bridge may expose these
+through `mcp_list_tools` and `mcp_call_tool`. That namespacing is acceptable
+only when it maps one-to-one to the five server tools and adds no write surface.
 
 <details>
 <summary><strong>One-time local setup</strong></summary>
 
 <br />
 
-Python 3.11–3.13 is supported.
+Python 3.11-3.13 is supported.
 
 ```bash
 git clone https://github.com/bhneo/global_memory.git
 cd global_memory
 python -m pip install -e ".[pdf]"
+galois --help
 ```
 
 For Claude Desktop on Windows:
 
 ```powershell
-.\scripts\install-claude-desktop-mcp.ps1
+.\scripts\install-galois-claude-desktop.ps1
 ```
 
-Other hosts can use the reviewed fragments in
-[`adapters/hosts/`](adapters/hosts/).
+For other validated Windows hosts, use the host's managed MCP command or merge
+the matching template from [`adapters/hosts/`](adapters/hosts/). Replace both
+template variables with discovered absolute paths; never copy another user's
+paths.
 
-The current package and CLI still use `global-memory-local`, `global_memory`,
-and `gm` while the public identity transitions to **Galois**.
+All current public commands and new host registrations use **`galois`**. The
+old short launcher is a deprecated migration shim and is intentionally absent
+from current instructions. The Python module name inside an MCP transport
+configuration is an internal compatibility detail, not a user command.
 
 </details>
 
----
+## How cognition remains honest
 
-## How it works
+**The assistant performs the cognition.** Galois does not call a model inside
+the memory core. A connected assistant reads, compares, reflects and
+synthesizes. Galois supplies bounded context, validates governed artifacts,
+preserves provenance and applies only permitted writes.
+
+**Daily reflection** digests a bounded set of new Inputs. Every selected
+candidate receives an explicit disposition:
+
+`create` &middot; `update` &middot; `reuse` &middot; `remain source-only` &middot;
+`require review` &middot; `defer`
+
+This makes the disposition of each selected candidate visible and auditable.
+
+**Direction synthesis** follows durable research directions rather than
+calendar weeks. It asks: *What changed here, and what remains unresolved?*
+
+**Cross-direction synthesis** is a qualified candidate workflow. A proposed
+connection must state its shared mechanism, boundary, difference,
+counterarguments, evidence gap and verification path. Producing zero
+connections is a valid result. The current live vault has direction-level
+syntheses but no accepted active cross-direction synthesis yet.
+
+## Trust without killing creativity
+
+Creativity and factual authority travel on different paths:
 
 ```mermaid
-flowchart LR
-    A[Papers · Conversations · Ideas] --> B[Source-bound Memory]
-    B --> C[AI Assistant Reflection]
-    C --> D[Research Direction Synthesis]
-    D --> E[Cross-field Structure Candidates]
-    E --> F[Questions · Hypotheses · Experiments]
-
-    B -. provenance .-> G[Evidence]
-    C -. non-factual .-> H[Reflection]
-    D -. non-factual .-> I[Synthesis]
+flowchart TD
+    S["Source"] --> E["Evidence"] --> W["Working"] --> T["Trusted"] -->|"explicit human approval"| C["Canonical"]
+    S --> I["Input"] --> R["Reflection"] --> Y["Cognitive synthesis"]
+    Y -. "candidate, never fact by itself" .-> W
 ```
 
-**The assistant performs the cognition.**  
-Galois does not call a model inside the memory core. Your connected assistant
-reads, compares, reflects, and synthesizes. Galois provides bounded context,
-validates the resulting artifact, preserves its sources, and applies only
-permitted writes.
+| Layer | Meaning |
+|---|---|
+| **Source / Input** | Captured material with provenance; not knowledge merely because it was retrieved |
+| **Reflection / Synthesis** | Non-factual cognitive artifacts that can reveal patterns and tensions |
+| **Working** | Active knowledge under development |
+| **Trusted** | Evidence-backed and policy-qualified knowledge |
+| **Canonical** | Knowledge explicitly promoted with user approval |
+| **Historical** | Superseded material retained for audit, not a default conclusion |
 
-**Daily reflection**  
-A connected assistant digests a small set of new inputs and decides whether
-each candidate should:
+Questions, analogies, anomalies and hypotheses can remain useful without being
+mislabeled as facts. Execution requests exclude raw and non-factual layers and
+apply stricter Receipt, entailment and policy checks.
 
-`create` · `update` · `reuse` · `remain source-only` · `require review` · `defer`
+## Agent Memory Gateway
 
-This prevents valuable material from silently disappearing.
+Connected assistants receive bounded Evidence Packets through MCP. The default
+gateway can expose:
 
-**Direction synthesis**  
-Recurring synthesis follows stable research directions rather than arbitrary
-calendar weeks. It asks: *What changed in this research direction?*
+- research context with visible truth and trust metadata
+- bounded search and individual memory objects
+- bounded captured source and existing extraction text
+- contradictions, evidence gaps and execution blockers
 
-**Cross-direction synthesis**  
-Cross-field connections are optional and evidence-bounded. A valid run may
-produce **zero connections**. Rejecting a weak analogy is a successful outcome.
-
----
+An opt-in gateway can additionally expose explicit-consent capture, session,
+use and feedback signals. It is not the default and cannot promote Trusted or
+Canonical memory.
 
 ## Why Galois?
 
 | Typical AI memory | Galois |
 |---|---|
-| Remembers extracted facts | Preserves Sources, evidence, interpretation, and belief history |
-| Retrieves semantically similar text | Retrieves governed knowledge and active research directions |
-| Rewrites old facts | Records support, refinement, limits, contradiction, and supersession |
-| Generates attractive analogies | Requires mechanism, boundary, difference, counterarguments, and verification |
-| Treats memory as model context | Separates research context from execution-safe context |
-| Belongs to one assistant | Can be shared across multiple assistants |
-| Model confidence becomes authority | Canonical knowledge remains human-controlled |
-
----
-
-## Trust without killing creativity
-
-Galois separates creative cognition from factual authority.
-
-```text
-Source → Working → Trusted → Canonical
-           ↑
-Reflection and Synthesis remain explicitly non-factual
-```
-
-| Tier | Role |
-|---|---|
-| **Working** | Active knowledge under development |
-| **Trusted** | Evidence-backed and policy-qualified |
-| **Canonical** | Explicitly approved by the user |
-| **Historical** | Superseded knowledge retained for audit |
-
-Questions, analogies, tensions, reflections, and hypotheses can remain valuable
-for years without being mislabeled as facts.
-
----
-
-## Agent Memory Gateway
-
-Connected assistants receive bounded Evidence Packets through MCP.
-
-The gateway can expose:
-
-- connected research context
-- evidence search
-- individual knowledge objects
-- original Source material
-- explicit-consent capture
-- optional session, use, and feedback signals
-
-It preserves epistemic status, evidence quality, contradictions, and execution
-safety while hiding storage paths and maintenance internals.
-
-The default gateway is **read-only**.
-
----
+| Stores extracted facts or chat summaries | Preserves Sources, evidence, interpretation and belief history |
+| Retrieves similar text | Returns bounded, governed research context |
+| Overwrites yesterday's answer | Records support, refinement, limits, contradiction and supersession |
+| Rewards attractive analogies | Requires mechanism, boundary, difference and a verification path |
+| Uses one context mode for everything | Separates research, exploration and strict execution |
+| Belongs to one assistant | Can serve several assistants through one governed memory |
+| Treats model confidence as authority | Keeps Canonical promotion under explicit human control |
 
 ## Current capabilities
 
 | Memory | Cognition | Integration |
 |---|---|---|
-| Local-first Markdown truth layer | Agent-driven Daily Reflection | MCP for multiple assistants |
-| Immutable Raw / Source capture | Research-direction Synthesis | Obsidian views & semantic graph |
-| Working / Trusted / Canonical / Historical | Cross-direction Synthesis | Recovery, migration, drift audit |
-| Evidence & provenance tracking | Falsifiable hypothesis gates | Research / exploration / execution profiles |
-| Explicit belief evolution | Evidence-bounded connections | Integrity checks |
-
----
+| Local-first Markdown truth layer | Agent-driven Daily Reflection | Read-only MCP for multiple assistants |
+| Immutable Raw / Source capture | Direction-scoped Cognitive Synthesis | Obsidian views and typed-relation graph |
+| Working / Trusted / Canonical / Historical | Qualified cross-direction candidate workflow | Recovery, migration and drift audit |
+| Evidence and provenance tracking | Falsifiable hypothesis gates | Research / exploration / execution profiles |
+| Explicit belief evolution | Evidence-bounded connections | Doctor, lint and integrity checks |
 
 ## What Galois is not
 
 - Not an automatic truth machine
-- Not a generic note-taking app
-- Not a vector database wrapper
-- Not a general Agent runtime
-- Not a multi-Agent orchestrator
+- Not a generic note-taking app or vector database wrapper
+- Not a general Agent runtime or multi-Agent orchestrator
 - Not an automatic experiment executor
 - Not a replacement for primary sources
 - Not a system that turns every analogy into a discovery
 
----
+## Data ownership and release boundary
+
+Each user builds and owns a separate Galois vault through capture and governed
+cognitive consolidation. **The formal open-source distribution will include
+the engine, protocols, adapters, tests and optional synthetic fixtures—not this
+project's research vault or any user's knowledge.**
+
+This temporary evaluation repository currently carries a live multi-domain
+vault so web-based models can inspect the complete system. That is an explicit
+evaluation exception, not the intended release layout. The later release must
+use a non-destructive, allowlisted export and clean-history verification so
+private knowledge can be excluded without changing runtime behavior.
+
+“Local-first” describes storage and ownership, not a promise that a connected
+cloud model never receives data. Galois sends bounded context, but anything
+sent to a cloud assistant remains subject to that provider's privacy and
+retention terms.
 
 ## Project status
 
-Galois is experimental research infrastructure and is actively used on a real,
-multi-domain research vault.
+Galois is experimental research infrastructure actively used with a real,
+multi-domain research vault. Before a formal open-source release, remaining
+work includes:
 
-Before a formal open-source release, the project is preparing:
-
-- a clean demonstration vault
-- portable assistant setup
+- a private-vault-safe release pipeline and clean-history verification
+- optional synthetic demonstration fixtures
 - reproducible reflection and synthesis examples
-- public evaluations
-- cross-platform onboarding
+- public evaluations and cross-platform onboarding
 - a formal open-source license
-
----
 
 ## Documentation
 
@@ -306,16 +316,12 @@ Before a formal open-source release, the project is preparing:
 | [Cognitive consolidation](docs/COGNITIVE_CONSOLIDATION.md) | [Research directions](docs/RESEARCH_DIRECTIONS.md) |
 | [Agent integration](docs/AGENT_INTEGRATION.md) | [MCP integration](docs/MCP_INTEGRATION.md) |
 | [Memory consolidation](docs/MEMORY_CONSOLIDATION.md) | [Semantic distillation](docs/SEMANTIC_DISTILLATION.md) |
-| [Current project state](PROJECT_STATE.md) | |
-
----
+| [Current project state](PROJECT_STATE.md) | [Host adapters](adapters/hosts/README.md) |
 
 ## License
 
-No open-source license has been selected yet.
-
-Until a `LICENSE` file is added, the repository should not be treated as
-licensed for reuse or redistribution.
+No open-source license has been selected yet. Until a `LICENSE` file is added,
+the repository should not be treated as licensed for reuse or redistribution.
 
 ---
 

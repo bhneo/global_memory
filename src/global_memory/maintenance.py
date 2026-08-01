@@ -120,7 +120,7 @@ class MaintenanceService:
 
         actions = []
         if uncaptured_receipts:
-            actions.append(f"route {len(uncaptured_receipts)} receipt(s) through gm receipt propose")
+            actions.append(f"route {len(uncaptured_receipts)} receipt(s) through galois receipt propose")
         if proposal_counts["pending"] or proposal_counts["deferred"]:
             actions.append(
                 f"review {proposal_counts['pending']} pending and {proposal_counts['deferred']} deferred proposal(s) selectively"

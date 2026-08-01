@@ -1,6 +1,6 @@
-[mcp_servers.global_memory]
-command = "powershell.exe"
-args = ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\bhneo\\Desktop\\project\\global-memory-runtime\\scripts\\gm-mcp-stdio.ps1"]
+[mcp_servers.galois]
+command = "{{GALOIS_PYTHON}}"
+args = ["-m", "global_memory", "mcp", "stdio"]
+env = { PYTHONPATH = "{{GALOIS_ROOT}}\\src", GALOIS_ROOT = "{{GALOIS_ROOT}}" }
 startup_timeout_sec = 30
 tool_timeout_sec = 60
-

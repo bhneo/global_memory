@@ -1,8 +1,8 @@
 {
   "mcpServers": {
-    "global-memory": {
+    "galois": {
       "command": "powershell.exe",
-      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "C:\\Users\\bhneo\\Desktop\\project\\global-memory-runtime\\scripts\\gm-mcp-stdio.ps1"]
+      "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ".\\scripts\\galois-mcp-stdio.ps1"]
     }
   }
 }

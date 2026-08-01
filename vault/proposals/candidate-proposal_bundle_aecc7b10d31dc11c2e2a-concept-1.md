@@ -1,0 +1,20 @@
+---
+id: "concept_2c69b09323afa79344401cd8"
+type: "concept"
+status: "proposal"
+title: "延迟自适应的三段 flow 动作调度 / Latency-adaptive three-region flow action schedule"
+created_at: "2026-08-01T18:23:04+08:00"
+updated_at: "2026-08-01T18:23:04+08:00"
+aliases: ["pi-R2 latency-adaptive schedule", "πR² staircase flow schedule", "three-region diffusion-forcing schedule", "三段阶梯动作噪声调度"]
+tags: []
+domains: ["robotics", "vision-language-action", "real-time-control", "flow-policy"]
+confidence: "high"
+source_ids: ["source_9ddfb0f3d50b606bd13e17e2"]
+relations: [{"type": "derived_from", "target_id": "source_9ddfb0f3d50b606bd13e17e2", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "related_to", "target_id": "concept_dynamic_execution_horizon", "reason": "两者都针对动作块反应性；动态执行时域决定已生成块执行多少步，三段 flow schedule 把 in-flight 前缀和推理延迟编码进逐位置生成过程。", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "related_to", "target_id": "concept_a858f8d191d3afdd69418471", "reason": "三段调度依赖异步慢视觉语言与新鲜 proprioception 的快控制接口；该关系补充动作生成连续性，但不改变既有快慢接口的陈旧性边界。", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}]
+change_reason: "compile bundle from source_9ddfb0f3d50b606bd13e17e2"
+reflection_context: {"reflection_ids": ["reflection_65c54683ecbd991d97da21e4"], "importance": "high", "changed_belief": "实时动作块策略并不要求每个控制 tick 都重新运行完整 VLM；局部接触反应可以由新鲜 proprioception 驱动，但必须训练时显式覆盖慢特征陈旧性，并让流调度与实际推理延迟一致。", "surprising": "三段 staircase schedule 在每次调用后滑动 d 个位置并补入 d 个纯噪声位置，稳定延迟时可精确复现自身；因此一次 NFE 既完成新动作释放又保持连续 buffer。", "connections": [{"shared_mechanism": "都保留慢速视觉语言上下文，并让快速动作路径读取更近期的局部传感。", "boundary": "现有异步快慢接口强调缓存陈旧性和上下文分区；πR² 额外把 fresh proprioception、slow-feature age embedding 与 per-position flow schedule 绑定到动作生成。", "difference": "快慢接口可直接复用，三段 latency-adaptive schedule 是新的动作生成与不可逆前缀机制。"}], "open_questions": ["当视觉变化本身是快速故障信号、网络延迟超过训练范围或单 GPU 不能隔离 VLM 与 DiT 时，快慢通道假设会如何失效？"]}
+---
+
+# 延迟自适应的三段 flow 动作调度 / Latency-adaptive three-region flow action schedule
+
+为实测推理延迟 d 构造 per-position noise schedule：前 d 个位置是已经或正在执行的 clean actions，并作为 inpainting 条件排除出训练损失；中间区域的噪声水平由 clean 向 noisy 递增；末尾 d 个位置是每次循环补入的纯噪声。每次 policy call 只做一次按位置 Euler 去噪，使 [d,2d) 变为 clean 并释放 d 个动作，随后 buffer 滑动 d 位并补入新噪声；训练时随机化 d、加入 noise jitter，并混入标准 flow warm-up，使一个模型适应可变延迟并初始化完整 buffer。该机制与仅选择动作块执行长度不同，也不等同于 KV 缓存；它依赖延迟落在训练范围、慢视觉语言通道足够稳定以及算力/通信抖动可被测量。

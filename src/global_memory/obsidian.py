@@ -550,7 +550,7 @@ class ObsidianViewService:
         review.append(f"\n## Stale or historical ({len(stale)})\n\n")
         review.append(
             "- Historical objects are retained for audit and excluded from the actionable queue; "
-            "use `gm history` or `gm audit` for explicit inspection.\n"
+            "use `galois history` or `galois audit` for explicit inspection.\n"
         )
         rendered["vault/views/Review Queues.md"] = "".join(review)
 

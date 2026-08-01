@@ -1,5 +1,56 @@
 # Current State
 
+## README truth boundary and private-vault release contract (2026-08-02)
+
+- The public README now leads with Galois's actual cognitive loop—fragments,
+  directions, bounded connections and verification—without claiming automatic
+  discovery or undocumented scale. It distinguishes factual memory from
+  Reflection/Synthesis and states that the current vault has no accepted active
+  cross-direction Synthesis.
+- Host acceptance now distinguishes the exact server-level five-tool surface
+  from host-visible prefixes or wrappers. Windows is the live-validated path;
+  OpenHuman may use either its static MCP bridge or dynamic Registry, and
+  OpenClaw setup prefers its managed MCP CLI or Control UI.
+- ADR 0063 fixes the formal release boundary: engine and protocols may be
+  released with synthetic fixtures, but no live or user knowledge vault is
+  included. The current full-vault evaluation repository remains unchanged
+  until a separately authorized, non-destructive allowlisted export.
+
+## Galois public interface and assistant bootstrap (2026-08-01)
+
+- Current user and AI-assistant instructions expose one public name: `galois`.
+  The installed console command, PowerShell launchers, host registration key and
+  negotiated MCP server name now follow that identity. Deprecated launchers
+  remain compatibility-only and are absent from current instructions.
+- Host templates are machine-path-neutral Windows templates governed by a
+  machine-readable manifest.
+  Integration acceptance requires a live capabilities call, exactly five
+  read-only tools and a bounded Chinese Context query; static config is not
+  counted as success. Host prefixes/wrappers may map one-to-one to that server
+  surface; OpenHuman remains conditional on live static-bridge or dynamic-
+  Registry verification.
+- The Claude Desktop installer now discovers the repository and Python runtime,
+  backs up and merges the actual config, preserves unrelated servers and
+  migrates the old server key. The internal Python package and persisted legacy
+  identifiers remain unchanged pending a separately governed migration.
+
+## MCP Unicode boundary hardening (2026-08-01)
+
+- The stdio gateway now explicitly reconfigures its Python stdin/stdout text
+  wrappers to UTF-8 before the first MCP read. This prevents a UTF-8 MCP client
+  such as Hermes from being decoded through the zh-CN Windows GBK code page.
+- The stdio gateway now normalizes UTF-16 surrogate pairs at both JSON input
+  and output boundaries. This fixes Claude Desktop Chinese-query failures while
+  preserving ordinary CJK text and replacing only isolated invalid halves.
+- Regression coverage exercises both a valid non-BMP pair and an unpaired
+  surrogate, plus explicit stdio UTF-8 configuration. A live subprocess check
+  also preserved a Chinese query when its initial environment requested GBK.
+  The gateway contract remains read-only and Trusted/Canonical policy is unchanged.
+- System-design questions remain a separate retrieval-coverage issue: project
+  protocol documents are not ordinary Memory evidence, and no active
+  cross-direction Synthesis exists yet. A successful lexical search must not be
+  presented as evidence of an implemented cross-direction result.
+
 ## Direction alias routing (2026-07-29)
 
 - Context routing now reads machine-readable aliases from the direction

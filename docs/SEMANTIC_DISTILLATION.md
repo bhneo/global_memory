@@ -13,11 +13,11 @@ perform the semantic reading that the deterministic core intentionally cannot.
 
 ## Daily: cheap semantic admission
 
-1. Run `gm recover`, then `gm consolidate daily --limit 25` for extraction and
+1. Run `galois recover`, then `galois consolidate daily --limit 25` for extraction and
    the safe deterministic boundary. Source-only is acceptable staging, not the
    end of semantic maintenance.
-2. Run `gm reflection queue --limit 5 --max-chars 6000`. Use the bounded
-   `gm semantic queue` only as a source/extraction supplement for those selected
+2. Run `galois reflection queue --limit 5 --max-chars 6000`. Use the bounded
+   `galois semantic queue` only as a source/extraction supplement for those selected
    Input Episodes; do not process a separate unrelated batch.
 3. For every selected Input, read the bounded excerpt and its Source reader. Use
    Context Pack/search to find existing Concepts, Claims, Questions and
@@ -29,15 +29,15 @@ perform the semantic reading that the deterministic core intentionally cannot.
    decision and emits at most three source-grounded `semantic_items` per Input.
    Daily semantic items are limited to Concept, Claim, Question, Tension and
    Work; Hypothesis, Analogy and Synthesis are rejected by the core.
-5. Apply the artifact with `gm dream daily --bundle-file <json> --limit 5`.
+5. Apply the artifact with `galois dream daily --bundle-file <json> --limit 5`.
    The command validates the entire batch before cognitive writes, reuses an
    identical immutable Reflection after interruption, and writes Working only.
-6. Run `gm dream audit-daily` for the batch date. High-value readable empty
+6. Run `galois dream audit-daily` for the batch date. High-value readable empty
    outcomes, review-required candidates and deferred candidates remain visible
    and cannot be reported as silently complete. For Weekly or remediation,
    extend the range through the current date; the audit uses the latest state
    per `input_id` while retaining historical unresolved-event counts.
-7. Rebuild disposable views once with `gm maintain --rebuild-derived`.
+7. Rebuild disposable views once with `galois maintain --rebuild-derived`.
 
 Daily should normally extract the source's research question, central mechanism
 or contribution, one bounded result/limitation when evidence is available, and
@@ -61,7 +61,7 @@ and cannot be approved into Working.
 Weekly uses the stronger Agent model, but the date window only identifies new or
 unresolved candidates. It does not define a cognitive topic.
 
-1. Run `gm recover`, then audit Daily artifacts since the previous successful
+1. Run `galois recover`, then audit Daily artifacts since the previous successful
    run. Finish any bounded
    Reflection backlog and resolve or explicitly defer high-value Daily admission
    findings before Weekly integration; do not silently synthesize unreflected
@@ -79,12 +79,12 @@ unresolved candidates. It does not define a cognitive topic.
    active input Concept, typed change, previous/proposed view, reason and its
    supporting Reflection/Source IDs. Every `knowledge_bundle` declares the
    exact Reflection IDs that support its Source and semantic items.
-5. Apply each artifact with `gm dream weekly --bundle-file <json>`. Cognitive Synthesis is
+5. Apply each artifact with `galois dream weekly --bundle-file <json>`. Cognitive Synthesis is
    non-factual; optional semantic bundles enter Working only.
 6. Optionally create a separate cross-direction artifact after its direction
    Syntheses exist. It must cite at least two direction Syntheses and retain
    qualified connection provenance; zero cross-direction output is valid.
-7. Run `gm consolidate weekly --skip-daily-admission` only after the Dream
+7. Run `galois consolidate weekly --skip-daily-admission` only after the Dream
    artifact has entered Working, so Receipt/trust review operates on actual
    knowledge rather than raw articles.
 8. Rebuild derived views and test one direction query plus one cross-direction
@@ -92,8 +92,8 @@ unresolved candidates. It does not define a cognitive topic.
    Weekly completion also requires Obsidian expected/actual freshness with zero
    missing and stale nodes. A maintenance timeout is `indeterminate`; it cannot
    be promoted to complete from partial timestamps or doctor/lint/raw/status.
-   Use `gm obsidian status --graph-profile knowledge`; if it is not current,
-   run only `gm obsidian build --graph-profile knowledge` and check status again.
+   Use `galois obsidian status --graph-profile knowledge`; if it is not current,
+   run only `galois obsidian build --graph-profile knowledge` and check status again.
 
 Weekly must report semantic yield separately from governance yield:
 

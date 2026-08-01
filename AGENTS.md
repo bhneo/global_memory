@@ -1,4 +1,4 @@
-# Global Memory Agent Protocol
+# Galois Agent Protocol
 
 ## M9.1 cognitive-consolidation protocol
 
@@ -84,17 +84,17 @@
 ## Lightweight agent entry (M7)
 
 - Codex, Cursor, and Claude use this same repository as one shared memory; tool-local instructions are adapters, not separate truth stores.
-- Start from `vault/INDEX.md`, then request a bounded Context Pack with `gm context "<question>" --format markdown --token-budget 1200`. Do not scan the whole vault by default.
+- Start from `vault/INDEX.md`, then request a bounded Context Pack with `galois context "<question>" --format markdown --token-budget 1200`. Do not scan the whole vault by default.
 - Preserve each selected item's truth layer, status, evidence, source IDs, uncertainty, path, and selection reason. Follow raw/source links when a claim needs verification.
 - `vault/views/` and Context Packs are rebuildable views. Canonical Markdown and immutable raw remain the durable truth layers.
-- For durable write-back, create a concise session receipt with `gm receipt create --agent codex ...`, compile it, and let validated candidates enter Working memory. A proposal is audit material; it is no longer routine human homework.
+- For durable write-back, create a concise session receipt with `galois receipt create --agent codex ...`, compile it, and let validated candidates enter Working memory. A proposal is audit material; it is no longer routine human homework.
 - Receipt content should contain durable decisions, verified observations, changed assumptions, open questions, and sources—not transcript filler, secrets, or unsupported conclusions.
-- Obsidian opens `vault/`; rebuild its navigation with `gm obsidian build`. See `docs/AGENT_INTEGRATION.md` and ADR 0029.
-- Use `gm maintain` for a read-only maintenance check. `gm maintain --rebuild-derived` may refresh SQLite/Obsidian views only; neither mode authorizes canonical edits.
-- On Windows PowerShell use `.\\scripts\\gm.ps1`; the bare name `gm` may resolve to the built-in `Get-Member` alias.
+- Obsidian opens `vault/`; rebuild its navigation with `galois obsidian build`. See `docs/AGENT_INTEGRATION.md` and ADR 0029.
+- Use `galois maintain` for a read-only maintenance check. `galois maintain --rebuild-derived` may refresh SQLite/Obsidian views only; neither mode authorizes canonical edits.
+- On Windows PowerShell use `.\\scripts\\galois.ps1` or the installed `galois` command.
 - Routine article import is capture-first. `triage` remains the cheapest source preparation step; `consolidate daily` automatically compiles prepared material into Working memory. Do not request per-article approval.
-- Run `.\\scripts\\gm.ps1 consolidate weekly` for policy-backed Working review, Trusted promotion, drift audit, exceptions and canonical recommendations. Weekly never writes canonical automatically.
-- Only `gm promotion approve <promotion-id>` may normally move Trusted memory into Canonical. `promote --to canonical` merely creates a review card.
+- Run `.\\scripts\\galois.ps1 consolidate weekly` for policy-backed Working review, Trusted promotion, drift audit, exceptions and canonical recommendations. Weekly never writes canonical automatically.
+- Only `galois promotion approve <promotion-id>` may normally move Trusted memory into Canonical. `promote --to canonical` merely creates a review card.
 - External assistants should use the Agent Memory Gateway documented in `docs/MCP_INTEGRATION.md`. MCP retrieval never grants write authority. The optional `memory_capture` tool requires an explicit user save request and may write immutable Source plus Input only; it never grants compile, proposal, approval, rebuild, deletion, Trusted, or Canonical authority.
 - Treat MCP results as silent background context. Do not expose MCP, route trace, index/storage paths, receipts, recovery, internal IDs or tool operations in an ordinary deliverable unless the user explicitly asks for an audit.
 
@@ -124,7 +124,7 @@
 ## Working method
 
 - 先检查环境、仓库状态和未提交修改，再更新实施计划。
-- 开始写操作前运行或检查 `gm doctor`；存在 approval recovery journal 时先用 `gm recover` 续做或报告 blocked，不得绕过 journal 继续修改同一 target。
+- 开始写操作前运行或检查 `galois doctor`；存在 approval recovery journal 时先用 `galois recover` 续做或报告 blocked，不得绕过 journal 继续修改同一 target。
 - 每次完成一个清晰的纵向功能；保持小步、可测试、可回滚。
 - 修改行为时同步修改测试；运行相关测试和全量测试后才能声称完成。
 - 不默认扫描整个 vault；先读 `INDEX.md`、`SCHEMA.md`，再检索少量候选。
@@ -148,4 +148,4 @@
 
 ## Canonical write gate
 
-允许写 canonical 的常规路径只有一种：Trusted 对象先生成 promotion card，再由用户执行 `gm promotion approve` 明确确认。自动 compile、daily、weekly、migration、drift audit 都不得写 canonical。修复 schema 或迁移 canonical 数据也必须先取得明确授权并提供可检查 diff。
+允许写 canonical 的常规路径只有一种：Trusted 对象先生成 promotion card，再由用户执行 `galois promotion approve` 明确确认。自动 compile、daily、weekly、migration、drift audit 都不得写 canonical。修复 schema 或迁移 canonical 数据也必须先取得明确授权并提供可检查 diff。

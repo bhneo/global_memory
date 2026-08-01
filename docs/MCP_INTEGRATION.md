@@ -1,4 +1,4 @@
-# Global Memory Agent Gateway
+# Galois Agent Gateway
 
 The gateway gives local Agents bounded memory without turning storage and
 maintenance mechanics into user-facing report content. Reads return a sanitized
@@ -51,14 +51,14 @@ The repository `.mcp.json` and `.cursor/mcp.json` use the strictly read-only
 launcher:
 
 ```powershell
-.\scripts\gm-mcp-stdio.ps1
+.\scripts\galois-mcp-stdio.ps1
 ```
 
 For an explicitly trusted single-user client that can preserve consent and
 session identity, use:
 
 ```powershell
-.\scripts\gm-mcp-agent-stdio.ps1
+.\scripts\galois-mcp-agent-stdio.ps1
 ```
 
 It enables only `capture`, `session`, `use`, and `feedback`. It does not enable
@@ -69,25 +69,30 @@ OpenHuman live in `adapters/hosts/`; they all default to the read-only launcher.
 Restart the client after changing MCP configuration. The server writes only
 JSON-RPC messages to stdout; diagnostics go to stderr.
 
-## Codex Desktop explicit plugin
+## Host integration contract
 
-The personal `global-memory` plugin contains `global-memory-read` and
-`global-memory-capture`. Both set `allow_implicit_invocation: false` and call a
-local gateway script only after the user selects the plugin/skill. The plugin
-does not bundle or register an MCP server, so unrelated Desktop tasks do not
-receive an always-on memory tool surface.
+Read `adapters/hosts/galois.mcp-manifest.json` before editing any assistant
+configuration. Host fragments are machine-path-neutral Windows templates; an
+assistant must discover and replace the runtime variables, preserve unrelated
+configuration, restart the host when required, then validate the live server
+with `memory_capabilities` and a Chinese Context query. The server-level
+`tools/list` result must contain exactly the five read tools. A host may prefix
+or wrap those names only through a one-to-one mapping that adds no write tools.
+Static configuration is not acceptance evidence. OpenHuman may use either its
+static TOML bridge or a dynamic MCP Registry, so the installed build's actual
+surface must be verified live.
 
 ## Delivery contract
 
 Use retrieved knowledge silently as background. In ordinary answers, do not
-mention Global Memory, MCP, storage/index implementation, paths, internal IDs,
+mention Galois, MCP, storage/index implementation, paths, internal IDs,
 recovery, receipts, route traces or tool calls. These details are appropriate
 only when the user explicitly asks for an audit or diagnostic report.
 
 ## Local HTTP acceptance
 
 ```powershell
-.\scripts\gm.ps1 mcp http --host 127.0.0.1 --port 18765 --allowed-origin https://chatgpt.com
+.\scripts\galois.ps1 mcp http --host 127.0.0.1 --port 18765 --allowed-origin https://chatgpt.com
 ```
 
 Add `--allow-capture` only for an explicitly trusted client. The endpoint is

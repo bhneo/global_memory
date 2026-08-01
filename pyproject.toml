@@ -15,6 +15,9 @@ test = ["pytest>=8,<9"]
 pdf = ["pypdf>=5,<7"]
 
 [project.scripts]
+galois = "global_memory.cli:main"
+# Deprecated compatibility alias. Public documentation and new integrations
+# use `galois` exclusively.
 gm = "global_memory.cli:main"
 
 [tool.setuptools]

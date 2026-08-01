@@ -96,7 +96,7 @@ Approval recovery journal 不进入知识图，也不进入 Git。它是短生�
 
 Claim 至少通过 `source_ids` 指向来源。新 claim 使用结构化 `evidence[]` 保存每条证据的 `source_id`、`location`、`excerpt`、`stance`（`supports` / `contradicts` / `context`）和理由；`applicability[]` 保存适用范围，`confidence` 表达当前判断强度，`uncertainty` 保留未决限制。旧 Markdown 可继续读取，新增或修改的 claim 应逐步补齐这些字段。`supports` 与 `contradicts` 可以并存，不允许用新证据静默抹掉旧主张。
 
-`gm audit contradictions` 只读取 canonical claim：同一 claim 同时拥有 `supports` 和 `contradicts` evidence 时输出内部冲突；claim relation 的 `contradicts` 边输出跨 claim 冲突。审计结果不是真相层对象，也不改变任何状态。
+`galois audit contradictions` 只读取 canonical claim：同一 claim 同时拥有 `supports` 和 `contradicts` evidence 时输出内部冲突；claim relation 的 `contradicts` 边输出跨 claim 冲突。审计结果不是真相层对象，也不改变任何状态。
 
 Synthesis 是可批准的 canonical knowledge 对象，不是 audit 缓存。它从至少两个 claim 的显式材料生成，保存输入 claim ID/path/hash/status、聚合后的 `source_ids`，并以 `related_to` relation 保留输入边。输入 hash 在 approval 前重新验证，因此综合不会基于已改变的 claim 静默落库。
 

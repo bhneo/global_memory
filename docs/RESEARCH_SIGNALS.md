@@ -13,13 +13,13 @@ Annotation 的 `truth_layer` 是 `user_annotation`。用户原文与 `agent_inte
 常用命令：
 
 ```powershell
-.\scripts\gm.ps1 annotate <target-id> --why-saved "..." --surprised-by "..." --project embodied-agent --salience high
-.\scripts\gm.ps1 research note --text "..." --target <object-id> --project scientific-memory
-.\scripts\gm.ps1 feedback <object-id> --label interesting --note "..."
-.\scripts\gm.ps1 annotations <target-id>
-.\scripts\gm.ps1 annotations <target-id> --history
-.\scripts\gm.ps1 feedback summary
-.\scripts\gm.ps1 research signals
+.\scripts\galois.ps1 annotate <target-id> --why-saved "..." --surprised-by "..." --project embodied-agent --salience high
+.\scripts\galois.ps1 research note --text "..." --target <object-id> --project scientific-memory
+.\scripts\galois.ps1 feedback <object-id> --label interesting --note "..."
+.\scripts\galois.ps1 annotations <target-id>
+.\scripts\galois.ps1 annotations <target-id> --history
+.\scripts\galois.ps1 feedback summary
+.\scripts\galois.ps1 research signals
 ```
 
 Feedback 描述研究价值，不描述命题真实性：`forced` 不删除对象，`actionable` 不晋升 Trusted，`interesting` 不自动生成 Hypothesis。

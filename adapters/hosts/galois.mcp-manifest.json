@@ -1,0 +1,65 @@
+{
+  "schema_version": "1.0",
+  "product": "galois",
+  "server_name": "galois-agent-gateway",
+  "server_id": "galois",
+  "transport": "stdio",
+  "public_cli": "galois",
+  "validated_platforms": ["windows"],
+  "template_scope": "machine-path-neutral-windows",
+  "windows_launcher": ".\\scripts\\galois-mcp-stdio.ps1",
+  "templates": {
+    "claude-desktop": "claude-desktop.mcp.json",
+    "codex": "codex.config.toml",
+    "hermes": "hermes.config.yaml",
+    "openclaw": "openclaw.mcp-server.json",
+    "openhuman": "openhuman.config.toml"
+  },
+  "runtime": {
+    "python": "{{GALOIS_PYTHON}}",
+    "repository": "{{GALOIS_ROOT}}",
+    "module": "global_memory",
+    "args": ["-m", "global_memory", "mcp", "stdio"],
+    "note": "The Python module name is an internal compatibility detail, not a public command."
+  },
+  "default_authority": "read-only",
+  "profiles": ["research", "execution", "exploration"],
+  "required_tools": [
+    "memory_capabilities",
+    "memory_context",
+    "memory_search",
+    "memory_show",
+    "memory_source"
+  ],
+  "forbidden_default_write_scopes": [
+    "capture",
+    "session",
+    "use",
+    "feedback",
+    "working",
+    "trusted",
+    "canonical"
+  ],
+  "acceptance": {
+    "restart_host_after_config_change": true,
+    "capabilities_server_name": "galois-agent-gateway",
+    "server_tools_must_match_required_tools_exactly": true,
+    "host_namespacing_allowed": true,
+    "host_mapping_must_be_one_to_one": true,
+    "host_mapping_must_not_add_write_tools": true,
+    "chinese_probe": "请用 Galois 检索 Kakeya，并保留证据边界。",
+    "bounded_probe": {
+      "tool": "memory_context",
+      "profile": "research",
+      "budget_exhausted_is_valid": true
+    },
+    "static_config_is_not_live_proof": true
+  },
+  "host_status": {
+    "claude-desktop": "supported",
+    "codex": "supported",
+    "hermes": "supported",
+    "openclaw": "supported",
+    "openhuman": "conditional-static-bridge-or-dynamic-registry-verification-required"
+  }
+}

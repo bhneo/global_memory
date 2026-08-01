@@ -52,7 +52,12 @@ WIKILINK_PATTERN = re.compile(r"\[\[([^\]|]+)(?:\|([^\]]+))?\]\]")
 
 
 def _repository(args: argparse.Namespace) -> Repository:
-    root = Path(args.root or os.environ.get("GM_ROOT") or Path.cwd())
+    root = Path(
+        args.root
+        or os.environ.get("GALOIS_ROOT")
+        or os.environ.get("GM_ROOT")
+        or Path.cwd()
+    )
     return Repository(root)
 
 
@@ -64,8 +69,11 @@ def _print(value: object) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="gm", description="Global Memory local-first CLI")
-    parser.add_argument("--root", help="仓库根目录；默认当前目录或 GM_ROOT")
+    parser = argparse.ArgumentParser(
+        prog="galois",
+        description="Galois local-first scientific memory CLI",
+    )
+    parser.add_argument("--root", help="仓库根目录；默认当前目录或 GALOIS_ROOT")
     commands = parser.add_subparsers(dest="command", required=True)
 
     commands.add_parser("init", help="初始化目录并建立派生索引")

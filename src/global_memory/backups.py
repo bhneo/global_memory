@@ -66,7 +66,7 @@ class RawBackupService:
             root.relative_to(self.repository.root)
         except ValueError:
             return root
-        raise ValidationError("备份目录必须位于 Global Memory 仓库之外")
+        raise ValidationError("备份目录必须位于 Galois 仓库之外")
 
     @staticmethod
     def _path_inside(root: Path, relative: str) -> Path:

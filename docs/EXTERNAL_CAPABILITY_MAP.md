@@ -1,6 +1,6 @@
 # External Capability Map
 
-Global Memory 保留不可替代的科研认知核心；成熟外围能力优先通过只读服务、CLI、MCP 或 Adapter 借用。外部系统不得成为本地 Raw/Markdown 的真相源。
+Galois 保留不可替代的科研认知核心；成熟外围能力优先通过只读服务、CLI、MCP 或 Adapter 借用。外部系统不得成为本地 Raw/Markdown 的真相源。
 
 ```yaml
 - capability: 普通文档检索与人类 UI
@@ -13,7 +13,7 @@ Global Memory 保留不可替代的科研认知核心；成熟外围能力优先
 
 - capability: 记忆评测
   external_project: MemoryBench
-  possible_integration: Global Memory Provider
+  possible_integration: Galois Provider
   license_boundary: 不复制完整评测框架
   trigger_to_integrate: M9.1 建立检索与治理基线时
   why_not_now: 当前缺少真实研究使用样本

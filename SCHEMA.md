@@ -1,4 +1,4 @@
-# Global Memory Schema v0.26
+# Galois Schema v0.26
 
 ## M9.1 Cognitive Objects
 

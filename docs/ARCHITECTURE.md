@@ -96,7 +96,7 @@ canonical 层    knowledge | frontier | action
 
 Raw content 以 bytes 的 SHA-256 命名并独占创建，统一存放在 `vault/raw/objects/sha256/<前2位>/<次2位>/<完整哈希>`。路径不含 capture kind、URL 后缀或显示扩展名。Source record 是独立 Markdown，保存来源身份、捕获时间、保存理由、content hash、MIME、原始文件名、建议显示扩展名和对象相对路径。同内容不同来源共用 content object，但 source record 不合并。
 
-旧的 `raw/<kind>/content|blobs` 通过 `gm migrate raw-store` 迁移。迁移先备份 source record，再独占写全局对象，使用本地 journal 逐条更新 source，完成后校验全部引用。旧对象默认保留；只有独立、明确的清理动作才可删除。
+旧的 `raw/<kind>/content|blobs` 通过 `galois migrate raw-store` 迁移。迁移先备份 source record，再独占写全局对象，使用本地 journal 逐条更新 source，完成后校验全部引用。旧对象默认保留；只有独立、明确的清理动作才可删除。
 
 同一 canonical URL 属于一个 source family。普通 capture 只做已有来源去重；显式 `--refresh` 才重新抓取。变化内容产生带 `version_number` 和 `previous_version_id` 的新 immutable source record；即使内容回到旧 hash，也保留为新的时间版本。
 
@@ -112,7 +112,7 @@ Source 表达一次具体捕获，work 表达现实世界的论文、文章或�
 
 Processor 无权直接写 canonical。它写入一个 proposal record 和一个不可变 candidate，proposal 内嵌 unified diff。Approve 校验 pending 状态、candidate ID、类型、关系和 SHA-256 后才创建或更新 canonical，并写 `approved_via`。
 
-`gm compile` 的主要输出是 Compile Bundle Proposal。Compiler 先从 metadata/FTS 检索已有对象，再决定 create/update，并把 claim、concept、question、tension、hypothesis、analogy 等有意义候选放入一个 bundle。每个 item 有独立 candidate/base/hash/diff/decision；未审批 item 不写 canonical。按 item 或整体批准先校验全部目标，再创建多目标 recovery journal，固定执行 targets → proposal → audit → index。中断后只允许幂等 roll-forward，第三状态保持 blocked。
+`galois compile` 的主要输出是 Compile Bundle Proposal。Compiler 先从 metadata/FTS 检索已有对象，再决定 create/update，并把 claim、concept、question、tension、hypothesis、analogy 等有意义候选放入一个 bundle。每个 item 有独立 candidate/base/hash/diff/decision；未审批 item 不写 canonical。按 item 或整体批准先校验全部目标，再创建多目标 recovery journal，固定执行 targets → proposal → audit → index。中断后只允许幂等 roll-forward，第三状态保持 blocked。
 
 Provider 接口只返回结构化 bundle，不写文件、不批准。外部 provider 更新必须使用稳定 `target_id` 和明确 `change_type`；标题不是对象身份。默认 deterministic fallback 能力有限且显式标记；外部 provider 可以实现同一接口，但核心不绑定 SDK。
 
@@ -136,30 +136,30 @@ Claim candidate 的 `evidence[]` 区分 quote、paraphrase、translation、table
 
 ### 只读完整性检查
 
-`gm doctor` 侧重 source version、raw hash、索引和 recovery journal；`gm lint` 扩展检查对象引用、claim provenance、wikilink、proposal candidate/base/target/hash 和 revision lineage。Lint 不重建索引、不改变对象；断链和哈希不一致是 error，孤立 canonical 页面与未引用的审阅快照是 warning。
+`galois doctor` 侧重 source version、raw hash、索引和 recovery journal；`galois lint` 扩展检查对象引用、claim provenance、wikilink、proposal candidate/base/target/hash 和 revision lineage。Lint 不重建索引、不改变对象；断链和哈希不一致是 error，孤立 canonical 页面与未引用的审阅快照是 warning。
 
-`gm maintain` 是维护入口而不是新的真相层。默认模式只组合 doctor、lint、raw integrity，并汇总 inbox、proposal、receipt、follow-up、弱证据、历史对象、建议动作和 Obsidian 视图新鲜度，不写任何文件。只有显式 `--rebuild-derived` 才重建 SQLite 与 Obsidian 导航；该模式仍不得修改 raw、proposal 或 canonical。
+`galois maintain` 是维护入口而不是新的真相层。默认模式只组合 doctor、lint、raw integrity，并汇总 inbox、proposal、receipt、follow-up、弱证据、历史对象、建议动作和 Obsidian 视图新鲜度，不写任何文件。只有显式 `--rebuild-derived` 才重建 SQLite 与 Obsidian 导航；该模式仍不得修改 raw、proposal 或 canonical。
 
-`gm audit contradictions` 是另一条只读治理路径：它扫描 canonical claim 的结构化 evidence 与 typed relation，报告内部 supports/contradicts 并存和跨 claim 的显式 `contradicts` 边。冲突本身是可保留的认知状态，不是自动修复项；audit 不写入 Markdown 或派生索引。
+`galois audit contradictions` 是另一条只读治理路径：它扫描 canonical claim 的结构化 evidence 与 typed relation，报告内部 supports/contradicts 并存和跨 claim 的显式 `contradicts` 边。冲突本身是可保留的认知状态，不是自动修复项；audit 不写入 Markdown 或派生索引。
 
-`gm synthesize` 是受治理的写入前阶段：它把多个 canonical claim 的显式材料整理为 `synthesis` candidate，并记录每个输入 claim 的完整 hash。它不推断新事实或裁决冲突；approval 之前重验输入 hash，随后仍通过普通 candidate/recovery gate 写入 canonical synthesis。当前没有自动调度。
+`galois synthesize` 是受治理的写入前阶段：它把多个 canonical claim 的显式材料整理为 `synthesis` candidate，并记录每个输入 claim 的完整 hash。它不推断新事实或裁决冲突；approval 之前重验输入 hash，随后仍通过普通 candidate/recovery gate 写入 canonical synthesis。当前没有自动调度。
 
-`gm discover` 是可解释的关联发现阶段：共享来源、标签、relation target 和确定性关键词会成为候选信号，proposal 保留所有信号与输入 hash。它没有 canonical candidate；approve 只审计“已审阅”，不写 relation。关系采纳仍必须通过单独的 canonical update proposal。
+`galois discover` 是可解释的关联发现阶段：共享来源、标签、relation target 和确定性关键词会成为候选信号，proposal 保留所有信号与输入 hash。它没有 canonical candidate；approve 只审计“已审阅”，不写 relation。关系采纳仍必须通过单独的 canonical update proposal。
 
 ### Context Pack
 
-`gm context` 位于读取边界，不是 processor 或写入路径。它依据明确 query、profile、filters 与 token budget 对检索/关系命中做确定性裁剪；输出保留路径、文档 hash、来源 ID、evidence 和选择理由。Research/Exploration 查询还可使用 `docs/RESEARCH_DIRECTIONS.md` 中的中英文别名进行有界导航：匹配只选择 `scope_ids` 一致的少量 active Cognitive Synthesis，并在 Route Trace 中显式标注；它不是 Evidence、真值或排名信任信号，Execution profile 仍排除 Synthesis。直接入选的 source 默认只使用 family 最新版本；`archived` canonical 默认退出活动 Context Pack，只被 archived canonical 引用且没有活动 canonical 引用的 source 也随之退出。历史材料仍保留在真相层供 `search`/`show` 和审计回溯。Context Pack 不写入 Markdown、SQLite 或审计日志，不缓存为真相层，也不提升任何命中或摘录的认知状态。
+`galois context` 位于读取边界，不是 processor 或写入路径。它依据明确 query、profile、filters 与 token budget 对检索/关系命中做确定性裁剪；输出保留路径、文档 hash、来源 ID、evidence 和选择理由。Research/Exploration 查询还可使用 `docs/RESEARCH_DIRECTIONS.md` 中的中英文别名进行有界导航：匹配只选择 `scope_ids` 一致的少量 active Cognitive Synthesis，并在 Route Trace 中显式标注；它不是 Evidence、真值或排名信任信号，Execution profile 仍排除 Synthesis。直接入选的 source 默认只使用 family 最新版本；`archived` canonical 默认退出活动 Context Pack，只被 archived canonical 引用且没有活动 canonical 引用的 source 也随之退出。历史材料仍保留在真相层供 `search`/`show` 和审计回溯。Context Pack 不写入 Markdown、SQLite 或审计日志，不缓存为真相层，也不提升任何命中或摘录的认知状态。
 
 M5 profile 层在同一读取边界上扩展：execution 优先 project/goal/architecture/decision/failure，research 优先 claim/concept/source/evidence/question，exploration 优先 intuition/tension/analogy/anomaly/hypothesis。Profile 可组合，并接受 project/domain/type/status/time/source-kind filter。召回顺序为分字段 FTS/metadata → 有界 typed relation traversal → extraction/source verification → token 裁剪。默认不含 proposal；显式包含时必须保留其 pending/deferred 等状态。
 
 ### Raw backup
 
-Raw manifest 从 `vault/raw/` 的全部文件生成 SHA-256 清单，包含 source record 和 content/blob。`gm backup create <外部目录>` 将缺失文件独占复制到备份目录，相同 hash 跳过，同路径不同 hash 停止为 conflict；只有无 conflict 时才发布新的备份 manifest。`gm backup restore` 默认 dry-run，`--apply` 先验证备份，再只恢复本地缺失文件；任一冲突阻止全部写入。恢复后 SQLite 由真相层重建，Git 仍负责 canonical Markdown 与代码历史。
+Raw manifest 从 `vault/raw/` 的全部文件生成 SHA-256 清单，包含 source record 和 content/blob。`galois backup create <外部目录>` 将缺失文件独占复制到备份目录，相同 hash 跳过，同路径不同 hash 停止为 conflict；只有无 conflict 时才发布新的备份 manifest。`galois backup restore` 默认 dry-run，`--apply` 先验证备份，再只恢复本地缺失文件；任一冲突阻止全部写入。恢复后 SQLite 由真相层重建，Git 仍负责 canonical Markdown 与代码历史。
 
 ## 一致性边界
 
 - Capture 顺序：raw content → source Markdown → append audit event → rebuild index。索引失败时文件仍可重建，调用者会看到错误。
-- Approve 顺序：完整校验 candidate → 创建 recovery journal → 原子写 canonical → 原子更新 proposal → audit → rebuild；中断后由 `gm recover` 幂等续做。
+- Approve 顺序：完整校验 candidate → 创建 recovery journal → 原子写 canonical → 原子更新 proposal → audit → rebuild；中断后由 `galois recover` 幂等续做。
 - Source record 目前不可就地更新，因此 processing state 由 proposal 集合推导，`inbox` 不修改 raw metadata。
 - Refresh 顺序：重新抓取 → 比较最新 hash → 追加 content/source → 重建索引 → 幂等创建 refresh proposal。若 proposal 创建中断，再次 refresh 同一内容会补建同一个 proposal。
 - Update 顺序：验证 candidate → 保存 base/candidate → 显示 diff → 审批时重验两份 hash 与 current → 原子写 target → 更新 proposal → audit → 重建索引。并发冲突保持 pending，必须重新提案。
@@ -167,13 +167,13 @@ Raw manifest 从 `vault/raw/` 的全部文件生成 SHA-256 清单，包含 sour
 
 ### Approval recovery
 
-Recovery journal 保存写前 hash 和确定的写后 payload。`gm recover` 只接受当前文件等于写前或写后 hash，并继续完成剩余阶段；第三种状态视为外部并发修改，保持 blocked。该机制不提供跨文件原子性，而是提供可检测、可续做、不会静默覆盖的最终一致性。
+Recovery journal 保存写前 hash 和确定的写后 payload。`galois recover` 只接受当前文件等于写前或写后 hash，并继续完成剩余阶段；第三种状态视为外部并发修改，保持 blocked。该机制不提供跨文件原子性，而是提供可检测、可续做、不会静默覆盖的最终一致性。
 
 ## 可插拔边界
 
 ### Agent Memory Gateway
 
-`gm mcp stdio|http` 把既有 Context Pack、搜索、对象读取与 source extraction
+`galois mcp stdio|http` 把既有 Context Pack、搜索、对象读取与 source extraction
 包装为 provider-neutral 的 Agent Evidence Packet。普通响应不包含路径、hash、
 route trace、SQLite/维护状态或管理命令；完整诊断仍只通过本地 CLI 提供。默认
 MCP 保持只读。显式增加 `--allow-capture` 时，仅新增一个需用户确认的文本

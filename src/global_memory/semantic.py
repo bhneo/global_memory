@@ -12,7 +12,7 @@ class SemanticDistillationQueue:
     """Expose bounded Source-only material for an external Agent model.
 
     The queue is read-only.  A model returns a normal JSON Bundle which still
-    passes through ``gm compile --bundle-file`` and Working-memory governance.
+    passes through ``galois compile --bundle-file`` and Working-memory governance.
     """
 
     COMPLETED_STATUSES = {"migrated", "approved", "published"}
@@ -121,7 +121,7 @@ class SemanticDistillationQueue:
             "omitted_count": max(0, len(candidates) - len(items)),
             "items": items,
             "provider_contract": {
-                "apply": ".\\scripts\\gm.ps1 compile <source_id> --bundle-file <json> --provider-name agent-semantic-v1",
+                "apply": ".\\scripts\\galois.ps1 compile <source_id> --bundle-file <json> --provider-name agent-semantic-v1",
                 "output": "JSON object with an items array; each item needs object_type, title and body",
                 "allowed_actions": ["create", "update"],
                 "update_requires": ["target_id", "change_type"],

@@ -2,7 +2,7 @@
 
 ## M9.1 experience and reflection contract
 
-Third-party Agents submit session experience through `gm session import`; the
+Third-party Agents submit session experience through `galois session import`; the
 result is an Input Episode queued for Reflection, never a direct Knowledge
 write. Research Context may include explicitly labeled Reflection and Cognitive
 Synthesis. Execution Context excludes both. Agents may author Daily/Weekly JSON
@@ -19,11 +19,11 @@ Agents may capture, compile and create Working memory through the governed CLI w
 
 ## Goal
 
-Codex, Cursor, Claude, Hermes, OpenClaw, and OpenHuman share one Global Memory without copying the vault into tool-specific memory stores. Each tool gets a thin host adapter; the knowledge and governance model remain provider-neutral.
+Codex, Cursor, Claude, Hermes, OpenClaw, and OpenHuman can share one Galois memory without copying the vault into tool-specific memory stores. Each tool gets a thin host adapter; the knowledge and governance model remain provider-neutral.
 
 ## Read path
 
-Local MCP-capable assistants may use the configured read-only `global-memory` server instead of shelling out directly. Five read tools expose capabilities plus sanitized Evidence Packets. Codex Desktop uses the personal `global-memory` plugin for explicit-only retrieval or Capture-only intake; the plugin registers no always-on MCP. A separate trusted launcher exposes explicit, idempotent Capture/session/use/feedback signals; see `docs/MCP_INTEGRATION.md`, `adapters/hosts/`, and ADR 0059.
+Local MCP-capable assistants may use the configured read-only `galois` server instead of shelling out directly. Five read tools expose capabilities plus sanitized Evidence Packets. A separate trusted launcher exposes explicit, idempotent Capture/session/use/feedback signals; see `docs/MCP_INTEGRATION.md`, `adapters/hosts/`, and ADR 0059.
 
 MCP retrieval is background context, not report content. Ordinary answers must
 not mention MCP, route traces, indexes, storage paths, receipts, recovery or
@@ -34,7 +34,7 @@ the machinery that supplied it.
 ```text
 AGENTS.md / CLAUDE.md / .cursor rule
   -> vault/INDEX.md
-  -> gm context <question> --format markdown
+  -> galois context <question> --format markdown
   -> selected canonical/source pages
   -> evidence and immutable raw when verification is needed
 ```
@@ -55,8 +55,8 @@ agent session
 Use:
 
 ```text
-gm receipt create --agent <provider-neutral-actor-id> --project <name> --task <name> --from-file <receipt.md>
-gm receipt propose <receipt-id>
+galois receipt create --agent <provider-neutral-actor-id> --project <name> --task <name> --from-file <receipt.md>
+galois receipt propose <receipt-id>
 ```
 
 A receipt is not Trusted or Canonical merely because an agent wrote it. It records a candidate handoff and cannot bypass evidence or promotion checks. Keep durable decisions, validated observations, changed assumptions, unresolved questions, and source references; omit conversation filler and secrets.
@@ -65,7 +65,7 @@ Begin each candidate section with an explicit marker such as `Experiment:`, `Dec
 
 ## Obsidian
 
-Open the repository's `vault/` directory as an Obsidian vault. Run `gm obsidian build` to generate:
+Open the repository's `vault/` directory as an Obsidian vault. Run `galois obsidian build` to generate:
 
 - `vault/INDEX.md`: human home and current overview;
 - `vault/views/最近导入.md`, `资料库.md`, and `主题导航.md`: source-oriented browsing;
@@ -73,14 +73,14 @@ Open the repository's `vault/` directory as an Obsidian vault. Run `gm obsidian 
 - `vault/views/readers/`: one readable, provenance-linked page per source;
 - `vault/views/Knowledge Catalog.md` and `Review Queues.md`: stable technical compatibility entries.
 
-These files use ordinary Markdown and path-based wikilinks. They are generated views, not a second database or a truth layer. Reader pages reuse existing extraction text and never invent summaries or topics. CLI capture and daily/weekly maintenance refresh them automatically; `gm obsidian build` remains the manual repair command. The default `knowledge` graph shows active Working, Trusted, and Canonical semantic objects plus their validated typed relations; raw Source nodes stay in reader/audit views so the human graph is not dominated by articles. Use `--graph-profile trusted` for the stricter trust-only projection and `--graph-profile all` for the complete source-oriented audit graph. No plugin is required.
+These files use ordinary Markdown and path-based wikilinks. They are generated views, not a second database or a truth layer. Reader pages reuse existing extraction text and never invent summaries or topics. CLI capture and daily/weekly maintenance refresh them automatically; `galois obsidian build` remains the manual repair command. The default `knowledge` graph shows active Working, Trusted, and Canonical semantic objects plus their validated typed relations; raw Source nodes stay in reader/audit views so the human graph is not dominated by articles. Use `--graph-profile trusted` for the stricter trust-only projection and `--graph-profile all` for the complete source-oriented audit graph. No plugin is required.
 
 ## Maintenance
 
-For routine article ingestion, `gm triage [source-id ...] --limit 25` remains the cheapest extraction/quality preparation step. `gm consolidate daily` establishes the safe deterministic boundary; the Daily Agent must then consume a bounded `gm reflection queue`, use the matching semantic queue only for Source detail, and apply one model-produced artifact through `gm dream daily`. Source-only is safe staging, not proof that semantic maintenance is complete. See `COGNITIVE_CONSOLIDATION.md` and `SEMANTIC_DISTILLATION.md`.
+For routine article ingestion, `galois triage [source-id ...] --limit 25` remains the cheapest extraction/quality preparation step. `galois consolidate daily` establishes the safe deterministic boundary; the Daily Agent must then consume a bounded `galois reflection queue`, use the matching semantic queue only for Source detail, and apply one model-produced artifact through `galois dream daily`. Source-only is safe staging, not proof that semantic maintenance is complete. See `COGNITIVE_CONSOLIDATION.md` and `SEMANTIC_DISTILLATION.md`.
 
-The Weekly Agent first applies a source- and Reflection-bound Cognitive Synthesis through `gm dream weekly`, then runs `gm consolidate weekly --skip-daily-admission` for Working review, Trusted policy, drift audit, exception routing, promotion recommendations and the review-compression digest. It never writes Canonical automatically.
+The Weekly Agent first applies a source- and Reflection-bound Cognitive Synthesis through `galois dream weekly`, then runs `galois consolidate weekly --skip-daily-admission` for Working review, Trusted policy, drift audit, exception routing, promotion recommendations and the review-compression digest. It never writes Canonical automatically.
 
-Run `gm maintain` for the normal read-only health and backlog report. It also reports whether generated Obsidian views are missing or stale. Run `gm maintain --rebuild-derived` only when an explicit refresh is wanted; it rebuilds SQLite and all generated Obsidian views, but never raw, proposal, receipt, or canonical content.
+Run `galois maintain` for the normal read-only health and backlog report. It also reports whether generated Obsidian views are missing or stale. Run `galois maintain --rebuild-derived` only when an explicit refresh is wanted; it rebuilds SQLite and all generated Obsidian views, but never raw, proposal, receipt, or canonical content.
 
-On Windows PowerShell, invoke the same commands through `.\\scripts\\gm.ps1` when the bare `gm` name resolves to the built-in `Get-Member` alias.
+On Windows PowerShell, invoke the same commands through `.\\scripts\\galois.ps1` or use the installed `galois` command.

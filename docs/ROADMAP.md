@@ -15,7 +15,7 @@
   Mode and Prediction without laundering Reflection into fact.
 - M9.4 Structural Analogy Engine: require topical distance, mechanism similarity and explicit differences.
 - M9.5 Hypothesis Lab: Connection → Conjecture → Competing Hypotheses → Prediction → Falsifier → Smallest Experiment.
-- M9.6 Experiment Loop: import human/Agent-run experiment results as Input; Global Memory itself does not execute experiments.
+- M9.6 Experiment Loop: import human/Agent-run experiment results as Input; Galois itself does not execute experiments.
 
 M9.2–M9.6 remain future stages. M9.1 deliberately does not implement them early.
 
@@ -76,7 +76,7 @@ M7 不引入 embedding、图数据库、复杂前端、后台自动调度或自�
 - 规则 compile、proposal diff、approve/reject gate。
 - Windows/中文路径、失败恢复和核心治理测试。
 
-退出条件：`gm doctor` 通过、全量测试通过、真实仓库完成一条 capture → approve → search 演示。
+退出条件：`galois doctor` 通过、全量测试通过、真实仓库完成一条 capture → approve → search 演示。
 
 ## M2 — 版本与更新安全
 
@@ -85,7 +85,7 @@ M7 不引入 embedding、图数据库、复杂前端、后台自动调度或自�
 - Canonical update proposal、乐观并发 hash、三方 diff。（已完成）
 - 跨文件 approve recovery journal 与故障注入测试。（已完成）
 - Proposal defer、不可变 candidate revision 与 supersedes 审阅链。（已完成）
-- `gm lint`：schema、失效链接、无来源 claim、孤立页面、raw hash。（已完成）
+- `galois lint`：schema、失效链接、无来源 claim、孤立页面、raw hash。（已完成）
 - Raw manifest、增量备份与恢复演练。（已完成）
 
 ## M3 — 高质量编译与认知治理

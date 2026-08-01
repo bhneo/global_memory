@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import io
 import sqlite3
 import shutil
 import uuid
@@ -40,7 +41,7 @@ from global_memory.epistemics import truth_layer
 from global_memory.evolution import KnowledgeEvolutionService
 from global_memory.migration import EpistemicStatusMigration, TrustPolicyRequalificationMigration, TrustRequalificationRepairMigration
 from global_memory.metrics import ProjectMetricsService
-from global_memory.mcp_server import AgentMemoryTools, GatewayPolicy, MCPApplication, ReadOnlyMemoryTools, serve_http
+from global_memory.mcp_server import AgentMemoryTools, GatewayPolicy, MCPApplication, ReadOnlyMemoryTools, _configure_stdio_utf8, serve_http, serve_stdio
 from global_memory.obsidian import ObsidianViewService
 from global_memory.proposals import ProposalService
 from global_memory.receipts import ReceiptService
@@ -3268,13 +3269,13 @@ def test_receipt_accepts_provider_neutral_actor_and_rejects_invalid_identity(rep
 
 def test_agent_adapter_files_define_the_shared_memory_contract() -> None:
     root = Path(__file__).parents[1]
-    assert "gm receipt create --agent claude" in (root / "CLAUDE.md").read_text(encoding="utf-8")
-    assert "gm receipt create --agent cursor" in (
-        root / ".cursor/rules/global-memory.mdc"
+    assert "galois receipt create --agent claude" in (root / "CLAUDE.md").read_text(encoding="utf-8")
+    assert "galois receipt create --agent cursor" in (
+        root / ".cursor/rules/galois.mdc"
     ).read_text(encoding="utf-8")
     agents = (root / "AGENTS.md").read_text(encoding="utf-8")
-    assert "gm context \"<question>\" --format markdown" in agents
-    assert "gm receipt create --agent codex" in agents
+    assert "galois context \"<question>\" --format markdown" in agents
+    assert "galois receipt create --agent codex" in agents
 
 
 def test_maintenance_inventory_reports_actionable_backlog(
@@ -3441,6 +3442,75 @@ def test_mcp_jsonrpc_lifecycle_and_structured_tool_result(repo: Repository) -> N
     assert len(listed["result"]["tools"]) == 5
     assert called["result"]["structuredContent"]["source"]["ref"] == captured.source_id
     assert called["result"]["isError"] is False
+
+
+def test_mcp_stdio_flushes_each_response(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class FlushTrackingOutput(io.StringIO):
+        def __init__(self) -> None:
+            super().__init__()
+            self.flush_count = 0
+
+        def flush(self) -> None:
+            self.flush_count += 1
+            super().flush()
+
+    requests = "\n".join((
+        json.dumps({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}}),
+        json.dumps({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {}}),
+    )) + "\n"
+    output = FlushTrackingOutput()
+    monkeypatch.setattr(sys, "stdin", io.StringIO(requests))
+    monkeypatch.setattr(sys, "stdout", output)
+
+    serve_stdio(repo)
+
+    responses = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert [response["id"] for response in responses] == [1, 2]
+    assert output.flush_count == 2
+
+
+def test_mcp_stdio_forces_utf8_independent_of_windows_code_page(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class ReconfigurableStream(io.StringIO):
+        def __init__(self) -> None:
+            super().__init__()
+            self.calls: list[dict[str, str]] = []
+
+        def reconfigure(self, **kwargs: str) -> None:
+            self.calls.append(kwargs)
+
+    stdin = ReconfigurableStream()
+    stdout = ReconfigurableStream()
+    monkeypatch.setattr(sys, "stdin", stdin)
+    monkeypatch.setattr(sys, "stdout", stdout)
+
+    _configure_stdio_utf8()
+
+    assert stdin.calls == [{"encoding": "utf-8", "errors": "strict"}]
+    assert stdout.calls == [{"encoding": "utf-8", "errors": "strict"}]
+
+
+def test_mcp_stdio_normalizes_surrogate_pairs_and_unpaired_surrogates(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    requests = "\n".join((
+        '{"jsonrpc":"2.0","id":1,"method":"tools/call","params":{"name":"memory_search","arguments":{"query":"跨方向\\ud83d\\ude80"}}}',
+        '{"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"memory_search","arguments":{"query":"认知\\ud83d综合"}}}',
+    )) + "\n"
+    output = io.StringIO()
+    monkeypatch.setattr(sys, "stdin", io.StringIO(requests))
+    monkeypatch.setattr(sys, "stdout", output)
+
+    serve_stdio(repo)
+
+    responses = [json.loads(line) for line in output.getvalue().splitlines()]
+    assert [response["id"] for response in responses] == [1, 2]
+    assert all(response["result"]["isError"] is False for response in responses)
+    assert responses[0]["result"]["structuredContent"]["query"] == "跨方向🚀"
+    assert responses[1]["result"]["structuredContent"]["query"] == "认知�综合"
 
 
 def test_agent_mcp_capture_requires_explicit_confirmation_and_stays_input_only(repo: Repository) -> None:

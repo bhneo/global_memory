@@ -78,7 +78,7 @@ class ContextPack:
         data = self.as_dict()
         lines = [
             "---\ncontext_pack_version: 1\ntruth_layer: derived_read_only\n---\n\n",
-            "# Global Memory Context Pack\n\n",
+            "# Galois Context Pack\n\n",
             f"- Query: {self.query}\n- Profiles: {', '.join(self.profiles)}\n",
             f"- Token budget: {self.token_budget}\n- Estimated tokens: {self.estimated_tokens}\n\n",
         ]

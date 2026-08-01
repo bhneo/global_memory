@@ -17,8 +17,8 @@
 
 ## 当前概况
 
-- 资料：276 篇
-- Working：169 条
+- 资料：284 篇
+- Working：173 条
 - Trusted：30 条
 - Canonical：1 条
 - 开放例外：19 项
@@ -26,11 +26,11 @@
 
 ## 最近收录
 
-- [[views/readers/source_e81925f355a0e0d30a13439a|2607.22535v1.pdf]] · 2026-07-28
-- [[views/readers/source_3b0dd57a10c8bd53518fdadc|[2607.22535] Robot-Factored World Models via Robot Rendering]] · 2026-07-28
-- [[views/readers/source_ba71396b5fc37637b125a89f|arxiv.org]] · 2026-07-28
-- [[views/readers/source_5d10374c3158d70587d9ef6a|[2607.21670] Ordered Action Tokens for Visuomotor Policy Learning]] · 2026-07-28
-- [[views/readers/source_38375a0f6ddc91f3bfde47d3|arxiv.org]] · 2026-07-28
-- [[views/readers/source_152577393ba943aec3dd527f|arxiv.org]] · 2026-07-27
-- [[views/readers/source_92d713e0ff1d895cbf75a74a|arxiv.org]] · 2026-07-27
-- [[views/readers/source_83b4b67dc31108d06a082c88|arxiv.org]] · 2026-07-27
+- [[views/readers/source_029a4fa602a118a1ead1bbf4|2607.26657v1.pdf]] · 2026-08-01
+- [[views/readers/source_9ddfb0f3d50b606bd13e17e2|arxiv.org]] · 2026-08-01
+- [[views/readers/source_e504623270d30d733b2cb9e1|arxiv.org]] · 2026-08-01
+- [[views/readers/source_98bb68f21232969a79d77918|arxiv.org]] · 2026-08-01
+- [[views/readers/source_da533f75e69c23b8eec387df|arxiv.org]] · 2026-08-01
+- [[views/readers/source_feaf5bf5a081e27b445c569c|arxiv.org]] · 2026-08-01
+- [[views/readers/source_5c653d6ea053d088d13e6d5c|[2607.26657] Enfold: Folding World-Generator Computation into Predictive Representations for Efficient Embodied Control]] · 2026-08-01
+- [[views/readers/source_d0908c8e9c58809dd2665c1e|arxiv.org]] · 2026-08-01

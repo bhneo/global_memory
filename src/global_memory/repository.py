@@ -110,7 +110,7 @@ class Repository:
 
     def ensure_initialized(self) -> None:
         if not (self.root / "vault").is_dir():
-            raise ValidationError(f"尚未初始化 Global Memory 仓库: {self.root}")
+            raise ValidationError(f"尚未初始化 Galois 仓库: {self.root}")
         if not self.index_path.exists():
             self.rebuild_index()
 

@@ -7,7 +7,7 @@ Working 可自动演化；Trusted 的变化必须可验证、可解释、可回�
 ## 单对象复核
 
 ```powershell
-.\scripts\gm.ps1 consolidate object <object-id>
+.\scripts\galois.ps1 consolidate object <object-id>
 ```
 
 流程：
@@ -31,9 +31,9 @@ Claim 额外复核 atomicity、coverage、entailment、extraction、authority、
 手工 Trusted 需要明确 reason。Canonical 仍需 promotion card + 用户 approve：
 
 ```powershell
-.\scripts\gm.ps1 promote <id> --to trusted --reason "长期值得保留"
-.\scripts\gm.ps1 promote <id> --to canonical --reason "高影响稳定知识"
-.\scripts\gm.ps1 promotion approve <promotion-id> --lock
+.\scripts\galois.ps1 promote <id> --to trusted --reason "长期值得保留"
+.\scripts\galois.ps1 promote <id> --to canonical --reason "高影响稳定知识"
+.\scripts\galois.ps1 promotion approve <promotion-id> --lock
 ```
 
 ## Trusted 更新
@@ -48,7 +48,7 @@ Claim 额外复核 atomicity、coverage、entailment、extraction、authority、
 ## Weekly
 
 ```powershell
-.\scripts\gm.ps1 consolidate weekly
+.\scripts\galois.ps1 consolidate weekly
 ```
 
 `consolidate weekly` first runs a bounded Daily admission catch-up (25 sources
@@ -64,8 +64,8 @@ They remain searchable as immutable sources and receive a terminal
 `working_quality_review` for legacy deterministic fallbacks; remediation must
 use an explicit recompile or governed source-only migration.
 
-Use `gm migrate working-quality --dry-run` to inspect the deterministic set and
-`gm migrate working-quality` to apply it. Apply stores exact pre-images under
+Use `galois migrate working-quality --dry-run` to inspect the deterministic set and
+`galois migrate working-quality` to apply it. Apply stores exact pre-images under
 `data/backups/`, adds immutable version snapshots, marks affected Working
 objects `historical + archived`, and appends audit events. It never edits Raw or
 Canonical.
@@ -75,7 +75,7 @@ Weekly 报告区分真正完成 Receipt、仅扫描、复核失败、语义变�
 ## Drift
 
 ```powershell
-.\scripts\gm.ps1 audit drift
+.\scripts\galois.ps1 audit drift
 ```
 
 检测 uncertainty erasure、correlation→causation、secondary→primary、analogy→fact、unsupported synthesis additions 和 translation strengthening。Audit 本身 `writes: 0`；Weekly 只把 high severity 项送入 Exception。
@@ -83,9 +83,9 @@ Weekly 报告区分真正完成 Receipt、仅扫描、复核失败、语义变�
 ## Migration
 
 ```powershell
-.\scripts\gm.ps1 migrate epistemic-status --dry-run
-.\scripts\gm.ps1 migrate epistemic-status
-.\scripts\gm.ps1 migrate epistemic-status --verify
+.\scripts\galois.ps1 migrate epistemic-status --dry-run
+.\scripts\galois.ps1 migrate epistemic-status
+.\scripts\galois.ps1 migrate epistemic-status --verify
 ```
 
 迁移自动备份、保存 `legacy_status`、幂等重跑，不修改 Canonical 正文。未知旧状态降级到 `working + unknown`；Trusted Question/Hypothesis/Analogy 分别保留 open_question/hypothetical/exploratory_analogy。

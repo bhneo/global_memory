@@ -1,5 +1,4 @@
 $ErrorActionPreference = "Stop"
-$repoRoot = Split-Path -Parent $PSScriptRoot
-$env:PYTHONPATH = Join-Path $repoRoot "src"
-& python -m global_memory @args
+Write-Warning "The 'gm' launcher is deprecated. Use '.\scripts\galois.ps1' or 'galois'."
+& (Join-Path $PSScriptRoot "galois.ps1") @args
 exit $LASTEXITCODE

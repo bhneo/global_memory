@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+- Reworked the README around the progression from fragments to research
+  directions, tensions, qualified cross-field candidates and verification.
+  Removed unsupported scale and discovery claims, clarified that the current
+  vault has no accepted active cross-direction Synthesis, and made the
+  read-only/capture and local/cloud privacy boundaries explicit.
+- Corrected assistant bootstrap contracts: the exact-five rule now applies to
+  server-level MCP tools while one-to-one host prefixing/wrapping is allowed;
+  templates are explicitly Windows-scoped, OpenClaw prefers its managed MCP
+  surface, and OpenHuman supports either its static bridge or dynamic Registry.
+- Recorded the formal release boundary in ADR 0063. The eventual open-source
+  distribution excludes every live/user knowledge vault and uses a
+  non-destructive allowlisted export with optional synthetic fixtures; the
+  current evaluation vault is intentionally left untouched.
+
+- Standardized the public product, CLI, Windows launcher and MCP registration
+  name on `galois`. Added self-locating launchers, a machine-path-neutral
+  Windows host manifest,
+  a safer Claude Desktop merge installer and an AI-executable README bootstrap
+  contract with live capabilities, exact-tool and Chinese-query acceptance.
+  The previous short launchers remain silent/deprecated compatibility shims;
+  historical artifacts and the internal Python package are not rewritten.
+- Forced the MCP stdio wire boundary to UTF-8 before reading or writing. This
+  fixes Chinese-query mojibake when Windows launches the Python server with a
+  GBK system text encoding even though the MCP client sends UTF-8 bytes.
+- Hardened MCP JSON boundaries for Windows desktop clients: valid UTF-16
+  surrogate pairs are normalized to Unicode scalars and isolated surrogate
+  halves are replaced before search or UTF-8 output. Chinese queries no longer
+  fail with `surrogates not allowed` when a client emits escaped UTF-16 text.
 - Added a provider-neutral Agent Memory Gateway contract with capabilities
   negotiation, one EvidenceItem shape across all reads, strict-execution
   blocker codes, and opt-in session/use/feedback signals that cannot write

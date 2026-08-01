@@ -1,4 +1,4 @@
-# Global Memory Index
+# Galois Index
 
 ## M6 navigation
 
@@ -6,7 +6,7 @@
 - Primary-source/recovery tasks：`vault/followups/`。
 - 用户注意力补充：`vault/annotations/`，与 immutable source fact 分离。
 - 可删除运行记录：`system/runs/`；不得保存唯一 candidate。
-- 推荐顺序：`gm review queue` → `gm review bundle <id> --summary` → 指定 item 审批/修订/defer/source-only。
+- 推荐顺序：`galois review queue` → `galois review bundle <id> --summary` → 指定 item 审批/修订/defer/source-only。
 - Research/Exploration Context 若要看到待审图，必须显式 `--include-proposals`；输出中的 `truth_layer` 不得丢弃。
 
 本页是人类与 Agent 的渐进式入口，不是全库内容清单。
@@ -35,8 +35,8 @@
 ## 检索协议
 
 1. 先用本页和 `SCHEMA.md` 确认区域与字段。
-2. 用 `gm search` 找少量候选，不默认扫描整个 vault。
-3. 用 `gm show` 打开候选；用 `gm related` 沿 typed relations 扩展，或用有深度/节点上限的 `gm search --relation-depth`。
+2. 用 `galois search` 找少量候选，不默认扫描整个 vault。
+3. 用 `galois show` 打开候选；用 `galois related` 沿 typed relations 扩展，或用有深度/节点上限的 `galois search --relation-depth`。
 4. 重要结论回到 `source_ids` 指向的 source record，再核验 `raw_content_path`。
-5. 面向任务使用 `gm context --profile execution|research|exploration`；proposal 默认不进入 Context Pack。
+5. 面向任务使用 `galois context --profile execution|research|exploration`；proposal 默认不进入 Context Pack。
 6. 新解释只创建 proposal，除非通过 provisional 门禁或用户明确批准 canonical 修改。

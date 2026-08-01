@@ -20,8 +20,8 @@ selection_reasons: []
 ```
 
 ```powershell
-.\scripts\gm.ps1 research route "技能何时应该固化" --project embodied-agent
-.\scripts\gm.ps1 context "技能何时应该固化" --profile research --project embodied-agent --route-trace --format markdown
+.\scripts\galois.ps1 research route "技能何时应该固化" --project embodied-agent
+.\scripts\galois.ps1 context "技能何时应该固化" --profile research --project embodied-agent --route-trace --format markdown
 ```
 
 `research route` 只输出计划，不生成 Context Pack、不写 Activation、不创建知识对象。Context 默认只读；只有 `--record-use` 才显式记录选中事件。

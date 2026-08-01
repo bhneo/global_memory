@@ -4,10 +4,10 @@ M9.1 operating model: Experience enters a typed Input Layer, then a non-factual
 Reflection layer before semantic knowledge evolution. Daily Dream digests a
 small queue; the weekly cadence audits recent admission and incrementally
 synthesizes durable research directions. Cross-direction candidates are
-explicit, optional and evidence-bounded. Global Memory remains the truth and
+explicit, optional and evidence-bounded. Galois remains the truth and
 cognitive-evolution layer, never an Agent execution runtime.
 
-M9 scientific cognition north star: Global Memory connects four responsibilities without collapsing them—Evidence Graph, Model Graph, Possibility Graph and Experiment Graph. M9.0 records the user's attention, connection feedback and real project use needed to build those graphs later; it does not claim automatic scientific discovery.
+M9 scientific cognition north star: Galois connects four responsibilities without collapsing them—Evidence Graph, Model Graph, Possibility Graph and Experiment Graph. M9.0 records the user's attention, connection feedback and real project use needed to build those graphs later; it does not claim automatic scientific discovery.
 
 M8 operating model: memory must evolve through time without laundering uncertainty. New material should reuse, support, refine, limit or contradict existing knowledge while preserving Raw, Evidence, prior versions and governance history. Working may evolve automatically; every Trusted change must be verifiable, explainable and rollbackable.
 
@@ -15,7 +15,7 @@ Memory Tier answers “is this worth stable long-term recall?” Epistemic Statu
 
 M7 operating model: memory should become useful at Working cost, gain confidence through periodic consolidation, and consume human attention only for exceptions and high-impact Canonical promotion. This preserves the original local-first, evidence-first design while removing per-item approval as the scaling bottleneck.
 
-Global Memory 要成为个人长期认知基础设施，而不是另一个收藏夹、模板库或单一模型的 RAG 附件。
+Galois 要成为个人长期认知基础设施，而不是另一个收藏夹、模板库或单一模型的 RAG 附件。
 
 它服务于两个同时存在的模式：围绕问题、项目和目标建设可执行知识；也保留暂时无用、模糊、冲突或跨领域的材料，让未来连接有机会出现。
 

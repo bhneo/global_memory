@@ -1,27 +1,27 @@
 ---
-description: Use the shared Global Memory with bounded reads and governed write-back
+description: Use shared Galois memory with bounded reads and governed write-back
 alwaysApply: true
 ---
 
-# Global Memory protocol
+# Galois protocol
 
 - Read `AGENTS.md` and `vault/INDEX.md` before memory work.
-- Use `gm context "<question>" --format markdown --token-budget 1200` as the task entry. Do not load the whole vault by default.
+- Use `galois context "<question>" --format markdown --token-budget 1200` as the task entry. Do not load the whole vault by default.
 - Preserve IDs, status, truth layer, evidence, source IDs, and uncertainty from the Context Pack.
 - `vault/raw/` and canonical Markdown are durable truth. `data/indexes/`, Context Packs, and `vault/views/` are disposable views.
-- Never edit canonical knowledge as an assistant write-back. Write a concise UTF-8 session receipt, then run `gm receipt create --agent cursor ...` and `gm receipt propose <receipt-id>`.
+- Never edit canonical knowledge as an assistant write-back. Write a concise UTF-8 session receipt, then run `galois receipt create --agent cursor ...` and `galois receipt propose <receipt-id>`.
 - A receipt may enter Working automatically; Trusted uses explicit policy and Canonical requires a user-approved promotion card.
 - Do not include secrets, full chat transcripts, or unsupported inference in a receipt.
-- Use `gm maintain` for read-only health/backlog checks. `--rebuild-derived` refreshes disposable indexes/views only and does not permit canonical edits.
-- On Windows PowerShell, prefer `.\\scripts\\gm.ps1`; `gm` may resolve to the built-in `Get-Member` alias.
+- Use `galois maintain` for read-only health/backlog checks. `--rebuild-derived` refreshes disposable indexes/views only and does not permit canonical edits.
+- On Windows PowerShell, prefer `.\\scripts\\galois.ps1` or the installed `galois` command.
 
 # Article import policy
 
-- Default to cheap capture: capture the complete source, then run `.\\scripts\\gm.ps1 triage <source-id>`. This only creates/reuses extraction and quality assessment; it must not create a proposal or canonical knowledge.
+- Default to cheap capture: capture the complete source, then run `.\\scripts\\galois.ps1 triage <source-id>`. This only creates/reuses extraction and quality assessment; it must not create a proposal or canonical knowledge.
 - Do not chase primary sources or request per-article approval merely because an article was captured; daily consolidation may compile it cheaply into Working.
 - Use `source annotate --salience high` for an important source. Run `triage <source-id> --compile-selected` only when the user marks it important, it is needed for a current decision/output, it repeatedly appears in retrieval, or it conflicts with existing knowledge.
 - A source may remain searchable as capture-only indefinitely. Verification belongs at use/promotion time; Canonical writes require the promotion gate.
 - For routine batches, run `triage --limit 25`; reserve cross-source synthesis, contradiction review, and expensive full-vault work for an explicit weekly maintenance session.
-- Use `.\\scripts\\gm.ps1 consolidate weekly` for that weekly session. Never infer Canonical authority from Trusted promotion or a recommendation card.
-- Prefer the configured `global-memory` Agent Gateway for context/search/show/source. Use results silently and do not narrate MCP, routes, indexes, paths or internal IDs in ordinary answers.
+- Use `.\\scripts\\galois.ps1 consolidate weekly` for that weekly session. Never infer Canonical authority from Trusted promotion or a recommendation card.
+- Prefer the configured `galois` Agent Gateway for context/search/show/source. Use results silently and do not narrate MCP, routes, indexes, paths or internal IDs in ordinary answers.
 - The configured Cursor MCP is read-only. Do not attempt `memory_capture`; use an explicit local capture workflow only after the user asks to remember/save supplied text.

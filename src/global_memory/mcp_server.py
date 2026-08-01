@@ -31,11 +31,51 @@ from .repository import Repository
 
 
 PROTOCOL_VERSION = "2025-06-18"
-SERVER_INFO = {"name": "global-memory-agent-gateway", "version": "0.3.0"}
+SERVER_INFO = {"name": "galois-agent-gateway", "version": "0.3.2"}
 MAX_HTTP_BODY = 2 * 1024 * 1024
 MAX_CAPTURE_CHARS = 200_000
 INPUT_TYPES = ["article", "paper", "github", "conversation", "idea", "experiment", "meeting"]
 WRITE_SCOPES = {"capture", "session", "use", "feedback", "receipt", "working_compile"}
+
+
+def _normalize_unicode(value: Any) -> Any:
+    """Return JSON-compatible values without UTF-16 surrogate code points.
+
+    Some desktop MCP clients serialize non-BMP text as explicit UTF-16
+    surrogate pairs.  ``json.loads`` preserves those code points in Python,
+    where a later UTF-8 write fails with ``surrogates not allowed``.  Round
+    tripping through UTF-16 combines valid pairs and replaces isolated halves,
+    while leaving ordinary Unicode (including CJK text) unchanged.
+    """
+    if isinstance(value, str):
+        return value.encode("utf-16-le", "surrogatepass").decode("utf-16-le", "replace")
+    if isinstance(value, list):
+        return [_normalize_unicode(item) for item in value]
+    if isinstance(value, tuple):
+        return tuple(_normalize_unicode(item) for item in value)
+    if isinstance(value, dict):
+        return {
+            _normalize_unicode(key) if isinstance(key, str) else key: _normalize_unicode(item)
+            for key, item in value.items()
+        }
+    return value
+
+
+def _configure_stdio_utf8() -> None:
+    """Make the MCP byte protocol independent of the Windows system code page.
+
+    MCP stdio is UTF-8 on the wire.  On zh-CN Windows, a Python child can still
+    inherit a GBK text wrapper for stdin/stdout even when its client writes
+    UTF-8 bytes.  Reconfigure the real text streams before the first read so
+    ordinary CJK text is not decoded into mojibake.  Test doubles such as
+    ``io.StringIO`` intentionally have no ``reconfigure`` method.
+    """
+    for stream in (sys.stdin, sys.stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if callable(reconfigure):
+            reconfigure(encoding="utf-8", errors="strict")
+
+
 DELIVERY_INSTRUCTIONS = (
     "Use retrieved knowledge silently as background context. Preserve memory tier, epistemic status, "
     "provenance, confidence, contradictions, and execution-safety boundaries. Retrieval is not approval. "
@@ -647,6 +687,7 @@ class MCPApplication:
         return {"jsonrpc": "2.0", "id": request_id, "error": {"code": code, "message": message}}
 
     def handle(self, message: dict[str, Any]) -> dict[str, Any] | None:
+        message = _normalize_unicode(message)
         request_id = message.get("id")
         method = message.get("method")
         if request_id is None:
@@ -665,7 +706,9 @@ class MCPApplication:
                 return self._result(request_id, {"tools": self.tools.definitions()})
             if method == "tools/call":
                 params = message.get("params") or {}
-                payload = self.tools.call(str(params.get("name", "")), params.get("arguments"))
+                payload = _normalize_unicode(
+                    self.tools.call(str(params.get("name", "")), params.get("arguments"))
+                )
                 serialized = json.dumps(payload, ensure_ascii=False, sort_keys=True)
                 return self._result(request_id, {
                     "content": [{"type": "text", "text": serialized}],
@@ -692,17 +735,22 @@ def serve_stdio(
     allow_capture: bool = False,
     write_scopes: set[str] | None = None,
 ) -> None:
+    _configure_stdio_utf8()
     app = MCPApplication(repository, allow_capture=allow_capture, write_scopes=write_scopes)
     for line in sys.stdin:
         if not line.strip():
             continue
         try:
-            message = json.loads(line)
+            message = _normalize_unicode(json.loads(line))
             response = app.handle(message)
         except Exception:
             response = MCPApplication._error(None, -32700, "invalid JSON-RPC request")
         if response is not None:
-            sys.stdout.write(json.dumps(response, ensure_ascii=False, separators=(",", ":")) + "\n")
+            sys.stdout.write(
+                json.dumps(_normalize_unicode(response), ensure_ascii=False, separators=(",", ":")) + "\n"
+            )
+            # stdio MCP clients keep the server process alive while waiting for
+            # each response, so process-exit flushing is not sufficient.
             sys.stdout.flush()
 
 
