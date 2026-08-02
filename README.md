@@ -1,13 +1,18 @@
-<p align="center">
-  <img src="./assets/icon.png" alt="Galois" width="120" />
-</p>
-
-<h1 align="center">Galois</h1>
-
-<p align="center">
-  <strong>Find the hidden structure.</strong><br />
-  <em>Scientific memory for AI assistants.</em>
-</p>
+<div align="center">
+  <img src="./assets/icon.png" alt="Galois" width="64" />
+  <h3>Galois</h3>
+  <p>
+    <strong>Find the hidden structure.</strong><br />
+    <em>Scientific memory for AI assistants.</em>
+  </p>
+  <p>
+    <a href="#connect-your-ai-assistant"><strong>Get started</strong></a>
+    &nbsp;&middot;&nbsp;
+    <a href="#from-fragments-to-structure">How it works</a>
+    &nbsp;&middot;&nbsp;
+    <a href="#documentation">Documentation</a>
+  </p>
+</div>
 
 <p align="center">
   <a href="./assets/hero/hero-hidden-structure.png">
@@ -18,39 +23,13 @@
 </p>
 
 <p align="center">
-  <a href="#connect-your-ai-assistant">Connect an assistant</a>
-  &nbsp;&middot;&nbsp;
-  <a href="#from-fragments-to-structure">See the structure</a>
-  &nbsp;&middot;&nbsp;
-  <a href="#trust-without-killing-creativity">Trust model</a>
-  &nbsp;&middot;&nbsp;
-  <a href="#documentation">Documentation</a>
+  <strong>Preserve the fragments, evidence and uncertainty that let structure
+  emerge over time.</strong>
 </p>
-
-<p align="center">
-  <code>Claude</code>
-  &nbsp;&middot;&nbsp;
-  <code>Codex</code>
-  &nbsp;&middot;&nbsp;
-  <code>Hermes</code>
-  &nbsp;&middot;&nbsp;
-  <code>OpenClaw</code>
-  &nbsp;&middot;&nbsp;
-  <code>OpenHuman</code>
-</p>
-
-<p align="center">
-  <sub>Connected to Galois through the open <strong>MCP</strong> protocol</sub>
-</p>
-
----
 
 Knowledge rarely arrives as a finished map. It arrives as fragments: a paper,
 a contradiction, an intuition, a failed experiment, a question that will not
 go away.
-
-**Galois preserves those fragments and the evidence around them so a connected
-AI assistant can look for the structure that becomes visible only over time.**
 
 | | |
 |:---|:---|
