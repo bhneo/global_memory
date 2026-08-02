@@ -1,16 +1,16 @@
 <p align="center">
-  <img src="./assets/icon.png" alt="Galois" width="38" align="absmiddle" />
+  <img src="./assets/icon.png" alt="Galois" width="30" align="absmiddle" />
   &nbsp;<strong>Galois</strong>
-  &nbsp;&mdash;&nbsp;
-  <strong>Find the hidden structure.</strong><br />
+  &nbsp;&middot;&nbsp;
+  Find the hidden structure.<br />
   <sub>
-    <em>Scientific memory for AI assistants.</em>
+    Scientific memory for AI assistants.
     &nbsp;&middot;&nbsp;
-    <a href="#connect-your-ai-assistant"><strong>Get started</strong></a>
+    <a href="#connect-your-ai-assistant">Get started</a>
     &nbsp;&middot;&nbsp;
     <a href="#from-fragments-to-structure">How it works</a>
     &nbsp;&middot;&nbsp;
-    <a href="#documentation">Documentation</a>
+    <a href="#documentation">Docs</a>
   </sub>
 </p>
 
@@ -20,11 +20,6 @@
          alt="A scientific memory graph revealing structure across kinetic theory and Kakeya geometry."
          width="1200" />
   </a>
-</p>
-
-<p align="center">
-  <strong>Preserve the fragments, evidence and uncertainty that let structure
-  emerge over time.</strong>
 </p>
 
 Knowledge rarely arrives as a finished map. It arrives as fragments: a paper,
