@@ -2,7 +2,7 @@
 
 **Find the hidden structure.** Scientific memory for AI assistants.
 
-[Get started](#connect-your-ai-assistant) ·
+[Get started](#import-reflect-and-synthesize) ·
 [How it works](#from-fragments-to-structure) ·
 [Documentation](#documentation)
 
@@ -56,6 +56,128 @@ It helps a connected assistant ask questions such as:
 - What becomes worth testing once several research directions are seen together?
 
 These are prompts for investigation, not claims of automatic discovery.
+
+## Import, reflect and synthesize
+
+Galois is designed to be operated through an AI assistant. For URL and local
+file import, give a code-capable assistant access to this checkout. The default
+MCP connection is intentionally read-only; an explicitly enabled Capture
+connection can save user-provided text, but does not silently fetch a URL or
+read a local file.
+
+### Import an article or paper
+
+Give the assistant a URL or an absolute path to a PDF, HTML or text file:
+
+```text
+Import this article or paper into my Galois memory:
+<URL or absolute local file path>
+
+Work inside the Galois repository. Recover unfinished writes first and stop if
+recovery is blocked. Capture the target once with the appropriate article or
+paper input type, then triage only the returned Source. Verify the persisted
+Source, immutable Raw content, derived extraction, Input Episode and Reflection
+queue entry. Do not promote, consolidate or invent knowledge during import.
+
+Report the Source ID, Input ID, whether this was new or a duplicate, extraction
+status and any warnings. Treat a timeout as indeterminate: inspect persisted
+state before deciding whether a retry is safe.
+```
+
+A successful import preserves the original material and provenance, creates an
+Input Episode, and queues it for later Reflection. Being searchable or
+source-only does not mean the article has already been understood or accepted
+as knowledge.
+
+<details>
+<summary><strong>Commands the assistant will normally use</strong></summary>
+
+```powershell
+.\scripts\galois.ps1 recover
+.\scripts\galois.ps1 capture "<URL-or-path>" --input-type article
+.\scripts\galois.ps1 triage <source-id> --limit 1
+.\scripts\galois.ps1 show <source-id>
+.\scripts\galois.ps1 doctor
+```
+
+Use `--input-type paper` for a research paper. Capture accepts an HTTP(S) URL
+or a local file; the assistant should use the stable IDs returned by the
+command rather than guessing paths.
+
+</details>
+
+### Run a Daily Dream
+
+Daily Dream turns a small number of newly captured Inputs into source-grounded
+Reflection and, where justified, bounded Working knowledge. Ask:
+
+```text
+Run one bounded Daily Dream for my Galois memory.
+
+Recover first and stop if blocked. Prepare the current Daily queue, select at
+most five Inputs, and personally read every selected Input together with its
+matching Source or extraction. Produce one reusable Daily v2 artifact with an
+explicit semantic inventory and exactly one disposition for every candidate:
+create, update, reuse, source_only, review_required or deferred. Apply that
+artifact once and verify the resulting state independently.
+
+Do not perform cross-direction synthesis, promotion, deletion or Canonical
+writes. If the Reflection queue is empty, report a successful safe no-op rather
+than manufacturing a bundle. Report semantic results separately from
+governance counters, including canonical_writes=0.
+```
+
+### Run a Weekly Dream
+
+Weekly is a review cadence, not the semantic identity of a Synthesis. It updates
+durable research directions and may propose a qualified cross-direction
+connection only when the evidence supports one. Ask:
+
+```text
+Run one governed Weekly Dream for my Galois memory.
+
+Recover first and stop if blocked. Check Daily admission coverage since the
+previous successful Weekly run, then read the eligible Reflections and their
+supporting Sources. Group them by the registered research directions; reuse
+unchanged direction Syntheses and create an incremental Synthesis only where
+something changed. Any cross-direction connection must state its shared
+mechanism, boundary, difference, counterarguments, evidence gap and
+verification path.
+
+Apply one reusable Weekly artifact, run the post-Dream Weekly governance review
+without repeating Daily admission, and verify the final state. Zero new
+connections is valid. Reflection and Synthesis remain non-factual; any optional
+knowledge bundle may write Working only. Report canonical_writes=0.
+```
+
+<details>
+<summary><strong>Daily and Weekly command sequence</strong></summary>
+
+The assistant authors the JSON artifacts; Galois validates and applies them but
+does not call a model internally.
+
+```powershell
+# Daily preparation and application
+.\scripts\galois.ps1 recover
+.\scripts\galois.ps1 triage --limit 25
+.\scripts\galois.ps1 consolidate daily --limit 25
+.\scripts\galois.ps1 reflection queue --limit 5 --max-chars 6000
+.\scripts\galois.ps1 dream daily --bundle-file <daily-dream.json> --limit 5
+
+# Weekly application and governance review
+.\scripts\galois.ps1 recover
+.\scripts\galois.ps1 dream audit-daily --from-date <YYYY-MM-DD> --to-date <YYYY-MM-DD>
+.\scripts\galois.ps1 dream weekly --bundle-file <weekly-dream.json>
+.\scripts\galois.ps1 consolidate weekly --skip-daily-admission
+```
+
+Keep one artifact unchanged after an interrupted application so recovery can
+reuse its immutable content. See
+[Cognitive consolidation](docs/COGNITIVE_CONSOLIDATION.md) for the schemas and
+[Agent integration](docs/AGENT_INTEGRATION.md) for the complete operating
+contract.
+
+</details>
 
 ## Connect your AI assistant
 

@@ -9,6 +9,7 @@ from global_memory.bundle import BundleCompiler, JsonBundleProvider
 from global_memory.capture import CaptureService
 from global_memory.consolidation import ConsolidationService, DriftAuditService
 from global_memory.context import ContextPackService
+from global_memory.extraction import ExtractionService
 from global_memory.governance import PromotionService
 from global_memory.markdown import read_document
 from global_memory.memory import WorkingMemoryService
@@ -91,6 +92,10 @@ def incremental_report(repo: Repository) -> dict[str, Any]:
         "A portable fixture does not preserve raw evidence when the raw object is unavailable.",
         title="Current architecture fixture C",
     )
+    extraction_c = ExtractionService(repo).extract(source_c.source_id)
+    _, extraction_metadata_c, extraction_body_c = ExtractionService(repo).find(extraction_c.extraction_id)
+    contradiction_text = "does not preserve raw evidence"
+    contradiction_start = extraction_body_c.index(contradiction_text)
     claim, _ = read_document(claim_path)
     provider_file_c = repo.root / "data" / "imports" / "ci-provider-c.json"
     provider_file_c.write_text(json.dumps({"items": [{
@@ -98,7 +103,12 @@ def incremental_report(repo: Repository) -> dict[str, Any]:
         "object_type": "claim", "title": "Fixture C title intentionally differs", "body": "does not preserve raw evidence",
         "change_type": "contradict", "metadata": {"evidence": [{
             "source_id": source_c.source_id, "stance": "contradicts", "location": "body",
-            "excerpt": "does not preserve raw evidence", "reason": "fixture C explicitly limits fixture A",
+            "excerpt": contradiction_text, "reason": "fixture C explicitly limits fixture A",
+            "evidence_id": "ci_fixture_c_contradiction", "evidence_kind": "quote",
+            "verification_status": "verified", "input_sha256": extraction_metadata_c["input_sha256"],
+            "content_id": source_c.content_id, "extraction_id": extraction_c.extraction_id,
+            "span_start": contradiction_start, "span_end": contradiction_start + len(contradiction_text),
+            "original_text": contradiction_text,
         }]},
     }]}), encoding="utf-8")
     bundle_c = BundleCompiler(repo, JsonBundleProvider(provider_file_c, "ci-provider-c")).compile(source_c.source_id)

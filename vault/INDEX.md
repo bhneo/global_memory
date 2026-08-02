@@ -17,7 +17,7 @@
 
 ## 当前概况
 
-- 资料：284 篇
+- 资料：295 篇
 - Working：176 条
 - Trusted：30 条
 - Canonical：1 条
@@ -26,11 +26,11 @@
 
 ## 最近收录
 
-- [[views/readers/source_029a4fa602a118a1ead1bbf4|2607.26657v1.pdf]] · 2026-08-01
-- [[views/readers/source_9ddfb0f3d50b606bd13e17e2|arxiv.org]] · 2026-08-01
-- [[views/readers/source_e504623270d30d733b2cb9e1|arxiv.org]] · 2026-08-01
-- [[views/readers/source_98bb68f21232969a79d77918|arxiv.org]] · 2026-08-01
-- [[views/readers/source_da533f75e69c23b8eec387df|arxiv.org]] · 2026-08-01
-- [[views/readers/source_feaf5bf5a081e27b445c569c|arxiv.org]] · 2026-08-01
-- [[views/readers/source_5c653d6ea053d088d13e6d5c|[2607.26657] Enfold: Folding World-Generator Computation into Predictive Representations for Efficient Embodied Control]] · 2026-08-01
-- [[views/readers/source_d0908c8e9c58809dd2665c1e|arxiv.org]] · 2026-08-01
+- [[views/readers/source_12450fe7e2be78ffc391997e|arxiv.org]] · 2026-08-02
+- [[views/readers/source_bdb17eb4583ec8af52f28dfb|arxiv.org]] · 2026-08-02
+- [[views/readers/source_7fa8acc5e021363b55491e3e|arxiv.org]] · 2026-08-02
+- [[views/readers/source_b8c45bfccc9646f938cb564c|Cross-Embodiment Transfer via Behavior-Aligned Representations]] · 2026-08-02
+- [[views/readers/source_8c84c595f1a48ba498b2074e|arxiv.org]] · 2026-08-02
+- [[views/readers/source_a54ea0123fbadf6d7012c9fb|World Action Planner: Generalizable Decision-Making with Action-Conditioned World Models]] · 2026-08-02
+- [[views/readers/source_ddd2f65020c2e556f2b93330|arxiv.org]] · 2026-08-02
+- [[views/readers/source_9f9972326eb118a8e4bb5623|arxiv.org]] · 2026-08-02
