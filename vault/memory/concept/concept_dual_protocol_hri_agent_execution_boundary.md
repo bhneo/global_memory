@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "人机客户端与 Agent 执行的双协议边界"
 created_at: "2026-07-21T17:44:43+08:00"
-updated_at: "2026-07-26T12:33:46+08:00"
+updated_at: "2026-08-02T19:55:22+08:00"
 aliases: ["Dual-Protocol HRI and Agent Execution Boundary", "ACP-MCP Robot Architecture", "Agent-Client Protocol", "ACP", "人机交互双协议架构"]
 tags: []
 domains: ["agent-infrastructure", "human-robot-interaction", "mcp"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-daily-gpt56sol-readmission-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-26T12:33:46+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T19:55:22+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_7b7646dd209401064c94-concept-1.md"
 origin_candidate_sha256: "1790ead5028a0cd26f7f8451eb32a7238d16ee11b34244083bf822bd9619428e"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_caa20e599bd45a05fbbc62b8"
+last_consolidation_id: "consolidation_6968a23289a485d64688a1ab"
 ---
 
 # 人机客户端与 Agent 执行的双协议边界

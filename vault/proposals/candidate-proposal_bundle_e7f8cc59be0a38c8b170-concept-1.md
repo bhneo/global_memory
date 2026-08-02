@@ -1,0 +1,20 @@
+---
+id: "concept_d78616a1f03c4a519d7b45e3"
+type: "concept"
+status: "proposal"
+title: "语义锚约束的几何连续稠密对应 / Semantic-anchor-constrained geometrically coherent dense correspondence"
+created_at: "2026-08-02T18:57:30+08:00"
+updated_at: "2026-08-02T18:57:30+08:00"
+aliases: ["SemAnCorr", "semantic anchor correspondence", "anchor-constrained functional map", "语义锚稠密对应"]
+tags: []
+domains: ["robotics", "dense-correspondence", "category-level-manipulation", "geometric-learning"]
+confidence: "high"
+source_ids: ["source_12450fe7e2be78ffc391997e"]
+relations: [{"type": "derived_from", "target_id": "source_12450fe7e2be78ffc391997e", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "related_to", "target_id": "concept_interaction_structure_preserving_demonstration_prior", "reason": "两者都迁移对象相对交互结构；既有节点保存手—物关系参考，SemAnCorr 先构造跨对象全表面双射再迁移接触区与相对轨迹。", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "related_to", "target_id": "concept_b1b62d103e0a768399664d9d", "reason": "两者都从单示范迁移到新对象；DemoBridge 用仿真验证与重规划，SemAnCorr 用语义锚和谱几何生成稠密对应。", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}]
+change_reason: "compile bundle from source_12450fe7e2be78ffc391997e"
+reflection_context: {"reflection_ids": ["reflection_0a2ce79bcc8c83b1af7ff405"], "importance": "high", "changed_belief": "我原先更关注语义特征是否跨类别匹配；该工作把主要误差来源放到匹配后的几何一致化：锚点本身稀疏，真正决定可执行性的，是它们如何约束 functional map 与局部 refinement。", "surprising": "方法把每个对象类别均值从视觉特征中移除以形成相对语义嵌入；跨类别对应依赖对象内部的相对部件角色，而非类别标签一致。", "connections": [{"shared_mechanism": "SemAnCorr 与 concept_interaction_structure_preserving_demonstration_prior 都迁移相对交互结构而非绝对世界坐标。", "boundary": "SemAnCorr 需要连通三角网格和对象对齐，不能替代执行期的接触、力与碰撞验证。", "difference": "既有节点保存手—物关系参考，SemAnCorr 构造跨对象的稠密表面双射并从中迁移接触区与相对 waypoint。"}, {"shared_mechanism": "SemAnCorr 与 concept_b1b62d103e0a768399664d9d 都从单个示范向新对象迁移技能。", "boundary": "两者都依赖对象重建、姿态和可行抓取质量，不能由语义对应单独保证闭环成功。", "difference": "DemoBridge 以仿真验证和重规划桥接单视角示范，SemAnCorr 以语义锚、谱映射和 ZoomOut 生成稠密几何对应。"}], "open_questions": ["如何把网格重建与世界对齐的不确定性传播到稠密对应、抓取候选和执行期拒绝门，而不是只在失败后观察？"]}
+---
+
+# 语义锚约束的几何连续稠密对应 / Semantic-anchor-constrained geometrically coherent dense correspondence
+
+为把跨类别视觉相似性转成可执行的表面对应，可先从对象多视角渲染中提取 foundation-model 特征，按语义簇去除类别均值以保留对象内部相对部件角色，并用双侧 margin 选择少量高置信锚点。锚点与刚体姿态联合优化后，约束 Laplace-Beltrami 谱基中的 functional map；随后在局部空间邻域内执行 constrained ZoomOut 并反复固定锚点，把稀疏语义匹配扩展为几何连续、近双射的稠密对应。对应可迁移接触区域和相对 waypoint，但仍需抓取可行性与执行验证；方法依赖连通三角网格、可靠重建和工作空间对齐，并按对象对优化。

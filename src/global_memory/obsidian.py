@@ -304,6 +304,7 @@ class ObsidianViewService:
         ]
         cognitive_syntheses = self._cognitive_syntheses()
         sources = self._sources()
+        sources_by_id = {str(metadata["id"]): metadata for _, metadata, _ in sources}
         extractions_by_source = self._latest_extractions(sources)
         rendered: dict[str, str] = {}
         if graph_profile == "all":
@@ -388,10 +389,10 @@ class ObsidianViewService:
         for metadata, path in source_only:
             source_id = next(iter(metadata.get("source_only_source_ids", metadata.get("source_ids", []))), None)
             if source_id:
-                try:
-                    _, source_metadata, _ = self.repository.find_document(str(source_id))
+                source_metadata = sources_by_id.get(str(source_id))
+                if source_metadata is not None:
                     title = self._reader_link(source_metadata)
-                except Exception:
+                else:
                     title = str(source_id)
             else:
                 title = str(metadata.get("title", metadata.get("id")))

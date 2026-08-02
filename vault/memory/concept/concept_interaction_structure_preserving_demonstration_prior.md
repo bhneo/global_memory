@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "手—物交互结构保真的示范先验"
 created_at: "2026-07-20T13:36:20+08:00"
-updated_at: "2026-07-20T13:37:47+08:00"
+updated_at: "2026-08-02T19:55:36+08:00"
 aliases: ["interaction-structure-preserving demonstration prior", "手—物交互结构保真先验", "REGRIND", "hand-object interaction mesh", "object-centric keypoint reference"]
 tags: []
 domains: ["embodied-ai", "dexterous-manipulation", "demonstration-transfer", "retargeting", "sim-to-real"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-20T13:37:47+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T19:55:36+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_0b860431d41b8b40c196-concept-1.md"
 origin_candidate_sha256: "02eea85fd143a7a975c1c0b2778b71a2c64d08d1f6190ea98d1973cdee219f60"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_5988f005855dd9f24dd99b32"
+last_consolidation_id: "consolidation_bd4e7aeb7715faaf806c88c6"
 ---
 
 # 手—物交互结构保真的示范先验

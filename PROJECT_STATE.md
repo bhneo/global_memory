@@ -1,5 +1,25 @@
 # Current State
 
+## Daily/Weekly timeout hardening (2026-08-02)
+
+- An empty Daily consolidation is now a true bounded no-op: it reports
+  `derived_rebuild_required: false` and skips both SQLite FTS and Obsidian
+  regeneration. Daily runs that create an Extraction, quality assessment,
+  source-only record, Working object or Exception still rebuild derived state.
+- Index rebuilds use the latest ready Extraction only when its `input_sha256`
+  matches the current Source. Raw remains the immutable provenance boundary and
+  the fallback when no current Extraction exists, but routine rebuilds no
+  longer decode and insert large Raw captures redundantly.
+- Weekly consolidation now performs drift checks against the already-loaded
+  object, reuses batch document/Receipt/Source/Promotion lookup state, preserves
+  live Source-record fingerprint invalidation, and coalesces normal index work
+  into one final rebuild. Trusted promotion/requalification remains atomic and
+  Receipt v2-gated; Canonical writes remain impossible in this path.
+- Obsidian source-only rendering uses the loaded Source inventory instead of a
+  full repository lookup per row. Governed ID lookup caches paths but rereads
+  current bytes, while typed-evidence validation caches immutable, derived
+  Extraction reads with directory-change invalidation.
+
 ## README visual architecture (2026-08-02)
 
 - The README now presents Claude, Codex, Hermes, OpenClaw and OpenHuman as host

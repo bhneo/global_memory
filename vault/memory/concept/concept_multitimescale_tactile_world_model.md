@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "多时间尺度触觉世界模型控制"
 created_at: "2026-07-19T03:02:53+08:00"
-updated_at: "2026-07-28T16:32:20+08:00"
+updated_at: "2026-08-02T19:55:39+08:00"
 aliases: ["multi-timescale tactile world model", "TouchWorld"]
 tags: []
 domains: ["embodied-ai", "vla", "world-model", "tactile", "dexterous-manipulation"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 9
-last_consolidated_at: "2026-07-28T16:32:20+08:00"
+consolidation_count: 10
+last_consolidated_at: "2026-08-02T19:55:39+08:00"
 last_verified_at: "2026-07-19T03:29:27+08:00"
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_2a787ee43ca54bc95b00-concept-1.md"
 origin_candidate_sha256: "e6161d8a748e1a5dd54a5ac7254ede7a78d21d97fc25b7593f1b022e298b82fc"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_28398a0d4629b6fce8557dcf"
+last_consolidation_id: "consolidation_8f2507250736d289d789ea7d"
 evidence: []
 change_history: [{"change_type": "metadata_only", "previous_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。", "new_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。", "changed_fields": ["source_ids", "evidence", "last_verified_at"], "reason": "compile bundle from source_283911da72edc403d1b823fb", "trigger_source": "source_283911da72edc403d1b823fb", "evidence_added": []}, {"change_type": "metadata_only", "previous_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。", "new_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。", "changed_fields": ["source_ids", "evidence", "last_verified_at"], "reason": "compile bundle from source_283911da72edc403d1b823fb", "trigger_source": "source_283911da72edc403d1b823fb", "evidence_added": []}, {"change_type": "metadata_only", "previous_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。", "new_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。", "changed_fields": ["aliases"], "reason": "compile bundle from source_283911da72edc403d1b823fb", "trigger_source": "source_283911da72edc403d1b823fb", "evidence_added": []}, {"change_type": "metadata_only", "previous_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。", "new_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。", "changed_fields": [], "reason": "compile bundle from source_283911da72edc403d1b823fb", "trigger_source": "source_283911da72edc403d1b823fb", "evidence_added": []}, {"change_type": "refine", "previous_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。", "new_statement": "# 多时间尺度触觉世界模型控制\n\n把慢速语义子任务规划、触觉子目标预测、中频动作块生成和高频触觉残差修正拆成分层闭环，使触觉既表示预期接触目标，也用于快速纠偏。\n\n## 新增来源材料\n\n- `source_c79f943c818d06054ca5cf92`：多时间尺度触觉世界模型需要同时声明各层的决策单位、信息新鲜度和升级条件。慢速语义层提出子任务，预测层形成触觉子目标，中频策略以动作块作为生成与信用分配单位，高频触觉残差处理局部接触偏差；缓存的中间动作只可在任务阶段、机器人状态和 refinement 不确定性共同通过门禁时作为暖启动。块长、缓存命中和残差幅度达到阈值时应触发拒绝复用或高层重规划，而不是继续由快环无限吸收。", "changed_fields": [], "reason": "compile bundle from source_c79f943c818d06054ca5cf92", "trigger_source": "source_c79f943c818d06054ca5cf92", "evidence_added": []}]
 change_type: "refine"

@@ -4197,6 +4197,106 @@ def test_m7_weekly_never_writes_canonical_and_drift_is_read_only(repo: Repositor
     assert audit["writes"] == 0
 
 
+def test_empty_daily_skips_index_and_obsidian_rebuilds(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    rebuilds = 0
+
+    def count_rebuilds() -> int:
+        nonlocal rebuilds
+        rebuilds += 1
+        return 0
+
+    monkeypatch.setattr(repo, "rebuild_index", count_rebuilds)
+    result = ConsolidationService(repo).daily(limit=5)
+    assert result["triage"]["selected"] == 0
+    assert result["compiled"] == []
+    assert result["derived_rebuild_required"] is False
+    assert rebuilds == 0
+
+    def fail_obsidian(*args: object, **kwargs: object) -> dict[str, object]:
+        raise AssertionError("empty Daily must not rebuild Obsidian")
+
+    monkeypatch.setattr(ObsidianViewService, "build", fail_obsidian)
+    args = build_parser().parse_args(
+        ["--root", str(repo.root), "consolidate", "daily", "--limit", "5"]
+    )
+    assert run(args) == 0
+    output = json.loads(capsys.readouterr().out)
+    assert output["obsidian"]["skipped"] is True
+
+
+def test_index_rebuild_prefers_current_extraction_over_raw(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    token = "bounded extraction index token"
+    captured = CaptureService(repo).capture_text(token, title="Extraction-backed index")
+    ExtractionService(repo).extract(captured.source_id)
+    _, source, _ = repo.find_document(captured.source_id)
+    raw_path = repo.resolve_inside(str(source["raw_content_path"])).resolve()
+    original_read_bytes = Path.read_bytes
+
+    def guarded_read_bytes(path: Path) -> bytes:
+        if path.resolve() == raw_path:
+            raise AssertionError("current Extraction should prevent Raw reopening")
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", guarded_read_bytes)
+    repo.rebuild_index()
+    assert any(item.id == captured.source_id for item in repo.search(token))
+
+
+def test_receipt_batch_builds_governed_lookup_once(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured = CaptureService(repo).capture_text("Receipt batch source", title="Receipt batch")
+    write_m8_memory(repo, "concept_receipt_batch_a", "concept", "Batch A", "Body A", [captured.source_id])
+    write_m8_memory(repo, "concept_receipt_batch_b", "concept", "Batch B", "Body B", [captured.source_id])
+    original_documents = repo.all_indexed_documents
+    scans = 0
+
+    def counted_documents():
+        nonlocal scans
+        scans += 1
+        yield from original_documents()
+
+    monkeypatch.setattr(repo, "all_indexed_documents", counted_documents)
+    receipts = ConsolidationReceiptService(repo)
+    receipts.consolidate("concept_receipt_batch_a", rebuild_index=False)
+    receipts.consolidate("concept_receipt_batch_b", rebuild_index=False)
+    assert scans == 1
+
+
+def test_drift_run_for_does_not_delegate_to_global_scan(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured = CaptureService(repo).capture_text("Drift source", title="Drift source")
+    write_m8_memory(repo, "question_drift_one", "question", "Drift one", "Question body", [captured.source_id])
+    audit = DriftAuditService(repo)
+    monkeypatch.setattr(audit, "run", lambda: (_ for _ in ()).throw(AssertionError("global scan")))
+    assert audit.run_for("question_drift_one") == []
+
+
+def test_weekly_uses_one_final_index_rebuild_for_batch(
+    repo: Repository, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    captured = CaptureService(repo).capture_text("Weekly index source", title="Weekly index")
+    write_m8_memory(repo, "concept_weekly_index", "concept", "Weekly index", "Concept body", [captured.source_id])
+    original_rebuild = repo.rebuild_index
+    rebuilds = 0
+
+    def counted_rebuild() -> int:
+        nonlocal rebuilds
+        rebuilds += 1
+        return original_rebuild()
+
+    monkeypatch.setattr(repo, "rebuild_index", counted_rebuild)
+    report = ConsolidationService(repo).weekly()
+    assert report["canonical_writes"] == 0
+    assert rebuilds == 1
+
+
 def test_drift_audit_excludes_archived_historical_memory(repo: Repository) -> None:
     captured = CaptureService(repo).capture_text(
         "Historical correlation source.", title="Historical correlation source"

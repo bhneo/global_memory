@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "接触分阶段的 flow-policy 候选选择 / contact-phase candidate selection for flow policies"
 created_at: "2026-07-27T18:15:24+08:00"
-updated_at: "2026-07-27T19:06:34+08:00"
+updated_at: "2026-08-02T19:54:52+08:00"
 aliases: ["HCPG-Flow", "hierarchical contact-progress guidance", "接触进度候选选择"]
 tags: []
 domains: ["robotics", "reinforcement-learning", "flow-policies"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt56-m91-real-daily-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-27T19:06:34+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T19:54:52+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,7 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_644b8a6703a70f
 origin_candidate_sha256: "ff76af3f8d7470df2a84b8703741abecab174f1c14f4fbd5b936b5629db30ef5"
 origin_cognitive_artifact_sha256: "854c6e1ba595ee3115a57ecd4b72f9ebb5c24242e8ab24d406895e0c1d5883f4"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_8d58c65959d86cc1a786509e"
+last_consolidation_id: "consolidation_4e63207c38dfd617d92fde07"
 ---
 
 # 接触分阶段的 flow-policy 候选选择 / contact-phase candidate selection for flow policies

@@ -1,0 +1,20 @@
+---
+id: "concept_6de58085da65839ab392094c"
+type: "concept"
+status: "proposal"
+title: "触觉原生的三流联合世界—动作生成 / Tactile-native tri-stream joint world-action generation"
+created_at: "2026-08-02T18:57:08+08:00"
+updated_at: "2026-08-02T18:57:08+08:00"
+aliases: ["N0-TWAM", "tactile world action model", "tri-expert MoT", "视觉触觉动作联合流"]
+tags: []
+domains: ["robotics", "tactile-manipulation", "world-action-model", "mixture-of-transformers"]
+confidence: "medium"
+source_ids: ["source_d319d5007779569f8f786413"]
+relations: [{"type": "derived_from", "target_id": "source_d319d5007779569f8f786413", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "related_to", "target_id": "concept_action_centered_joint_world_action_model", "reason": "两者都用 MoT 联合生成视觉未来与动作；N0-TWAM 新增触觉 expert、未来触觉生成流和当前局部触觉条件。", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "related_to", "target_id": "concept_c5189a551eabdd0550bacd70", "reason": "两者都利用未来触觉监督；TacWAM 通过掩码隔离未来目标，N0-TWAM 让未来视觉、触觉和动作在共享注意力中联合生成。", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "related_to", "target_id": "concept_1920583cd9c7063491d45a40", "reason": "两者都把预测触觉与动作生成连接；既有节点注入紧凑未来 tactile latent，N0-TWAM 将未来触觉提升为独立完整生成流。", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}]
+change_reason: "compile bundle from source_d319d5007779569f8f786413"
+reflection_context: {"reflection_ids": ["reflection_f281f91cef2d68101060fe4a"], "importance": "high", "changed_belief": "我原先把 N0 系列的未来触觉主要理解为动作 expert 的紧凑 grounding；该实现显示另一条边界：未来视觉、触觉和动作可在统一 rectified-flow 目标下协同生成，而动作仍只接受当前局部触觉条件。", "surprising": "未来触觉被表示为相对首帧的全局残差生成目标，而当前局部触觉另经专用 encoder 注入动作 expert；同一模态的预测目标与控制条件采用不同接口。", "connections": [{"shared_mechanism": "N0-TWAM 与 concept_action_centered_joint_world_action_model 都用 Mixture-of-Transformers 联合生成未来视觉和动作。", "boundary": "当前来源是官方实现仓库，不能仅凭代码发布复述论文的全部性能与泛化结论。", "difference": "既有节点聚焦 GigaWorld 的视觉—动作联合模型，N0-TWAM 增加独立触觉 expert、未来触觉生成目标和当前局部触觉条件。"}, {"shared_mechanism": "N0-TWAM 与 concept_c5189a551eabdd0550bacd70 都利用未来触觉监督动作学习。", "boundary": "两者都不应被外推为已验证的在线力安全或任意硬件触觉等价。", "difference": "TacWAM 隔离未来目标以防泄漏，N0-TWAM 让三种未来在共享注意力中协同生成，但动作仅由当前局部触觉条件化。"}], "open_questions": ["共享注意力中的未来触觉 token 如何避免成为训练时的动作捷径，同时仍允许三流预测真正交换因果相关信息？"]}
+---
+
+# 触觉原生的三流联合世界—动作生成 / Tactile-native tri-stream joint world-action generation
+
+在 world-action model 中，可把未来视觉、未来触觉和动作建模为三个同级生成流：视觉、触觉和动作 Transformer expert 通过共享 cross-attention 交换信息，并在逐帧对齐的时间步上用统一 rectified-flow 目标训练。未来触觉以相对首帧的全局残差作为生成目标；部署时可得的当前局部触觉则经独立 encoder 条件化 action expert，使预测目标与控制输入保持不同角色。该结构不同于把未来触觉仅作为隔离辅助监督，也不同于只把少量未来 tactile latent 注入动作分支。来源是作者官方仓库，发布 checkpoint、推理和后训练路径但不含完整预训练流水线，因此架构可读性高，论文级性能和跨硬件泛化仍需主文与独立实验验证。

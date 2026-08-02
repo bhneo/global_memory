@@ -1424,12 +1424,21 @@ def run(args: argparse.Namespace) -> int:
             result["research_map"] = ResearchMapService(repository).build()
         else:
             result = ConsolidationReceiptService(repository).consolidate(args.object_id)
-        obsidian_result = ObsidianViewService(repository).build()
-        result["obsidian"] = {
-            "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
-            "sources": obsidian_result["sources"], "written_count": len(obsidian_result["written"]),
-            "removed": obsidian_result["removed"],
-        }
+        if (
+            args.consolidate_command == "daily"
+            and not result.get("derived_rebuild_required", True)
+        ):
+            result["obsidian"] = {
+                "ok": True, "skipped": True,
+                "reason": "daily made no repository or derived-state changes",
+            }
+        else:
+            obsidian_result = ObsidianViewService(repository).build()
+            result["obsidian"] = {
+                "ok": obsidian_result["ok"], "documents": obsidian_result["documents"],
+                "sources": obsidian_result["sources"], "written_count": len(obsidian_result["written"]),
+                "removed": obsidian_result["removed"],
+            }
         _print(result)
     elif args.command == "evolve":
         candidate, body = read_document(Path(args.from_file).expanduser().resolve())

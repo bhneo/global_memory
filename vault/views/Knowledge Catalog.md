@@ -65,6 +65,7 @@
 - [[memory/concept/concept_36131411d8e23a0784c4a811|Verlinde 2010 的屏幕熵力引力构造 / Verlinde 2010 screen-based entropic-gravity construction]] · `working`
 - [[memory/concept/concept_c549ac37bdb1b78d52a3443b|de Sitter 熵位移与弹性响应的涌现暗引力纲领 / emergent dark-gravity programme from de Sitter entropy displacement and elastic response]] · `working`
 - [[memory/concept/concept_d28c0e5c8a5f864e616e2f7a|三次 NLS 的波动动理学严格极限 / rigorous wave-kinetic limit for cubic NLS]] · `working`
+- [[memory/concept/concept_61c0ffd089f650a51ec3f00d|上下文匹配的失败动作有界重定向 / Context-matched bounded redirection of failure actions]] · `working`
 - [[memory/concept/concept_648a44e346f991eab5956e55|不可提升力预算下的语义恢复与快环权限分离]] · `working`
 - [[memory/concept/concept_09dc6e910b167ba474c89c38|世界动作模型的激活空间鲁棒性 steering]] · `working`
 - [[memory/concept/concept_world_model_evaluation|世界模型评价]] · `working`
@@ -73,9 +74,11 @@
 - [[memory/concept/concept_8f8ae7b5cac6690d2e341d40|人形行为基础模型的数量—多样性协同扩展]] · `working`
 - [[memory/concept/concept_dual_protocol_hri_agent_execution_boundary|人机客户端与 Agent 执行的双协议边界]] · `working`
 - [[memory/concept/concept_9d0aea7bfb560c703b51d683|从第一视角采集到跨本体训练的具身数据工具链]] · `working`
+- [[memory/concept/concept_8f574f03117d21adf127d23f|以世界模型想象迭代修正动作计划 / Iterative action-plan refinement through world-model imagination]] · `working`
 - [[memory/concept/concept_ebafde4b9db7a2ebd19c6bc6|以休眠锚点和意图激活驱动的即时场景图生长]] · `working`
 - [[memory/concept/concept_67c66e870e29ca11e24eaa5f|以语言选择三维抓取种子的多本体抓取分解]] · `working`
 - [[memory/concept/concept_sensor_conditional_expert_routing|传感器条件化专家路由]] · `working`
+- [[memory/concept/concept_ca2e18a64c50dab0d08b3f1a|依赖闭包的组件准入与新鲜作用域恢复 / Dependency-closed component admission and fresh scoped recovery]] · `working`
 - [[memory/concept/concept_24de3544824d45b83583c5a5|全息纠缠第一律对线性化 AdS 引力的闭合条件 / closure conditions from the holographic entanglement first law to linearized AdS gravity]] · `working`
 - [[memory/concept/concept_fc70bfc09ac7d9473592f09c|全身冗余的部分运动学嵌入]] · `working`
 - [[memory/concept/concept_769f84122571858ee48f9c48|共享持久对象状态的可验证人形 VLA 闭环]] · `working`
@@ -103,6 +106,7 @@
 - [[memory/concept/concept_318dd9fc807b1f13620238ec|可构建与可审计的模块化 Agent 提示]] · `working`
 - [[memory/concept/concept_portable_embodied_inference_runtime|可移植具身推理运行时]] · `working`
 - [[memory/concept/concept_4739daf4ef7eacc9153c535f|可靠价值驱动的离线到在线策略改进]] · `working`
+- [[memory/concept/concept_8a7645759329c1444d94a4cf|同状态相对价值驱动的扩散导航后训练 / Same-state relative-value diffusion navigation post-training]] · `working`
 - [[memory/concept/concept_4e520f39dde022d5e1042625|固定体积小测地球的真空纠缠平衡与 Einstein 方程 / vacuum entanglement equilibrium in fixed-volume small geodesic balls]] · `working`
 - [[memory/concept/concept_f5d1ef9eaed1cd6bec4d4c52|图式 Agent Memory 的生命周期与评测闭环 / lifecycle and evaluation closure for graph-based agent memory]] · `working`
 - [[memory/concept/concept_3d739e54fe54c8a5205d2301|多坐标系同步动作去噪]] · `working`
@@ -132,6 +136,7 @@
 - [[memory/concept/concept_913857cf6907564640fd669c|无 LLM 中心的执行级 VLA 直连通路 / LLM-free execution-path VLA]] · `working`
 - [[memory/concept/concept_3b83de1641240159d66c23d4|显式时钟的异步机器人闭环程序]] · `working`
 - [[memory/concept/concept_5494a710f14d55ddf3cb4bcf|有限真空纠缠熵只闭合低能 Einstein 引力 / finite vacuum entanglement entropy closes only low-energy Einstein gravity]] · `working`
+- [[memory/concept/concept_c5189a551eabdd0550bacd70|未来触觉监督的部署一致信息隔离 / Deployment-consistent isolation of future-tactile supervision]] · `working`
 - [[memory/concept/concept_ac0f0527a9c7bdba44eb37b8|未来语义—几何变化监督的可执行 Latent Action]] · `working`
 - [[memory/concept/concept_21a37fbe65868f6e97a68a20|机器人坐标系稠密 Pointmap 观察接口]] · `working`
 - [[memory/concept/concept_test_time_fast_weight_robot_memory|机器人策略的测试时快速权重记忆]] · `working`
@@ -155,12 +160,15 @@
 - [[memory/concept/concept_005866272e0394fcd2c0828e|纠缠--时空连通性关联 / entanglement--spacetime connectivity relation]] · `working`
 - [[memory/concept/concept_5495a66616b2989c1ce38a5f|经验成熟度驱动的机器人能力编译与回退 / Experience-maturity-driven robotic capability compilation]] · `working`
 - [[memory/concept/concept_adaptive_interleaved_multimodal_planning|自适应交错多模态规划]] · `working`
+- [[memory/concept/concept_e0ed53e4ea7c1e1fa032f1d3|行为对齐中间表征桥接跨本体数据 / Behavior-aligned intermediate representations for cross-embodiment transfer]] · `working`
 - [[memory/concept/concept_representation_convergence|表征收敛]] · `working`
 - [[memory/concept/concept_1920583cd9c7063491d45a40|表示对齐的未来触觉 grounding]] · `working`
 - [[memory/concept/concept_bb69fa188e0417143c3277cf|视觉—触觉 simulation-based 位姿后验用于插入 / visuo-tactile simulation-based pose posterior for insertion]] · `working`
 - [[memory/concept/concept_59f92bcb786f695ddcd47f7f|视频原生的光流动作接口]] · `working`
+- [[memory/concept/concept_6de58085da65839ab392094c|触觉原生的三流联合世界—动作生成 / Tactile-native tri-stream joint world-action generation]] · `working`
 - [[memory/concept/concept_5b49f7afd60ba18d35ca58e8|触觉对齐的人到机器人接触迁移]] · `working`
 - [[memory/concept/concept_3363773a8f142fcedd29ce9d|训练—模型—部署三分布的操作鲁棒性诊断]] · `working`
+- [[memory/concept/concept_d78616a1f03c4a519d7b45e3|语义锚约束的几何连续稠密对应 / Semantic-anchor-constrained geometrically coherent dense correspondence]] · `working`
 - [[memory/concept/concept_language_corrective_memory_data_flywheel|语言纠错记忆驱动的机器人数据飞轮]] · `working`
 - [[memory/concept/concept_ab253cb9064bc1b550d5e973|跨本体世界监督通道]] · `working`
 - [[memory/concept/concept_generalist_cross_embodiment_vla|跨本体通用 VLA 策略]] · `working`
@@ -169,6 +177,7 @@
 - [[memory/concept/concept_ergodicity|遍历性与非遍历性]] · `working`
 - [[memory/concept/concept_637cf7264723c03955c719e2|遥操作跟踪偏差作为隐式交互线索]] · `working`
 - [[memory/concept/concept_474b5f9742996e9fc68609b6|部署可用的机器人分解式视觉动作接口 / Deployment-available robot-factored visual action interface]] · `working`
+- [[memory/concept/concept_edcbaa2945d5c05f88c5290b|阶段歧义驱动的扩散控制频率切换 / Phase-ambiguity-driven diffusion control-frequency switching]] · `working`
 - [[memory/concept/concept_a858f8d191d3afdd69418471|陈旧性对齐与上下文分区共同约束异步快慢控制接口]] · `working`
 - [[memory/concept/concept_implicit_behavior_coordination|隐式行为协调]] · `working`
 - [[memory/concept/concept_cad068c0f6b0dfd58bd0edc7|静态 AdS/CFT 的 Ryu--Takayanagi 极小面处方 / Ryu--Takayanagi minimal-surface prescription in static AdS/CFT]] · `working`

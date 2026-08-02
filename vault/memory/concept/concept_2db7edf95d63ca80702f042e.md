@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "动作条件的执行期后果验证与后缀修复 / Action-conditioned execution consequence verification and suffix repair"
 created_at: "2026-08-01T18:22:06+08:00"
-updated_at: "2026-08-02T12:30:32+08:00"
+updated_at: "2026-08-02T19:54:50+08:00"
 aliases: ["CheckVLA", "action-conditioned execution-time verification", "latency-aware suffix repair", "动作后果一致性验证"]
 tags: []
 domains: ["robotics", "mobile-manipulation", "execution-verification", "world-models"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt-5.6-sol-strong-daily-v2"
-consolidation_count: 1
-last_consolidated_at: "2026-08-02T12:30:32+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T19:54:50+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,7 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_56d54c690ae15c
 origin_candidate_sha256: "1f18cb183ca309b47e1429e94c70eb46961ec8bf59a45f485d3a13cbe8909fe0"
 origin_cognitive_artifact_sha256: "22ac896993544c8830591d058011f913172649310f0b17c23e4f96551a5deb79"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_063b5bddfcbc4d645089c5ea"
+last_consolidation_id: "consolidation_6ea14b2abbbbb46204edc0b0"
 ---
 
 # 动作条件的执行期后果验证与后缀修复 / Action-conditioned execution consequence verification and suffix repair

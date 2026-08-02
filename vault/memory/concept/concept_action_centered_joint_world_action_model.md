@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "动作中心的联合世界—动作模型"
 created_at: "2026-07-21T17:41:29+08:00"
-updated_at: "2026-07-26T12:33:43+08:00"
+updated_at: "2026-08-02T19:55:11+08:00"
 aliases: ["Action-Centered Joint World-Action Model", "GigaWorld-Policy-0.5", "动作中心 WAM"]
 tags: []
 domains: ["embodied-ai", "world-action-model", "vla"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-daily-gpt56sol-readmission-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-26T12:33:43+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T19:55:11+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_1fab8b1ecbc696cc45d2-concept-1.md"
 origin_candidate_sha256: "d3b54ec759c2c5269630a70679234f0f5be8f6226048b2162794ce1165d40f27"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_efbd020aecd29d01240030e7"
+last_consolidation_id: "consolidation_49c5a1c4c460f5dc9e296597"
 ---
 
 # 动作中心的联合世界—动作模型

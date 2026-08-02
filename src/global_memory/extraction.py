@@ -119,11 +119,7 @@ class ExtractionService:
         return sorted(self.directory.glob("extraction-*.md")) if self.directory.exists() else []
 
     def find(self, extraction_id: str) -> tuple[Path, dict[str, Any], str]:
-        for path in self.documents():
-            metadata, body = read_document(path)
-            if metadata.get("extraction_id") == extraction_id:
-                return path, metadata, body
-        raise NotFoundError(f"未找到 extraction: {extraction_id}")
+        return self.repository.find_extraction(extraction_id)
 
     def latest_for_source(self, source_id: str, create: bool = False) -> tuple[Path, dict[str, Any], str]:
         _, source, _ = self.repository.find_document(source_id)

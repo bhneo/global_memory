@@ -52,6 +52,7 @@ class ConsolidationReceiptService:
         self._receipt_paths: list[Path] | None = None
         self._receipts_by_object: dict[str, list[tuple[Path, dict[str, Any]]]] | None = None
         self._documents_by_id: dict[str, tuple[Path, dict[str, Any], str]] | None = None
+        self._source_bases: dict[str, tuple[Path | None, int | None, int | None, str | None]] = {}
 
     def documents(self) -> list[Path]:
         if self._receipt_paths is None:
@@ -75,12 +76,47 @@ class ConsolidationReceiptService:
                 documents[str(metadata.get("id") or "")] = (path, metadata, body)
             self._documents_by_id = documents
         result = self._documents_by_id.get(object_id)
-        return result if result is not None else self.repository.find_document(object_id)
+        if result is None:
+            return self.repository.find_document(object_id)
+        path, _, _ = result
+        metadata, body = read_document(path)
+        current = (path, metadata, body)
+        self._documents_by_id[object_id] = current
+        return current
+
+    def find_document(self, object_id: str) -> tuple[Path, dict[str, Any], str]:
+        """Operation-local governed lookup shared by batch policy checks."""
+        return self._find_document(object_id)
+
+    def refresh_document(self, object_id: str) -> None:
+        """Refresh one populated lookup entry after an atomic object rewrite."""
+        if self._documents_by_id is None:
+            return
+        current = self._documents_by_id.get(object_id)
+        if current is None:
+            self._documents_by_id = None
+            return
+        path = current[0]
+        metadata, body = read_document(path)
+        self._documents_by_id[object_id] = (path, metadata, body)
 
     def _invalidate_caches(self) -> None:
         self._receipt_paths = None
         self._receipts_by_object = None
         self._documents_by_id = None
+
+    def _record_write(
+        self, object_id: str, path: Path, metadata: dict[str, Any], body: str,
+        receipt_path: Path, receipt: dict[str, Any],
+    ) -> None:
+        """Update populated batch caches without rescanning the whole Vault."""
+        if self._documents_by_id is not None:
+            self._documents_by_id[object_id] = (path, metadata, body)
+        if self._receipt_paths is not None and receipt_path not in self._receipt_paths:
+            self._receipt_paths.append(receipt_path)
+            self._receipt_paths.sort()
+        if self._receipts_by_object is not None:
+            self._receipts_by_object.setdefault(object_id, []).append((receipt_path, receipt))
 
     def load(self, consolidation_id: str) -> tuple[Path, dict[str, Any], str]:
         for path in self.documents():
@@ -175,7 +211,19 @@ class ConsolidationReceiptService:
         for source_id in source_ids:
             try:
                 source_path, source, _ = self._find_document(source_id)
+                source_record_sha = sha256_bytes(source_path.read_bytes())
                 raw_path = self.repository.resolve_inside(str(source["raw_content_path"])) if source.get("raw_content_path") else None
+                raw_sha = None
+                if raw_path and raw_path.exists():
+                    stat = raw_path.stat()
+                    base = self._source_bases.get(source_id)
+                    if base is not None and base[:3] == (raw_path, stat.st_mtime_ns, stat.st_size):
+                        raw_sha = base[3]
+                    else:
+                        raw_sha = sha256_bytes(raw_path.read_bytes())
+                        self._source_bases[source_id] = (
+                            raw_path, stat.st_mtime_ns, stat.st_size, raw_sha,
+                        )
                 work_id = source.get("work_id")
                 work_sha = None
                 if work_id:
@@ -186,8 +234,8 @@ class ConsolidationReceiptService:
                         work_sha = None
                 records.append({
                     "source_id": source_id,
-                    "source_record_sha256": sha256_bytes(source_path.read_bytes()),
-                    "raw_content_sha256": sha256_bytes(raw_path.read_bytes()) if raw_path and raw_path.exists() else None,
+                    "source_record_sha256": source_record_sha,
+                    "raw_content_sha256": raw_sha,
                     "work_id": work_id,
                     "work_document_sha256": work_sha,
                 })
@@ -279,16 +327,16 @@ class ConsolidationReceiptService:
         available = bool(source_ids)
         for source_id in source_ids:
             try:
-                source_path, source, _ = self.repository.find_document(source_id)
-                raw_value = source.get("raw_content_path")
-                raw_path = self.repository.resolve_inside(str(raw_value)) if raw_value else None
-                if raw_path is None or not raw_path.exists():
+                records = self._source_records([source_id])
+                record = records[0]
+                digest = record.get("raw_content_sha256")
+                _, source, _ = self._find_document(source_id)
+                if not digest:
                     available = False
                     warnings.append(f"raw unavailable: {source_id}")
-                    hashes.append(hashlib.sha256(source_path.read_bytes()).hexdigest())
+                    hashes.append(str(record.get("source_record_sha256") or ""))
                 else:
-                    digest = hashlib.sha256(raw_path.read_bytes()).hexdigest()
-                    hashes.append(digest)
+                    hashes.append(str(digest))
                     expected = source.get("content_sha256")
                     if expected and expected != digest:
                         available = False
@@ -363,7 +411,7 @@ class ConsolidationReceiptService:
         consolidator: str = "deterministic", model_provider: str = "none",
         model_version: str = "none", rebuild_index: bool = True,
     ) -> dict[str, Any]:
-        path, metadata, body = self.repository.find_document(object_id)
+        path, metadata, body = self._find_document(object_id)
         if not self.repository.rel(path).startswith(("vault/memory/", "vault/knowledge/", "vault/frontier/", "vault/action/")):
             raise ValueError("only governed knowledge objects can be consolidated")
         if metadata.get("memory_tier") == "historical" or metadata.get("status") in {"archived", "superseded"}:
@@ -393,7 +441,7 @@ class ConsolidationReceiptService:
         except Exception as exc:
             schema_validated = False
             warnings.append(f"schema validation failed: {exc}")
-        drift = DriftAuditService(self.repository).run_for(object_id)
+        drift = DriftAuditService(self.repository).inspect(path, metadata, body)
         checks = {
             "schema_validated": schema_validated,
             "raw_available": raw_available,
@@ -421,12 +469,14 @@ class ConsolidationReceiptService:
             receipt_complete = False
             resolved_result = "failed"
             environment_fingerprint = {}
-        failed_attempt_index = sum(
-            1 for receipt_path in self.documents()
-            for receipt_metadata, _ in [read_document(receipt_path)]
-            if receipt_metadata.get("object_id") == object_id
-            and not self.complete(receipt_metadata)
-        ) if not receipt_complete or resolved_result in {"failed", "needs_review"} else None
+        failed_attempt_index = None
+        if not receipt_complete or resolved_result in {"failed", "needs_review"}:
+            self._build_receipt_index()
+            assert self._receipts_by_object is not None
+            failed_attempt_index = sum(
+                not self.complete(receipt_metadata)
+                for _, receipt_metadata in self._receipts_by_object.get(object_id, [])
+            )
         stable = json.dumps(
             [
                 object_id, before_sha, environment_fingerprint, evidence_ids, checks,
@@ -575,7 +625,10 @@ class ConsolidationReceiptService:
         )
         if receipt_complete and not metadata.get("user_locked"):
             atomic_write_text(path, after_text)
-        self._invalidate_caches()
+        self._record_write(
+            object_id, path, updated if receipt_complete else metadata, body,
+            receipt_path, receipt,
+        )
         if rebuild_index:
             self.repository.rebuild_index()
         self.repository.append_event("memory-events", {
@@ -632,6 +685,41 @@ class DriftAuditService:
             reports.append(self._report(*args, "translation-strengthening", "high", original, current, "translation strengthened the source modality", "human_review"))
         return reports
 
+    def inspect(
+        self, path: Path, metadata: dict[str, Any], body: str,
+    ) -> list[DriftReport]:
+        """Apply drift rules to one already-loaded governed object."""
+        if metadata.get("memory_tier") == "historical" or metadata.get("status") in {"archived", "superseded"}:
+            return []
+        issues: list[dict[str, Any]] = []
+        object_id = str(metadata["id"])
+        evidence_ids = [
+            str(item.get("evidence_id"))
+            for item in metadata.get("evidence", [])
+            if isinstance(item, dict) and item.get("evidence_id")
+        ]
+        if metadata.get("type") == "claim":
+            for evidence in metadata.get("evidence", []):
+                if evidence.get("evidence_kind") == "translation" and evidence.get("verification_status") in {"exact", "verbatim"}:
+                    issues.append(self._report(object_id, [], evidence_ids, "translation-as-quote", "high", "translation", "verbatim", "translation was labeled as an exact quote", "create_exception"))
+            if not metadata.get("source_ids") or not metadata.get("evidence"):
+                issues.append(self._report(object_id, [], evidence_ids, "claim-source-drift", "medium", "source-linked claim", body, "claim lost source or evidence", "revise_working"))
+        if metadata.get("type") == "synthesis" and (not metadata.get("source_ids") or "## New evidence" not in body):
+            issues.append(self._report(object_id, [], evidence_ids, "unsupported-synthesis", "medium", "source-grounded synthesis", body, "synthesis does not return to source evidence", "human_review"))
+        if metadata.get("type") == "analogy" and not metadata.get("where_it_breaks"):
+            issues.append(self._report(object_id, [], evidence_ids, "analogy-boundary-loss", "high", "bounded analogy", body, "where_it_breaks is missing", "create_exception"))
+        if metadata.get("claim_confidence") == "high" and metadata.get("evidence_entailment") not in {"full"}:
+            issues.append(self._report(object_id, [], evidence_ids, "uncertainty-erasure", "high", "limited evidence", body, "confidence exceeds evidence entailment", "mark_contested"))
+        version_dir = self.repository.root / "vault" / "archive" / "versions" / object_id
+        versions = sorted(version_dir.glob("*.md")) if version_dir.exists() else []
+        if versions:
+            _, original_body = read_document(versions[0])
+            issues.extend(self.compare(
+                object_id, original_body, body, object_type=str(metadata.get("type")),
+                versions=[self.repository.rel(versions[0]), self.repository.rel(path)], evidence_ids=evidence_ids,
+            ))
+        return issues
+
     def run(self) -> dict[str, Any]:
         issues: list[dict[str, Any]] = []
         checked = 0
@@ -640,28 +728,7 @@ class DriftAuditService:
             if metadata.get("memory_tier") == "historical" or metadata.get("status") in {"archived", "superseded"}:
                 continue
             checked += 1
-            object_id = str(metadata["id"])
-            evidence_ids = [str(item.get("evidence_id")) for item in metadata.get("evidence", []) if isinstance(item, dict) and item.get("evidence_id")]
-            if metadata.get("type") == "claim":
-                for evidence in metadata.get("evidence", []):
-                    if evidence.get("evidence_kind") == "translation" and evidence.get("verification_status") in {"exact", "verbatim"}:
-                        issues.append(self._report(object_id, [], evidence_ids, "translation-as-quote", "high", "translation", "verbatim", "translation was labeled as an exact quote", "create_exception"))
-                if not metadata.get("source_ids") or not metadata.get("evidence"):
-                    issues.append(self._report(object_id, [], evidence_ids, "claim-source-drift", "medium", "source-linked claim", body, "claim lost source or evidence", "revise_working"))
-            if metadata.get("type") == "synthesis" and (not metadata.get("source_ids") or "## New evidence" not in body):
-                issues.append(self._report(object_id, [], evidence_ids, "unsupported-synthesis", "medium", "source-grounded synthesis", body, "synthesis does not return to source evidence", "human_review"))
-            if metadata.get("type") == "analogy" and not metadata.get("where_it_breaks"):
-                issues.append(self._report(object_id, [], evidence_ids, "analogy-boundary-loss", "high", "bounded analogy", body, "where_it_breaks is missing", "create_exception"))
-            if metadata.get("claim_confidence") == "high" and metadata.get("evidence_entailment") not in {"full"}:
-                issues.append(self._report(object_id, [], evidence_ids, "uncertainty-erasure", "high", "limited evidence", body, "confidence exceeds evidence entailment", "mark_contested"))
-            version_dir = self.repository.root / "vault" / "archive" / "versions" / object_id
-            versions = sorted(version_dir.glob("*.md")) if version_dir.exists() else []
-            if versions:
-                _, original_body = read_document(versions[0])
-                issues.extend(self.compare(
-                    object_id, original_body, body, object_type=str(metadata.get("type")),
-                    versions=[self.repository.rel(versions[0]), self.repository.rel(path)], evidence_ids=evidence_ids,
-                ))
+            issues.extend(self.inspect(path, metadata, body))
         return {
             "ok": not any(item.get("severity") == "high" for item in issues),
             "checked": checked, "issues": issues,
@@ -671,16 +738,16 @@ class DriftAuditService:
 
     def run_for(self, object_id: str) -> list[DriftReport]:
         """Run the same semantic rules for one object during consolidation."""
-        report = self.run()
-        return [item for item in report["issues"] if item["object_id"] == object_id]
+        path, metadata, body = self.repository.find_document(object_id)
+        return self.inspect(path, metadata, body)
 
 
 class ConsolidationService:
     def __init__(self, repository: Repository):
         self.repository = repository
         self.exceptions = ExceptionService(repository)
-        self.promotions = PromotionService(repository)
         self.receipts = ConsolidationReceiptService(repository)
+        self.promotions = PromotionService(repository, receipt_service=self.receipts)
 
     def review_working_quality(self) -> dict[str, Any]:
         """Identify unsafe fallback semantics without trusting creator labels."""
@@ -791,8 +858,19 @@ class ConsolidationService:
                     source_ids=[source_id], context={"source_id": source_id, "error": str(exc)},
                 )
                 compiled.append({"source_id": source_id, "status": "exception", "exception_id": exception_id})
-        self.repository.rebuild_index()
-        return {"mode": "daily-consolidation", "triage": triage, "compiled": compiled, "canonical_writes": 0}
+        repository_changed = any(
+            item.get("status") in {"source_only", "working", "exception"}
+            for item in compiled
+        ) or any(
+            item.get("extraction_created") or item.get("quality_checked")
+            for item in triage.get("results", [])
+        )
+        if repository_changed:
+            self.repository.rebuild_index()
+        return {
+            "mode": "daily-consolidation", "triage": triage, "compiled": compiled,
+            "derived_rebuild_required": repository_changed, "canonical_writes": 0,
+        }
 
     def weekly(self) -> dict[str, Any]:
         historical = list(self.repository.memory_documents())
@@ -804,11 +882,15 @@ class ConsolidationService:
                 historical_ids_skipped.append(str(metadata.get("id")))
         receipts: list[dict[str, Any]] = []
         scanned_only: list[str] = []
+        index_dirty = False
         for path in before:
             metadata, _ = read_document(path)
             try:
                 receipt = self.receipts.consolidate(str(metadata["id"]), rebuild_index=False)
                 receipts.append(receipt)
+                index_dirty = index_dirty or (
+                    receipt.get("status") == "complete" and not receipt.get("reused", False)
+                )
             except Exception as exc:
                 scanned_only.append(str(metadata.get("id")))
                 self.exceptions.create(
@@ -816,7 +898,6 @@ class ConsolidationService:
                     [str(exc)], object_id=str(metadata.get("id")),
                     source_ids=[str(item) for item in metadata.get("source_ids", [])],
                 )
-        self.repository.rebuild_index()
         requalified, requalification_blocked = [], []
         for path in list(self.repository.active_memory_documents()):
             metadata, _ = read_document(path)
@@ -825,12 +906,12 @@ class ConsolidationService:
             result = self.promotions.requalify_trusted(str(metadata["id"]), rebuild_index=False)
             if result.get("requalified"):
                 requalified.append(str(metadata["id"]))
+                index_dirty = True
             else:
                 requalification_blocked.append({
                     "object_id": str(metadata["id"]),
                     "failed_conditions": result.get("evaluation", {}).get("failed_conditions", []),
                 })
-        self.repository.rebuild_index()
         promoted, retained = [], []
         for path in list(self.repository.active_memory_documents()):
             metadata, _ = read_document(path)
@@ -841,9 +922,11 @@ class ConsolidationService:
             )
             if result.get("promoted"):
                 promoted.append(str(metadata["id"]))
+                index_dirty = True
             else:
                 retained.append({"object_id": str(metadata["id"]), "failed_conditions": result["evaluation"]["failed_conditions"]})
-        self.repository.rebuild_index()
+        if index_dirty:
+            self.repository.rebuild_index()
         drift = DriftAuditService(self.repository).run()
         for issue in drift["issues"]:
             if issue.get("severity") != "high":

@@ -66,6 +66,10 @@ class Repository:
     def __init__(self, root: Path | str):
         self.root = Path(root).resolve()
         self.index_path = self.root / "data" / "indexes" / "global_memory.sqlite3"
+        self._extraction_snapshot: tuple[tuple[str, int, int], ...] | None = None
+        self._extraction_directory_mtime_ns: int | None = None
+        self._extractions_by_id: dict[str, tuple[Path, dict[str, Any], str]] = {}
+        self._documents_by_id: dict[str, Path] = {}
 
     def rel(self, path: Path) -> str:
         return path.resolve().relative_to(self.root).as_posix()
@@ -256,9 +260,18 @@ class Repository:
             """
         )
 
-    def _document_index_body(self, path: Path, metadata: dict[str, Any], body: str) -> str:
+    def _document_index_body(
+        self, path: Path, metadata: dict[str, Any], body: str,
+        *, extraction_body: str | None = None,
+    ) -> str:
         if metadata.get("type") != "source":
             return body
+        # A ready Extraction is the bounded, rebuildable text projection for a
+        # Source.  Prefer it over reopening the immutable Raw payload during
+        # every FTS rebuild.  This keeps search coverage while avoiding repeated
+        # decoding/tokenization of large HTML/PDF captures.
+        if extraction_body:
+            return body + "\n\n" + extraction_body
         raw_path = metadata.get("raw_content_path")
         if not raw_path:
             return body
@@ -461,6 +474,9 @@ class Repository:
                 raise ValidationError(f"{self.rel(path)} 的 calculation 缺少方法或结果")
 
     def rebuild_index(self) -> int:
+        # Rebuilds commonly follow an approval, archive, restore or promotion
+        # that can move an ID from a proposal candidate into a truth-layer path.
+        self._documents_by_id.clear()
         self.index_path.parent.mkdir(parents=True, exist_ok=True)
         fd, temp_name = tempfile.mkstemp(prefix="global-memory-", suffix=".sqlite3", dir=self.index_path.parent)
         os.close(fd)
@@ -468,15 +484,47 @@ class Repository:
         temp_path.unlink(missing_ok=True)
         count = 0
         try:
+            # Parse truth-layer documents once and prepare a current Extraction
+            # lookup before opening SQLite.  Previously every rebuild fed up to
+            # 5 MB of Raw content per Source into FTS even when a much smaller,
+            # hash-bound Extraction already existed.
+            documents = [
+                (path, *read_document(path))
+                for path in sorted(self.all_indexed_documents())
+            ]
+            source_hashes = {
+                str(metadata["id"]): str(metadata.get("content_sha256") or "")
+                for _, metadata, _ in documents
+                if metadata.get("type") == "source"
+            }
+            extraction_bodies: dict[str, tuple[str, str]] = {}
+            extraction_dir = self.root / "data" / "derived" / "extractions"
+            if extraction_dir.exists():
+                for extraction_path in sorted(extraction_dir.glob("extraction-*.md")):
+                    extraction, extraction_body = read_document(extraction_path)
+                    source_id = str(extraction.get("source_id") or "")
+                    if (
+                        source_id not in source_hashes
+                        or extraction.get("status") != "ready"
+                        or extraction.get("input_sha256") != source_hashes[source_id]
+                    ):
+                        continue
+                    extracted_at = str(extraction.get("extracted_at") or "")
+                    current = extraction_bodies.get(source_id)
+                    if current is None or extracted_at > current[0]:
+                        extraction_bodies[source_id] = (extracted_at, extraction_body)
             with closing(sqlite3.connect(temp_path)) as connection:
                 self._schema(connection)
-                for path in sorted(self.all_indexed_documents()):
-                    metadata, body = read_document(path)
+                for path, metadata, body in documents:
                     self._validate_metadata(metadata, path)
                     source_ids = metadata.get("source_ids", [])
                     if metadata.get("type") == "source":
                         source_ids = [metadata["id"]]
-                    index_body = self._document_index_body(path, metadata, body)
+                    extraction = extraction_bodies.get(str(metadata.get("id") or ""))
+                    index_body = self._document_index_body(
+                        path, metadata, body,
+                        extraction_body=extraction[1] if extraction else None,
+                    )
                     tags = " ".join(str(item) for item in metadata.get("tags", []))
                     aliases = " ".join(str(item) for item in metadata.get("aliases", []))
                     domains = " ".join(str(item) for item in metadata.get("domains", []))
@@ -688,6 +736,16 @@ class Repository:
         return results
 
     def find_document(self, object_id: str) -> tuple[Path, dict[str, Any], str]:
+        cached_path = self._documents_by_id.get(object_id)
+        if cached_path is not None and cached_path.exists():
+            metadata, body = read_document(cached_path)
+            if (
+                metadata.get("id") == object_id
+                and not self.rel(cached_path).startswith("vault/proposals/candidate-")
+            ):
+                return cached_path, metadata, body
+        if cached_path is not None:
+            self._documents_by_id.pop(object_id, None)
         candidates = (
             list(self.all_indexed_documents())
             + list(self.archive_documents())
@@ -697,11 +755,46 @@ class Repository:
         candidates += list(self.followup_documents())
         candidates += list((self.root / "vault" / "exceptions").glob("exception-*.md"))
         candidates += list((self.root / "vault" / "promotions").glob("promotion-*.md"))
+        result: tuple[Path, dict[str, Any], str] | None = None
         for path in candidates:
             metadata, body = read_document(path)
-            if metadata.get("id") == object_id:
-                return path, metadata, body
+            document_id = str(metadata.get("id") or "")
+            if document_id:
+                self._documents_by_id.setdefault(document_id, path)
+            if document_id == object_id and result is None:
+                result = (path, metadata, body)
+        if result is not None:
+            return result
         raise NotFoundError(f"未找到对象: {object_id}")
+
+    def find_extraction(self, extraction_id: str) -> tuple[Path, dict[str, Any], str]:
+        """Find a derived Extraction through an invalidation-aware read cache."""
+        directory = self.root / "data" / "derived" / "extractions"
+        result = self._extractions_by_id.get(extraction_id)
+        if result is not None and result[0].exists():
+            return result
+        directory_mtime_ns = directory.stat().st_mtime_ns if directory.exists() else None
+        if (
+            self._extraction_snapshot is not None
+            and directory_mtime_ns == self._extraction_directory_mtime_ns
+        ):
+            raise NotFoundError(f"extraction not found: {extraction_id}")
+        paths = sorted(directory.glob("extraction-*.md")) if directory.exists() else []
+        snapshot = tuple((path.name, path.stat().st_mtime_ns, path.stat().st_size) for path in paths)
+        if self._extraction_snapshot is None or snapshot != self._extraction_snapshot:
+            by_id: dict[str, tuple[Path, dict[str, Any], str]] = {}
+            for path in paths:
+                metadata, body = read_document(path)
+                extraction_key = str(metadata.get("extraction_id") or "")
+                if extraction_key:
+                    by_id[extraction_key] = (path, metadata, body)
+            self._extractions_by_id = by_id
+            self._extraction_snapshot = snapshot
+            self._extraction_directory_mtime_ns = directory_mtime_ns
+        result = self._extractions_by_id.get(extraction_id)
+        if result is None:
+            raise NotFoundError(f"extraction not found: {extraction_id}")
+        return result
 
     def related(self, object_id: str) -> list[dict[str, str]]:
         self.ensure_initialized()

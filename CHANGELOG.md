@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+- Hardened Daily and Weekly consolidation against repository-size timeouts.
+  Empty Daily runs now skip index and Obsidian rebuilds; FTS rebuilds prefer
+  current hash-bound Extractions over reopening large Raw payloads; Weekly
+  batches reuse governed-document, Receipt, Source-hash and Promotion lookups,
+  apply drift rules per object, and coalesce routine index work into one final
+  rebuild. Receipt fingerprint invalidation and all Trusted/Canonical gates are
+  unchanged.
+- Cached governed ID and derived Extraction lookup during validation and
+  replaced Obsidian's per-source full repository scans with an in-memory
+  Source map. Cache hits reread the small governed file, so external mutations
+  still invalidate Receipt fingerprints. These changes reduce
+  lint/view-generation cost without changing truth-layer files.
+
 - Separated AI assistants from the MCP transport in the README hero so the
   protocol is no longer presented as a peer product. Replaced both Mermaid
   blocks with accessible, labeled SVG architecture diagrams and retained text

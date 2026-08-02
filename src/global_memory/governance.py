@@ -374,20 +374,31 @@ class PromotionEvaluation:
 
 
 class PromotionService:
-    def __init__(self, repository: Repository, failure_hook: Any | None = None):
+    def __init__(
+        self, repository: Repository, failure_hook: Any | None = None,
+        *, receipt_service: Any | None = None,
+    ):
         self.repository = repository
         self.directory = repository.root / "vault" / "promotions"
         self.exceptions = ExceptionService(repository)
         self.recovery = TrustedPromotionRecoveryManager(repository)
         self.canonical_recovery = CanonicalPromotionRecoveryManager(repository)
         self.failure_hook = failure_hook
+        self._receipt_service = receipt_service
+
+    def _receipts(self) -> Any:
+        if self._receipt_service is None:
+            from .consolidation import ConsolidationReceiptService
+            self._receipt_service = ConsolidationReceiptService(self.repository)
+        return self._receipt_service
 
     def _fail_if_requested(self, phase: str) -> None:
         if callable(self.failure_hook):
             self.failure_hook(phase)
 
     def evaluate(self, object_id: str, *, for_requalification: bool = False) -> PromotionEvaluation:
-        path, metadata, body = self.repository.find_document(object_id)
+        receipts = self._receipts()
+        path, metadata, body = receipts.find_document(object_id)
         if not self.repository.rel(path).startswith("vault/memory/"):
             raise ValidationError("trusted promotion only evaluates working memory")
         reasons: list[str] = []
@@ -417,7 +428,7 @@ class PromotionService:
         if metadata.get("user_locked") and metadata.get("status") != "trusted":
             failed.append("user_locked object cannot be automatically changed")
         from .consolidation import ConsolidationReceiptService
-        receipt = ConsolidationReceiptService(self.repository).valid_for(object_id)
+        receipt = receipts.valid_for(object_id)
         if receipt is None:
             failed.append("requires a valid hash-bound consolidation receipt")
         else:
@@ -454,7 +465,7 @@ class PromotionService:
             work_ids = {str(item) for item in metadata.get("reuse_work_ids", []) if item}
             for source_id in metadata.get("source_ids", []):
                 try:
-                    _, source, _ = self.repository.find_document(str(source_id))
+                    _, source, _ = receipts.find_document(str(source_id))
                     work_id = source.get("work_id")
                     if work_id:
                         work_ids.add(str(work_id))
@@ -479,18 +490,18 @@ class PromotionService:
 
     def requalify_trusted(self, object_id: str, *, rebuild_index: bool = True) -> dict[str, Any]:
         """Qualify an existing Trusted object under the current policy without demoting it."""
-        path, metadata, body = self.repository.find_document(object_id)
+        receipts = self._receipts()
+        path, metadata, body = receipts.find_document(object_id)
         if metadata.get("status") != "trusted" or metadata.get("memory_tier") != "trusted":
             raise ValidationError("policy requalification only applies to Trusted memory")
         if not metadata.get("needs_policy_requalification"):
             return {"requalified": False, "reason": "object is already policy-qualified"}
 
-        from .consolidation import ConsolidationReceiptService
-        receipts = ConsolidationReceiptService(self.repository)
         preliminary = receipts.valid_for(object_id) or receipts.consolidate(
             object_id,
             result="requalification_candidate",
             change_summary="Trusted memory checked under the current Receipt v2 boundary",
+            rebuild_index=False,
         )
         evaluation = self.evaluate(object_id, for_requalification=True)
         if not evaluation.eligible:
@@ -503,7 +514,7 @@ class PromotionService:
         # The qualification fields change the governed bytes, so complete a second
         # Receipt against the final state. The recovery journal makes that boundary
         # restart-safe and never invents a demotion event.
-        _, metadata, body = self.repository.find_document(object_id)
+        _, metadata, body = receipts.find_document(object_id)
         before = path.read_bytes()
         timestamp = now_iso()
         qualification_id = "requalification_" + hashlib.sha256(
@@ -532,8 +543,8 @@ class PromotionService:
         )
         try:
             atomic_write_text(path, staged_text)
+            receipts.refresh_document(object_id)
             self.recovery.checkpoint(journal, "staged")
-            self.repository.rebuild_index()
             final_receipt = receipts.consolidate(
                 object_id,
                 result="requalified",
@@ -545,7 +556,7 @@ class PromotionService:
             self.recovery.checkpoint(journal, "receipt_completed", final_receipt["consolidation_id"])
         except Exception:
             path.write_bytes(before)
-            self.repository.rebuild_index()
+            receipts.refresh_document(object_id)
             journal.unlink(missing_ok=True)
             raise
         # last_valid_receipt_id is intentionally not written back into the governed
@@ -592,7 +603,8 @@ class PromotionService:
         self, object_id: str, *, automatic: bool = True, reason: str = "",
         rebuild_index: bool = True,
     ) -> dict[str, Any]:
-        path, metadata, body = self.repository.find_document(object_id)
+        receipts = self._receipts()
+        path, metadata, body = receipts.find_document(object_id)
         evaluation = self.evaluate(object_id)
         if automatic and not evaluation.eligible:
             return {"promoted": False, "evaluation": evaluation.as_dict()}
@@ -636,10 +648,10 @@ class PromotionService:
         )
         try:
             atomic_write_text(path, staged_text)
+            receipts.refresh_document(object_id)
             self.recovery.checkpoint(journal, "staged")
-            self.repository.rebuild_index()
             from .consolidation import ConsolidationReceiptService
-            receipt = ConsolidationReceiptService(self.repository).consolidate(
+            receipt = receipts.consolidate(
                 object_id, result="promotion_candidate", change_summary="Trusted promotion requalified under Receipt v2",
                 rebuild_index=False,
             )
@@ -648,7 +660,7 @@ class PromotionService:
             self.recovery.checkpoint(journal, "receipt_completed", receipt["consolidation_id"])
         except Exception:
             path.write_bytes(before)
-            self.repository.rebuild_index()
+            receipts.refresh_document(object_id)
             journal.unlink(missing_ok=True)
             raise
         if rebuild_index:

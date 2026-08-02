@@ -4,7 +4,7 @@ type: "tension"
 status: "working"
 title: "世界预测可解释性与动作对齐安全之间的张力"
 created_at: "2026-07-23T18:07:07+08:00"
-updated_at: "2026-07-26T12:34:06+08:00"
+updated_at: "2026-08-02T19:55:50+08:00"
 aliases: ["World-Action Alignment Tension", "BadWAM", "世界动作对齐张力"]
 tags: []
 domains: ["world-action-model", "robot-safety"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt56-m91-real-daily-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-26T12:34:06+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T19:55:50+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "tension-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_05dba53c3c9f85990185-tension-1.md"
 origin_candidate_sha256: "506193d5a44e7f2d2113fdac56bd0761d24afa094befe32152f230ce9ded790b"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_8e21dc46d4455ba2127aafc6"
+last_consolidation_id: "consolidation_9a7d4ecb39674e4a53ad4fff"
 ---
 
 # 世界预测可解释性与动作对齐安全之间的张力

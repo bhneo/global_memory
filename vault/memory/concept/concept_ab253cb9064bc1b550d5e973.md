@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "跨本体世界监督通道"
 created_at: "2026-07-19T17:16:45+08:00"
-updated_at: "2026-07-19T23:49:38+08:00"
+updated_at: "2026-08-02T19:55:10+08:00"
 aliases: ["Cross-Embodiment World Supervision Channel", "Embodiment-Invariant World Target", "EGOWAM", "World Action Model"]
 tags: []
 domains: ["embodied-ai", "world-model", "cross-embodiment"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt56-m91-real-daily-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-19T23:49:38+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T19:55:10+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_17351093fa01d5d557d9-concept-1.md"
 origin_candidate_sha256: "9e2142a0223206a27470315708c118b5dac89b7ae370dae8979e36ea60bb3870"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_f5851879b871903047712157"
+last_consolidation_id: "consolidation_2249ddbce80c18d00de77f00"
 ---
 
 # 跨本体世界监督通道
