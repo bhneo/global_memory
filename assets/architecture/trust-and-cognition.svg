@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="550" viewBox="0 90 1200 550" role="img" aria-labelledby="title desc">
+  <title id="title">Trust and cognition follow different paths</title>
+  <desc id="desc">Sources enter a factual evidence path from Evidence through Working and Trusted to human-approved Canonical memory, and a separate non-factual cognition path from Input through Reflection to Cognitive Synthesis. Synthesis may propose a candidate to Working but is never fact by itself.</desc>
+  <defs>
+    <linearGradient id="source" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#17347a"/><stop offset="1" stop-color="#08a6d8"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-30%" width="140%" height="160%"><feDropShadow dx="0" dy="6" stdDeviation="7" flood-color="#17347a" flood-opacity=".12"/></filter>
+    <marker id="arrowN" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2957b8"/></marker>
+    <marker id="arrowC" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#08a6d8"/></marker>
+    <style>
+      .title{font:700 27px Inter,Segoe UI,Arial,sans-serif;fill:#13254b;text-anchor:middle}
+      .label{font:700 21px Inter,Segoe UI,Arial,sans-serif;fill:#13254b;text-anchor:middle}
+      .small{font:500 15px Inter,Segoe UI,Arial,sans-serif;fill:#5b6980;text-anchor:middle}
+      .inverse{fill:#fff}.left{text-anchor:start}.card{fill:#fff;stroke:#b8c9e8;stroke-width:2}
+      .fact{fill:none;stroke:#2957b8;stroke-width:3;marker-end:url(#arrowN)}
+      .cog{fill:none;stroke:#08a6d8;stroke-width:3;marker-end:url(#arrowC)}
+    </style>
+  </defs>
+  <rect width="1200" height="660" rx="24" fill="#fbfdff"/>
+  <g filter="url(#shadow)"><circle cx="120" cy="330" r="76" fill="url(#source)"/></g>
+  <text x="120" y="326" class="label inverse">Source</text><text x="120" y="352" class="small inverse">with provenance</text>
+
+  <rect x="230" y="106" width="890" height="218" rx="28" fill="#f2f6ff" stroke="#c7d5ee" stroke-width="2"/>
+  <text x="270" y="144" class="label left">Evidence &amp; trust path</text>
+  <text x="270" y="170" class="small left">Claims gain authority only through evidence and policy gates.</text>
+  <path class="fact" d="M181 296C198 247 212 222 250 222"/>
+  <path class="fact" d="M430 222h54"/><path class="fact" d="M650 222h54"/><path class="fact" d="M870 222h54"/>
+  <g filter="url(#shadow)"><rect class="card" x="270" y="188" width="160" height="68" rx="18"/><rect class="card" x="490" y="188" width="160" height="68" rx="18"/><rect class="card" x="710" y="188" width="160" height="68" rx="18"/><rect x="930" y="180" width="160" height="84" rx="22" fill="#17347a" stroke="#ef665c" stroke-width="3"/></g>
+  <text x="350" y="216" class="label">Evidence</text><text x="350" y="240" class="small">source-grounded</text>
+  <text x="570" y="216" class="label">Working</text><text x="570" y="240" class="small">under development</text>
+  <text x="790" y="216" class="label">Trusted</text><text x="790" y="240" class="small">policy-qualified</text>
+  <text x="1010" y="213" class="label inverse">Canonical</text><text x="1010" y="238" class="small inverse" font-size="13">human-approved</text>
+
+  <rect x="230" y="362" width="890" height="218" rx="28" fill="#effcff" stroke="#a9dfee" stroke-width="2"/>
+  <text x="270" y="400" class="label left">Cognition path</text>
+  <text x="270" y="426" class="small left">Interpretation can reveal patterns without becoming evidence or fact.</text>
+  <path class="cog" d="M181 364C198 413 212 465 250 465"/>
+  <path class="cog" d="M465 465h65"/><path class="cog" d="M745 465h65"/>
+  <g filter="url(#shadow)"><rect class="card" x="270" y="437" width="195" height="68" rx="18"/><rect class="card" x="550" y="437" width="195" height="68" rx="18"/><rect class="card" x="830" y="425" width="245" height="92" rx="20"/></g>
+  <text x="368" y="465" class="label">Input</text><text x="368" y="489" class="small">an episode to examine</text>
+  <text x="648" y="465" class="label">Reflection</text><text x="648" y="489" class="small">non-factual interpretation</text>
+  <text x="952" y="461" class="label">Cognitive Synthesis</text><text x="952" y="487" class="small">patterns · tensions · questions</text>
+
+  <path d="M952 425C952 342 690 354 590 265" fill="none" stroke="#08a6d8" stroke-width="3" stroke-dasharray="8 8" marker-end="url(#arrowC)"/>
+  <rect x="642" y="315" width="320" height="38" rx="19" fill="#fff" stroke="#08a6d8" stroke-width="2"/>
+  <text x="802" y="340" class="small" fill="#17347a">candidate for Working · never fact by itself</text>
+
+  <g transform="translate(270 610)"><circle cx="8" cy="-5" r="6" fill="#2957b8"/><text x="24" y="0" class="small left">factual / governed</text><circle cx="210" cy="-5" r="6" fill="#08a6d8"/><text x="226" y="0" class="small left">non-factual / exploratory</text><path d="M465-5h44" stroke="#08a6d8" stroke-width="3" stroke-dasharray="7 7"/><text x="525" y="0" class="small left">qualified candidate bridge</text></g>
+</svg>

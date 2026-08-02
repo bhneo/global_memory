@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Separated AI assistants from the MCP transport in the README hero so the
+  protocol is no longer presented as a peer product. Replaced both Mermaid
+  blocks with accessible, labeled SVG architecture diagrams and retained text
+  legends for exact semantics.
 - Reworked the README around the progression from fragments to research
   directions, tensions, qualified cross-field candidates and verification.
   Removed unsupported scale and discovery claims, clarified that the current

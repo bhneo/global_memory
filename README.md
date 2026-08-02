@@ -29,8 +29,10 @@
   <code>OpenClaw</code>
   &nbsp;&middot;&nbsp;
   <code>OpenHuman</code>
-  &nbsp;&middot;&nbsp;
-  <code>MCP</code>
+</p>
+
+<p align="center">
+  <sub>Connected to Galois through the open <strong>MCP</strong> protocol</sub>
 </p>
 
 ---
@@ -56,17 +58,16 @@ state explicit.
 
 ## From fragments to structure
 
-```mermaid
-flowchart TD
-    F["Papers · Conversations · Experiments · Ideas"] --> M(("Evolving memory"))
-    M --> D["Research directions"]
-    D --> P1["Patterns"]
-    D --> T["Tensions"]
-    D --> Q["Open questions"]
-    P1 -. "qualified bridge" .-> X["Cross-field candidate"]
-    T --> X
-    X --> V["Verification path"]
-```
+<p align="center">
+  <img src="./assets/architecture/from-fragments-to-structure.svg"
+       alt="Research fragments flow into an evolving structured memory, branch into patterns, tensions and open questions, then converge into a qualified cross-field candidate and a verification path."
+       width="920" />
+</p>
+
+<p align="center">
+  <sub><strong>Fragments</strong> &rarr; evolving memory &rarr; research directions
+  &rarr; patterns, tensions and questions &rarr; qualified candidate &rarr; verification</sub>
+</p>
 
 A theorem, a robot failure and a thermodynamic argument may be unrelated. Or
 they may share a boundary, a scaling law or merely a seductive word. Galois is
@@ -213,12 +214,18 @@ syntheses but no accepted active cross-direction synthesis yet.
 
 Creativity and factual authority travel on different paths:
 
-```mermaid
-flowchart TD
-    S["Source"] --> E["Evidence"] --> W["Working"] --> T["Trusted"] -->|"explicit human approval"| C["Canonical"]
-    S --> I["Input"] --> R["Reflection"] --> Y["Cognitive synthesis"]
-    Y -. "candidate, never fact by itself" .-> W
-```
+<p align="center">
+  <img src="./assets/architecture/trust-and-cognition.svg"
+       alt="A shared source enters two separate paths: an evidence path progresses through Working and Trusted knowledge to human-approved Canonical memory, while a creative path progresses through Input, Reflection and Cognitive Synthesis and can offer candidates back to Working without becoming fact."
+       width="920" />
+</p>
+
+<p align="center">
+  <sub><strong>Evidence path:</strong> Source &rarr; Evidence &rarr; Working &rarr;
+  Trusted &rarr; human-approved Canonical<br />
+  <strong>Cognition path:</strong> Source &rarr; Input &rarr; Reflection &rarr;
+  Synthesis &#8669; candidate for Working, never fact by itself</sub>
+</p>
 
 | Layer | Meaning |
 |---|---|
@@ -306,7 +313,6 @@ work includes:
 - optional synthetic demonstration fixtures
 - reproducible reflection and synthesis examples
 - public evaluations and cross-platform onboarding
-- a formal open-source license
 
 ## Documentation
 
@@ -320,8 +326,18 @@ work includes:
 
 ## License
 
-No open-source license has been selected yet. Until a `LICENSE` file is added,
-the repository should not be treated as licensed for reuse or redistribution.
+The formal Galois open-source distribution will be licensed under the
+**Apache License 2.0**. This permissive license supports research, commercial
+use and integration with both open and proprietary AI assistants while
+providing an explicit patent grant.
+
+This temporary evaluation repository is not the formal distribution. Until
+the standard Apache 2.0 `LICENSE` file is added as part of the clean release,
+its contents should not be treated as licensed for reuse or redistribution.
+
+The Galois name and logo are not licensed for use as trademarks and may not be
+used to imply endorsement or identify a modified distribution as the official
+Galois project.
 
 ---
 

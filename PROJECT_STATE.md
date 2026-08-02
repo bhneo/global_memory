@@ -1,5 +1,14 @@
 # Current State
 
+## README visual architecture (2026-08-02)
+
+- The README now presents Claude, Codex, Hermes, OpenClaw and OpenHuman as host
+  assistants, with MCP explicitly shown as their open connection protocol to
+  Galois rather than as another assistant.
+- The two Mermaid diagrams have been replaced by branded, labeled SVG
+  architecture diagrams. Exact pipeline semantics are visible inside each
+  diagram and remain available in adjacent text legends and image alt text.
+
 ## README truth boundary and private-vault release contract (2026-08-02)
 
 - The public README now leads with Galois's actual cognitive loop—fragments,
