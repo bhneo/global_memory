@@ -1,18 +1,10 @@
-<p align="center">
-  <img src="./assets/icon.png" alt="Galois" width="30" align="absmiddle" />
-  &nbsp;<strong>Galois</strong>
-  &nbsp;&middot;&nbsp;
-  Find the hidden structure.<br />
-  <sub>
-    Scientific memory for AI assistants.
-    &nbsp;&middot;&nbsp;
-    <a href="#connect-your-ai-assistant">Get started</a>
-    &nbsp;&middot;&nbsp;
-    <a href="#from-fragments-to-structure">How it works</a>
-    &nbsp;&middot;&nbsp;
-    <a href="#documentation">Docs</a>
-  </sub>
-</p>
+# Galois
+
+**Find the hidden structure.** Scientific memory for AI assistants.
+
+[Get started](#connect-your-ai-assistant) ·
+[How it works](#from-fragments-to-structure) ·
+[Documentation](#documentation)
 
 <p align="center">
   <a href="./assets/hero/hero-hidden-structure.png">
