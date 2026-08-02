@@ -1,18 +1,18 @@
-<div align="center">
-  <img src="./assets/icon.png" alt="Galois" width="64" />
-  <h3>Galois</h3>
-  <p>
-    <strong>Find the hidden structure.</strong><br />
+<p align="center">
+  <img src="./assets/icon.png" alt="Galois" width="38" align="absmiddle" />
+  &nbsp;<strong>Galois</strong>
+  &nbsp;&mdash;&nbsp;
+  <strong>Find the hidden structure.</strong><br />
+  <sub>
     <em>Scientific memory for AI assistants.</em>
-  </p>
-  <p>
+    &nbsp;&middot;&nbsp;
     <a href="#connect-your-ai-assistant"><strong>Get started</strong></a>
     &nbsp;&middot;&nbsp;
     <a href="#from-fragments-to-structure">How it works</a>
     &nbsp;&middot;&nbsp;
     <a href="#documentation">Documentation</a>
-  </p>
-</div>
+  </sub>
+</p>
 
 <p align="center">
   <a href="./assets/hero/hero-hidden-structure.png">
