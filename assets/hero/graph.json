@@ -1,0 +1,224 @@
+{
+  "canvas": {
+    "width": 1774,
+    "height": 887,
+    "seed": 20260802,
+    "label_scale": 1.12
+  },
+  "palette": {
+    "claim": "#4C78FF",
+    "concept": "#20B2AA",
+    "question": "#F59E0B",
+    "synthesis": "#9932CC",
+    "source": "#808080"
+  },
+  "scientific_basis": [
+    {
+      "scope": "hilbert_vi",
+      "reference": "Deng, Hani, Ma — Long time derivation of the Boltzmann equation from hard sphere dynamics (arXiv:2408.07818)"
+    },
+    {
+      "scope": "hilbert_vi",
+      "reference": "Deng, Hani, Ma — From Newton to Boltzmann and beyond: the two-step program and iterated limits (arXiv:2503.01800)"
+    },
+    {
+      "scope": "kakeya_dimension",
+      "reference": "Wang, Zahl — Volume estimates for unions of convex sets, and the Kakeya set conjecture in three dimensions (arXiv:2502.17655)"
+    },
+    {
+      "scope": "fourier_restriction",
+      "reference": "Wang, Wu — An improved restriction estimate in R3 (arXiv:2210.03878)"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "hilbert_vi",
+      "label": "Hilbert VI",
+      "kind": "synthesis",
+      "x": 335,
+      "y": 222,
+      "radius": 8,
+      "label_dx": 18,
+      "label_dy": -12,
+      "font_size": 21
+    },
+    {
+      "id": "hard_spheres",
+      "label": "Newtonian hard spheres",
+      "kind": "concept",
+      "x": 190,
+      "y": 362,
+      "radius": 6,
+      "label_dx": 16,
+      "label_dy": -13,
+      "font_size": 18
+    },
+    {
+      "id": "boltzmann_grad",
+      "label": "Boltzmann–Grad scaling",
+      "kind": "concept",
+      "x": 405,
+      "y": 445,
+      "radius": 7,
+      "label_dx": 17,
+      "label_dy": -12,
+      "font_size": 19
+    },
+    {
+      "id": "boltzmann_equation",
+      "label": "Boltzmann equation",
+      "kind": "concept",
+      "x": 342,
+      "y": 594,
+      "radius": 7,
+      "label_dx": -17,
+      "label_dy": 29,
+      "anchor": "end",
+      "font_size": 19
+    },
+    {
+      "id": "hydrodynamic_limit",
+      "label": "hydrodynamic limit",
+      "kind": "concept",
+      "x": 610,
+      "y": 640,
+      "radius": 6,
+      "label_dx": 16,
+      "label_dy": 25,
+      "font_size": 18
+    },
+    {
+      "id": "fluid_equations",
+      "label": "Euler / Navier–Stokes–Fourier limit",
+      "kind": "claim",
+      "x": 805,
+      "y": 520,
+      "radius": 7,
+      "label_dx": 17,
+      "label_dy": -14,
+      "font_size": 18
+    },
+    {
+      "id": "joint_limit_question",
+      "label": "iterated vs. joint limit?",
+      "kind": "question",
+      "x": 560,
+      "y": 302,
+      "radius": 6,
+      "label_dx": 15,
+      "label_dy": -12,
+      "font_size": 17
+    },
+    {
+      "id": "kakeya_3d",
+      "label": "3D Kakeya",
+      "kind": "synthesis",
+      "x": 1432,
+      "y": 170,
+      "radius": 8,
+      "label_dx": -18,
+      "label_dy": -13,
+      "anchor": "end",
+      "font_size": 21
+    },
+    {
+      "id": "delta_tubes",
+      "label": "δ-tubes",
+      "kind": "concept",
+      "x": 1230,
+      "y": 315,
+      "radius": 6,
+      "label_dx": -16,
+      "label_dy": -12,
+      "anchor": "end",
+      "font_size": 18
+    },
+    {
+      "id": "non_concentration",
+      "label": "convex-set non-concentration",
+      "kind": "concept",
+      "x": 1358,
+      "y": 446,
+      "radius": 7,
+      "label_dx": -18,
+      "label_dy": 28,
+      "anchor": "end",
+      "font_size": 18
+    },
+    {
+      "id": "full_dimension",
+      "label": "full dimension",
+      "kind": "claim",
+      "x": 1180,
+      "y": 595,
+      "radius": 7,
+      "label_dx": -17,
+      "label_dy": 28,
+      "anchor": "end",
+      "font_size": 19
+    },
+    {
+      "id": "incidence",
+      "label": "Kakeya-type incidence",
+      "kind": "concept",
+      "x": 1540,
+      "y": 335,
+      "radius": 6,
+      "label_dx": 16,
+      "label_dy": -12,
+      "font_size": 17
+    },
+    {
+      "id": "decoupling",
+      "label": "refined decoupling",
+      "kind": "concept",
+      "x": 1650,
+      "y": 495,
+      "radius": 6,
+      "label_dx": -16,
+      "label_dy": 28,
+      "anchor": "end",
+      "font_size": 17
+    },
+    {
+      "id": "restriction",
+      "label": "improved restriction estimate",
+      "kind": "claim",
+      "x": 1495,
+      "y": 648,
+      "radius": 7,
+      "label_dx": -17,
+      "label_dy": 27,
+      "anchor": "end",
+      "font_size": 19
+    },
+    {
+      "id": "maximal_question",
+      "label": "Kakeya maximal endpoint?",
+      "kind": "question",
+      "x": 1045,
+      "y": 704,
+      "radius": 6,
+      "label_dx": -16,
+      "label_dy": 28,
+      "anchor": "end",
+      "font_size": 17
+    }
+  ],
+  "edges": [
+    {"from": "hilbert_vi", "to": "hard_spheres", "relation": "frames"},
+    {"from": "hard_spheres", "to": "boltzmann_grad", "relation": "scaled by"},
+    {"from": "boltzmann_grad", "to": "boltzmann_equation", "relation": "kinetic limit"},
+    {"from": "boltzmann_equation", "to": "hydrodynamic_limit", "relation": "fluid limit"},
+    {"from": "hydrodynamic_limit", "to": "fluid_equations", "relation": "leads to"},
+    {"from": "joint_limit_question", "to": "boltzmann_grad", "relation": "asks about", "style": "question"},
+    {"from": "joint_limit_question", "to": "hydrodynamic_limit", "relation": "asks about", "style": "question"},
+    {"from": "kakeya_3d", "to": "delta_tubes", "relation": "discretized by"},
+    {"from": "delta_tubes", "to": "non_concentration", "relation": "controlled by"},
+    {"from": "non_concentration", "to": "full_dimension", "relation": "forces"},
+    {"from": "kakeya_3d", "to": "incidence", "relation": "incidence geometry"},
+    {"from": "incidence", "to": "restriction", "relation": "feeds"},
+    {"from": "decoupling", "to": "restriction", "relation": "combines with incidence"},
+    {"from": "maximal_question", "to": "delta_tubes", "relation": "open endpoint", "style": "question"}
+  ]
+}

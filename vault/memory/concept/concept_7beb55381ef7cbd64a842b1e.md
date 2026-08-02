@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "Kac 跳跃碰撞过程中的统一时间定量混沌传播 / uniform-in-time quantitative propagation of chaos for Kac jump processes"
 created_at: "2026-07-28T20:25:44+08:00"
-updated_at: "2026-07-28T20:25:45+08:00"
+updated_at: "2026-08-02T12:30:41+08:00"
 aliases: ["Kac programme propagation of chaos", "generator consistency and nonlinear-flow stability", "Kac 计划定量混沌传播", "碰撞跳跃过程平均场极限"]
 tags: []
 domains: ["kinetic-theory", "mean-field-limit", "probability", "propagation-of-chaos"]
@@ -16,12 +16,12 @@ reflection_context: {"reflection_ids": ["reflection_b41efeb649d24f9777603cfc"], 
 memory_tier: "working"
 epistemic_status: "unknown"
 created_by: "gpt-5.6-sol-high-hilbert-vi-corrective"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "gpt-5.6-sol-high-hilbert-vi-corrective"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-08-02T12:30:41+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,6 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_2e6d97f8a7cb38
 origin_candidate_sha256: "85376955cb84348fc431e744eb2abeffd90edb3cfe647e7083a943989858e196"
 origin_cognitive_artifact_sha256: "bd54e6256f34b7cd91c33ea309d089f64dfd227fce5157a6098b0a6a451c7794"
 memory_schema_version: 2
+last_consolidation_id: "consolidation_3a6ee46a387bf7deb61bac3e"
 ---
 
 # Kac 跳跃碰撞过程中的统一时间定量混沌传播 / uniform-in-time quantitative propagation of chaos for Kac jump processes

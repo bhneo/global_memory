@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "凸集非集中体积准则 / convex-set non-concentration volume criterion"
 created_at: "2026-07-27T10:34:38+08:00"
-updated_at: "2026-07-27T15:05:35+08:00"
+updated_at: "2026-08-02T12:30:59+08:00"
 aliases: ["三维 Kakeya 凸集非集中体积估计", "convex Wolff non-concentration for R3 Kakeya"]
 tags: []
 domains: ["harmonic-analysis", "kakeya"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt56-m91-real-daily-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-27T15:05:35+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T12:30:59+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -37,7 +37,7 @@ memory_schema_version: 2
 change_type: "refine"
 proposed_status: "working"
 change_history: [{"change_type": "refine", "previous_statement": "# 凸集非集中体积准则 / convex-set non-concentration volume criterion\n\n在三维 Kakeya 管族问题中，若一个 delta 管集合满足没有过多管可同时包含于同一凸集的非集中条件，则其管并集可被证明具有近极大的体积。Wang 与 Zahl 的 2025 预印本将这一准则用于宣称三维 Kakeya 集具有满 Minkowski 和 Hausdorff 维数；该概念只描述该论文的条件化证明机制，不把预印本结论提升为无条件的通用分类。", "new_statement": "# 凸集非集中体积准则 / convex-set non-concentration volume criterion\n\n在三维 Kakeya 管族问题中，若一个 delta 管集合满足没有过多管可同时包含于同一凸集的非集中条件，则其管并集可被证明具有近极大的体积。Wang 与 Zahl 的 2025 预印本将这一准则用于宣称三维 Kakeya 集具有满 Minkowski 和 Hausdorff 维数；该概念只描述该论文的条件化证明机制，不把预印本结论提升为无条件的通用分类。\n\n## 新增来源材料\n\n- `source_cf15e6b90aaf4c6584d5efe2`：对 R3 中满足 Katz--Tao convex 与 Frostman slab Wolff 非集中条件的 delta 管族，Wang 与 Zahl 以 D/E 型体积估计的自改进、多尺度 grains 分解和 sticky-like 结构控制管并集体积，并据此推出每个 R3 Kakeya 集的 Minkowski 与 Hausdorff 维数为 3。该预印本结论不解决 R3 Kakeya maximal-function conjecture 的 K=3 情形。", "changed_fields": [], "reason": "compile bundle from source_cf15e6b90aaf4c6584d5efe2", "trigger_source": "source_cf15e6b90aaf4c6584d5efe2", "evidence_added": []}]
-last_consolidation_id: "consolidation_a80c0fb2c0265f440729a1eb"
+last_consolidation_id: "consolidation_2347f1e08e8acab8d8307eab"
 ---
 
 # 凸集非集中体积准则 / convex-set non-concentration volume criterion

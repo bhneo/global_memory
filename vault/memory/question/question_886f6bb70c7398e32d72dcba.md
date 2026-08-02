@@ -4,7 +4,7 @@ type: "question"
 status: "working"
 title: "三维 Kakeya 满维到 maximal-function K=3 还缺什么？ / What remains from R3 full dimension to maximal K=3?"
 created_at: "2026-07-28T20:26:50+08:00"
-updated_at: "2026-07-28T20:26:51+08:00"
+updated_at: "2026-08-02T12:31:15+08:00"
 aliases: ["R3 Kakeya maximal K=3 gap", "三维 Kakeya 最大函数剩余桥梁"]
 tags: []
 domains: ["harmonic-analysis", "kakeya", "restriction-theory"]
@@ -17,12 +17,12 @@ reflection_context: {"reflection_ids": ["reflection_539106049b68b9810702fe73"], 
 memory_tier: "working"
 epistemic_status: "open_question"
 created_by: "gpt-5.6-sol-high-daily-v2-kakeya-correction"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "gpt-5.6-sol-high-daily-v2-kakeya-correction"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-08-02T12:31:15+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -35,6 +35,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_2129c7dc156f17
 origin_candidate_sha256: "a948bb0caddb32e90fa867ab19c801463b9de6fb016d0871d074cb49d6fd2c5f"
 origin_cognitive_artifact_sha256: "934976ac73b47146a32b3752b1f4a0b530f7ddbcc535d3d03e62b1d2bbdee262"
 memory_schema_version: 2
+last_consolidation_id: "consolidation_fd1b2734b557eb0086eb0a15"
 ---
 
 # 三维 Kakeya 满维到 maximal-function K=3 还缺什么？ / What remains from R3 full dimension to maximal K=3?

@@ -4,7 +4,7 @@ type: "tension"
 status: "working"
 title: "Hilbert 第六问题中严格稀薄气体极限与物理完成度的张力 / rigorous dilute-gas limit versus physical completion of Hilbert VI"
 created_at: "2026-07-28T10:17:03+08:00"
-updated_at: "2026-07-28T16:34:28+08:00"
+updated_at: "2026-08-02T12:31:18+08:00"
 aliases: ["Hilbert VI scope dispute", "dilute gas versus dense fluid derivation", "第六问题完成度争议", "稀薄极限与物理流体张力"]
 tags: []
 domains: ["kinetic-theory", "philosophy-of-physics", "fluid-dynamics"]
@@ -24,8 +24,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "gpt-5.6-sol-high-daily-v2-readmission"
-consolidation_count: 1
-last_consolidated_at: "2026-07-28T16:34:28+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T12:31:18+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -38,7 +38,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_deef9f2493db25
 origin_candidate_sha256: "87d2d0300e4063a1720f9a409eda2b0d83979318d9587f1ba4f36a37cfdf6f6f"
 origin_cognitive_artifact_sha256: "9b6a8aa5a8d338acdaaf8576596d9c08d385a9ec57e259e24f1d4264aa0c82c3"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_3338ff95d1d987e3b1cc564f"
+last_consolidation_id: "consolidation_37fbd0e9989cfc319a3b4991"
 ---
 
 # Hilbert 第六问题中严格稀薄气体极限与物理完成度的张力 / rigorous dilute-gas limit versus physical completion of Hilbert VI

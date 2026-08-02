@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "Hilbert VI 中稀薄硬球到流体方程的迭代极限链 / iterated dilute hard-sphere-to-fluid limit chain"
 created_at: "2026-07-28T20:21:48+08:00"
-updated_at: "2026-07-28T20:21:50+08:00"
+updated_at: "2026-08-02T12:30:52+08:00"
 aliases: ["Hilbert VI iterated kinetic-hydrodynamic limit", "Newton–Boltzmann–fluid limit chain", "希尔伯特第六问题两段极限链", "稀薄硬球到流体方程"]
 tags: []
 domains: ["kinetic-theory", "fluid-dynamics", "mathematical-physics", "hilbert-sixth-problem"]
@@ -16,12 +16,12 @@ reflection_context: {"reflection_ids": ["reflection_404ada1db96fcd7ac7c81d9c"], 
 memory_tier: "working"
 epistemic_status: "unknown"
 created_by: "gpt-5.6-sol-high-hilbert-vi-corrective"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "gpt-5.6-sol-high-hilbert-vi-corrective"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-08-02T12:30:52+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,6 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_a2417a4be17a02
 origin_candidate_sha256: "9765407eef572d22a60d9795fd8b53adfdbe5aeb8f3089c0a583ce1aca38a898"
 origin_cognitive_artifact_sha256: "bd54e6256f34b7cd91c33ea309d089f64dfd227fce5157a6098b0a6a451c7794"
 memory_schema_version: 2
+last_consolidation_id: "consolidation_b8d6c5a7d1e7beecc6219d2e"
 ---
 
 # Hilbert VI 中稀薄硬球到流体方程的迭代极限链 / iterated dilute hard-sphere-to-fluid limit chain

@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "可移植具身推理运行时"
 created_at: "2026-07-19T12:17:50+08:00"
-updated_at: "2026-07-19T12:20:19+08:00"
+updated_at: "2026-08-02T12:31:07+08:00"
 aliases: ["portable embodied inference runtime", "embodied AI inference runtime", "multi-rate embodied runtime"]
 tags: []
 domains: ["embodied-ai", "robotics", "inference-runtime", "edge-deployment"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "agent-semantic-weekly-gpt56sol-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-19T12:20:19+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T12:31:07+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -33,7 +33,7 @@ origin_item_id: "concept-1"
 origin_candidate_path: "vault/proposals/candidate-proposal_bundle_05825e7660f5c3cb11c6-concept-1.md"
 origin_candidate_sha256: "490f798522d7604442ff846066c16198c3068d1c6eb980268ca009360e423e2a"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_48dc5fcbe817827856b09cd1"
+last_consolidation_id: "consolidation_33e7344ec3308fab8b17df46"
 ---
 
 # 可移植具身推理运行时

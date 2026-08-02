@@ -110,6 +110,7 @@
 - [[memory/concept/concept_c0e590dd716efa867bc34cbd|多线性 restriction 与 Kakeya 中的横截性控制]] · `working`
 - [[memory/concept/concept_27970fb0de0d8995774e31f6|多视角具身合成世界模型数据引擎]] · `working`
 - [[memory/concept/concept_fffdce69b79728a7844d0e69|大 N 去耦极限中的 AdS/CFT 对偶 / AdS/CFT duality in the large-N decoupling limit]] · `working`
+- [[memory/concept/concept_e69974f653450465afb2aa3e|失败条件化的 VLA 推理时组合转向 / Failure-gated compositional VLA steering]] · `working`
 - [[memory/concept/concept_e41100353a87ecb775dd5c71|局部 Rindler Clausius 关系与 Einstein 方程状态方程 / local-Rindler Clausius relation and Einstein equation of state]] · `working`
 - [[memory/concept/concept_7960d38d3965156bf98d11b2|局部 Rindler 作用量与热力学 / local Rindler action and thermodynamics]] · `working`
 - [[memory/concept/concept_98b7ebb5d2382b61dd11bab3|带本体掩码的语义分组跨本体动作空间]] · `working`
@@ -128,6 +129,7 @@
 - [[memory/concept/concept_2ce226e08d585158c1dfbb18|接触反馈应区分短时反应、事件记忆与概率后验]] · `working`
 - [[memory/concept/concept_0c7884679bf6d4e1287ce225|控制策略的自适应潜空间推理]] · `working`
 - [[memory/concept/concept_hierarchical_mathematical_compression|数学兴趣的层级压缩模型]] · `working`
+- [[memory/concept/concept_913857cf6907564640fd669c|无 LLM 中心的执行级 VLA 直连通路 / LLM-free execution-path VLA]] · `working`
 - [[memory/concept/concept_3b83de1641240159d66c23d4|显式时钟的异步机器人闭环程序]] · `working`
 - [[memory/concept/concept_5494a710f14d55ddf3cb4bcf|有限真空纠缠熵只闭合低能 Einstein 引力 / finite vacuum entanglement entropy closes only low-energy Einstein gravity]] · `working`
 - [[memory/concept/concept_ac0f0527a9c7bdba44eb37b8|未来语义—几何变化监督的可执行 Latent Action]] · `working`
@@ -151,6 +153,7 @@
 - [[memory/concept/concept_symbolic_regression|符号回归]] · `working`
 - [[memory/concept/concept_typed_verified_robot_skill_graph|类型化可验证机器人技能图]] · `working`
 - [[memory/concept/concept_005866272e0394fcd2c0828e|纠缠--时空连通性关联 / entanglement--spacetime connectivity relation]] · `working`
+- [[memory/concept/concept_5495a66616b2989c1ce38a5f|经验成熟度驱动的机器人能力编译与回退 / Experience-maturity-driven robotic capability compilation]] · `working`
 - [[memory/concept/concept_adaptive_interleaved_multimodal_planning|自适应交错多模态规划]] · `working`
 - [[memory/concept/concept_representation_convergence|表征收敛]] · `working`
 - [[memory/concept/concept_1920583cd9c7063491d45a40|表示对齐的未来触觉 grounding]] · `working`

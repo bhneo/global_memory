@@ -10,6 +10,14 @@
 </p>
 
 <p align="center">
+  <a href="./assets/hero/hero-hidden-structure.png">
+    <img src="./assets/hero/hero-hidden-structure.png"
+         alt="A scientific memory graph revealing structure across kinetic theory and Kakeya geometry."
+         width="1200" />
+  </a>
+</p>
+
+<p align="center">
   <a href="#connect-your-ai-assistant">Connect an assistant</a>
   &nbsp;&middot;&nbsp;
   <a href="#from-fragments-to-structure">See the structure</a>
@@ -138,11 +146,12 @@ Back up the config and preserve unrelated settings. Keep Galois read-only.
 
 Restart the host if required. Prove the live connection by calling
 memory_capabilities, checking that the server-level tools/list surface is the
-five required memory_* tools, and running one bounded Chinese memory_context
-query. The host may prefix or wrap tool names, but the mapping must remain
-one-to-one and expose no write tools. Static config or subprocess startup is
-not proof of success. If this is not Windows, or the installed host uses an
-unknown registration path, stop and report the concrete compatibility gap.
+five required memory_* tools, and running one bounded non-ASCII memory_context
+query (for example, in Chinese). The host may prefix or wrap tool names, but
+the mapping must remain one-to-one and expose no write tools. Static config or
+subprocess startup is not proof of success. If this is not Windows, or the
+installed host uses an unknown registration path, stop and report the concrete
+compatibility gap.
 ```
 
 The server-level read surface is exactly:

@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "前缀可解码的有序动作令牌 / Prefix-decodable ordered action tokens"
 created_at: "2026-07-28T18:37:16+08:00"
-updated_at: "2026-07-28T18:37:22+08:00"
+updated_at: "2026-08-02T12:31:02+08:00"
 aliases: ["Ordered Action Tokenization", "OAT", "ordered action tokens", "有序动作令牌"]
 tags: []
 domains: ["robotics", "vision-language-action", "action-tokenization", "adaptive-compute"]
@@ -16,12 +16,12 @@ reflection_context: {"reflection_ids": ["reflection_734dd1ab9b6d593e5af1f262"], 
 memory_tier: "working"
 epistemic_status: "unknown"
 created_by: "codex-gpt-5.6-sol-strong-daily-v2"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt-5.6-sol-strong-daily-v2"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-08-02T12:31:02+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,6 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_ac276ca3697bd5
 origin_candidate_sha256: "530f94caba42447f7e0b3e3ff81a36969779b3d5474a129e8cdaf699419034a4"
 origin_cognitive_artifact_sha256: "66f55092b97414b2e15bf5d56fb96e87e88a847e4db2a4b5ed6ee6d8cf9ec73c"
 memory_schema_version: 2
+last_consolidation_id: "consolidation_055cdd8b1d32c009b15c925d"
 ---
 
 # 前缀可解码的有序动作令牌 / Prefix-decodable ordered action tokens

@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "面向异构机器人策略的能力边界路由与记忆交接"
 created_at: "2026-07-25T18:06:31+08:00"
-updated_at: "2026-07-26T12:33:51+08:00"
+updated_at: "2026-08-02T12:30:58+08:00"
 aliases: ["Capability-Aware Policy Routing and Memory Bridge", "RoboHarness", "异构策略记忆桥接"]
 tags: []
 domains: ["robot-planning", "policy-orchestration", "robot-memory"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "codex-gpt56-m91-real-daily-v1"
-consolidation_count: 1
-last_consolidated_at: "2026-07-26T12:33:51+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T12:30:58+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,7 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_500ee630def1f0
 origin_candidate_sha256: "c193110c51dd98d9462d3bfca1f376ac5ce52be7ba414e72158d11868b5b88fe"
 origin_cognitive_artifact_sha256: "d5db9ed65bb828213bb502386e14f4d8b86022e452da0964f4f87844c36a8354"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_222a1c93653cfcd9a218bd17"
+last_consolidation_id: "consolidation_e293af8650762264e87714fe"
 ---
 
 # 面向异构机器人策略的能力边界路由与记忆交接

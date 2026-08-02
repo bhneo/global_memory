@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "FRW 熵力 Friedmann 推导依赖屏幕温度闭合 / entropic-force Friedmann derivation depends on a screen-temperature closure"
 created_at: "2026-07-28T11:59:04+08:00"
-updated_at: "2026-07-28T16:33:31+08:00"
+updated_at: "2026-08-02T12:30:29+08:00"
 aliases: ["Friedmann equations from entropic force", "FRW holographic screen temperature ansatz", "熵力 Friedmann 方程", "FRW 屏幕温度闭合"]
 tags: []
 domains: ["gravity", "thermodynamics", "cosmology"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "gpt-5.6-sol-high-daily-v2-readmission"
-consolidation_count: 1
-last_consolidated_at: "2026-07-28T16:33:31+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T12:30:29+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,7 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_0b1183cfa34f9e
 origin_candidate_sha256: "235cfc7337094ca1bb293044a6376f960cfab8bf4a5cd3331cc8110f76a84df2"
 origin_cognitive_artifact_sha256: "c1ddb5bd06c051bc79dadffe2181e40ae5bcb0ca96d0d576c0797b05d88dfb7e"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_f0195b046b6d30da376bb512"
+last_consolidation_id: "consolidation_0a3efe21ef2ad5177f2b750d"
 ---
 
 # FRW 熵力 Friedmann 推导依赖屏幕温度闭合 / entropic-force Friedmann derivation depends on a screen-temperature closure

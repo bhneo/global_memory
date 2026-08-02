@@ -13,4 +13,4 @@
 
 ## Stale or historical (87)
 
-- Historical objects are retained for audit and excluded from the actionable queue; use `gm history` or `gm audit` for explicit inspection.
+- Historical objects are retained for audit and excluded from the actionable queue; use `galois history` or `galois audit` for explicit inspection.

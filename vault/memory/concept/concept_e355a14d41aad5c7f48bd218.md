@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "静态等价下熵引力的动态量子判别边界 / dynamical quantum test boundary for entropic gravity under static equivalence"
 created_at: "2026-07-28T01:54:51+08:00"
-updated_at: "2026-07-28T16:34:03+08:00"
+updated_at: "2026-08-02T12:30:54+08:00"
 aliases: ["entropic gravity GRANIT test", "static equivalence versus dynamical transitions", "熵引力中子量子阱", "静态等价与动态判别"]
 tags: []
 domains: ["gravity", "quantum-foundations", "experimental-physics"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "gpt-5.6-sol-high-daily-v2-readmission"
-consolidation_count: 1
-last_consolidated_at: "2026-07-28T16:34:03+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T12:30:54+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,7 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_d44cf1b4665e39
 origin_candidate_sha256: "cff952552fb2fca56a845d69327495c10437b90ef8b396953921dc3f5ffa2c77"
 origin_cognitive_artifact_sha256: "74927bba664f8936f712388db40fbf90903bc1bc7af83c4c48962b7c0c03db90"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_20938e056c7d205ca17a7732"
+last_consolidation_id: "consolidation_3fae34a6c36a14b8dbff096f"
 ---
 
 # 静态等价下熵引力的动态量子判别边界 / dynamical quantum test boundary for entropic gravity under static equivalence

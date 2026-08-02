@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "Boltzmann 方程到不可压 Navier--Stokes 的受限水动力极限 / bounded hydrodynamic limit from Boltzmann to incompressible Navier--Stokes"
 created_at: "2026-07-28T01:47:28+08:00"
-updated_at: "2026-07-28T16:33:37+08:00"
+updated_at: "2026-08-02T12:30:35+08:00"
 aliases: ["Boltzmann to incompressible Navier--Stokes limit", "incompressible hydrodynamic limit", "Boltzmann 不可压水动力极限", "Leray 极限"]
 tags: []
 domains: ["kinetic-theory", "fluid-dynamics", "boltzmann-equation"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "gpt-5.6-sol-high-daily-v2-readmission"
-consolidation_count: 1
-last_consolidated_at: "2026-07-28T16:33:37+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T12:30:35+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,7 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_6069de7ae897e0
 origin_candidate_sha256: "4250231220ea8b2d3125489eac622fece84c4ea6ab56fffbbc1744a03dff164e"
 origin_cognitive_artifact_sha256: "cfe20fe689003cabeea44a54c2b6c67f1dccb705f5177de4daa557f1ea996a47"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_d2c15d4c319e7d457c97c9a7"
+last_consolidation_id: "consolidation_e665b15163ca1d5cff10e052"
 ---
 
 # Boltzmann 方程到不可压 Navier--Stokes 的受限水动力极限 / bounded hydrodynamic limit from Boltzmann to incompressible Navier--Stokes

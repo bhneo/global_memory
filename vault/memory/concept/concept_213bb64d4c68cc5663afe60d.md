@@ -4,7 +4,7 @@ type: "concept"
 status: "working"
 title: "静态 Newton 引力的热力学表述是等价重释 / thermodynamic formulation of static Newtonian gravity is an equivalent reinterpretation"
 created_at: "2026-07-28T12:13:38+08:00"
-updated_at: "2026-07-28T16:33:32+08:00"
+updated_at: "2026-08-02T12:30:30+08:00"
 aliases: ["Newtonian entropic gravity equivalence", "thermodynamic reinterpretation of Newtonian gravity", "Newton 熵力等价重述", "静态 Newton 热力学重释"]
 tags: []
 domains: ["gravity", "thermodynamics", "entropic-gravity"]
@@ -20,8 +20,8 @@ updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "gpt-5.6-sol-high-daily-v2-readmission"
-consolidation_count: 1
-last_consolidated_at: "2026-07-28T16:33:32+08:00"
+consolidation_count: 2
+last_consolidated_at: "2026-08-02T12:30:30+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -34,7 +34,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_fa57faef6c94ae
 origin_candidate_sha256: "7f2325288e8f83d8bae9e0acdb899f158f45a7a3d2423f3be98109957fc06298"
 origin_cognitive_artifact_sha256: "fca3d2025837e0e856e16b1debfe3b3fd46a281792101eab8bbd36677d0d6957"
 memory_schema_version: 2
-last_consolidation_id: "consolidation_cff6d84155744c35d36e8f8f"
+last_consolidation_id: "consolidation_8914eb4f4e3ed4ce5f12983d"
 ---
 
 # 静态 Newton 引力的热力学表述是等价重释 / thermodynamic formulation of static Newtonian gravity is an equivalent reinterpretation

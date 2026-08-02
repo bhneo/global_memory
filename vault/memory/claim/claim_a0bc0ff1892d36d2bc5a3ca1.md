@@ -4,7 +4,7 @@ type: "claim"
 status: "working"
 title: "Wang–Zahl 预印本自述解决三维 Kakeya set conjecture / primary-preprint statement on resolving R3 Kakeya"
 created_at: "2026-07-28T20:26:50+08:00"
-updated_at: "2026-07-28T20:26:51+08:00"
+updated_at: "2026-08-02T12:30:17+08:00"
 aliases: ["Wang–Zahl R3 Kakeya preprint claim", "三维 Kakeya set conjecture 预印本主张"]
 tags: []
 domains: ["harmonic-analysis", "geometric-measure-theory", "kakeya"]
@@ -31,12 +31,12 @@ publication_gate: "needs_review"
 memory_tier: "working"
 epistemic_status: "unknown"
 created_by: "gpt-5.6-sol-high-daily-v2-kakeya-correction"
-updated_by: "working-ingestion-v1"
+updated_by: "trustworthy-consolidation-v2"
 model_provider: null
 model_version: null
 compiler_version: "gpt-5.6-sol-high-daily-v2-kakeya-correction"
-consolidation_count: 0
-last_consolidated_at: null
+consolidation_count: 1
+last_consolidated_at: "2026-08-02T12:30:17+08:00"
 last_verified_at: null
 trust_score: 0
 trust_reasons: []
@@ -49,6 +49,7 @@ origin_candidate_path: "vault/proposals/candidate-proposal_bundle_2129c7dc156f17
 origin_candidate_sha256: "3f66374aa18d148697f688b96b395d5cadad818f0b96d5ff09b8a6c9c88be068"
 origin_cognitive_artifact_sha256: "934976ac73b47146a32b3752b1f4a0b530f7ddbcc535d3d03e62b1d2bbdee262"
 memory_schema_version: 2
+last_consolidation_id: "consolidation_84578eb0f34de356db6752a2"
 ---
 
 # Wang–Zahl 预印本自述解决三维 Kakeya set conjecture / primary-preprint statement on resolving R3 Kakeya
