@@ -4,6 +4,11 @@
 
 > 已成功保存、可检索，但尚未安全编译为知识对象的原始资料。
 
+- [[views/readers/source_bd2a6cee8175ade8ff2894a6|高德ABot-AgentOS：面向机器人智能体的通用自进化操作系统]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_b1b6d959fc38aac1732f07ff|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_b6445078b10e858d8d6d3f94|全身智能：迈向人形基础模型 | Archon Robotics | Archon Robotics]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_a06c4ee2dabe3916d074bc1e|google/asimov_agentic · Datasets at Hugging Face]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
+- [[views/readers/source_4ef330780a196b3bf1fdfc2c|Gemini Robotics ER 2]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
 - [[views/readers/source_ddd2f65020c2e556f2b93330|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
 - [[views/readers/source_d319d5007779569f8f786413|GitHub - neoteai/N0-TWAM: N₀-TWAM: A Tactile-Native World Action Model for Contact-Rich Manipulation · GitHub]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes
 - [[views/readers/source_bdb17eb4583ec8af52f28dfb|arxiv.org]] — unmarked capture is source-only by default; deterministic paragraph fallback is reserved for bounded, sentence-like personal notes

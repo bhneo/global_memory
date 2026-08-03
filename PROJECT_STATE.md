@@ -1,5 +1,23 @@
 # Current State
 
+## Public release and safety closure (2026-08-03)
+
+- Formal release preparation is allowlist-only, refuses unknown top-level
+  entries and link escapes, emits hashes for every exported file, and leaves
+  the live Vault and Git history untouched. The current private repository
+  still contains tracked Vault data by design; publication must start from the
+  generated clean tree, not this history.
+- Agent URL capture validates every DNS answer and redirect and connects to the
+  validated address. Local file capture has no implicit import root. Default
+  MCP remains read-only, and its optional text-only capture surface does not
+  expose URL or filesystem acquisition.
+- Raw Receipt validity is rechecked with real SHA-256 at governed reuse/write
+  boundaries. No Trusted or Canonical object was reclassified by this work;
+  Canonical promotion remains human-only.
+- Local acceptance: 295 tests passed and one platform-dependent symlink test
+  skipped; Ruff, focused Pyright, doctor, state check, lint and Raw verification
+  passed.
+
 ## Daily/Weekly timeout hardening (2026-08-02)
 
 - An empty Daily consolidation is now a true bounded no-op: it reports

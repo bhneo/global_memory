@@ -71,6 +71,7 @@
 - [[memory/concept/concept_world_model_evaluation|世界模型评价]] · `working`
 - [[memory/concept/concept_d5965e0770273320ea6b28f2|主动真机因子评测]] · `working`
 - [[memory/concept/concept_event_sensitive_task_progress_memory|事件敏感的任务进度记忆]] · `working`
+- [[memory/concept/concept_9337306ba824767665ce40c4|人形基础模型的分层预训练—执行栈 / Layered pretraining-to-execution stack for humanoid foundation models]] · `working`
 - [[memory/concept/concept_8f8ae7b5cac6690d2e341d40|人形行为基础模型的数量—多样性协同扩展]] · `working`
 - [[memory/concept/concept_dual_protocol_hri_agent_execution_boundary|人机客户端与 Agent 执行的双协议边界]] · `working`
 - [[memory/concept/concept_9d0aea7bfb560c703b51d683|从第一视角采集到跨本体训练的具身数据工具链]] · `working`
@@ -103,6 +104,7 @@
 - [[memory/concept/concept_parameter_symmetry|参数空间对称性]] · `working`
 - [[memory/concept/concept_dual_timescale_lifelong_vla_adaptation|双时间尺度的持续 VLA 适配]] · `working`
 - [[memory/concept/concept_dual_system_world_action_model|双系统 World Action Model]] · `working`
+- [[memory/concept/concept_f7702b612fe45a4bb8928198|反事实动作敏感度覆盖的鲁棒性修复 / Counterfactual action-sensitivity coverage repair]] · `working`
 - [[memory/concept/concept_318dd9fc807b1f13620238ec|可构建与可审计的模块化 Agent 提示]] · `working`
 - [[memory/concept/concept_portable_embodied_inference_runtime|可移植具身推理运行时]] · `working`
 - [[memory/concept/concept_4739daf4ef7eacc9153c535f|可靠价值驱动的离线到在线策略改进]] · `working`
@@ -174,6 +176,7 @@
 - [[memory/concept/concept_generalist_cross_embodiment_vla|跨本体通用 VLA 策略]] · `working`
 - [[memory/concept/concept_abb38fe58cbeee09ce87a01d|跨轨迹任务进度代理校正]] · `working`
 - [[memory/concept/concept_17750931a381f8453b27ccba|连续曲线动作接口与执行重定时]] · `working`
+- [[memory/concept/concept_f33bda27e3f94822d9125aea|连续视频进度门控的具身任务编排 / Continuous-video progress-gated embodied orchestration]] · `working`
 - [[memory/concept/concept_ergodicity|遍历性与非遍历性]] · `working`
 - [[memory/concept/concept_637cf7264723c03955c719e2|遥操作跟踪偏差作为隐式交互线索]] · `working`
 - [[memory/concept/concept_474b5f9742996e9fc68609b6|部署可用的机器人分解式视觉动作接口 / Deployment-available robot-factored visual action interface]] · `working`
@@ -242,6 +245,7 @@
 
 ## work
 
+- [[memory/work/work_asimov_agentic_safety_evaluation|Asimov Agentic Safety Evaluation / Asimov 具身智能体安全评测]] · `working`
 - [[memory/work/work_arxiv_2601_03220|From Entropy to Epiplexity: Rethinking Information for Computationally Bounded Intelligence]] · `working`
 - [[memory/work/work_arxiv_2606_26428|Play2Perfect: What Matters in Dexterous Play Pretraining for Precise Assembly?]] · `working`
 - [[memory/work/work_arxiv_2607_11119|VIA: Interface-first Robot Control]] · `working`

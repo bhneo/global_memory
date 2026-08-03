@@ -2,15 +2,13 @@ from __future__ import annotations
 
 import difflib
 import hashlib
-import json
 import shutil
-from collections import Counter, defaultdict
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 from .atomicity import AtomicClaimInspector
-from .errors import ValidationError
 from .followups import FollowupService
 from .markdown import atomic_write_text, read_document, render_document
 from .proposals import CANONICAL_DIRECTORIES

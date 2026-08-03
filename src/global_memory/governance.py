@@ -12,6 +12,7 @@ from .markdown import atomic_write_text, read_document, render_document
 from .memory import ExceptionService
 from .proposals import CANONICAL_DIRECTORIES
 from .repository import Repository, now_iso, sha256_bytes
+from .writer_lock import repository_writer
 
 
 POLICY_VERSION = "trusted-promotion-v3-receipt-v2"
@@ -488,6 +489,7 @@ class PromotionService:
             [str(item) for item in metadata.get("source_ids", [])], contradictions,
         )
 
+    @repository_writer
     def requalify_trusted(self, object_id: str, *, rebuild_index: bool = True) -> dict[str, Any]:
         """Qualify an existing Trusted object under the current policy without demoting it."""
         receipts = self._receipts()
@@ -496,6 +498,16 @@ class PromotionService:
             raise ValidationError("policy requalification only applies to Trusted memory")
         if not metadata.get("needs_policy_requalification"):
             return {"requalified": False, "reason": "object is already policy-qualified"}
+        if str(metadata.get("type")) not in AUTO_TRUSTED_TYPES:
+            # Preserve legacy objects and their history, but do not let a
+            # requalification flag bypass the current type policy and make
+            # exploratory material look factually trusted.
+            return {
+                "requalified": False,
+                "reason": "legacy exploratory Trusted object requires explicit human endorsement; no status was changed",
+                "requires_human_endorsement": True,
+                "qualification_scope": qualification_scope(str(metadata.get("type"))),
+            }
 
         preliminary = receipts.valid_for(object_id) or receipts.consolidate(
             object_id,
@@ -599,6 +611,7 @@ class PromotionService:
         if failures:
             raise ValidationError("canonical gate failed: " + "; ".join(failures))
 
+    @repository_writer
     def promote_trusted(
         self, object_id: str, *, automatic: bool = True, reason: str = "",
         rebuild_index: bool = True,
@@ -699,6 +712,7 @@ class PromotionService:
             atomic_write_text(card_path, render_document(card, body))
         return {"promotion_id": promotion_id, "path": self.repository.rel(card_path), "object_id": object_id}
 
+    @repository_writer
     def approve_canonical(self, promotion_id: str, *, lock: bool = False) -> dict[str, Any]:
         card_path, card, card_body = self.repository.find_document(promotion_id)
         if card.get("type") != "promotion" or card.get("status") not in {"pending", "deferred"}:
@@ -772,7 +786,7 @@ class PromotionService:
             # restores the exact pre-image.
             recovered = self.canonical_recovery.recover_all()
             if recovered["blocked"]:
-                raise ValidationError(f"canonical promotion recovery blocked: {recovered['blocked']}")
+                raise ValidationError(f"canonical promotion recovery blocked: {recovered['blocked']}") from None
             from .consolidation import ConsolidationReceiptService
 
             recovered_receipt = ConsolidationReceiptService(self.repository).valid_for(str(metadata["id"]))
@@ -814,6 +828,7 @@ class PromotionService:
         })
         return {"promotion_id": promotion_id, "status": decision}
 
+    @repository_writer
     def demote_working(self, object_id: str, reason: str) -> dict[str, Any]:
         if not reason.strip():
             raise ValidationError("demotion requires a reason")

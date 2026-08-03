@@ -1,0 +1,61 @@
+cases:
+  - case_id: vocabulary_not_mechanism
+    question: Does "stability" imply the same intervention across the two systems?
+    research_directions: [control, optimization]
+    relevant_sources: [src_control_margin, src_optimizer_curvature]
+    decoy_sources: [src_stability_marketing]
+    expected_mechanisms: [feedback margin, local curvature]
+    required_boundaries: [closed-loop versus objective-landscape meaning]
+    important_differences: [one is dynamic robustness and one is numerical geometry]
+    known_false_analogies: [same_word_means_same_mechanism]
+    acceptable_hypotheses: []
+    verification_expectations: [cite both mechanisms and reject direct transfer]
+    human_rubric: reject vocabulary-only connection
+  - case_id: mechanism_without_shared_vocabulary
+    question: What shared mechanism links two differently named systems?
+    research_directions: [biology, distributed_systems]
+    relevant_sources: [src_homeostasis, src_backpressure]
+    decoy_sources: [src_unrelated_latency]
+    expected_mechanisms: [negative feedback under delayed observation]
+    required_boundaries: [different substrates and timescales]
+    important_differences: [biological adaptation versus engineered queue control]
+    known_false_analogies: []
+    acceptable_hypotheses: [delay-aware controller comparison]
+    verification_expectations: [state mechanism, boundary, and test]
+    human_rubric: reward mechanism over vocabulary
+  - case_id: seductive_false_analogy
+    question: Is compression evidence that a representation understands causality?
+    research_directions: [representation_learning, causal_inference]
+    relevant_sources: [src_compression, src_intervention]
+    decoy_sources: [src_latent_visualization]
+    expected_mechanisms: [predictive coding, intervention invariance]
+    required_boundaries: [observational fit does not identify interventions]
+    important_differences: [compression objective versus causal criterion]
+    known_false_analogies: [compression_equals_causality]
+    acceptable_hypotheses: []
+    verification_expectations: [abstain from causal conclusion]
+    human_rubric: penalize attractive unsupported analogy
+  - case_id: bounded_shared_structure
+    question: Can the shared calibration pattern transfer safely?
+    research_directions: [robotics, instrumentation]
+    relevant_sources: [src_robot_calibration, src_sensor_drift]
+    decoy_sources: [src_generic_transfer]
+    expected_mechanisms: [estimate latent bias from repeated reference measurements]
+    required_boundaries: [only stationary bias and known reference signal]
+    important_differences: [actuation error versus measurement error]
+    known_false_analogies: [all_domain_shift_is_calibration]
+    acceptable_hypotheses: [reference-conditioned adaptation]
+    verification_expectations: [propose falsifiable stationary-bias test]
+    human_rubric: require strict applicability boundary
+  - case_id: abstain_on_insufficient_evidence
+    question: Is there a justified connection between the two sparse observations?
+    research_directions: [materials, language]
+    relevant_sources: []
+    decoy_sources: [src_material_color, src_language_color]
+    expected_mechanisms: []
+    required_boundaries: [insufficient evidence]
+    important_differences: [no shared measured mechanism]
+    known_false_analogies: [color_word_connection]
+    acceptable_hypotheses: []
+    verification_expectations: [return zero connection and name missing evidence]
+    human_rubric: reward explicit abstention

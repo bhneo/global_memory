@@ -72,6 +72,27 @@ def normalized_dimensions(metadata: dict[str, Any], path: Path | None = None) ->
     return tier, infer_epistemic_status(metadata, tier)
 
 
+def governance_label(metadata: dict[str, Any], path: Path | None = None) -> str:
+    """Human-facing label that never turns durable exploration into a fact."""
+    tier, epistemic = normalized_dimensions(metadata, path)
+    object_type = str(metadata.get("type", ""))
+    if tier == "trusted":
+        labels = {
+            "claim": "Trusted factual claim",
+            "concept": "Qualified concept",
+            "analogy": "Qualified exploratory analogy",
+            "hypothesis": "Qualified hypothesis",
+            "question": "Durable research question",
+            "tension": "Durable research tension",
+        }
+        return labels.get(object_type, f"Qualified {object_type or 'memory'}")
+    if tier == "canonical":
+        return "Human-approved Canonical"
+    if object_type == "synthesis" and metadata.get("truth_layer") == "cognitive_synthesis":
+        return "Non-factual cognitive synthesis"
+    return f"{tier.title()} {epistemic.replace('_', ' ')}"
+
+
 def truth_layer(metadata: dict[str, Any], path: Path | None = None) -> str:
     object_type = str(metadata.get("type", ""))
     if object_type == "source":

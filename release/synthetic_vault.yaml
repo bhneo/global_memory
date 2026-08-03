@@ -1,0 +1,17 @@
+fixture_version: 1
+notice: Synthetic only. It contains no material copied from a personal Vault.
+objects:
+  - {id: source_synthetic_sensor, type: source, title: "Synthetic sensor note"}
+  - {id: input_synthetic_sensor, type: input, source_ids: [source_synthetic_sensor]}
+  - {id: reflection_synthetic_sensor, type: reflection, execution_safe: false, source_ids: [source_synthetic_sensor]}
+  - {id: claim_synthetic_calibration, type: claim, memory_tier: working, epistemic_status: provisional}
+  - {id: claim_synthetic_calibration_trusted, type: claim, memory_tier: trusted, epistemic_status: supported}
+  - {id: question_synthetic_boundary, type: question, memory_tier: trusted, epistemic_status: open_question}
+  - {id: tension_synthetic_delay, type: tension, memory_tier: working, epistemic_status: contested}
+  - {id: hypothesis_synthetic_adaptation, type: hypothesis, memory_tier: working, epistemic_status: hypothetical}
+  - {id: synthesis_synthetic_direction, type: synthesis, truth_layer: cognitive_synthesis, scope_kind: direction, execution_safe: false}
+  - {id: synthesis_synthetic_cross, type: synthesis, truth_layer: cognitive_synthesis, scope_kind: cross_direction, execution_safe: false, label: "non-factual cross-direction candidate"}
+  - {id: exception_synthetic_contradiction, type: exception, status: open}
+context_query:
+  query: "When does calibration transfer fail?"
+  expected_refs: [claim_synthetic_calibration_trusted, question_synthetic_boundary, tension_synthetic_delay]

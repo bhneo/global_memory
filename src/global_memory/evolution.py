@@ -6,7 +6,7 @@ from typing import Any
 
 from .consolidation import ConsolidationReceiptService
 from .epistemics import default_epistemic_status, infer_epistemic_status, infer_tier
-from .markdown import atomic_write_text, read_document, render_document
+from .markdown import atomic_write_text, render_document
 from .memory import ExceptionService
 from .repository import Repository, now_iso, sha256_bytes
 from .governance import TrustedPromotionRecoveryManager

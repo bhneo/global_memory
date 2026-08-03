@@ -175,7 +175,9 @@ class ConsolidationReceiptService:
         if not current_candidates:
             return None
         try:
-            fingerprint = self.fingerprint(object_id)
+            # Receipt reuse is a governance boundary: stat-keyed cache entries
+            # are a performance hint, never an integrity proof.
+            fingerprint = self.fingerprint(object_id, force_raw_rehash=True)
         except Exception:
             # A receipt must never remain usable when its environment cannot be
             # read completely (notably the relation index).
@@ -206,7 +208,7 @@ class ConsolidationReceiptService:
     def _digest(value: Any) -> str:
         return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest()
 
-    def _source_records(self, source_ids: list[str]) -> list[dict[str, Any]]:
+    def _source_records(self, source_ids: list[str], *, force_raw_rehash: bool = False) -> list[dict[str, Any]]:
         records = []
         for source_id in source_ids:
             try:
@@ -217,7 +219,7 @@ class ConsolidationReceiptService:
                 if raw_path and raw_path.exists():
                     stat = raw_path.stat()
                     base = self._source_bases.get(source_id)
-                    if base is not None and base[:3] == (raw_path, stat.st_mtime_ns, stat.st_size):
+                    if not force_raw_rehash and base is not None and base[:3] == (raw_path, stat.st_mtime_ns, stat.st_size):
                         raw_sha = base[3]
                     else:
                         raw_sha = sha256_bytes(raw_path.read_bytes())
@@ -270,13 +272,13 @@ class ConsolidationReceiptService:
             "incoming": incoming,
         }
 
-    def fingerprint(self, object_id: str, *, metadata: dict[str, Any] | None = None, body: str | None = None) -> dict[str, Any]:
+    def fingerprint(self, object_id: str, *, metadata: dict[str, Any] | None = None, body: str | None = None, force_raw_rehash: bool = False) -> dict[str, Any]:
         """Hash every governed input that can invalidate a consolidation."""
         path, current, current_body = self._find_document(object_id)
         metadata = metadata or current
         body = current_body if body is None else body
         source_ids = [str(item) for item in metadata.get("source_ids", [])]
-        source_records = self._source_records(source_ids)
+        source_records = self._source_records(source_ids, force_raw_rehash=force_raw_rehash)
         evidence = [item for item in metadata.get("evidence", []) if isinstance(item, dict)]
         relation_fingerprint = self._relation_fingerprint(object_id)
         contradictions = {
@@ -327,7 +329,7 @@ class ConsolidationReceiptService:
         available = bool(source_ids)
         for source_id in source_ids:
             try:
-                records = self._source_records([source_id])
+                records = self._source_records([source_id], force_raw_rehash=True)
                 record = records[0]
                 digest = record.get("raw_content_sha256")
                 _, source, _ = self._find_document(source_id)
@@ -461,7 +463,7 @@ class ConsolidationReceiptService:
         if resolved_result == "promotion_candidate" and not receipt_complete:
             resolved_result = "failed"
         try:
-            environment_fingerprint = self.fingerprint(object_id, metadata=metadata, body=body)
+            environment_fingerprint = self.fingerprint(object_id, metadata=metadata, body=body, force_raw_rehash=True)
         except Exception as exc:
             warnings.append(f"relation fingerprint failed: {exc}")
             checks["related_object_search_completed"] = False
@@ -497,13 +499,13 @@ class ConsolidationReceiptService:
         after_text = render_document(updated, body)
         after_sha = sha256_bytes(after_text.encode("utf-8")) if receipt_complete else before_sha
         try:
-            fingerprint = self.fingerprint(object_id, metadata=updated if receipt_complete else metadata, body=body)
+            fingerprint = self.fingerprint(object_id, metadata=updated if receipt_complete else metadata, body=body, force_raw_rehash=True)
         except Exception as exc:
             warnings.append(f"final relation fingerprint failed: {exc}")
             receipt_complete = False
             resolved_result = "failed"
             fingerprint = {}
-        source_records = self._source_records(source_ids)
+        source_records = self._source_records(source_ids, force_raw_rehash=True)
         work_ids = sorted({
             *{str(item.get("work_id")) for item in source_records if item.get("work_id")},
             *{str(item) for item in metadata.get("reuse_work_ids", []) if item},

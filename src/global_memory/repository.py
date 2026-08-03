@@ -15,7 +15,8 @@ from zoneinfo import ZoneInfo
 
 from .errors import ImmutableContentError, NotFoundError, ValidationError
 from .epistemics import EPISTEMIC_STATUSES
-from .markdown import atomic_replace, atomic_write_text, read_document, render_document
+from .markdown import atomic_replace, read_document
+from .writer_lock import RepositoryWriterLock, repository_writer
 
 
 OBJECT_TYPES = {
@@ -118,6 +119,10 @@ class Repository:
         if not self.index_path.exists():
             self.rebuild_index()
 
+    def writer_lock(self, *, timeout: float = 0.0):
+        """Return the re-entrant repository-wide writer boundary."""
+        return RepositoryWriterLock(self.root).acquire(timeout=timeout)
+
     def append_event(self, name: str, payload: dict[str, Any]) -> None:
         log_path = self.root / "system" / "logs" / f"{name}.jsonl"
         log_path.parent.mkdir(parents=True, exist_ok=True)
@@ -137,7 +142,7 @@ class Repository:
             return True
         except FileExistsError:
             if path.read_bytes() != content:
-                raise ImmutableContentError(f"拒绝覆盖不可变 raw 内容: {self.rel(path)}")
+                raise ImmutableContentError(f"拒绝覆盖不可变 raw 内容: {self.rel(path)}") from None
             return False
 
     def source_documents(self) -> Iterable[Path]:
@@ -432,13 +437,13 @@ class Repository:
             except NotFoundError:
                 relative = self.rel(path)
                 if not relative.startswith(("vault/memory/", "vault/knowledge/", "vault/frontier/", "vault/action/")):
-                    raise ValidationError(f"{relative} 的 quote extraction 不存在")
+                    raise ValidationError(f"{relative} 的 quote extraction 不存在") from None
                 _, source, _ = self.find_document(str(item.get("source_id")))
                 if (
                     source.get("content_sha256") != item.get("input_sha256")
                     or (item.get("content_id") and source.get("content_id") != item.get("content_id"))
                 ):
-                    raise ValidationError(f"{relative} 的 quote provenance 与 source 不一致")
+                    raise ValidationError(f"{relative} 的 quote provenance 与 source 不一致") from None
                 # Derived extraction is deliberately deletable. Canonical Markdown and raw
                 # remain index-rebuildable; exact span is rechecked when extraction is rebuilt.
                 return
@@ -473,6 +478,7 @@ class Repository:
             if not item.get("calculation_method") or item.get("result") is None:
                 raise ValidationError(f"{self.rel(path)} 的 calculation 缺少方法或结果")
 
+    @repository_writer
     def rebuild_index(self) -> int:
         # Rebuilds commonly follow an approval, archive, restore or promotion
         # that can move an ID from a proposal candidate into a truth-layer path.

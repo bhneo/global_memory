@@ -211,7 +211,8 @@ class ObsidianViewService:
             lines.append(f"- 原始对象：`{self.repository.rel(original_path)}`\n")
             lines.append(f"- 类型：`{metadata.get('type', 'source')}`\n")
             if metadata.get("memory_tier") or metadata.get("status"):
-                lines.append(f"- 状态：`{metadata.get('memory_tier') or metadata.get('status')}`\n")
+                from .epistemics import governance_label
+                lines.append(f"- Governance：`{governance_label(metadata, original_path)}`\n")
             links: list[tuple[str, str]] = []
             for source_id in metadata.get("source_ids", []):
                 source_id = str(source_id)

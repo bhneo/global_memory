@@ -49,17 +49,12 @@ class DailyTriageService:
 
             extraction_created = False
             try:
-                _, extraction, _ = self.extractions.latest_for_source(source_id)
+                self.extractions.latest_for_source(source_id)
             except Exception:
                 extraction_result = self.extractions.extract(source_id)
                 extraction_created = True
                 if extraction_result.status == "ready":
-                    _, extraction, _ = self.extractions.latest_for_source(source_id)
-                else:
-                    extraction = {
-                        "status": extraction_result.status,
-                        "warnings": extraction_result.warnings,
-                    }
+                    self.extractions.latest_for_source(source_id)
 
             assessment = self.quality.load(source_id)
             quality_checked = False

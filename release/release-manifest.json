@@ -1,0 +1,7 @@
+{
+  "schema_version": 1,
+  "include": ["src", "scripts", "adapters", "docs", "tests", "schemas", "release", ".github", "pyproject.toml", "README.md", "SCHEMA.md", "LICENSE", "SECURITY.md", "CONTRIBUTING.md", ".gitignore", ".gitattributes"],
+  "exclude": ["docs/RESEARCH_DIRECTIONS.md", "PROJECT_STATE.md", "CHANGELOG.md", "AGENTS.md", "CLAUDE.md", "INDEX.md", "src/global_memory_local.egg-info"],
+  "sensitive_prefixes": ["vault/", "system/", "data/", "objects/", "artifacts/", "artifacts-local/", ".ci-vault", ".git/"],
+  "known_excluded_top_levels": [".git", ".pytest_cache", ".ruff_cache", ".tmp", ".cursor", ".mcp.json", ".ci-vault", ".ci-vault-m8-acceptance", "AGENTS.md", "CLAUDE.md", "CHANGELOG.md", "PROJECT_STATE.md", "INDEX.md", "vault", "system", "data", "objects", "artifacts", "artifacts-local", "assets", "examples", "tmp"]
+}

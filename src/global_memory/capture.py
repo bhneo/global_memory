@@ -8,15 +8,19 @@ import re
 import urllib.request
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 from .errors import ValidationError
+from .capture_policy import CapturePolicy
 from .markdown import read_document, render_document
 from .repository import Repository, now_iso, sha256_bytes
+from .secure_fetch import fetch_url
 from .wechat import (
     canonicalize_wechat_url,
     fetch_wechat_article,
     is_wechat_article_url,
+    parse_wechat_metadata,
 )
 
 
@@ -97,8 +101,10 @@ class CaptureResult:
 
 
 class CaptureService:
-    def __init__(self, repository: Repository):
+    def __init__(self, repository: Repository, *, policy: CapturePolicy | None = None, allow_unsafe_local_files: bool = False):
         self.repository = repository
+        self.policy = policy or CapturePolicy()
+        self.allow_unsafe_local_files = allow_unsafe_local_files
 
     def _versions_for_locator(self, canonical_locator: str) -> list[tuple[Path, dict[str, object]]]:
         versions: list[tuple[Path, dict[str, object]]] = []
@@ -144,7 +150,12 @@ class CaptureService:
             previous_source_id, new_source_id
         ).proposal_id
 
-    def _write_source(
+    def _write_source(self, **kwargs: Any) -> CaptureResult:
+        """Serialize the complete multi-file capture transaction."""
+        with self.repository.writer_lock():
+            return self._write_source_unlocked(**kwargs)
+
+    def _write_source_unlocked(
         self,
         *,
         kind: str,
@@ -187,7 +198,7 @@ class CaptureService:
             )
 
         content_id = f"content_{digest}"
-        source_digest = hashlib.sha256(f"{kind}\n{canonical_locator}".encode("utf-8")).hexdigest()
+        source_digest = hashlib.sha256(f"{kind}\n{canonical_locator}".encode()).hexdigest()
         source_family_id = f"source_family_{source_digest[:24]}"
         version_number = int(latest.get("version_number", 1)) + 1 if latest else 1
         source_id = (
@@ -299,6 +310,9 @@ class CaptureService:
             source_path.relative_to(self.repository.root)
         except ValueError:
             pass
+        source_path = self.policy.validate_file(
+            source_path, allow_unsafe=self.allow_unsafe_local_files,
+        )
         canonical = f"file:{os.path.normcase(str(source_path))}"
         content_type = mimetypes.guess_type(source_path.name)[0] or "application/octet-stream"
         return self._write_source(
@@ -312,6 +326,7 @@ class CaptureService:
         if is_wechat_article_url(url):
             return self.capture_wechat_url(url, comment, refresh=refresh)
         canonical = canonicalize_url(url)
+        self.policy.validate_url(url)
         versions = self._versions_for_locator(canonical)
         if versions and not refresh:
             latest_path, latest = versions[-1]
@@ -319,9 +334,35 @@ class CaptureService:
                 "capture-events", {"event": "duplicate-source", "source_id": latest["id"], "locator": url}
             )
             return self._result_for_existing(latest_path, latest)
+        fetched_secure = fetch_url(url, self.policy)
+        content_type_secure = fetched_secure.headers.get("Content-Type", "application/octet-stream")
+        original_filename_secure = _content_disposition_filename(
+            fetched_secure.headers.get("Content-Disposition", "")
+        )
+        decoded_secure = _decode_text(fetched_secure.content, content_type_secure)
+        title_secure = _html_title(decoded_secure or "") or urlsplit(fetched_secure.final_url).hostname or "Web source"
+        return self._write_source(
+            kind="web", original_locator=url,
+            canonical_locator=canonicalize_url(fetched_secure.final_url),
+            content=fetched_secure.content, title=title_secure, comment=comment,
+            import_method="cli-url", content_type=content_type_secure,
+            original_filename=original_filename_secure, refresh=refresh,
+        )
         request = urllib.request.Request(url, headers={"User-Agent": "GlobalMemory/0.2 (+local-first)"})
+        policy = self.policy
+
+        class _ValidatedRedirects(urllib.request.HTTPRedirectHandler):
+            redirects = 0
+
+            def redirect_request(self, request, fp, code, msg, headers, newurl):  # type: ignore[no-untyped-def]
+                self.redirects += 1
+                if self.redirects > policy.max_redirects:
+                    raise ValidationError(f"capture policy redirect limit exceeded ({policy.max_redirects})")
+                policy.validate_url(newurl)
+                return super().redirect_request(request, fp, code, msg, headers, newurl)
         try:
-            with urllib.request.urlopen(request, timeout=20) as response:
+            opener = urllib.request.build_opener(_ValidatedRedirects())
+            with opener.open(request, timeout=20) as response:
                 content = response.read(20_000_001)
                 if len(content) > 20_000_000:
                     raise ValidationError("URL 内容超过第一版 20 MB 限制")
@@ -330,6 +371,7 @@ class CaptureService:
                     response.headers.get("Content-Disposition", "")
                 )
                 final_url = response.geturl()
+                self.policy.validate_url(final_url)
         except OSError as exc:
             raise ValidationError(f"URL 获取失败: {exc}") from exc
         decoded = _decode_text(content, content_type)
@@ -341,6 +383,7 @@ class CaptureService:
         )
 
     def capture_wechat_url(self, url: str, comment: str = "", refresh: bool = False) -> CaptureResult:
+        self.policy.validate_url(url)
         canonical = canonicalize_wechat_url(url)
         versions = self._versions_for_locator(canonical)
         if versions and not refresh:
@@ -349,6 +392,29 @@ class CaptureService:
                 "capture-events", {"event": "duplicate-source", "source_id": latest["id"], "locator": url}
             )
             return self._result_for_existing(latest_path, latest)
+        fetched_secure = fetch_url(
+            url,
+            self.policy,
+            headers={
+                "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 MicroMessenger/8.0",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+                "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+            },
+        )
+        metadata_secure = parse_wechat_metadata(
+            fetched_secure.content.decode("utf-8", errors="replace")
+        )
+        title_secure = metadata_secure.title or urlsplit(fetched_secure.final_url).path.rsplit("/", 1)[-1] or "WeChat article"
+        return self._write_source(
+            kind="wechat", original_locator=url,
+            canonical_locator=canonicalize_wechat_url(fetched_secure.final_url),
+            content=fetched_secure.content, title=title_secure,
+            author=metadata_secure.author or metadata_secure.account_name,
+            published_at=metadata_secure.published_at, comment=comment,
+            import_method="cli-wechat",
+            content_type=fetched_secure.headers.get("Content-Type", "text/html; charset=utf-8"),
+            refresh=refresh,
+        )
         fetched = fetch_wechat_article(url)
         metadata = fetched.metadata
         title = metadata.title or urlsplit(fetched.final_url).path.rsplit("/", 1)[-1] or "微信公众号文章"

@@ -1,0 +1,5 @@
+schema_version: 1
+required_fields: [case_id, question, research_directions, relevant_sources, decoy_sources, expected_mechanisms, required_boundaries, important_differences, known_false_analogies, acceptable_hypotheses, verification_expectations, human_rubric]
+baselines: [plain_long_context, keyword_fts, vector_rag, galois_governed_context, galois_governed_context_synthesis]
+metrics: [relevant_source_recall_at_k, connection_precision, false_analogy_rate, mechanism_correctness, boundary_completeness, evidence_support_accuracy, novelty, actionability, abstention_quality, zero_connection_correctness]
+run_record: [input_context, model_output, rubric, evaluator, model_version, token_budget, timestamp, randomness]

@@ -17,8 +17,8 @@
 
 ## 当前概况
 
-- 资料：295 篇
-- Working：185 条
+- 资料：300 篇
+- Working：189 条
 - Trusted：30 条
 - Canonical：1 条
 - 开放例外：19 项
@@ -26,11 +26,11 @@
 
 ## 最近收录
 
+- [[views/readers/source_bd2a6cee8175ade8ff2894a6|高德ABot-AgentOS：面向机器人智能体的通用自进化操作系统]] · 2026-07-24
+- [[views/readers/source_b6445078b10e858d8d6d3f94|全身智能：迈向人形基础模型 | Archon Robotics | Archon Robotics]] · 2026-08-03
+- [[views/readers/source_4ef330780a196b3bf1fdfc2c|Gemini Robotics ER 2]] · 2026-08-03
+- [[views/readers/source_b1b6d959fc38aac1732f07ff|arxiv.org]] · 2026-08-03
+- [[views/readers/source_a06c4ee2dabe3916d074bc1e|google/asimov_agentic · Datasets at Hugging Face]] · 2026-08-03
 - [[views/readers/source_12450fe7e2be78ffc391997e|arxiv.org]] · 2026-08-02
 - [[views/readers/source_bdb17eb4583ec8af52f28dfb|arxiv.org]] · 2026-08-02
 - [[views/readers/source_7fa8acc5e021363b55491e3e|arxiv.org]] · 2026-08-02
-- [[views/readers/source_b8c45bfccc9646f938cb564c|Cross-Embodiment Transfer via Behavior-Aligned Representations]] · 2026-08-02
-- [[views/readers/source_8c84c595f1a48ba498b2074e|arxiv.org]] · 2026-08-02
-- [[views/readers/source_a54ea0123fbadf6d7012c9fb|World Action Planner: Generalizable Decision-Making with Action-Conditioned World Models]] · 2026-08-02
-- [[views/readers/source_ddd2f65020c2e556f2b93330|arxiv.org]] · 2026-08-02
-- [[views/readers/source_9f9972326eb118a8e4bb5623|arxiv.org]] · 2026-08-02

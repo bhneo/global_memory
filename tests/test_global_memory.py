@@ -7,6 +7,7 @@ import uuid
 import json
 import sys
 import os
+from types import SimpleNamespace
 from contextlib import closing
 from pathlib import Path
 
@@ -14,6 +15,7 @@ import pytest
 import global_memory.research as research_module
 
 from global_memory.capture import CaptureService, canonicalize_url
+from global_memory.capture_policy import CapturePolicy
 from global_memory.backups import BACKUP_MANIFEST_NAME, RawBackupService
 from global_memory.bundle import (
     BundleCompiler, BundleRecoveryManager, BundleReviewService,
@@ -117,6 +119,13 @@ def capture_web_bytes(
         content_type="text/plain; charset=utf-8",
         refresh=refresh,
     )
+
+
+def capture_local_file(repo: Repository, path: Path, comment: str = ""):
+    service = CaptureService(
+        repo, policy=CapturePolicy(import_roots=(path.resolve().parent,)),
+    )
+    return service.capture_file(path, comment)
 
 
 def test_daily_triage_defaults_to_capture_only_and_is_incremental(repo: Repository):
@@ -490,7 +499,7 @@ def test_same_pdf_from_url_and_local_file_share_global_object(
     )
     local_path = workspace / "论文副本.pdf"
     local_path.write_bytes(payload)
-    local = CaptureService(repo).capture_file(local_path, "local copy")
+    local = capture_local_file(repo, local_path, "local copy")
 
     assert remote.source_id != local.source_id
     assert remote.content_id == local.content_id
@@ -507,7 +516,7 @@ def test_text_and_txt_file_share_global_object(repo: Repository, workspace: Path
     pasted = CaptureService(repo).capture_text(text, title="粘贴文本")
     local_path = workspace / "中文资料.txt"
     local_path.write_text(text, encoding="utf-8")
-    local = CaptureService(repo).capture_file(local_path)
+    local = capture_local_file(repo, local_path)
     assert pasted.source_id != local.source_id
     assert pasted.content_id == local.content_id
     assert pasted.raw_content_path == local.raw_content_path
@@ -576,7 +585,7 @@ def test_pdf_extraction_preserves_page_boundaries_and_rebuilds(
 ) -> None:
     pdf_path = workspace / "多页论文.pdf"
     pdf_path.write_bytes(make_text_pdf(["First page evidence", "Second page evidence"]))
-    captured = CaptureService(repo).capture_file(pdf_path)
+    captured = capture_local_file(repo, pdf_path)
     service = ExtractionService(repo)
     result = service.extract(captured.source_id)
     extraction_path = repo.root / result.extraction_path
@@ -596,7 +605,7 @@ def test_pdf_optional_dependency_missing_is_graceful(
 ) -> None:
     pdf_path = workspace / "optional.pdf"
     pdf_path.write_bytes(make_text_pdf(["optional dependency"]));
-    captured = CaptureService(repo).capture_file(pdf_path)
+    captured = capture_local_file(repo, pdf_path)
     monkeypatch.setitem(sys.modules, "pypdf", None)
     result = ExtractionService(repo).extract(captured.source_id)
     assert result.status == "error"
@@ -682,7 +691,7 @@ def test_multiple_arxiv_captures_enrich_one_auditable_work(
     )
     local_path = workspace / "VIA-paper.pdf"
     local_path.write_bytes(payload)
-    local = CaptureService(repo).capture_file(local_path)
+    local = capture_local_file(repo, local_path)
     source_before = (repo.root / local.source_path).read_bytes()
     proposal = WorkService(repo).propose(
         [remote.source_id, local.source_id], arxiv_id="2607.11119v1",
@@ -1333,7 +1342,7 @@ def test_long_unicode_paths_and_posix_metadata_are_cross_platform(repo: Reposito
     nested.mkdir(parents=True)
     local = nested / ("很长的中文文件名" * 4 + ".txt")
     local.write_text("跨平台路径分隔符验证", encoding="utf-8")
-    captured = CaptureService(repo).capture_file(local)
+    captured = capture_local_file(repo, local)
     assert "/" in captured.raw_content_path and "\\" not in captured.raw_content_path
     assert (repo.root / Path(captured.raw_content_path)).is_file()
     assert RawStoreService(repo).verify()["ok"] is True
@@ -1551,9 +1560,16 @@ def test_capture_refresh_cli_flag_and_url_fetch(repo: Repository, monkeypatch: p
             return "https://example.com/live"
 
     responses = iter([Response(b"first"), Response(b"second")])
+    class Opener:
+        def open(self, *_args, **_kwargs):
+            return next(responses)
     monkeypatch.setattr(
-        "global_memory.capture.urllib.request.urlopen",
-        lambda *_args, **_kwargs: next(responses),
+        "global_memory.capture.fetch_url",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            content=next(responses).body,
+            headers={"Content-Type": "text/plain; charset=utf-8"},
+            final_url="https://example.com/live",
+        ),
     )
     service = CaptureService(repo)
     first = service.capture_url("https://example.com/live")
@@ -1572,7 +1588,7 @@ def test_capture_refresh_cli_flag_and_url_fetch(repo: Repository, monkeypatch: p
 def test_same_local_file_is_duplicate(repo: Repository, workspace: Path) -> None:
     local = workspace / "中文资料.txt"
     local.write_text("中文路径与文件名可以工作。", encoding="utf-8")
-    service = CaptureService(repo)
+    service = CaptureService(repo, policy=CapturePolicy(import_roots=(workspace,)))
     first = service.capture_file(local, "保留原话")
     second = service.capture_file(local, "再次导入")
     assert second.duplicate_source is True
@@ -2618,7 +2634,7 @@ def test_markdown_is_directly_readable(repo: Repository) -> None:
 def test_chinese_filename_and_content_are_searchable(repo: Repository, workspace: Path) -> None:
     local = workspace / "具身智能观察.md"
     local.write_text("机器人长期记忆需要来源追踪。", encoding="utf-8")
-    captured = CaptureService(repo).capture_file(local)
+    captured = capture_local_file(repo, local)
     assert repo.search("来源追踪")[0].id == captured.source_id
 
 
@@ -2845,8 +2861,11 @@ def test_capture_wechat_article_parses_metadata_and_extracts_body(
 
     url = "https://mp.weixin.qq.com/s/AbCdEfGhIjKl"
     monkeypatch.setattr(
-        "global_memory.wechat.urllib.request.urlopen",
-        lambda *_args, **_kwargs: Response(WECHAT_ARTICLE_HTML.encode("utf-8"), url),
+        "global_memory.capture.fetch_url",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            content=WECHAT_ARTICLE_HTML.encode("utf-8"),
+            headers={"Content-Type": "text/html; charset=utf-8"}, final_url=url,
+        ),
     )
     metadata = parse_wechat_metadata(WECHAT_ARTICLE_HTML)
     assert metadata.title == "测试文章标题"
@@ -2890,8 +2909,12 @@ def test_capture_wechat_cli_command(repo: Repository, monkeypatch: pytest.Monkey
             return "https://mp.weixin.qq.com/s/AbCdEfGhIjKl"
 
     monkeypatch.setattr(
-        "global_memory.wechat.urllib.request.urlopen",
-        lambda *_args, **_kwargs: Response(WECHAT_ARTICLE_HTML.encode("utf-8")),
+        "global_memory.capture.fetch_url",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            content=WECHAT_ARTICLE_HTML.encode("utf-8"),
+            headers={"Content-Type": "text/html; charset=utf-8"},
+            final_url="https://mp.weixin.qq.com/s/AbCdEfGhIjKl",
+        ),
     )
     args = build_parser().parse_args(
         ["capture-wechat", "https://mp.weixin.qq.com/s/AbCdEfGhIjKl", "--comment", "cli"]
@@ -4402,7 +4425,7 @@ def test_daily_keeps_unmarked_web_capture_source_only_even_when_short(repo: Repo
 
 
 def test_source_only_status_is_exposed_by_cli_and_metrics(repo: Repository, capsys: pytest.CaptureFixture[str]) -> None:
-    captured = CaptureService(repo).capture_text("Unstructured article title and metadata. " * 120, title="Source-only record")
+    CaptureService(repo).capture_text("Unstructured article title and metadata. " * 120, title="Source-only record")
     ConsolidationService(repo).daily(limit=5)
     args = build_parser().parse_args(["--root", str(repo.root), "proposals", "--status", "source_only"])
 
@@ -4754,6 +4777,26 @@ def test_m8_consolidation_receipt_is_real_and_hash_bound(repo: Repository) -> No
     path.write_text(render_document(metadata, body), encoding="utf-8")
     repo.rebuild_index()
     assert ConsolidationReceiptService(repo).valid_for(object_id) is None
+
+
+def test_receipt_reuse_forces_raw_hash_when_size_and_mtime_are_unchanged(repo: Repository) -> None:
+    _, source_id = write_m8_claim(repo, "claim_raw_stat_cache_tamper")
+    service = ConsolidationReceiptService(repo)
+    receipt = service.consolidate("claim_raw_stat_cache_tamper")
+    assert receipt["status"] == "complete"
+    assert service.valid_for("claim_raw_stat_cache_tamper") is not None
+
+    _, source, _ = repo.find_document(source_id)
+    raw_path = repo.resolve_inside(str(source["raw_content_path"]))
+    original = raw_path.read_bytes()
+    stat = raw_path.stat()
+    changed = bytes([original[0] ^ 1]) + original[1:]
+    raw_path.write_bytes(changed)
+    os.utime(raw_path, ns=(stat.st_atime_ns, stat.st_mtime_ns))
+
+    assert raw_path.stat().st_size == stat.st_size
+    assert raw_path.stat().st_mtime_ns == stat.st_mtime_ns
+    assert service.valid_for("claim_raw_stat_cache_tamper") is None
 
 
 def test_receipt_v1_is_retained_but_regenerated_as_v2(repo: Repository) -> None:

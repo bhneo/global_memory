@@ -12,6 +12,7 @@ from typing import Any, Iterator
 
 from .bundle import BundleCompiler, CompilerProvider
 from .capture import CaptureService
+from .capture_policy import CapturePolicy
 from .errors import NotFoundError, ValidationError
 from .extraction import ExtractionService
 from .markdown import atomic_write_text, read_document, render_document
@@ -721,7 +722,11 @@ class InputEpisodeService:
         self, path: Path | str, *, participants: list[str] | None = None,
         topic: str | None = None,
     ) -> dict[str, Any]:
-        captured = CaptureService(self.repository).capture(str(Path(path).expanduser().resolve()), "conversation import")
+        source_path = Path(path).expanduser().resolve()
+        policy = CapturePolicy(import_roots=(source_path.parent,))
+        captured = CaptureService(self.repository, policy=policy).capture(
+            str(source_path), "conversation import",
+        )
         episode = self.create_from_source(
             captured.source_id, input_type="conversation", participants=participants,
             topic=topic, user_authored=True, submitted_by="user",
@@ -772,7 +777,10 @@ class InputEpisodeService:
         if not normalized_session or len(normalized_session) > 200:
             raise ValidationError("session_ref must contain 1 to 200 characters")
         if source_path is not None:
-            captured = CaptureService(self.repository).capture(
+            captured = CaptureService(
+                self.repository,
+                policy=CapturePolicy(import_roots=(source_path.resolve().parent,)),
+            ).capture(
                 str(source_path), f"agent session from {normalized_agent}",
             )
         else:
@@ -884,7 +892,6 @@ class ReflectionService:
 
     def create(self, input_id: str, payload: dict[str, Any], *, rebuild_index: bool = True) -> CognitiveWrite:
         prepared = self.prepare(input_id, payload)
-        episode = prepared["episode"]
         normalized = prepared["normalized"]
         created_by = prepared["created_by"]
         kind = prepared["kind"]

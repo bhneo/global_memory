@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .errors import ValidationError
-from .epistemics import infer_epistemic_status, infer_tier, truth_layer
+from .epistemics import governance_label, infer_epistemic_status, infer_tier, truth_layer
 from .governance import POLICY_VERSION
 from .extraction import ExtractionService
 from .markdown import read_document
@@ -87,7 +87,7 @@ class ContextPack:
             lines.append(f"## {item.get('title', item.get('id'))}\n\n")
             lines.append(f"- ID: `{item.get('id')}`\n- Type/status: `{item.get('type')}` / `{item.get('knowledge_status')}`\n")
             lines.append(
-                f"- Memory tier: `{item.get('memory_tier')}`\n"
+                f"- Governance label: `{item.get('governance_label')}`\n"
                 f"- Epistemic status: `{item.get('epistemic_status')}`\n"
                 f"- Truth layer: `{item.get('truth_layer')}`\n- Path: `{item.get('path')}`\n"
             )
@@ -288,6 +288,7 @@ class ContextPackService:
                     "truth_layer": "proposal",
                     "memory_tier": "working",
                     "epistemic_status": candidate.get("epistemic_status", "provisional"),
+                    "governance_label": governance_label(candidate, candidate_path),
                     "confidence": candidate.get("confidence", "unknown"),
                     "evidence_coverage": candidate.get("evidence_coverage"),
                     "evidence_entailment": candidate.get("evidence_entailment", "unknown"),
@@ -298,17 +299,17 @@ class ContextPackService:
                     "path": self.repository.rel(candidate_path),
                     "document_sha256": sha256_bytes(candidate_path.read_bytes()),
                     "source_ids": source_ids,
-                    "user_authored": metadata.get("user_authored") if object_type == "annotation" else None,
+                    "user_authored": candidate.get("user_authored") if object_type == "annotation" else None,
                     "annotation": ({
-                        "annotation_kind": metadata.get("annotation_kind"),
-                        "why_saved": metadata.get("why_saved"),
-                        "what_surprised_me": metadata.get("what_surprised_me"),
-                        "possible_connections": metadata.get("possible_connections", []),
-                        "research_projects": metadata.get("research_projects", []),
-                        "domains": metadata.get("domains", []),
-                        "personal_salience": metadata.get("personal_salience"),
-                        "feedback_label": metadata.get("feedback_label"),
-                        "note": metadata.get("note"),
+                        "annotation_kind": candidate.get("annotation_kind"),
+                        "why_saved": candidate.get("why_saved"),
+                        "what_surprised_me": candidate.get("what_surprised_me"),
+                        "possible_connections": candidate.get("possible_connections", []),
+                        "research_projects": candidate.get("research_projects", []),
+                        "domains": candidate.get("domains", []),
+                        "personal_salience": candidate.get("personal_salience"),
+                        "feedback_label": candidate.get("feedback_label"),
+                        "note": candidate.get("note"),
                     } if object_type == "annotation" else None),
                     "raw_content_sha256": None,
                     "source_version": None,
@@ -738,6 +739,7 @@ class ContextPackService:
                     "knowledge_status": str(metadata.get("status")),
                     "truth_layer": truth_layer(metadata, path),
                     "memory_tier": None if non_governed else tier,
+                    "governance_label": governance_label(metadata, path),
                     "epistemic_status": (
                         "user_annotation" if object_type == "annotation"
                         else "reflection" if object_type == "reflection"

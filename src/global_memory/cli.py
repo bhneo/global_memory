@@ -10,6 +10,7 @@ from pathlib import Path
 from .backups import RawBackupService
 from .bundle import BundleCompiler, BundleRecoveryManager, BundleReviewService, JsonBundleProvider
 from .capture import CaptureService
+from .capture_policy import CapturePolicy
 from .cognition import (
     DailyAdmissionAuditService, DailyDreamService, InputEpisodeService,
     ReflectionService, WeeklyDreamService,
@@ -80,6 +81,10 @@ def build_parser() -> argparse.ArgumentParser:
     capture = commands.add_parser("capture", help="捕获 URL 或本地文件")
     capture.add_argument("target")
     capture.add_argument("--comment", default="")
+    capture.add_argument("--import-root", action="append", default=[], help="explicit local-file import root (repeatable)")
+    capture.add_argument("--allow-domain", action="append", default=[], help="optional HTTP(S) capture domain allowlist")
+    capture.add_argument("--allow-private-network", action="store_true", help="dangerous: permit private-network URL targets")
+    capture.add_argument("--allow-unsafe-local-files", action="store_true", help="dangerous: bypass import-root and sensitive-file checks for a manual import")
     capture.add_argument("--input-type", choices=["article", "paper", "github", "conversation", "idea", "experiment", "meeting"])
     capture.add_argument(
         "--refresh", action="store_true",
@@ -1064,13 +1069,26 @@ def contradiction_audit(repository: Repository) -> dict[str, object]:
 
 
 def run(args: argparse.Namespace) -> int:
+    """Public command API; direct callers receive the same write boundary as CLI."""
+    if _command_writes(args):
+        with _repository(args).writer_lock():
+            return _run_unlocked(args)
+    return _run_unlocked(args)
+
+
+def _run_unlocked(args: argparse.Namespace) -> int:
     repository = _repository(args)
     if args.command == "init":
         repository.init()
         _print({"root": str(repository.root), "index": repository.rel(repository.index_path), "status": "initialized"})
         return 0
     repository.ensure_initialized()
-    captures = CaptureService(repository)
+    capture_policy = CapturePolicy(
+        import_roots=tuple(Path(item) for item in getattr(args, "import_root", [])),
+        domain_allowlist=frozenset(item.casefold() for item in getattr(args, "allow_domain", [])),
+        allow_private_network=bool(getattr(args, "allow_private_network", False)),
+    )
+    captures = CaptureService(repository, policy=capture_policy, allow_unsafe_local_files=bool(getattr(args, "allow_unsafe_local_files", False)))
     inputs = InputEpisodeService(repository)
     proposals = ProposalService(repository)
     backups = RawBackupService(repository)
@@ -1743,6 +1761,19 @@ def run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _command_writes(args: argparse.Namespace) -> bool:
+    """Read-only commands remain lock-free; all other CLI commands serialize."""
+    if args.command in {"doctor", "lint", "raw", "show", "search", "related", "status", "audit", "extractions", "followups", "proposals", "promotions", "history"}:
+        return False
+    if args.command == "context":
+        return bool(args.record_use)
+    if args.command == "maintain":
+        return bool(args.rebuild_derived)
+    if args.command == "mcp":
+        return False
+    return True
+
+
 def main(argv: list[str] | None = None) -> int:
     # Windows commonly inherits a GBK console; vault content may contain symbols
     # such as non-breaking spaces that GBK cannot encode. CLI JSON is UTF-8.
@@ -1752,7 +1783,8 @@ def main(argv: list[str] | None = None) -> int:
             reconfigure(encoding="utf-8")
     parser = build_parser()
     try:
-        return run(parser.parse_args(argv))
+        args = parser.parse_args(argv)
+        return run(args)
     except GlobalMemoryError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

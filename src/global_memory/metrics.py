@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from collections import Counter
-from pathlib import Path
 from typing import Any
 
 from .consolidation import ConsolidationReceiptService, DriftAuditService
@@ -45,7 +44,6 @@ class ProjectMetricsService:
                 receipt_current = current_receipt is not None
                 semantic_failures = receipts.semantic_qualification_failures(str(metadata.get("type")), current_receipt)
                 current_policy = metadata.get("trust_policy_version") == POLICY_VERSION
-                awaiting = bool(metadata.get("needs_policy_requalification"))
                 high_risk = bool(metadata.get("high_risk_drift"))
                 contested = epistemic == "contested"
                 trusted_current_policy += int(current_policy)

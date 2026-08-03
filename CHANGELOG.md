@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Closed the public-release and Agent capture safety findings: release exports
+  now fail on unknown top-level entries and symlink escapes; URL capture pins
+  the policy-validated DNS address through the socket and revalidates every
+  redirect; local imports default to no roots; metadata, loopback and
+  link-local targets remain denied even when private RFC1918/ULA access is
+  explicitly enabled.
+- Receipt reuse and consolidation Source checks now force Raw SHA-256 at the
+  governance boundary. Repository writer locking covers direct command calls
+  and complete capture transactions, with corrected Windows byte locking.
+  Ruff/Pyright gates have a passing, intentionally narrow baseline, and the
+  Apache-2.0 file is the complete standard text.
+- Added model-independent Discovery Benchmark run-record scoring while keeping
+  model invocation outside the core. Objective metrics are computed from
+  supplied records; novelty and actionability remain explicit human scores.
+
 - Hardened Daily and Weekly consolidation against repository-size timeouts.
   Empty Daily runs now skip index and Obsidian rebuilds; FTS rebuilds prefer
   current hash-bound Extractions over reopening large Raw payloads; Weekly

@@ -1,0 +1,20 @@
+---
+id: "concept_9337306ba824767665ce40c4"
+type: "concept"
+status: "proposal"
+title: "人形基础模型的分层预训练—执行栈 / Layered pretraining-to-execution stack for humanoid foundation models"
+created_at: "2026-08-03T18:19:21+08:00"
+updated_at: "2026-08-03T18:19:21+08:00"
+aliases: ["Whole-Body Intelligence", "WBI", "Large Humanoid Model", "LHM", "全身智能", "人形基础模型"]
+tags: []
+domains: ["humanoid-robotics", "foundation-models", "whole-body-control", "pretraining", "embodied-ai"]
+confidence: "medium"
+source_ids: ["source_b6445078b10e858d8d6d3f94"]
+relations: [{"type": "derived_from", "target_id": "source_b6445078b10e858d8d6d3f94", "reason": "由 compile bundle 从该来源提出", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "depends_on", "target_id": "concept_8f8ae7b5cac6690d2e341d40", "reason": "S0.5/S0 的可复用身体先验依赖规模化全身运动跟踪及参考动作数量—多样性的协同扩展，但该先验本身不提供 S1/S2 语义能力。", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "related_to", "target_id": "concept_generalist_cross_embodiment_vla", "reason": "两者都利用跨本体视觉语言状态与动作数据；WBI 分层进一步把共享的 S1 表示和本体专属的 S0.5/S0 执行边界显式分开。", "confidence": "high", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}, {"type": "related_to", "target_id": "concept_fc70bfc09ac7d9473592f09c", "reason": "部分运动学嵌入是 S0.5 类型接口的一种具体候选：它把全身冗余压缩为可导航 latent，再由低层执行器保证动力学可行。", "confidence": "medium", "created_by": "codex-gpt-5.6-sol-strong-daily-v2", "status": "proposal"}]
+change_reason: "compile bundle from source_b6445078b10e858d8d6d3f94"
+reflection_context: {"reflection_ids": ["reflection_3c1d1a7a941f516e8b0aca44"], "importance": "high", "changed_belief": "我原先更容易把人形 foundation model 视为扩大动作空间的 VLA；该文章提示，foundation 属性还取决于身体先验、意图到参考运动的中间接口、硬件约束和失败回流能否被共同预训练与持续改进。", "surprising": "文章明确把 S0.5 单列为 motion generation + BFM 的转换层：它既不是高层语义模型的缩小版，也不是低层控制器，而是把动作意图变成具身可执行参考运动的接口。", "connections": [{"shared_mechanism": "该分层栈与 concept_8f8ae7b5cac6690d2e341d40 都把大规模 motion tracking/BFM 视为可复用身体先验。", "boundary": "BFM 的扩展证据只支持运动跟踪预训练，不自动提供任务语义、感知 grounding 或长程规划。", "difference": "既有节点解释 BFM 数量与多样性的协同扩展；这里把 BFM 放在 S0.5/S0 接口，并要求它接受 S1 意图、输出可安全跟踪参考。"}, {"shared_mechanism": "该分层栈与 concept_generalist_cross_embodiment_vla 都需要从异构人类与机器人数据学习可迁移表示，同时保留本体专属执行边界。", "boundary": "跨本体共享不能消除接触、动力学、传感器和硬件安全差异。", "difference": "跨本体 VLA 节点聚焦统一视觉语言状态到动作接口；全身智能栈进一步显式分离任务语义、原生人形策略、运动生成和高频控制。"}], "open_questions": ["S1 输出到 S0.5 的 action chunk、motion token 或约束接口，应如何同时保留任务可组合性、接触可执行性和不同人形硬件的迁移边界？"]}
+---
+
+# 人形基础模型的分层预训练—执行栈 / Layered pretraining-to-execution stack for humanoid foundation models
+
+把人形 foundation model 定义为跨层预训练与执行体系：S2 将开放任务转成语义阶段目标与安全约束；S1 以视觉、语言、本体、触觉和历史状态生成原生全身动作意图；S0.5 用 motion generation 与行为基础模型把意图变成结合当前物理状态的参考运动；S0 在平衡、接触、力、关节和低延迟约束下高频跟踪。人类数据提供行为规模，机器人与硬件数据限定可执行边界，仿真、失败和部署日志支撑覆盖、恢复和持续后训练。该分层是 Archon 提出的研究路线而非已验证行业标准；跨层接口、统一训练目标、硬件迁移和整栈泛化仍需受控实验。

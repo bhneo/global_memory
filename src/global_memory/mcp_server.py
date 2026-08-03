@@ -635,13 +635,14 @@ class AgentMemoryTools:
                 raise ValidationError("capture requires bounded title and why_saved")
             if input_type not in INPUT_TYPES:
                 raise ValidationError(f"invalid input_type: {input_type}")
-            _recover_before_capture(self.repository)
-            captured = CaptureService(self.repository).capture_text(content, why_saved, title)
-            episode = InputEpisodeService(self.repository).create_from_source(
-                captured.source_id, input_type=input_type, title=title,
-                user_authored=True, submitted_by="agent-gateway",
-            )
-            self.repository.rebuild_index()
+            with self.repository.writer_lock():
+                _recover_before_capture(self.repository)
+                captured = CaptureService(self.repository).capture_text(content, why_saved, title)
+                episode = InputEpisodeService(self.repository).create_from_source(
+                    captured.source_id, input_type=input_type, title=title,
+                    user_authored=True, submitted_by="agent-gateway",
+                )
+                self.repository.rebuild_index()
             return {
                 "capture_status": "captured" if not captured.duplicate_source else "already_captured",
                 "source_ref": captured.source_id,
