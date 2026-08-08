@@ -1,29 +1,44 @@
 # Agent and Obsidian integration
 
-## M9.1 experience and reflection contract
-
-Third-party Agents submit session experience through `galois session import`; the
-result is an Input Episode queued for Reflection, never a direct Knowledge
-write. Research Context may include explicitly labeled Reflection and Cognitive
-Synthesis. Execution Context excludes both. Agents may author Daily/Weekly JSON
-artifacts, but explicit semantic items still compile into Working only and
-Canonical remains human-approved.
-
-## M8 read and evolution contract
-
-Every assistant must preserve `memory_tier`, `epistemic_status`, confidence, source authority, evidence coverage/entailment, unresolved contradictions and last consolidation from Context Pack. Execution answers must not express hypothetical, exploratory analogy, unknown, contested or degraded material as established fact. Durable write-back that changes existing knowledge must state `support`, `refine`, `limit`, `contradict`, `supersede` or `metadata_only`; Trusted changes follow Revision/Exception governance.
-
-## M7 write-back contract
-
-Agents may capture, compile and create Working memory through the governed CLI without requesting per-item approval. They must preserve raw provenance, candidate hashes, tier, uncertainty and evidence boundaries. They may recommend Trusted/Canonical promotion, but only the user can approve a Canonical promotion card. Default MCP is read-only. The separately enabled Agent launcher can accept explicitly authorized Capture/session/use/feedback signals: session records stop at Source/Input, Activation and research feedback are trust-orthogonal, and none can create governed Knowledge. Use `consolidate daily`, `consolidate weekly`, `exceptions`, `promotions`, and `trust explain` as described in `MEMORY_CONSOLIDATION.md`.
-
 ## Goal
 
-Codex, Cursor, Claude, Hermes, OpenClaw, and OpenHuman can share one Galois memory without copying the vault into tool-specific memory stores. Each tool gets a thin host adapter; the knowledge and governance model remain provider-neutral.
+Codex, Cursor, Claude, Hermes, OpenClaw, and OpenHuman can share one Galois
+memory without copying the vault into tool-specific stores. Each tool gets a
+thin host adapter; the knowledge and governance model stay provider-neutral.
+
+## Contracts for assistants
+
+**Experience and reflection.** Third-party agents submit session experience
+through `galois session import`; the result is an Input Episode queued for
+Reflection, never a direct Knowledge write. Research Context may include
+explicitly labeled Reflection and Cognitive Synthesis; Execution Context
+excludes both. Agents may author Daily/Weekly JSON artifacts, but explicit
+semantic items still compile into Working only and Canonical remains
+human-approved.
+
+**Read and evolution.** Every assistant must preserve `memory_tier`,
+`epistemic_status`, confidence, source authority, evidence
+coverage/entailment, unresolved contradictions and last consolidation from the
+Context Pack. Execution answers must not present hypothetical, exploratory
+analogy, unknown, contested or degraded material as established fact. Durable
+write-back that changes existing knowledge must state `support`, `refine`,
+`limit`, `contradict`, `supersede` or `metadata_only`; Trusted changes follow
+Revision/Exception governance.
+
+**Write-back.** Agents may capture, compile and create Working memory through
+the governed CLI without per-item approval. They must preserve raw provenance,
+candidate hashes, tier, uncertainty and evidence boundaries. They may recommend
+Trusted/Canonical promotion; only the user can approve a Canonical promotion
+card. Default MCP is read-only. The separately enabled Agent launcher can
+accept explicitly authorized Capture/session/use/feedback signals: session
+records stop at Source/Input, Activation and research feedback are
+trust-orthogonal, and none can create governed Knowledge. Use
+`consolidate daily`, `consolidate weekly`, `exceptions`, `promotions`, and
+`trust explain` as described in `MEMORY_CONSOLIDATION.md`.
 
 ## Read path
 
-Local MCP-capable assistants may use the configured read-only `galois` server instead of shelling out directly. Five read tools expose capabilities plus sanitized Evidence Packets. A separate trusted launcher exposes explicit, idempotent Capture/session/use/feedback signals; see `docs/MCP_INTEGRATION.md`, `adapters/hosts/`, and ADR 0059.
+Local MCP-capable assistants may use the configured read-only `galois` server instead of shelling out directly. Five read tools expose capabilities plus sanitized Evidence Packets. A separate trusted launcher exposes explicit, idempotent Capture/session/use/feedback signals; see `docs/MCP_INTEGRATION.md` and `adapters/hosts/`.
 
 MCP retrieval is background context, not report content. Ordinary answers must
 not mention MCP, route traces, indexes, storage paths, receipts, recovery or

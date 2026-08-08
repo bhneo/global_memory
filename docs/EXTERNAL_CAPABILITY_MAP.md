@@ -8,14 +8,14 @@ Galois 保留不可替代的科研认知核心；成熟外围能力优先通过�
   possible_integration: 只读搜索或 UI Adapter
   license_boundary: 集成前复核当前许可证和分发条件
   trigger_to_integrate: Obsidian 与 CLI 无法满足真实日常检索时
-  why_not_now: M9.0 先验证科研信号与路由
+  why_not_now: 先验证科研信号与路由再扩展检索 UI
   truth_source_boundary: 只读消费者，不成为真相源
 
 - capability: 记忆评测
   external_project: MemoryBench
   possible_integration: Galois Provider
   license_boundary: 不复制完整评测框架
-  trigger_to_integrate: M9.1 建立检索与治理基线时
+  trigger_to_integrate: 检索与治理基线稳定、并有真实研究使用样本时
   why_not_now: 当前缺少真实研究使用样本
   truth_source_boundary: 评测结果是报告，不是知识
 
@@ -64,7 +64,7 @@ Galois 保留不可替代的科研认知核心；成熟外围能力优先通过�
   possible_integration: 实验性排序权重
   license_boundary: 算法输出不得进入 Trust 指标
   trigger_to_integrate: 累积足够 Activation 数据并完成离线评测后
-  why_not_now: M9.0 只收集信号，不改变排序
+  why_not_now: 当前只收集 Activation 信号，不把它写入默认排序
   truth_source_boundary: 只影响派生排序，不影响真实性
 ```
 

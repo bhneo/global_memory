@@ -207,7 +207,7 @@ Losing the index never loses the truth layer.
 | Field-level object shapes | [DATA_MODEL.md](DATA_MODEL.md) |
 | Daily / Weekly Dream contracts | [COGNITIVE_CONSOLIDATION.md](COGNITIVE_CONSOLIDATION.md) |
 | Distillation / claim rules | [SEMANTIC_DISTILLATION.md](SEMANTIC_DISTILLATION.md) |
-| Trust / Receipt / demotion | ADRs under `docs/decisions/` |
+| Trust / Receipt / demotion | [MEMORY_CONSOLIDATION.md](MEMORY_CONSOLIDATION.md) · [PRINCIPLES.md](PRINCIPLES.md) |
 | Assistant operating contract | [AGENT_INTEGRATION.md](AGENT_INTEGRATION.md) |
 | MCP protocol details | [MCP_INTEGRATION.md](MCP_INTEGRATION.md) |
 | Public vs private vault boundary | [RELEASE_BOUNDARY.md](RELEASE_BOUNDARY.md) |

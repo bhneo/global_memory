@@ -8,7 +8,7 @@ Research Annotation 是 append-only、用户拥有的科研注意力记录，位
 - `connection_feedback`：对连接的 `obvious|forced|interesting|actionable` 评价。
 - `research_note`：自由研究想法及其关联对象。
 
-Annotation 的 `truth_layer` 是 `user_annotation`。用户原文与 `agent_interpretation` 分离；M9.0 不生成后者。Annotation 不改变目标对象、Receipt、Memory Tier、Epistemic Status、Trust Score 或 Canonical。
+Annotation 的 `truth_layer` 是 `user_annotation`。用户原文与 `agent_interpretation` 分离；当前不生成后者。Annotation 不改变目标对象、Receipt、Memory Tier、Epistemic Status、Trust Score 或 Canonical。
 
 常用命令：
 

@@ -1,7 +1,7 @@
 # Agent Semantic Distillation
 
-M9.1 inserts Reflection before semantic compilation. Daily Agents consume the
-bounded `reflection queue`, create quality-gated Reflection objects, and attach
+Reflection comes before semantic compilation. Daily Agents consume the bounded
+`reflection queue`, create quality-gated Reflection objects, and attach
 `reflection_context` to explicit Semantic Bundle items. Weekly Agents compare
 multiple Reflections with active Concepts and emit a separate Cognitive
 Synthesis before proposing any Working knowledge update. The CLI validates

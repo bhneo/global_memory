@@ -1,19 +1,19 @@
 # Data Model
 
-## M9.1 cognitive layer
+## Cognitive layer
 
 | Object | Location | Truth role | Trust effect |
 |---|---|---|---|
 | Input Episode | `vault/inputs/` | typed experience linked to immutable Source | none |
 | Reflection | `vault/reflections/` | Agent/user interpretation of cognitive value and change | none |
-| Cognitive Synthesis | `vault/synthesis/` | weekly patterns, tensions and falsifiable candidates | none |
+| Cognitive Synthesis | `vault/synthesis/` | direction-scoped patterns, tensions and falsifiable candidates | none |
 
 These objects use explicit `input_episode`, `reflection`, and
 `cognitive_synthesis` truth layers. They do not carry Memory Tier, do not enter
 Evidence or Receipts, and are never execution-safe. Semantic knowledge derived
 from them still enters only through Working Bundle compilation.
 
-## M8 orthogonal state
+## Memory Tier and Epistemic Status
 
 | Dimension | Values | Question answered |
 |---|---|---|
@@ -22,15 +22,18 @@ from them still enters only through Working Bundle compilation.
 
 Examples: `trusted + open_question` is a durable unanswered question; `trusted + exploratory_analogy` is a retained heuristic, not factual equivalence; `trusted + contested` is important but conflicted. `status` remains a compatibility mirror of tier after migration; `legacy_status` preserves the prior value.
 
-| M8.1 receipt v2 | `vault/receipts/consolidation/` | `execution_status`, `validation_outcome`, typed check details and a full consolidation fingerprint; v1 is retained only as audit history. |
+## Receipts and governance records
+
+| Record | Location | Meaning |
 |---|---|---|
-| Consolidation Receipt | `vault/receipts/consolidation/` | object before/after hashes + source/evidence hashes + checks |
+| Consolidation Receipt (v2) | `vault/receipts/consolidation/` | `execution_status`, `validation_outcome`, typed checks and full consolidation fingerprint; v1 retained as audit history only |
+| Consolidation Receipt (body) | same | object before/after hashes + source/evidence hashes + checks |
 | Working Revision | `vault/memory/revisions/` | immutable revision ID, `revision_of`, previous version, change record |
 | Version snapshot | `vault/archive/versions/` | SHA-256 of exact previous Markdown |
 | Demotion Event | `vault/receipts/demotions/` | object + from/to dimensions + reason + version paths |
 | Drift Report | report/CLI output | compared versions + evidence + drift type/severity/action |
 
-## M7 memory lifecycle
+## Memory lifecycle
 
 | Tier | Location | Meaning | Writer |
 |---|---|---|---|
@@ -42,7 +45,7 @@ Examples: `trusted + open_question` is a durable unanswered question; `trusted +
 
 Working metadata records creator/updater, compiler/model, source and candidate hashes, consolidation count, trust score/reasons, promotion history, locks and schema version. Exception and promotion cards are governance records, not knowledge facts.
 
-## M6 objects and states
+## Knowledge objects and states
 
 | Object | Durable role | Gate |
 |---|---|---|

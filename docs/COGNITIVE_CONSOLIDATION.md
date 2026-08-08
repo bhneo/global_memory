@@ -1,10 +1,10 @@
-# M9.1 Cognitive Consolidation
+# Cognitive Consolidation
 
-M9.1 adds a cognitive interpretation layer without turning Galois into
-an Agent runtime. The core remains provider-neutral: it stores Input Episodes,
-validates externally authored Reflections and Weekly Synthesis, compiles
-explicit semantic items through the existing Working gate, and serves labeled
-read-only Context Packs. It does not call models, tools, or experiments.
+This layer adds cognitive interpretation without turning Galois into an Agent
+runtime. The core remains provider-neutral: it stores Input Episodes, validates
+externally authored Reflections and Weekly Synthesis, compiles explicit
+semantic items through the existing Working gate, and serves labeled read-only
+Context Packs. It does not call models, tools, or experiments.
 
 ## Cognitive pipeline
 
@@ -349,6 +349,6 @@ the same Context Pack policy.
 
 ## Explicit non-goals
 
-M9.1 adds no Agent Runtime, Skill System, tool execution, automatic experiment,
-automatic scientific discovery, graph/vector database, write MCP, or multi-Agent
-orchestration.
+This layer adds no Agent Runtime, Skill System, tool execution, automatic
+experiment, automatic scientific discovery, graph/vector database, write MCP,
+or multi-Agent orchestration.

@@ -11,4 +11,4 @@ Activation 只表示某条记忆最近在真实工作中有多活跃。它与 Tr
 .\scripts\galois.ps1 context "..." --record-use
 ```
 
-Context 默认不写 Activation；只读 MCP 永远不写。M9.0 只收集并展示 Activation，不把它加入默认排序公式。
+Context 默认不写 Activation；只读 MCP 永远不写。当前只收集并展示 Activation，不把它加入默认排序公式。

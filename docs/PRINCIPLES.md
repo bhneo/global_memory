@@ -1,8 +1,23 @@
 # Principles
 
-M8 clarification: a scan is not consolidation, a counter is not evidence, and a repeated URL is not an independent source. Effective Consolidation rechecks Raw, provenance, Evidence, related objects, contradiction, freshness, independence and drift, then binds the result to the exact object hash. Trusted can receive additional support without losing trust; semantic change forks a Working Revision; conflict and demotion are explicit governance events.
+## Clarifications
 
-M7 clarification: cheap ingestion and strict Canonical governance are compatible. Validated material may enter Working automatically; uncertainty stays visible instead of forcing approval. Trusted is an explainable policy result, not objective truth. Canonical is scarce, high-impact and human-confirmed. Periodic consolidation replaces per-item review, while exceptions reserve human attention for conflicts, compound claims, drift and consequential changes.
+- A scan is not consolidation. A counter is not evidence. A repeated URL is not
+  an independent source.
+- Effective consolidation rechecks Raw, provenance, Evidence, related objects,
+  contradiction, freshness, independence and drift, then binds the result to
+  the exact object hash.
+- Trusted can receive additional support without losing trust; semantic change
+  forks a Working Revision; conflict and demotion are explicit governance
+  events.
+- Cheap ingestion and strict Canonical governance are compatible: validated
+  material may enter Working automatically while uncertainty stays visible.
+- Trusted is an explainable policy result, not objective truth. Canonical is
+  scarce, high-impact and human-confirmed.
+- Periodic consolidation replaces per-item review; exceptions reserve human
+  attention for conflicts, compound claims, drift and consequential changes.
+
+## Principles
 
 1. **用户拥有记忆。** 本地文件是长期载体，聊天上下文和服务端记忆不是。
 2. **Markdown 优先。** 人可读、Git 可追踪、Agent 可编辑、工具可迁移。
