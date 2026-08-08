@@ -17,7 +17,7 @@
 
 ## 当前概况
 
-- 资料：300 篇
+- 资料：306 篇
 - Working：189 条
 - Trusted：30 条
 - Canonical：1 条
@@ -26,11 +26,11 @@
 
 ## 最近收录
 
+- [[views/readers/source_a309f41089129cf62850d91c|HAM-VLN: Harnessing Hierarchical Agentic Memory for Zero-Shot Vision-and-Language Navigation]] · 2026-08-05
+- [[views/readers/source_d6ae1d00b129f34c3807a653|[2607.29687] Diagnosing Compositional Generalization in Sequential Robot Tasks]] · 2026-08-05
+- [[views/readers/source_5dcd63e1f2e4f3ffbd19e0a1|[2607.29235] FBFM: A Training-Free Asynchronous Feedback Mechanism for Flow-Matching in World-Action Models Execution]] · 2026-08-05
+- [[views/readers/source_0e9bf28342de87b37577aea7|[2607.29613] WCM: A World Critic Model for Vision-Language-Action Reinforcement Learning]] · 2026-08-05
+- [[views/readers/source_3a8cc74d4a85ffbc413dec6f|[2608.02580] Ego2Robot: Scalable Robot Data Synthesis from Egocentric Human Data]] · 2026-08-05
+- [[views/readers/source_41f910f3be7168815014d8b6|Demystifying When and Why VLAs Fail in Contact-Rich Tasks and How to Fix Them]] · 2026-08-05
 - [[views/readers/source_bd2a6cee8175ade8ff2894a6|高德ABot-AgentOS：面向机器人智能体的通用自进化操作系统]] · 2026-07-24
 - [[views/readers/source_b6445078b10e858d8d6d3f94|全身智能：迈向人形基础模型 | Archon Robotics | Archon Robotics]] · 2026-08-03
-- [[views/readers/source_4ef330780a196b3bf1fdfc2c|Gemini Robotics ER 2]] · 2026-08-03
-- [[views/readers/source_b1b6d959fc38aac1732f07ff|arxiv.org]] · 2026-08-03
-- [[views/readers/source_a06c4ee2dabe3916d074bc1e|google/asimov_agentic · Datasets at Hugging Face]] · 2026-08-03
-- [[views/readers/source_12450fe7e2be78ffc391997e|arxiv.org]] · 2026-08-02
-- [[views/readers/source_bdb17eb4583ec8af52f28dfb|arxiv.org]] · 2026-08-02
-- [[views/readers/source_7fa8acc5e021363b55491e3e|arxiv.org]] · 2026-08-02
